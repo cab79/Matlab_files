@@ -1,0 +1,101 @@
+clear all
+
+subjects = {'M1';'M2';'M4';'M6';'M7';'M9';'M10';'M12';'M14';'M15';'M16';'M17';'M19';'M20';'M21';'M22';'M24';'M25';'M26';'M28';'M29';'M30';'M32';'M33';'M35';'M36';'M37';'M38';'M40'};
+
+group = [1 1 1 1 1 2 1 1 1 1 1 1 2 2 2 2 2 2 2 2 1 1 1 1 2 2 2 2 2];
+
+load gamma1;
+load gamma2;
+load gamma3;
+load beta;
+load alpha1;
+load alpha2;
+load theta;
+load delta;
+
+gamma1_open = cat(3,gamma1(:,[find(group == 1) find(group == 2)],1),gamma1(:,[find(group == 1) find(group == 2)],3));
+gamma1_open  = reshape(gamma1_open ,64,length(subjects)*2);
+save gamma1_open.mat gamma1_open
+gamma1_closed= cat(3,gamma1(:,[find(group == 1) find(group == 2)],2),gamma1(:,[find(group == 1) find(group == 2)],4));
+gamma1_closed  = reshape(gamma1_closed ,64,length(subjects)*2);
+save gamma1_closed.mat gamma1_closed
+
+gamma2_open = cat(3,gamma2(:,[find(group == 1) find(group == 2)],1),gamma2(:,[find(group == 1) find(group == 2)],3));
+gamma2_open  = reshape(gamma2_open ,64,length(subjects)*2);
+save gamma2_open.mat gamma2_open
+gamma2_closed= cat(3,gamma2(:,[find(group == 1) find(group == 2)],2),gamma2(:,[find(group == 1) find(group == 2)],4));
+gamma2_closed  = reshape(gamma2_closed ,64,length(subjects)*2);
+save gamma2_closed.mat gamma2_closed
+
+gamma3_open = cat(3,gamma3(:,[find(group == 1) find(group == 2)],1),gamma3(:,[find(group == 1) find(group == 2)],3));
+gamma3_open  = reshape(gamma3_open ,64,length(subjects)*2);
+save gamma3_open.mat gamma3_open
+gamma3_closed= cat(3,gamma3(:,[find(group == 1) find(group == 2)],2),gamma3(:,[find(group == 1) find(group == 2)],4));
+gamma3_closed  = reshape(gamma3_closed ,64,length(subjects)*2);
+save gamma3_closed.mat gamma3_closed
+
+beta_open = cat(3,beta(:,[find(group == 1) find(group == 2)],1),beta(:,[find(group == 1) find(group == 2)],3));
+beta_open  = reshape(beta_open ,64,length(subjects)*2);
+save beta_open.mat beta_open
+beta_closed= cat(3,beta(:,[find(group == 1) find(group == 2)],2),beta(:,[find(group == 1) find(group == 2)],4));
+beta_closed  = reshape(beta_closed ,64,length(subjects)*2);
+save beta_closed.mat beta_closed
+
+alpha1_open = cat(3,alpha1(:,[find(group == 1) find(group == 2)],1),alpha1(:,[find(group == 1) find(group == 2)],3));
+alpha1_open  = reshape(alpha1_open ,64,length(subjects)*2);
+save alpha1_open.mat alpha1_open
+alpha1_closed= cat(3,alpha1(:,[find(group == 1) find(group == 2)],2),alpha1(:,[find(group == 1) find(group == 2)],4));
+alpha1_closed  = reshape(alpha1_closed ,64,length(subjects)*2);
+save alpha1_closed.mat alpha1_closed
+
+alpha2_open = cat(3,alpha2(:,[find(group == 1) find(group == 2)],1),alpha2(:,[find(group == 1) find(group == 2)],3));
+alpha2_open  = reshape(alpha2_open ,64,length(subjects)*2);
+save alpha2_open.mat alpha2_open
+alpha2_closed= cat(3,alpha2(:,[find(group == 1) find(group == 2)],2),alpha2(:,[find(group == 1) find(group == 2)],4));
+alpha2_closed  = reshape(alpha2_closed ,64,length(subjects)*2);
+save alpha2_closed.mat alpha2_closed
+
+theta_open = cat(3,theta(:,[find(group == 1) find(group == 2)],1),theta(:,[find(group == 1) find(group == 2)],3));
+theta_open  = reshape(theta_open ,64,length(subjects)*2);
+save theta_open.mat theta_open
+theta_closed= cat(3,theta(:,[find(group == 1) find(group == 2)],2),theta(:,[find(group == 1) find(group == 2)],4));
+theta_closed  = reshape(theta_closed ,64,length(subjects)*2);
+save theta_closed.mat theta_closed
+
+delta_open = cat(3,delta(:,[find(group == 1) find(group == 2)],1),delta(:,[find(group == 1) find(group == 2)],3));
+delta_open  = reshape(delta_open ,64,length(subjects)*2);
+save delta_open.mat delta_open
+delta_closed= cat(3,delta(:,[find(group == 1) find(group == 2)],2),delta(:,[find(group == 1) find(group == 2)],4));
+delta_closed  = reshape(delta_closed ,64,length(subjects)*2);
+save delta_closed.mat delta_closed
+
+
+g1 = [62 57 24 30];
+g2 = [57 24 62 25];
+g3 = [57 24 25 62];
+b = [62 30 57 24];
+a1 = [34 33 45 36];
+a2 = [34 45 33 36];
+t = [20 15 21 49];
+dA = [30 62 64 28];
+dB = [20 15 14 49];
+
+gamma1_closed_peak = mean(gamma1_closed(g2,:),1);
+gamma2_closed_peak = mean(gamma2_closed(g2,:),1);
+gamma3_closed_peak = mean(gamma3_closed(g3,:),1);
+beta_closed_peak = mean(beta_closed(b,:),1);
+alpha1_closed_peak = mean(alpha1_closed(a1,:),1);
+alpha2_closed_peak = mean(alpha2_closed(a2,:),1);
+theta_closed_peak = mean(theta_closed(t,:),1);
+
+% delta_closed_peak = mean(delta_closed(dA,:),1);
+% delta_closed_peak = mean(delta_closed(dB,:),1);
+
+save gamma1_closed_peak.mat gamma1_closed_peak 
+save gamma2_closed_peak.mat gamma2_closed_peak 
+save gamma3_closed_peak.mat gamma3_closed_peak 
+save beta_closed_peak.mat beta_closed_peak 
+save alpha1_closed_peak.mat alpha1_closed_peak 
+save alpha2_closed_peak.mat alpha2_closed_peak 
+save theta_closed_peak.mat theta_closed_peak 
+save delta_closed_peak.mat delta_closed_peak 

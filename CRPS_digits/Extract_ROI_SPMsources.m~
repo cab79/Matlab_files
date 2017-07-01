@@ -1,0 +1,101 @@
+clear all
+close all
+dname = pwd;
+
+cd(dname);
+grplist = [39 40 41 42]; sublist_side = {'L','R','L','R'}; %Affected vs unaffected exp1
+%grplist = [33 34 31 32]; sublist_side = {'L','R','L','R'}; %Affected vs %unaffected exp2
+peaks_nme = {'3'};
+cond_nme = {'1','2','3','4','5'};
+hand_nme = {'L','R'};
+no_cond = length(cond_nme); % no of conditions per data file (arm)
+no_peaks = length(peaks_nme);
+
+
+Rdata = '/scratch/cb802/Brain_atlas_Hammers2003/Hammers_mith_atlas_n30r83_SPM5.img';
+%Rdata = 'W:\Brain_atlas_Hammers2003\Hammers_mith_atlas_n30r83_SPM5.img';
+
+regions = {'L_postcen',60;
+	'R_postcen',61;
+	'L_sup_par',62;
+	'R_sup_par',63;
+	'L_inf_par',32;
+	'R_inf_par',33;
+    };
+Nreg = size(regions,1);
+
+loadsubj
+subjects = subjlists(grplist);
+
+Ns=0;
+for s = 1:length(subjects)
+    for s2 = 1:length(subjects{s,1}) 
+        Ns=Ns+1;
+        tmp_nme = subjects{s,1}{s2,1};
+        tmp_nme = strrep(tmp_nme, '.left', '_left');
+        tmp_nme = strrep(tmp_nme, '.Left', '_left');
+        tmp_nme = strrep(tmp_nme, '.right', '_right');
+        tmp_nme = strrep(tmp_nme, '.Right', '_right');
+        tmp_nme = strrep(tmp_nme, '.flip', '_flip');
+        tmp_nme = strrep(tmp_nme, '.Flip', '_flip');
+        tmp_nme = strrep(tmp_nme, '.aff', '_aff');
+        tmp_nme = strrep(tmp_nme, '.Aff', '_aff');
+        tmp_nme = strrep(tmp_nme, '.Unaff', '_unaff');
+        tmp_nme = strrep(tmp_nme, '.unaff', '_unaff');
+        tmp_nme = strrep(tmp_nme, '_Left', '_left');
+        tmp_nme = strrep(tmp_nme, '_Right', '_right');
+        tmp_nme = strrep(tmp_nme, '_Flip', '_flip');
+        tmp_nme = strrep(tmp_nme, '_Aff', '_aff');
+        tmp_nme = strrep(tmp_nme, '_Unaff', '_unaff');
+        tmp_nme = strrep(tmp_nme, '.Exp1', '_Exp1');
+        fnames{Ns,1} = ['spm8_' tmp_nme];
+    end
+end
+
+for r = 1:Nreg
+    region = regions{r,2};
+    for f = 1:length(fnames)
+        for p = 1:no_peaks
+            for c = 1:no_cond
+                Pfname = fullfile(dname,[fnames{f,1} '_' peaks_nme{1,p} '_' cond_nme{1,c}]);
+                Pdata = [Pfname '.nii'];
+                input{c,1} = Pdata;
+            end
+            input{c+1,1} = Rdata;
+            expres = ['((i1+i2+i3+i4+i5)/5).*(i6==' num2str(region) ')'];
+            Pfname_out = fullfile(dname,[fnames{f,1} '_' peaks_nme{1,p} '_r' num2str(region) '.nii']);
+            %if ~exist(Pfname_out,'file') 
+                Output = spm_imcalc_ui(input,Pfname_out,expres);
+            %end
+        end
+    end
+end
+
+Nfiles = length(fnames);
+
+results = cell(Nfiles+2,no_peaks*Nreg+1);
+results(3:end,1) = fnames(:,1);
+results(1,2:end) = reshape(repmat(regions(:,1)',no_peaks,1),1,no_peaks*Nreg);
+results(2,2:end) = reshape(repmat(peaks_nme,1,Nreg),1,no_peaks*Nreg);
+results(3:end,2:end) = num2cell(NaN(size(results(3:end,2:end))));
+for c = 1:size(results,2)
+    results{1,c} = [results{1,c} '_' results{2,c}];
+end
+
+Rnii = load_nii(Rdata);
+for r = 1:Nreg
+    region = regions{r,2};
+    Rsize = ((sqrt(length(find(Rnii.img==region)))/2)^2); 
+    for f = 1:length(fnames)
+        for p = 1:no_peaks
+            Pfname = fullfile(dname,[fnames{f,1} '_' peaks_nme{1,p} '_r' num2str(region)]);
+            Pdata = [Pfname '.nii'];
+            nii = load_nii(Pdata);
+            nii_all = nii.img(nii.img~=0);
+            nii_mean = sum(nii_all)/Rsize;
+            results{f+2,(1+no_peaks*r-no_peaks+p)} = nii_mean;
+        end
+    end
+end
+
+save ROIs.mat results;

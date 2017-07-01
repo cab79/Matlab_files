@@ -1,0 +1,5 @@
+
+load('OA17_total_data_ICA.mat');
+eegplot(total_data_ICA([1:2 4:30 33:64],:,:),'winlength',20,'spacing',100);
+
+

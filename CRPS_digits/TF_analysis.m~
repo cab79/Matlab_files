@@ -1,0 +1,249 @@
+clear all
+close all
+%grplist = [1 3 10 12]; sublist_side = {'L','R','L','R'}; %flipped
+%grplist = [33 34 31 32]; sublist_side = {'L','R','L','R'}; %Left, right, OR mostly left, mostly right %unflipped
+%grplist = [1 2 29 30]; sublist_side = {'L','R','L','R'}; %Exp2
+grplist = [35 36 37 38]; sublist_side = {'L','R','L','R'}; %Exp1 left v right
+%grplist = [39 40 41 42]; sublist_side = {'L','R','L','R'}; %Affected vs unaffected exp1
+filepath = '/scratch/cb802/Data/CRPS_Digit_Perception_exp1/correcttrials';
+cd(filepath)
+ele_left = [];
+ele_right = [];
+%ele_left = [29 23 24 28 30 33 34];
+%ele_right = [78 66 70 77 79 83 84];
+
+aff_side = [2 1 1 2 1 1 1 2 1 2 1 1 1];
+%aff_side = [1 1 1 1 1 1 1 1 1 1 1 1 1];
+
+cond_nme = {'little','ring','middle','index','thumb'};
+hand_nme = {'L','R'};
+
+%sublist = [1 2];
+%sublist_side = {'L','R'}; %Left, right
+dp = 250;
+el = 92;
+latvar = 20;
+no_cond = length(cond_nme); % no of conditions per data file (arm)
+
+loadsubj
+subjects = subjlists(grplist);
+TFs = subjects;
+gavgL1 = zeros(23,190,el);
+gavgR1 = zeros(23,190,el);
+countavgL1 = 0;
+countavgR1 = 0;
+gavgL2 = zeros(23,190,el);
+gavgR2 = zeros(23,190,el);
+countavgL2 = 0;
+countavgR2 = 0;
+
+% create TFs and grand average
+sublist = {};
+for s = 1:length(subjects)
+    for s2 = 1:length(subjects{s,1}) 
+        subj = subjects{s,1}{s2,1};
+        sublist{s,s2} = subj(1:3);
+        EEG = pop_loadset([subj '.set'],filepath);
+        dsize = size(EEG.data);
+        EEG.data = reshape(EEG.data,dsize(1),dsize(2),dsize(3));
+        events = zeros(1,size(EEG.data,3));
+        %j=0;
+        for i = 1:size(EEG.data,3)
+             if strcmp(filepath,'W:\Data\CRPS_Digit_Perception\');
+                  events(1,i) = EEG.epoch(i).eventcodes{2,2};
+             else
+                 if length(EEG.epoch(i).eventcodes)==1 || length(EEG.epoch(i).eventcodes)==3
+                    events(1,i) = EEG.epoch(i).eventcodes{1,1}{2,2};
+                 elseif length(EEG.epoch(i).eventcodes)==2 || length(EEG.epoch(i).eventcodes)==4
+                    events(1,i) = EEG.epoch(i).eventcodes{1,2}{2,2};
+                 end
+            end
+        end
+        cond = min(events):max(events);
+        TFs{s,1}{s2,1} = cell(length(cond),1);
+        tfdata = [];
+        for i = 1:no_cond
+            for e = 1:size(EEG.data,1)
+                [tfdata(:,:,e),x,y,times,freqs] = timef(EEG.data(e,:,find(events==cond(i))),[],[-200 800],EEG.srate,1,'detret','on','winsize',60,'plotersp','off','plotitc','off','plotphase','off');   
+            end
+            if strcmp(sublist_side{s},'L') && s==1
+                ord = i;
+                TFs{s,1}{s2,1}{ord,1} = tfdata;
+                gavgL1 = gavgL1 + TFs{s,1}{s2,1}{ord,1};
+                countavgL1 = countavgL1+1;
+            elseif strcmp(sublist_side{s},'L') && s==3
+                ord = i;
+                TFs{s,1}{s2,1}{ord,1} = tfdata;
+                gavgL2 = gavgL2 + TFs{s,1}{s2,1}{ord,1};
+                countavgL2 = countavgL2+1;
+            elseif  strcmp(sublist_side{s},'R') && s==2
+                ord = (no_cond+1)-i;
+                TFs{s,1}{s2,1}{ord,1} = tfdata;
+                gavgR1 = gavgR1 + TFs{s,1}{s2,1}{ord,1};
+                countavgR1 = countavgR1+1;
+            elseif strcmp(sublist_side{s},'R') && s==4
+                ord = (no_cond+1)-i;
+                TFs{s,1}{s2,1}{ord,1} = tfdata;
+                gavgR2 = gavgR2 + TFs{s,1}{s2,1}{ord,1};
+                countavgR2 = countavgR2+1;
+            end
+        end
+    end
+end
+gavgL1 = gavgL1/countavgL1;
+gavgR1 = gavgR1/countavgR1;
+gavgL2 = gavgL2/countavgL2;
+gavgR2 = gavgR2/countavgR2;
+
+gavg = cell(4,1);
+gavg{1,1} = permute(gavgL1,[3 2 1]);
+gavg{2,1} = permute(gavgR1,[3 2 1]);
+gavg{3,1} = permute(gavgL2,[3 2 1]);
+gavg{4,1} = permute(gavgR1,[3 2 1]);
+
+gavg_all = (gavg{1,1}+gavg{2,1}+gavg{3,1}+gavg{4,1})/4;
+
+% cross-correlations
+cormat=[];
+for e = 1:size(gavg_all,1)
+    cormat(e,:,:) = corrcoef(squeeze(gavg_all(e,:,:)));
+end
+corav = squeeze(mean(cormat,1));
+threshcor=0.95;
+corth=tril(corav>threshcor);
+freq_idx={};
+for cc=1:size(corth,2)
+    if any(corth(:,cc))==0
+        freq_idx{length(freq_idx)+1}=cc;
+    elseif any(corth(:,cc))
+        tempi=find(corth(:,cc)==1);
+        if length(freq_idx)>1
+            [te fr] = intersect(tempi,1:max(freq_idx{cc-1}));
+            tempi(fr)=[];
+        end
+        freq_idx{length(freq_idx)+1}=tempi;
+        if any(tempi==size(corth,1))
+            break
+        end
+    end
+end
+
+% plot grand-grand average
+close all
+for f = 1:length(freq_idx)
+    chanlocs = EEG.chanlocs;
+    plotdata = mean(gavg_all(:,:,freq_idx{f}),3);
+    [maxval, maxidx] = max(abs(plotdata(:,:)),[],2);
+    [x, maxmaxidx] = max(maxval);
+    plottime = times(maxidx(maxmaxidx));
+    if plottime == times(end)
+        plottime = times(end-1);
+    end
+    figure('Name',num2str(freqs(freq_idx{f})));
+    timtopo(plotdata(:,:),chanlocs,...
+        'limits',[times(1) times(end)],...
+        'plottimes',plottime);
+    set(gcf,'Color','white');
+end
+
+
+% identify GFP peaks
+sthresh=1; % SD threshold
+limits=cell(length(freq_idx),1);
+for f = 1:length(freq_idx)
+    GFP = std(mean(gavg_all(:,:,freq_idx{f}),3),1);
+    overt=find(GFP>sthresh);
+    limit1=[];
+    limit2=[];
+    for io = 1:length(overt)
+        if io==1 || overt(io)>overt(io-1)+1
+            limit1=[limit1 overt(io)];
+        elseif io==length(overt) || overt(io)<overt(io+1)-1
+            limit2=[limit2 overt(io)];
+        end
+    end
+    limit12=[limit1;limit2];
+    no_peaks=size(limit12,2);
+    
+    close all
+    figure
+    plot(times',GFP);
+    hold on;
+    Midx=[];
+    for fl = 1:no_peaks
+        limits{f,fl}=limit12(:,fl);
+        [Maxima,MaxIdx] = max(GFP(limits{f,fl}(1):limits{f,fl}(2)));
+        Midx(fl)=limits{f,fl}(1)+MaxIdx-1;
+        scatter(times(Midx(fl)),Maxima);
+        hold on
+    end
+    figure
+    for n = 1:no_peaks
+        subplot(1,no_peaks,n); topoplot(mean(gavg_all(:,Midx(fl),freq_idx{f}),3), chanlocs);
+    end
+    pause
+end
+
+% identify GFPs for each subject and condition
+LAT = NaN('double');
+LATgfp = NaN('double');
+AMP = NaN('double');
+GFP = NaN('double');
+ranges = NaN('double');
+
+for s = 1:length(subjects)
+    for s2 = 1:length(subjects{s,1}) 
+        affs = aff_side(s2);
+        for i = 1:length(ERPs{s,1}{s2,1}) % for 5 conditions
+            ERP = ERPs{s,1}{s2,1}{i,1};
+            plot(EEG.times',std(ERP(:,:),1));
+            pause
+            %figure
+            %peakdata = ERP;
+            %plot(EEG.times',peakdata);hold on;
+            for p = 1:no_peaks % peak
+                %ppol = peakpol(p);
+                lim = limits{s,1}{p,1};
+                srange = latvar / (1000/dp); %ceil(length(find(EEG.times==lim(1)):find(EEG.times==lim(2)))/8);
+                range = find(EEG.times==peaks_lat{p,1})-(peaks_lat{p,2}/(1000/dp)):find(EEG.times==peaks_lat{p,1})+(peaks_lat{p,2}/(1000/dp));%peakGFP(s,p)-srange:peakGFP(s,p)+srange; % CHANGED TO USE FIXED LATENCIES!!!
+                GFPr = std(ERP(:,range),1);
+                GFPmax = max(GFPr);
+                GFPdesc = sort(GFPr,'descend');
+                GFP(s,s2,i,p) = mean(GFPdesc(1:floor(length(GFPdesc)*0.5))); % select top 50% to average
+                LATgfp(s,s2,i,p) = EEG.times(range(find(GFPr==GFPmax)));
+            end
+  
+        end
+    end
+end
+
+
+% create results tables for export to excel / SPSS
+usublist = unique(sublist','stable');
+nrow = length(usublist);
+ncol = 2*size(GFP,3)*size(GFP,4); % hand, condition, peak
+nrowhead = 1;
+ncolhead = 1;
+gfp_results = cell(nrow+ncolhead,ncol+nrowhead);
+gfp_results(ncolhead+1:end,1) = usublist;
+for p = 1:no_peaks
+    for c = 1:no_cond
+        for h = 1:2
+            ind = ((p-1)*no_cond*2 + (h-1)*no_cond + c);
+            gfp_results{1,nrowhead+ind} = [peaks_nme{p} '_' hand_nme{h} '_' cond_nme{c}];
+        end
+    end
+end
+gfp_lat_results = gfp_results;
+GFP2 = reshape(GFP,size(GFP,1)/2,size(GFP,1)/2,size(GFP,2),no_cond,no_peaks); % hand, group, subject, cond, peaks
+GFP3 = permute(GFP2,[3 2 4 1 5]); % subject, group, cond, hand,  peaks 
+GFP4 = reshape(GFP3,size(GFP3,1)*size(GFP3,2),2*no_cond*no_peaks);
+gfp_results(ncolhead+1:end,nrowhead+1:end) = num2cell(GFP4);
+
+LATgfp3 = reshape(LATgfp,size(LATgfp,1)/2,size(LATgfp,1)/2,size(LATgfp,2),no_cond,no_peaks); % hand, group, subject, cond, peaks
+LATgfp4 = permute(LATgfp3,[3 2 4 1 5]); % subject, group, peaks,cond, hand,
+LATgfp5 = reshape(LATgfp4,size(LATgfp4,1)*size(LATgfp4,2),2*no_cond*no_peaks);
+gfp_lat_results(ncolhead+1:end,nrowhead+1:end) = num2cell(LATgfp5);
+
+save gfp_results gfp_results
+save gfp_lat_results gfp_lat_results

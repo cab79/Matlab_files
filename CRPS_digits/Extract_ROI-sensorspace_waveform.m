@@ -1,0 +1,109 @@
+clear all
+close all
+
+%grplist = [1 2 29 30]; filename = {'Healthy_Left_Grandavg_Exp2','Healthy_Right_Grandavg_Exp2','Patient_Left_Grandavg_Exp2','Patient_Right_Grandavg_Exp2'};
+grplist = [33 34 31 32]; filename = {'Healthy_Aff_Grandavg_Exp2_flip','Healthy_Unaff_Grandavg_Exp2_flip','Patient_Aff_Grandavg_Exp2_flip','Patient_Unaff_Grandavg_Exp2_flip'};
+%grplist = [35 36 37 38]; filename = {'Healthy_Left_Grandavg_Exp1','Healthy_Right_Grandavg_Exp1','Patient_Left_Grandavg_Exp1','Patient_Right_Grandavg_Exp1'};
+%grplist = [47:50]; filename = {'Healthy_Left_Grandavg_Exp2','Healthy_Right_Grandavg_Exp2','Patient_Left_Grandavg_Exp2','Patient_Right_Grandavg_Exp2'};
+%grplist = [35 36 37 38]; filename = {'Healthy_Left_Grandavg_Exp1','Healthy_Right_Grandavg_Exp1','Patient_Left_Grandavg_Exp1','Patient_Right_Grandavg_Exp1'};
+
+
+%Rdata = 'W:\Brain_atlas_Hammers2003\Hammers_mith_atlas_n30r83_SPM5.img';
+
+regions = {'124ms_cluster_mask.img';
+    };
+Nreg = size(regions,1);
+
+cluster_grandavg = nan(length(filename),Nreg,250);
+%cluster_grandavg = nan(length(filename),Nreg,51);
+    
+%if isunix
+%    filepath = '/scratch/cb802/Data/CRPS_Digit_Perception_exp1/SPM image files/Sensorspace_images';
+%    Rdir = '/scratch/cb802/Data/CRPS_Digit_Perception_exp1/SPM image files/Sensorspace_masks';
+%    run('/scratch/cb802/Matlab_files/CRPS_digits/loadsubj.m');
+%else
+%    filepath = 'W:\Data\CRPS_Digit_Perception_exp1\SPM image files\Sensorspace_images';
+%    Rdir = 'W:\Data\CRPS_Digit_Perception_exp1\SPM image files\Sensorspace_masks';
+%    run('W:\Matlab_files\CRPS_digits\loadsubj.m');
+%end
+
+if isunix
+    filepath = '/scratch/cb802/Data/CRPS_Digit_Perception/SPM image files/Sensorspace_images';
+    Rdir = '/scratch/cb802/Data/CRPS_Digit_Perception/SPM image files/Sensorspace_masks';
+    run('/scratch/cb802/Matlab_files/CRPS_digits/loadsubj.m');
+else
+    filepath = 'W:\Data\CRPS_Digit_Perception\SPM image files\Sensorspace_images';
+    Rdir = 'W:\Data\CRPS_Digit_Perception\SPM image files\Sensorspace_masks';
+    run('W:\Matlab_files\CRPS_digits\loadsubj.m');
+end
+
+
+
+cd(filepath)
+
+% create spatial masks (across whole of time)
+for r = 1:Nreg
+    Rdata = fullfile(Rdir,regions{r});
+    Rnii = load_nii(Rdata); 
+    %Rnii.img = permute(Rnii.img,[2 1 3]);% for raw data only
+    Rnii2 = reshape(Rnii.img,size(Rnii.img,1)*size(Rnii.img,2),size(Rnii.img,3));
+    for i=1:size(Rnii2,1)
+        if any(Rnii2(i,:));
+            Rnii2(i,:)=ones(size(Rnii2(i,:)));
+        end
+    end
+    Rnii.img = reshape(Rnii2,size(Rnii2,1),size(Rnii2,2),size(Rnii2,3));
+    [pth nm ext] = fileparts(Rdata);
+    Rdata2 = fullfile(pth,[nm '_spatial.nii']);
+    save_nii(Rnii,Rdata2);
+    
+    for f = 1:length(filename)
+        Pdata = dir(fullfile(filepath,[filename{f} '.nii']));
+        input{1,1} = Pdata.name;
+        input{2,1} = Rdata2;
+        expres = 'i1.*i2';
+        [pth nm ext] = fileparts(Pdata.name);
+        Pfname_out = fullfile(filepath, [nm '_' regions{r}]);
+        Output = spm_imcalc_ui(input,Pfname_out,expres);
+        Pnii = load_nii(Pfname_out);
+        cluster_grandavg(f,r,:) = squeeze(mean(mean(Pnii.img,1),2));
+    end
+end
+
+[pth nm ext] = fileparts(Rdata);
+savename = ['grandavg_' nm];
+save(savename, 'cluster_grandavg');
+
+
+%%
+t=-50:4:150;
+plottimes=-50:4:150;
+[C,IA,IB] = intersect(t,plottimes);
+col = {'b','b--','r','r--'};
+for i = 1:size(cluster_grandavg,1)
+    plot(plottimes, squeeze(cluster_grandavg(i,:,IA))',col{i});
+    hold on
+end
+%legend(filename)
+
+%%
+t=-200:4:800;
+plottimes=-200:4:400;
+[C,IA,IB] = intersect(t,plottimes);
+col = {'b','b--','r','r--'};
+for i = 1:size(cluster_grandavg,1)
+    plot(plottimes, squeeze(cluster_grandavg(i,:,IA))',col{i});
+    hold on
+end
+%legend(filename)
+
+cluster_grandavg_LR = cluster_grandavg([1 3],:,:) - cluster_grandavg([2 4],:,:);
+cluster_grandavg_RL = cluster_grandavg([2 4],:,:) - cluster_grandavg([1 3],:,:);
+t=-196:4:800;
+plottimes=-196:4:400;
+[C,IA,IB] = intersect(t,plottimes);
+col = {'b','r'};
+for i = 1:size(cluster_grandavg_LR,1)
+    plot(plottimes, squeeze(cluster_grandavg_RL(i,:,IA))',col{i});
+    hold on
+end

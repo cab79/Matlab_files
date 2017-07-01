@@ -1,0 +1,68 @@
+clear all
+%close all
+Pbase = 'F:\Dell\bloodA\Image_analysis_files\examples';
+PsubPET = 'PET';
+
+scans = {1 2 'diff'};
+
+run('C:\Data\Matlab\Matlab_files\PET-LEP\EEG scripts\loadsubj.m');
+grplist = [2,3,... % healthy
+            5,6];   % patient
+select_scan=2; %(1=pain, 2=nopain)
+subjects = subjlists(grplist);
+        
+scanlist=cell(1,1);
+Nsub=0;
+
+%% PRONTO
+load('PRT.mat');
+
+for s = 1:length(subjects)
+     for s2 = 1:size(subjects{s,1},1) 
+        Nsub=Nsub+1;
+
+        %identify and list PET file names
+        Pfiles = dir(fullfile(Pbase, subjects{s,1}{s2,2}, PsubPET,['s8wrh*nnls_Vd_mag-310_rsl.img']));
+        Pfiles_sub = dir(fullfile(Pbase, subjects{s,1}{s2,2}, PsubPET,['s8wrh*nnls_Vd_mag-310_rsl_SUBTRACTION.img']));
+        Pfiles = [Pfiles;Pfiles_sub];
+
+        if ismember(grplist(s),[2 5])
+            scan_ana = subjects{s,1}{s2,3};
+            if scan_ana ~= select_scan
+                continue
+            else
+                scan_ana=1;
+            end
+        elseif ismember(grplist(s),[3 6])
+            scan1 = subjects{s,1}{s2,3};
+            scan2 = [scans{1:2}];
+            scan2(scan1) = [];
+            scan_ana = {scan1,scan2,scans{3}};
+            scan_ana = scan_ana(select_scan);
+            scan_order = [scan1,scan2];
+            Pfiles(1:2) = Pfiles(scan_order);
+        end
+        
+        PRT.group.subject(Nsub).subj_name = subjects{s,1}{s2,2};
+        PRT.group.subject(Nsub).modality = PRT.group.subject(1).modality;
+        PRT.group.subject(Nsub).modality.scans = [fullfile(Pbase, subjects{s,1}{s2,2}, PsubPET, Pfiles(scan_ana{:}).name) ',1'];
+        PRT.group.subject(Nsub).modality.rt_subj = Nsub;
+        %scanlist{Nsub,1} = [fullfile(Pbase, subjects{s,1}{s2,2}, PsubPET, Pfiles(select_scan).name) ',1'];
+     end
+end
+
+
+
+%% SPM
+%load job_allcov;
+%matlabbatch{1,1}.spm.stats.factorial_design.des.mreg.scans = pain_scans;
+%matlabbatch{1,1}.spm.stats.factorial_design.des.fblock.fsuball.specall.scans = both_scans_meannorm;
+%matlabbatch{1,1}.spm.stats.factorial_design.des.fblock.fsuball.specall.scans = both_scans;
+%matlabbatch{1,1}.spm.stats.factorial_design.des.fblock.fsuball.specall.scans = nonpain_scans;
+%matlabbatch{1,1}.spm.stats.factorial_design.des.fblock.fsuball.specall.scans = [nonpain_scans; pain_scans];
+%matlabbatch{1,1}.spm.stats.factorial_design.des.mreg.scans = both_scans_meannorm;
+%matlabbatch{1,1}.spm.stats.factorial_design.des.mreg.scans = subtracted_scans;
+%matlabbatch{1,1}.spm.stats.factorial_design.des.mreg.scans = mean_scans;
+%matlabbatch{1,1}.spm.stats.factorial_design.des.mreg.scans = pain_scans;
+%matlabbatch{1,1}.spm.stats.factorial_design.des.mreg.scans = nonpain_scans;
+%save job_allcov matlabbatch;

@@ -1,0 +1,87 @@
+clear all
+
+subjects = {'M1';'M2';'M4';'M6';'M7';'M10';'M12';'M14';'M15';'M16';'M17';'M29';'M30';'M32';'M33';'M9';'M19';'M20';'M21';'M22';'M24';'M25';'M26';'M28';'M35';'M36';'M37';'M38';'M40'};
+
+
+for subject = 1:length(subjects)
+
+d1 = [char(subjects(subject)) '_total_data_ICAA_ca.mat'];
+d2 = [char(subjects(subject)) '_block_infoA.mat'];
+d3 = [char(subjects(subject)) '_total_data_ICAB_ca.mat'];
+d4 = [char(subjects(subject)) '_block_infoB.mat'];
+load(d1); load(d3); 
+
+total_data_ICA = cat(3,total_data_ICAA, total_data_ICAB);
+
+clear total_data_ICAA total_data_ICAB 
+
+for i=1:size(total_data_ICA,3)
+    total_data_ICA(:,:,i)=detrend(squeeze(total_data_ICA(:,:,i))')';
+end
+%total_data_ICA = blcorrect4(total_data_ICA, 250);
+
+load epoched_data_template2 %SPM-EEG_template_data
+D.trials = [D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials D.trials];
+
+load(d2);
+events_mat1 = events_mat;
+load(d4);
+events_mat(:,2) = events_mat(:,2)+2;
+events_mat2 = events_mat;
+events_mat = cat(1,events_mat1,events_mat2);
+
+ii = find(events_mat(:,2)== 1 & events_mat(:,3)==1 | events_mat(:,2)==2 & events_mat(:,3)==1 | events_mat(:,2)== 3 & events_mat(:,3)==1 | events_mat(:,2)==4 & events_mat(:,3)==1);
+
+data = zeros(size(total_data_ICA,1),size(total_data_ICA,2),length(ii));
+for i = 1:length(ii)
+data(:,:,i) = total_data_ICA(:,:,ii(i));
+end
+
+clear total_data_ICA
+
+D.trials = D.trials(1:size(data,3));
+D.Nsamples = 1000;
+
+for t = 1:length(ii)
+D.trials(:,t).events.value = events_mat(ii(t),2);
+D.trials(:,t).label = num2str(D.trials(:,t).events.value);
+%D.trials.onset = 0; % onset = time of beginning of trial
+D.trials(:,t).events.time = D.trials(:,t).onset + 4; % time of event
+end
+
+D.data.fnamedat = ['spm_epoch_' char(subjects(subject)) '.dat'];
+D.fname = ['spm_epoch_' char(subjects(subject)) '.mat'];
+D.data.scale = D.data.scale([1:2 4:30 33:64]);
+nchan = length(D.channels);
+nsampl = D.Nsamples;
+datafile = file_array(D.data.fnamedat, [nchan nsampl length(ii)], 'float32-le');
+D.data.y = datafile;
+D.path = pwd;
+
+datafile(end,end) = 0;
+fname = D.fname;
+datafile(:, :, :) = data([1:2 4:30 33:64],:,:);
+
+D = meeg(D);
+S1 = [];
+S1.task = 'defaulttype';
+S1.D = D;
+S1.updatehistory = 0;
+D = spm_eeg_prep(S1);
+
+        %S1 = [];
+        %S1.task = 'defaulteegsens';
+        %S1.updatehistory = 0;
+        %S1.D = D;
+
+        D = spm_eeg_prep(S1);
+
+save(D)
+
+
+clear ii total_data_ICA total_data_ICA1 total_data_ICA2 total_data_ICA3 events_mat events_mat1 events_mat2 
+
+
+
+end
+

@@ -1,0 +1,62 @@
+clear all
+
+subjects = {'M1';'M2';'M4';'M6';'M7';'M8';'M9';'M10';'M12';'M14';'M15';'M16';'M17';'M19';'M20';'M21';'M22';'M24';'M25';'M26';'M28';'M29';'M30';'M32';'M33';'M35';'M36';'M37';'M38';'M40'};
+
+
+for n=[3 5 22 23]
+
+subject = subjects(n);
+subject = char(subject);
+
+fnames={
+    '_total_data_ICAA.mat';
+  };
+
+
+for x=1:length(fnames);
+
+fname=char(fnames(x));
+subject=char(subjects(n));
+fname= [subject fname(1:length(fname)-4)];
+load(fname);
+mcr= mean(total_data_ICAA([1:2 4:30 33:64],:));
+for i=1:64
+    total_data_ICAA(i,:)=total_data_ICAA(i,:)- mcr;
+end
+eval(['save ' fname '_ca.mat'  ' total_data_ICAA'])
+
+end
+
+end
+
+clear all
+
+subjects = {'M1';'M2';'M4';'M6';'M7';'M8';'M9';'M10';'M12';'M14';'M15';'M16';'M17';'M19';'M20';'M21';'M22';'M24';'M25';'M26';'M28';'M29';'M30';'M32';'M33';'M35';'M36';'M37';'M38';'M40'};
+
+
+for n=[3 5 22 23]
+
+subject = subjects(n);
+subject = char(subject);
+
+fnames={
+    '_total_data_ICAB.mat';
+  };
+
+
+for x=1:length(fnames);
+
+fname=char(fnames(x));
+subject=char(subjects(n));
+fname= [subject fname(1:length(fname)-4)];
+load(fname);
+mcr= mean(total_data_ICAB([1:2 4:30 33:64],:));
+for i=1:64
+    total_data_ICAB(i,:)=total_data_ICAB(i,:)- mcr;
+end
+eval(['save ' fname '_ca.mat'  ' total_data_ICAB'])
+
+end
+
+end
+
