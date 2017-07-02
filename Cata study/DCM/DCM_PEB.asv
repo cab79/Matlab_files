@@ -1,4 +1,4 @@
-function DCM_PEB(GCMfile,DCMdir,run_num,fullmodel,loadorsave)
+function DCM_PEB(GCMfile,DCMdir,run_num,fullmodel)
 dbstop if error
 load(fullfile(DCMdir,GCMfile));
 cd(DCMdir)
@@ -16,14 +16,9 @@ DCM = GCM{1,fullmodel};
 % and only the full model inversion is used to derive the others.
 % GCM is a {Nsub x Nmodel} cell array of DCM filenames or model structures  
 %         of Nsub subjects, where each model is reduced independently 
-rname=['RCM_fit' num2str(run_num) '.mat'];
-if loadorsave && exist(fullfile(DCMdir,rname),'file')
-    load(fullfile(DCMdir,rname));
-else
-    RCM   = spm_dcm_bmr(GCM);
-    if iscell(RCM{1,1}); RCM = vertcat(RCM{:});end;
-    save(rname,'RCM','-v7.3');
-end
+RCM   = spm_dcm_bmr(GCM);
+if iscell(RCM{1,1}); RCM = vertcat(RCM{:});end;
+save(['RCM_fit' num2str(run_num)],'RCM','-v7.3');
 
 % hierarchical (empirical Bayes) model reduction:
 % optimises the empirical priors over the parameters of a set of first level DCMs, using second level or
@@ -38,13 +33,8 @@ end
 % models/subjects
 % If P is an an (N x M} array, will return a number of PEBs as a 
 % {1 x M} cell array.
-pname=['PCM_peb' num2str(run_num) '.mat'];
-if loadorsave && exist(fullfile(DCMdir,pname),'file')
-    load(fullfile(DCMdir,pname));
-else
-    [peb,PCM] = spm_dcm_peb(RCM,[],{'A','B'});
-    save(pname,'PCM','peb','-v7.3');
-end
+[peb,PCM] = spm_dcm_peb(RCM,[],{'A','B'});
+save(['PCM_peb' num2str(run_num)],'PCM','peb','-v7.3');
 
 % BMA - first level
 %--------------------------------------------------------------------------
@@ -182,7 +172,7 @@ plot(Q(i,q,3),Q(j,q,3),'.r','MarkerSize',24), hold on
 plot(Q(i,p,3),Q(j,p,3),'.b','MarkerSize',24), hold off
 xlabel('B{1}(3,3)'), ylabel('B{1}(4,4)'), title('Group effects PMA','FontSize',16)
 axis square
-print('fig1','-dpng') 
+
 
 % plot results: Bayesian model reduction vs. reduced models
 %--------------------------------------------------------------------------
@@ -201,7 +191,7 @@ try
 
     p   = softmax(f'); [m,i] = max(p);
     subplot(3,2,5), bar(p)
-    text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
+    text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','w','FontSize',8)
     xlabel('model'), ylabel('probability'), title('Posterior (FFX)','FontSize',16)
     axis([0 (length(p) + 1) 0 1]), axis square
 end
@@ -218,11 +208,10 @@ spm_axis tight, axis square
 
 p   = softmax(f'); [m,i] = max(p);
 subplot(3,2,6), bar(p)
-text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
+text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','w','FontSize',8)
 xlabel('model'), ylabel('probability'), title('Posterior (BMR)','FontSize',16)
 axis([0 (length(p) + 1) 0 1]), axis square
 
-print('fig2','-dpng') 
 
 % a more detailed analysis of Bayesian model comparison for BMR
 % compares subjects with best and worst evidence for the full model
@@ -271,7 +260,6 @@ subplot(3,2,6), spm_plot_ci(qE,qC),
 xlabel('parameter (B)'), ylabel('expectation'), title('Parameters','FontSize',16)
 axis square, axis(a);
 
-print('fig3','-dpng') 
 
 % a more detailed analysis of Bayesian model comparison for PEB
 % compares subjects with best and worst evidence for the full model
@@ -320,13 +308,10 @@ subplot(3,2,6), spm_plot_ci(qE,qC),
 xlabel('parameter (B)'), ylabel('expectation'), title('Parameters','FontSize',16)
 axis square, axis(a);
 
-print('fig4','-dpng') 
-
 spm_figure('GetWin','Modes - best subject'); %clf
 spm_dcm_erp_results(PCM{i,1},'ERPs (mode)');
 spm_figure('GetWin','Modes - worst subject'); %clf
 spm_dcm_erp_results(PCM{j,1},'ERPs (mode)');
-
 
 % first level parameter estimates and Bayesian model averages
 % correlates parameters of the BMA across the 3 schemes (cf "Correlations"
@@ -353,7 +338,6 @@ text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
 xlabel('model'), ylabel('probability'), title('Posterior (PEB)','FontSize',16)
 axis([0 (length(p) + 1) 0 1]), axis square
 
-print('fig5','-dpng') 
 
 % random effects Bayesian model comparison
 %==========================================================================
@@ -365,16 +349,13 @@ subplot(2,2,1), bar(p),[m,i] = max(p);
 text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
 xlabel('model'), ylabel('RCM posterior probability'), title('Random parameter effects','FontSize',16)
 axis([0 (length(p) + 1) 0 1]), axis square
-save BMC_Pw p
 
 p   = xp;
 subplot(2,2,2), bar(p),[m,i] = max(p);
 text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
 xlabel('model'), ylabel('RCM exceedance probability'), title('Random model effects','FontSize',16)
 axis([0 (length(p) + 1) 0 1]), axis square
-save RCM_xp p
 
-print('fig6','-dpng') 
 
 return
 

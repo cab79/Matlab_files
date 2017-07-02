@@ -9,11 +9,11 @@ spm('defaults','EEG');
 % Analyse small number of subjects/models in each group only? Speeds up script for debugging
 % purposes
 %S.run_subject_subsets = {1:8,9:16,17:24,25:34}; % subject subsets to analyse. Use '0' for all models
-S.run_subject_subsets = {0}; % subject subsets to analyse. Use '0' for all models
+S.run_subject_subsets = {0}; % subject subsets to analyse. Use '0' for all subjects
 S.run_model_subsets = 0; % model subsets to analyse. Use '0' for all models
 S.run_num = 1; % label to assign to this series of runs
 S.sub_ind = 0; % subject indices per group to analyse on this run
-S.run_PEB = 0;
+S.run_PEB = 1;
 S.invert_all = 0; % invert all models (1), or only the full model using Bayesian Model Reduction for the other models (latter is faster - set to 0)
 % prepare data or use the saved data (GCM struct)?
 S.prepare_data = 1;
@@ -354,7 +354,7 @@ elseif any(DCM.B{1})
         for f = 1:nB
             try
                 if k(i,f)
-                    B{i} = B{i} + double([DCM.B{:}]==f); 
+                    B{i} = B{i} + double([DCM.B{:}]==f) + double([DCM.B{:}]==-1); 
                 end
             end
         end
@@ -376,12 +376,12 @@ if sum(DCM.B{:}(:))==0 && nA>1
     for i = 1:(2^nA);
         %for each connection type in A
         for c = DCM.Ac
-            A{i}{c}     = sparse(Nareas,Nareas); % sparse 5x5 double array - for connecting 5 nodes
+            A{i}{c} = sparse(Nareas,Nareas); % sparse 5x5 double array - for connecting 5 nodes
             % for each factor in A
             for f = 1:nA
                 try
                     if k(i,f)
-                        A{i}{c} = A{i}{c} + double(DCM.A{c}==f); 
+                        A{i}{c} = A{i}{c} + double(DCM.A{c}==f) + double(DCM.A{c}==-1); 
                     end
                 end
             end
@@ -539,30 +539,35 @@ else
     %    GCM_temp = spm_dcm_fit(GCM(S.run_subject_subsets{sii},fu)); % calls spm_dcm_erp for each subject and model
     %    GCM(S.run_subject_subsets{sii},fu) = GCM_temp;
     %else
-        GCM_temp = spm_dcm_fit(GCM(:,fu)); % calls spm_dcm_erp for each subject and model
-        GCM(:,fu) = GCM_temp;
+        GCM(:,fu) = spm_dcm_fit(GCM(:,fu)); % calls spm_dcm_erp for each subject and model
     %end
 end
 subjects = S.run_subject_subsets{sii};
-save([sname '.mat'],'GCM','DCM','Xb','subjects','-v7.3');
+save([sname '.mat'],'GCM','DCM','Xb','subjects','A','B','C','combs','-v7.3');
 
 if S.run_PEB
-    if ~exist(['GCM_fit' num2str(S.run_num) '.mat'],'file')
-        clear GCM_all
-        files = dir(['GCM_fit' num2str(S.run_num) '*.mat']);
-        for f = 1:length(files)
+    lname = ['GCM_fit' num2str(S.run_num)];
+    files = dir([lname '*.mat']);
+    if length(files)>1
+        if exist([lname '.mat'],'file')
+            load([lname '.mat']);
+            GCM_all=GCM;
+            st=2;
+        else
+            st=1;
+        end
+        for f = st:length(files)
             load(files(f).name)
             GCM_all(subjects,:) = GCM;
             clear GCM
         end
         GCM=GCM_all;
         clear GCM_all
-        save(['GCM_fit' num2str(S.run_num) '.mat'],'GCM','DCM','Xb','-v7.3');
-        if exist(['GCM_fit' num2str(S.run_num) '.mat'],'file')
-            for f = 1:length(files)
-                delete(files(f).name)
-            end
+        save([sname '.mat'],'GCM','DCM','Xb','subjects','A','B','C','combs','-v7.3');
+        for f = st:length(files)
+            delete(files(f).name)
         end
     end
-    DCM_PEB(['GCM_fit' num2str(S.run_num) '.mat'],S.outpath,S.run_num,fu)
+    loadorsave=1;
+    DCM_PEB([lname '.mat'],S.outpath,S.run_num,fu,loadorsave)
 end
