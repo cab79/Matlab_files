@@ -57,7 +57,7 @@ for f = sort(1:length(files),'descend')
         S.conditionlabels = cellfun(@num2str, num2cell(conds), 'UniformOutput', false);
     
         %spm_eeg_convert(S);
-        spm_eeg_convert_eeglab_epoched(S,1); % faster version of spm_eeg_convert, only works with EEGLAB epoched data
+        spm_eeg_convert_eeglab_epoched(S,1);  % faster version of spm_eeg_convert, only works with EEGLAB epoched data
     end
     clear EEG;
 end
