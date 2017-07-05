@@ -56,7 +56,12 @@ for f = sort(1:length(files),'descend')
         [conds, tnums, fnums, bnums] = get_markers(EEG);
         S.conditionlabels = cellfun(@num2str, num2cell(conds), 'UniformOutput', false);
     
+<<<<<<< HEAD
         spm_eeg_convert(S);
+=======
+        %spm_eeg_convert(S);
+        spm_eeg_convert_eeglab_epoched(S,1);  % faster version of spm_eeg_convert, only works with EEGLAB epoched data
+>>>>>>> c6d0404947f3e21ad5a71abba4d4ef5276ddd04a
     end
     clear EEG;
 end

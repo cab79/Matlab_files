@@ -429,7 +429,7 @@ if ~isequal(S.mode, 'header')
             end
         end
         
-        % Sometimes ft_read_data returns sparse output
+        % Sometimes ft_read_data returns sparse output 
         if ~readalltrials; dat = full(dat);end
         
         spm_progress_bar('Set','ylabel','writing...');
