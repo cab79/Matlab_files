@@ -4,8 +4,8 @@ clear all
 
 % path of EEGLAB .set files after preprocessing, path of SPM outputs, and
 % prefix of output files
-filepath = 'C:\Data\CORE\Preprocessed_100Hz'; 
-outpath = 'C:\Data\CORE\SPMdata'; 
+filepath = 'C:\CORE\Preprocessed_100Hz'; 
+outpath = 'C:\CORE\SPMdata'; 
 outprefix = 'spm12_';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
@@ -25,7 +25,7 @@ timewin = [-200 300];
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
 cd(outpath)
 
-for f = 1:length(files)%sort(1:length(files),'descend')
+for f = round(length(files)/2):length(files)%sort(1:length(files),'descend')
     S=struct;
     S.dataset = fullfile(filepath,files(f).name);
     [pth nme ext] = fileparts(files(f).name);
@@ -56,7 +56,8 @@ for f = 1:length(files)%sort(1:length(files),'descend')
         [conds, tnums, fnums, bnums] = get_markers(EEG);
         S.conditionlabels = cellfun(@num2str, num2cell(conds), 'UniformOutput', false);
     
-        spm_eeg_convert(S);
+        %spm_eeg_convert(S);
+        spm_eeg_convert_eeglab_epoched(S,1); % faster version of spm_eeg_convert, only works with EEGLAB epoched data
     end
     clear EEG;
 end
