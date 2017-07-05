@@ -24,11 +24,15 @@ S.subinfo = 'sub_info.mat';
 %-------------------------------------------------------------
 %contrast name to process - must match that in Matlabbatch (i.e. from design-batch script)
 S.contrasts={}; % leave empty to proccess ALL contrasts in Matlabbatch
+S.tf =2; % 1 if F-contrast, 2 or T-contrast, blank if not using S.contrasts
 % contrasts={'Exp'}; % example to enter one contrast only
 
 % stats to save in a table for each contrast and cluster
-S.clustab = {'cluster','cluster','cluster','peak','peak','peak',''; 
-            'label','p(FWE-corr)','equivk','p(FWE-corr)','F','equivZ','x,y,z {mm}'}; 
+S.clustab{1} = {'cluster','cluster','cluster','peak','peak','peak','','','',''; 
+            'label','p(FWE-corr)','equivk','p(FWE-corr)','F','equivZ','x,y,z {mm}','x','y','z'}; 
+        
+S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','',''; 
+            'label','p(FWE-corr)','equivk','p(FWE-corr)','T','equivZ','x,y,z {mm}','x','y','z'}; 
         
 % Factors and levels: for saving VOI information for later plotting
 % 1: factor name in design matrix, 2: output factor name 3: factor levels. 
@@ -46,6 +50,7 @@ S.subrow = 4; % row of above factlev containing the subject factor
 % specific mask image (with fill path and extension) or leave empty
 S.imgmask = '';
 % cluster forming threshold
+S.thresDesc = 'none'; % 'FWE' or 'none'
 S.clusformthresh = 0.001;
 
 %% run functions (sit back and relax)
