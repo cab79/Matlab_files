@@ -28,16 +28,25 @@ for sp = 1:length(S.spm_paths)
         % load SPM design and list contrasts
         load(fullfile(S.spm_path,S.batch));
         S.contrasts = {};
+        tf=[];
         for fc = 1:length(matlabbatch{3}.spm.stats.con.consess)
-            S.contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.fcon.name;
+            try
+                S.contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.fcon.name;
+                tf=[tf 1];
+            catch
+                S.contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.tcon.name;
+                tf=[tf 2];
+            end
         end
+    else
+        tf=S.tf;
     end
 
     spm eeg
     S.clus_path = {};
     for cont = 1:length(S.contrasts)
         contrast = S.contrasts{cont};
-        Nhead = size(S.clustab,1);
+        Nhead = size(S.clustab{tf(cont)},1);
         Nrhead=1;
 
         load(fullfile(S.spm_path,'SPM.mat'));
@@ -46,7 +55,7 @@ for sp = 1:length(S.spm_paths)
 
         % settings
         SPMset.swd=S.spm_path;
-        SPMset.thresDesc = 'none'; % no correction
+        SPMset.thresDesc = S.thresDesc; % no correction
         SPMset.u = S.clusformthresh; % uncorrected threshold
         SPMset.k = 0; % extent threshold
         SPMset.units = {'mm' 'mm' 'ms'};
@@ -70,15 +79,15 @@ for sp = 1:length(S.spm_paths)
 
         % find column indices of table values to extract
         A=TabDat.hdr(1:2,:)';
-        B=S.clustab';
+        B=S.clustab{tf(cont)}';
         C = union(A,B) ;
         [dum,ai] = ismember(A,C) ;
         [dum,bi] = ismember(B,C) ;
-        [tf,loc] = ismember(ai,bi,'rows');
+        [tfn,loc] = ismember(ai,bi,'rows');
         colind = find(tf);
 
         % add new column to save temporal extent of cluster
-        clustable=S.clustab;
+        clustable=S.clustab{tf(cont)};
         clustable(2,end+1)={'Temporal extent (ms)'};
         clustable(2,end+1)={'F_temporal'};
 
@@ -118,12 +127,13 @@ for sp = 1:length(S.spm_paths)
 
             % extract table data
             clustable(Nhead+c,Nrhead+(1:length(colind)))=TabDat.dat(1,colind);
+            clustable(Nhead+c,Nrhead+7:Nrhead+9) = num2cell(round([clustable{Nhead+c,Nrhead+6}])');
             % vec2str: https://uk.mathworks.com/matlabcentral/fileexchange/22937
             clustable{Nhead+c,Nrhead+6} = vec2str(round([clustable{Nhead+c,Nrhead+6}])',{},{},0);
             loc = [TabDat.dat{:,colind(end)}];
             locF = [TabDat.dat{:,9}];
-            clustable(Nhead+c,Nrhead+length(colind)+1)={loc(3,:)};
-            clustable(Nhead+c,Nrhead+length(colind)+2)={locF};
+            clustable(Nhead+c,size(clustable,2)+1)={loc(3,:)};
+            clustable(Nhead+c,size(clustable,2)+1)={locF};
 
             % save cluster volume image for masking
             cfname = fullfile(S.clus_path{cont},[cname '_mask']);

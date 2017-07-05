@@ -1,6 +1,7 @@
 %% Cluster processing script 
 % calls functions (need to be in Matlab search path): 
 % Extract_clusters, Extract_cluster_waveforms, Convert_VOI_to_excel
+clear all
  
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
@@ -45,6 +46,7 @@ S.factlev = {
         {'Subject'},{'Subject'},{}; % can leave Subject levels empty as these will be populated by sub_info file.
     };
 S.subrow = 4; % row of above factlev containing the subject factor
+
 % specific mask image (with fill path and extension) or leave empty
 S.imgmask = '';
 % cluster forming threshold

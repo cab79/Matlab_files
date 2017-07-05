@@ -638,7 +638,8 @@ else
     %end
 end
 subjects = S.run_subject_subsets{sii};
-save([sname '.mat'],'GCM','DCM','Xb','subjects','A','B','C','combs','-v7.3');
+save([sname '.mat'],'GCM','DCM','Xb','subjects','-v7.3');
+save([models '_' num2str(S.run_num) '.mat'],'A','B','C','combs','-v7.3');
 
 if S.run_PEB
     lname = ['GCM_fit' num2str(S.run_num)];
