@@ -1,4 +1,4 @@
-function DCM_PEB(GCMfile,DCMdir,run_num,fullmodel,loadorsave)
+function DCM_PEB(GCMfile,DCMdir,run_num,fullmodel,loadorsave,excl_full)
 dbstop if error
 load(fullfile(DCMdir,GCMfile));
 cd(DCMdir)
@@ -23,6 +23,12 @@ else
     RCM   = spm_dcm_bmr(GCM);
     if iscell(RCM{1,1}); RCM = vertcat(RCM{:});end;
     save(rname,'RCM','-v7.3');
+end
+
+% remove the full model, assuming it is biologically implausible
+if excl_full
+    GCM(:,fullmodel) =[];
+    RCM(:,fullmodel) =[];
 end
 
 % hierarchical (empirical Bayes) model reduction:
@@ -89,7 +95,7 @@ for i = 1:Ns
     % data - over subjects
     %----------------------------------------------------------------------
     for nt = 1:length(GCM{i,1}.xY.y)
-        Y(:,i,nt) = GCM{i,1}.xY.y{nt}*GCM{i,1}.M.U(:,1);
+        Y(:,i,nt) = GCM{i,1}.xY.y{nt}*DCM.M.U(:,1);
     end
     pst = GCM{i,1}.xY.pst;
     
@@ -115,7 +121,7 @@ end
 
 % indices to plot parameters
 %--------------------------------------------------------------------------
-pC    = GCM{1,1}.M.pC;
+pC    = DCM.M.pC;
 iA    = spm_find_pC(pC,pC,'A');
 iB    = spm_find_pC(pC,pC,'B');
 
@@ -322,10 +328,16 @@ axis square, axis(a);
 
 print('fig4','-dpng') 
 
-spm_figure('GetWin','Modes - best subject'); %clf
-spm_dcm_erp_results(PCM{i,1},'ERPs (mode)');
-spm_figure('GetWin','Modes - worst subject'); %clf
-spm_dcm_erp_results(PCM{j,1},'ERPs (mode)');
+PCM{i,1}.K = DCM.K;
+PCM{i,1}.H = DCM.H;
+PCM{i,1}.R = DCM.R;
+PCM{j,1}.K = DCM.K;
+PCM{j,1}.H = DCM.H;
+PCM{j,1}.R = DCM.R;
+bs=spm_figure('GetWin','Modes - best subject'); %clf
+spm_dcm_erp_results(PCM{i,1},'ERPs (mode)',bs);
+ws=spm_figure('GetWin','Modes - worst subject'); %clf
+spm_dcm_erp_results(PCM{j,1},'ERPs (mode)',ws);
 
 
 % first level parameter estimates and Bayesian model averages
@@ -362,14 +374,14 @@ spm_figure('GetWin','Figure 6: random effects Bayesian model comparison');clf
 
 p   = BMC.Pw;
 subplot(2,2,1), bar(p),[m,i] = max(p);
-text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
+text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
 xlabel('model'), ylabel('RCM posterior probability'), title('Random parameter effects','FontSize',16)
 axis([0 (length(p) + 1) 0 1]), axis square
 save BMC_Pw p
 
 p   = xp;
 subplot(2,2,2), bar(p),[m,i] = max(p);
-text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
+text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
 xlabel('model'), ylabel('RCM exceedance probability'), title('Random model effects','FontSize',16)
 axis([0 (length(p) + 1) 0 1]), axis square
 save RCM_xp p

@@ -19,13 +19,15 @@ S.invert_all = 0; % invert all models (1), or only the full model using Bayesian
 S.prepare_data = 1;
 % save data from this run?
 S.save_data = 0;
+% exclude full model from BMC?
+S.excl_full = 0; % automatically excludes if any A/B/C matrix values are <0
 
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\DCMdata\_Time_Int_Exp_Subject_spm_t416_478\Int'; 
+S.outpath = 'C:\Data\Catastrophising study\DCMdata\_Time_Int_Exp_Subject_spm_t416_478\Int\modelA5'; 
 % name for group analysis output file
 S.outname = 'DCM_GROUP'; % CURRENTLY UNUSED
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -48,7 +50,7 @@ S.fsuff = '_orig_cleaned_trialNmatch.mat';
 % File containing location priors for dipoles
 S.loc_file = 'loc.xlsx'; % xlsx file (in S.outpath) of locations with column 1: x, 2: y, 3: z, 4: location name
 %model file name, in S.output
-S.model_file = 'modelA.xlsx';
+S.model_file = 'model.xlsx';
 
 %% specific data settings for this analysis
 % which codes to analyse in 'Include' columns in participant data file?
@@ -339,37 +341,71 @@ if any(DCM.Bc)
                 B{i} = B{i} + sparse(DCM.Bi,DCM.Bi,1,Nareas,Nareas); % All intrinsic connections
             end
         end
+        % ensure all priors equal 1
+        B{i} = B{i}>0;
         % add the zero elements in
         B{i}     = full(B{i});
     end
     nB = length(B);
 elseif any(DCM.B{1})
-    nB = sum(unique([DCM.B{:}])>0);
+    Bv = unique([DCM.B{:}]); % B values
+    if any(any(Bv<0)); S.excl_full=1;end
+    Bi = find(double(~(Bv==0)) .* double(Bv<100)); % B indices
+    nB = length(Bi); % number of values
     B=[];
+    Br=[];
     k = spm_perm_mtx(nB);
     % for each possible combination of factors in B
     for i = 1:(2^nB);
         B{i}     = sparse(Nareas,Nareas); % sparse 5x5 double array - for connecting 5 nodes
+        Br{i}     = B{i}; 
         % for each factor in B
         for f = 1:nB
             try
                 if k(i,f)
-                    B{i} = B{i} + double([DCM.B{:}]==f) + double([DCM.B{:}]==-1); 
+                    B{i} = B{i} + double([DCM.B{:}]==Bv(Bi(f))) + double([DCM.B{:}]==-1); 
+                    Br{i} = Br{i} + [DCM.B{:}].*double([DCM.B{:}]==Bv(Bi(f))); 
                 end
             end
         end
+        % ensure all priors equal 1
+        B{i} = B{i}>0;
+        % remove any with no connections
         if sum(B{i})==0
             B(i)=[];
         end
     end
+    % remove models with too many connections
+    delB=zeros(1,length(B));
+    sizBfm = length(find(~([DCM.B{:}]==0)));
+    for i = 1:length(B);
+        % identify the full model to keep
+        sizB=length(find(~([B{i}]==0)));
+        if sizB==sizBfm
+            Bfm = B{i};
+        end
+        for f = 1:nB
+            if any(any(Br{i}==Bv(Bi(f)))) && any(any(Br{i}==-Bv(Bi(f))))
+                delB(i)=1;
+            end
+        end
+    end
+    B(find(delB))=[];
+    nB=length(B);
 else
     nB=1;
     B{1} = sparse(Nareas,Nareas);
+    Bfm = B;
 end
 
 %model space for A - must be no B matrix to use this
-nA = sum(unique([DCM.A{:}])>0);
+%nA = sum(unique([DCM.A{:}])>0);
+Av = unique([DCM.A{DCM.Ac}]); % A values
+if any(any(Av<0)); S.excl_full=1;end
+Ai = find(double(~(Av==0)) .* double(Av<100)); % A indices
+nA = length(Ai); % number of values
 A=[];
+Ar=[];
 if sum(DCM.B{:}(:))==0 && nA>1
     k = spm_perm_mtx(nA);
     % for each possible combination of factors in A
@@ -377,56 +413,110 @@ if sum(DCM.B{:}(:))==0 && nA>1
         %for each connection type in A
         for c = DCM.Ac
             A{i}{c} = sparse(Nareas,Nareas); % sparse 5x5 double array - for connecting 5 nodes
+            Ar{i}{c} = A{i}{c}; % real valued version of A
             % for each factor in A
             for f = 1:nA
                 try
                     if k(i,f)
-                        A{i}{c} = A{i}{c} + double(DCM.A{c}==f) + double(DCM.A{c}==-1); 
+                        A{i}{c} = A{i}{c} + double(DCM.A{c}==Av(Ai(f))) + double(DCM.A{c}==100); 
+                        Ar{i}{c} = Ar{i}{c} + DCM.A{c}.*double(DCM.A{c}==Av(Ai(f))); 
                     end
                 end
             end
+            % ensure all priors equal 1
+            A{i}{c} = A{i}{c}>0;
         end
         for c = DCM.Anc
             A{i}{c} = DCM.A{c}; 
+            % ensure all priors equal 1
+            A{i}{c} = A{i}{c}>0;
         end
+        % remove any with no connections
         if sum(A{i}{c})==0
             A(i)=[];
         end
     end
+    % remove all other models with too many connections
+    delA=zeros(1,length(A));
+    sizAfm = length(find(~([DCM.A{DCM.Ac}]==0)));
+    for i = 1:length(A);
+        % identify the full model to keep
+        sizA=length(find(~([A{i}{DCM.Ac}]==0)));
+        if sizA==sizAfm
+            Afm = A{i};
+        end
+        %for each connection type in A
+        for c = DCM.Ac
+            for f = 1:nA
+                if any(any(Ar{i}{c}==Av(Ai(f)))) && any(any(Ar{i}{c}==-Av(Ai(f))))
+                    delA(i)=1;
+                end
+            end
+        end
+    end
+    A(find(delA))=[];
     nA = length(A);
 else
     A{1}{1} = sparse(Nareas,Nareas);
     A{1}{2} = sparse(Nareas,Nareas);
     A{1}{3} = sparse(Nareas,Nareas);
     nA=1;
+    Afm = A;
 end
 
-nC = sum(unique(DCM.C)>0);
+Cv = unique(DCM.C); % c values
+if any(any(Cv<0)); S.excl_full=1;end
+Ci = find(double(~(Cv==0)) .* double(Cv<100)); % c indices
+nC = length(Ci); % number of values
 C=[];
+Cr=[];
 if nC>1
     k = spm_perm_mtx(nC);
     % for each possible combination of factors in A
     for i = 1:(2^nC);
         C{i}     = sparse(1,Nareas); % sparse 5x5 double array - for connecting 5 nodes
+        Cr{i} = C{i};
         % for each factor in C
         for f = 1:nC
             try
                 if k(i,f)
-                    C{i} = C{i} + double(DCM.C==f)'; 
+                    C{i} = C{i} + double(DCM.C==Cv(Ci(f)))'; 
+                    Cr{i} = Cr{i} + (DCM.C.*double(DCM.C==Cv(Ci(f))))'; 
                 end
             end
         end
+        % ensure all priors equal 1
+        C{i} = C{i}>0;
+        % remove model if no inputs
         if sum(C{i})==0
             C(i)=[];
         end
     end
+    % remove models with too many connections
+    delC=zeros(1,length(C));
+    sizCfm = length(find(~(DCM.C==0)));
+    for i = 1:length(C);
+        % identify the full model to keep
+        sizC=length(find(~(C{i}==0)));
+        if sizC==sizCfm
+            Cfm = C{i};
+        end
+        for f = 1:nC
+            if any(Cr{i}==Cv(Ci(f))) && any(Cr{i}==-Cv(Ci(f)))
+                delC(i)=1;
+            end
+        end
+    end
+    C(find(delC))=[];
     nC = length(C);
 else
-    C{1} = sparse(1,Nareas);
+    C{1} = DCM.C';
     nC=1;
+    Cfm = C{1};
 end
 
-% combinations of A, B and C
+
+% combinations of reduced models of A, B and C
 [Aind,Bind,Cind] = meshgrid(1:nA, 1:nB, 1:nC);
 combs = [Aind(:),Bind(:),Cind(:)];
 nMod = length(combs);
@@ -476,7 +566,7 @@ else
             save(DCM.xY.Dfile,'D');
         end
 
-        for j = 1:nMod
+        for j = 1:nMod+1 % all combinations of reduced models, plus full model
             disp(['preparing data - subject number: ' subID ', model:' num2str(j)]); % display progress 
             if isfield(DCM,'M'); DCM = rmfield(DCM,'M');end
             DCM.name = ['DCM_' DCM.options.analysis '-ana_' DCM.options.model '-model_' DCM.options.spatial '-spatial_' num2str(j) '-model'];
@@ -485,20 +575,25 @@ else
                 % Data and spatial model
                 DCM  = spm_dcm_erp_data_CAB(DCM,1,S);
                 xY =DCM.xY;
+                % full model
+                DCM.A   = Afm;
+                DCM.B   = Bfm;
+                DCM.C   = Cfm';
             else
                 DCM.xY =xY;
+                % reduced models
+                DCM.A   = A{combs(j-1,1)};
+                DCM.B   = B(combs(j-1,2));
+                DCM.C   = C{combs(j-1,3)}';
             end
-
-            DCM.A   = A{combs(j,1)};
-            DCM.B   = B(combs(j,2));
-            DCM.C   = C{combs(j,3)}';
             GCM{i,j} = DCM;
             
             % find number of free parameters to determine which is the full model
-            [ii,rC,rE,Np] = spm_find_pC(GCM{i,j});
-            par(:,j)     = sparse(ii,1,true,Np,1);
+            %[ii,rC,rE,Np] = spm_find_pC(GCM{i,j});
+            %par(:,j)     = sparse(ii,1,true,Np,1);
         end
-        [~,fu] = max(sum(par));
+        %[~,fu] = max(sum(par));
+        fu=1;
         if i==1
             % Spatial model
             GCM{i,fu} = spm_dcm_erp_dipfit(GCM{i,fu},1);
@@ -569,5 +664,5 @@ if S.run_PEB
         end
     end
     loadorsave=1;
-    DCM_PEB([lname '.mat'],S.outpath,S.run_num,fu,loadorsave)
+    DCM_PEB([lname '.mat'],S.outpath,S.run_num,fu,loadorsave,S.excl_full)
 end
