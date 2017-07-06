@@ -1,9 +1,9 @@
 % 1. loads a topography*time image
-% 2. finds extreme (positive or negative, not both) values within a time
+% 2. averages data over time window of interest to create mean topography
+% 3. finds scalp locations with extreme (positive or negative, not both) values within that time
 % window of interest; defined by the number of standard deviations from the
-% mean
-% 3. creates Maximum Intensity Projection (collapsing topography over the 
-% time window of interest) to use as a mask.
+% mean value with that topographic image
+% 4. those scalp locations are then used as the spatial window and extended over the whole time window to create a mask
 
 clear all
 
