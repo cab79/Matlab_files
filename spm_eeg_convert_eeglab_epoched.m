@@ -417,6 +417,7 @@ if ~isequal(S.mode, 'header')
         dat = read_eeglabdata(S.dataset, 'header', hdr, 'begtrial', 1, 'endtrial', ntrial, 'chanindx', chansel);
     end
     D.data(:,:,:) = dat;
+    D.timeOnset = S.timewin(1)/D.Fsample;
     for i = 1:ntrial
         spm_progress_bar('Set','ylabel','reading...');
         if ~readalltrials
@@ -445,7 +446,11 @@ if ~isequal(S.mode, 'header')
                     D.data(:, :, i) = dat;
                 end
                 D.trials(i).label = conditionlabels{i};
-                D.trials(i).onset = trl(i, 1)./D.Fsample;
+                if isfield(S,'timewin')
+                    D.trials(i).onset  = S.timewin(1)/D.Fsample;
+                else
+                    D.trials(i).onset = trl(i, 1)./D.Fsample;
+                end
                 D.trials(i).events = select_events(event, ...
                     [ trl(i, 1)./D.Fsample-S.eventpadding  trl(i, 2)./D.Fsample+S.eventpadding]);
         end
@@ -511,7 +516,7 @@ if isfield(hdr, 'orig')
     
     % Uses fileio function to get the information about channel types stored in
     % the original header.
-    origchantypes = repmat({'unknown'},length(hdr.label),1);%ft_chantype(hdr);
+    origchantypes = repmat({'eeg'},length(hdr.label),1);%ft_chantype(hdr);
     
     [sel1, sel2] = spm_match_str(D.chanlabels, hdr.label);
     origchantypes = origchantypes(sel2);

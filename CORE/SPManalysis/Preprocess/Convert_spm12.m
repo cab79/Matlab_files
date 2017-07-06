@@ -17,6 +17,7 @@ fsuff = '_4_cleaned_tm.set';
 
 % set data type: 'epoched' or 'continuous'
 dattype ='epoched';
+overwrite = 0;
 
 % set time window of interest in ms (advise whole epoch)
 timewin = [-200 300];
@@ -26,14 +27,16 @@ files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
 cd(outpath)
 
 for f = sort(1:length(files),'descend')
+%for 1:length(files)
     S=struct;
     S.dataset = fullfile(filepath,files(f).name);
     [pth nme ext] = fileparts(files(f).name);
     S.outfile = fullfile(outpath,[outprefix nme]);
     S.mode = dattype;
     S.timewin = timewin;
+    S.inputformat = 'eeglab_set';
     
-    if ~exist([S.outfile '.mat'],'file')
+    if ~exist([S.outfile '.mat'],'file') || overwrite
         % load data
         EEG = pop_loadset(files(f).name,filepath);
 
@@ -56,12 +59,8 @@ for f = sort(1:length(files),'descend')
         [conds, tnums, fnums, bnums] = get_markers(EEG);
         S.conditionlabels = cellfun(@num2str, num2cell(conds), 'UniformOutput', false);
     
-<<<<<<< HEAD
-        spm_eeg_convert(S);
-=======
         %spm_eeg_convert(S);
         spm_eeg_convert_eeglab_epoched(S,1);  % faster version of spm_eeg_convert, only works with EEGLAB epoched data
->>>>>>> c6d0404947f3e21ad5a71abba4d4ef5276ddd04a
     end
     clear EEG;
 end

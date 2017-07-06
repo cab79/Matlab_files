@@ -10,7 +10,7 @@ batchpath = 'C:\Data\Matlab\Matlab_files\CORE\SPManalysis\Sensor';
 fpref = 'spm12';
 fmid = '';
 %fsuff = '4_merged_cleaned.mat';
-fsuff = '_4_cleaned_tm.set';
+fsuff = '_4_cleaned_tm.mat';
 
 %for ordering conditions
 conds=1:24;
@@ -40,7 +40,7 @@ mode = 'scalp x time';
 
 % time and frequecy windows
 freqwin = []; % empty if not requiring freq analysis
-timewin = [-200 300]; % empty will include whole epoch
+timewin = [-200 299]; % empty will include whole epoch
 basewin = [-200 0]; % empty will not baseline correct
 %timewin = [-3000 0]; % empty will include whole epoch
 %basewin = [-3000 -2500]; % empty will not baseline correct
