@@ -1,7 +1,7 @@
 clear all
 
 %% SPECIFY DATA
-filepath = 'C:\Data\CORE\SPMdata\sensorimages'; 
+filepath = 'C:\CORE\SPMdata\sensorimages'; 
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of folders
 fpref = 't-200_299_b-200_0_mspm12';
@@ -14,7 +14,7 @@ fcond = [5:8 13:16 21:24];
 %% RUN
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
 
-for f = 1%:length(files)
+for f = 1:length(files)
     fname = files(f).name;
  
     % re-orient the images
@@ -31,6 +31,9 @@ for f = 1%:length(files)
         nii.hdr.hist.srow_y = M(2,:);
         nii.hdr.hist.srow_z = M(3,:);
         
-        save_nii(nii,fullfile(filepath,files(f).name,['scondition_' num2str(nf) '_flip.nii']));
+        sname=fullfile(filepath,files(f).name,['scondition_' num2str(nf) '_flip.nii']);
+        save_nii(nii,sname); 
+        spm_imcalc_ui({inputname;sname},sname,'(i1+i2)-i1'); %re-orients image for SPM analysis
+           
     end
 end

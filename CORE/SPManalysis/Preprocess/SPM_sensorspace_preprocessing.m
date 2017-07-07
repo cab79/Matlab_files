@@ -1,9 +1,9 @@
 clear all
 
 %% SPECIFY DATA
-filepath = 'C:\Data\CORE\SPMdata'; 
-outpath = 'C:\Data\CORE\SPMdata\sensorimages'; 
-batchpath = 'C:\Data\Matlab\Matlab_files\CORE\SPManalysis\Sensor';
+filepath = 'C:\CORE\SPMdata'; 
+outpath = 'C:\CORE\SPMdata\sensorimages'; 
+batchpath = 'C:\Matlab_files\CORE\SPManalysis\Sensor';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
@@ -53,8 +53,9 @@ delete_unsmoothed = 1;
 
 %% RUN
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
+files_ana=34%1:length(files);
 
-for f = 1:length(files)
+for f = files_ana
     fname = files(f).name;
     
     if spmart
@@ -93,7 +94,7 @@ for f = 1:length(files)
     end
 end
 
-for f = 1:length(files)
+for f = files_ana
     fname = files(f).name;
  
     if strcmp(outputtype,'average')

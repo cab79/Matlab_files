@@ -4,8 +4,8 @@ clear all
 
 % path of EEGLAB .set files after preprocessing, path of SPM outputs, and
 % prefix of output files
-filepath = 'C:\Data\CORE\Preprocessed_100Hz'; 
-outpath = 'C:\Data\CORE\SPMdata'; 
+filepath = 'C:\CORE\Preprocessed_100Hz'; 
+outpath = 'C:\CORE\SPMdata'; 
 outprefix = 'spm12_';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
