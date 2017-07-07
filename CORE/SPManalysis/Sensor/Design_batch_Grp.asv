@@ -66,22 +66,34 @@ D.time_ana = []; % applies a mask to the data
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
 D.cond_list = [
-              1 1
-              1 2
-              1 1
-              1 2
-              2 1
-              2 2
-              2 1
-              2 2
-              3 1
-              3 2
-              3 1
-              3 2
+              1 1 1
+              1 1 2
+              1 2 1
+              1 2 2
+              1 1 1
+              1 1 2
+              1 2 1
+              1 2 2
+              2 1 1
+              2 1 2
+              2 2 1
+              2 2 2
+              2 1 1
+              2 1 2
+              2 2 1
+              2 2 2
+              3 1 1
+              3 1 2
+              3 2 1
+              3 2 2
+              3 1 1
+              3 1 2
+              3 2 1
+              3 2 2
               ];
 % factors and statistical model
-D.factors = {'CP', 'Grp', 'DC', 'Subject'}; % must include a subject factor at the end
-D.factortype = {'w','g','w','s'}; % w = within, s = subject, g = subject group
+D.factors = {'Grp', 'CP', 'DC', 'Subject'}; % must include a subject factor at the end
+D.factortype = {'g','w','w','s'}; % w = within, s = subject, g = subject group
 
 % Main effects and interactions: 
 %   - for spm, can specify the highest-level interaction to produc results
@@ -106,23 +118,23 @@ D.GMsca = [0 0 0 0]; %grand mean scaling
 D.ancova = [0 0 0 0]; %covariate
 % after model estimation, constrasts to display (SPM, not SnPM)
 D.fcontrasts = {
-    [1 -1 -1 1 -1 1 1 -1 0 0 0 0; 0 0 0 0 1 -1 -1 1 -1 1 1 -1], 'CP * Grp * DC'
-    [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Grp'
+    [1 -1 -1 1 -1 1 1 -1 0 0 0 0; 0 0 0 0 1 -1 -1 1 -1 1 1 -1], 'CP * Odd * DC'
+    [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Odd'
     [1 -1 1 -1 -1 1 -1 1 0 0 0 0; 0 0 0 0 1 -1 1 -1 -1 1 -1 1], 'CP * DC'
-    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * DC'
+    [1 -1 -1 1 1 -1 -1 1 0 0 0 0], 'Odd * DC'
     [1 1 1 1 -1 -1 -1 -1 0 0 0 0; 0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP'
-    [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp'
+    [1 1 -1 -1 1 1 -1 -1 0 0 0 0], 'Odd'
     [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC'
     };
 D.tcontrasts = {
-    [-1 -1 1 1 1 1 -1 -1 0 0 0 0], 'CP12 * Grp'
-    [0 0 0 0 -1 -1 1 1 1 1 -1 -1], 'CP23 * Grp'
-    [-1 1 1 -1 -1 1 1 -1 -1 1 1 -1], 'Grp * DC1'
-    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * DC3'
+    [-1 -1 1 1 1 1 -1 -1 0 0 0 0], 'CP12 * Odd'
+    [0 0 0 0 -1 -1 1 1 1 1 -1 -1], 'CP23 * Odd'
+    [-1 1 1 -1 -1 1 1 -1 0 0 0 0], 'Odd * DC1'
+    [1 -1 -1 1 1 -1 -1 1 0 0 0 0], 'Odd * DC3'
     [1 1 1 1 -1 -1 -1 -1 0 0 0 0], 'CP12'
     [0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP23'
-    [-1 -1 1 1 -1 -1 1 1 -1 -1 1 1], 'Grp 1'
-    [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp 2'
+    [-1 -1 1 1 -1 -1 1 1 0 0 0 0], 'Odd'
+    [1 1 -1 -1 1 1 -1 -1 0 0 0 0], 'Stan'
     [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC1'
     [-1 1 -1 1 -1 1 -1 1 -1 1 -1 1], 'DC3'
     };

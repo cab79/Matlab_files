@@ -252,7 +252,7 @@ for g = 1:Ngrp
         grpfactind = find(strcmp(D.factortype,'g'));
         if ~isempty(grpfactind)
             nlist = D.cond_list;
-            if grpfactind<=size(D.cond_list,2)
+            if grpfactind<size(D.cond_list,2)
                 nlist(:,grpfactind+1:end+1) = nlist(:,grpfactind:end);
             end
             nlist(:,grpfactind) = g*ones(size(nlist,1),1);

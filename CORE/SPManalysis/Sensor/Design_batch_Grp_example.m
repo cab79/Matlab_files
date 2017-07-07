@@ -1,4 +1,4 @@
-%% setup design batch function for factorial design and estimation
+%% setup design batch for factorial design and estimation
 clear all
 %files required: participant data file with columns headed 'Subject' (should be characters, e.g. S1),
 %'Group' (can be described by numbers or characters, but numbers recommended), 'Include' (must be numbers 
@@ -9,32 +9,32 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Matlab_files\CORE\SPManalysis\Sensor\Design_batch_Grp.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_Grp.m';
 % template flexible factorial matlabbatch
-D.ffbatch = 'C:\CORE\SPMstats\matlabbatch_flexiblefactorial_template';
+D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
-D.npbatch = 'C:\CORE\SPMstats\matlabbatch_SnPM_template';
+D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\CORE\SPMdata\sensorimages';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sensorimages';
 % directory in which image masks are saved
-D.mask_path = 'C:\CORE\SPMdata\masks';
+D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
-D.pdatfile = 'C:\CORE\SPMstats\Participant_data.xlsx';
+D.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 % names of headers in the above xls file:
     D.subhead = 'Subject';
     D.grphead = 'Group';
     D.inchead = 'Include';
 % directory in which SPM analyses will be saved (new folder created)
-D.spmstats_path = 'C:\CORE\SPMstats';
+D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
 % prefix and suffix of subject folder names (within 'data_path') either side of subject ID
-D.anapref = 't-200_299_b-200_0'; %directory prefix for this specific analysis
+D.anapref = 't-5500_-2500_b-5500_-5000'; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
-D.subdirpref = '_mspm12_'; % generic prefix for the SPM file type
-D.subdirsuff = '_4_cleaned_tm'; % generic suffix for the EEGLAB analysis file
+D.subdirpref = '_mrspm12_C'; % generic prefix for the SPM file type
+D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
 D.identifier=''; % optional identifer to add to end of outputted SPM folder name
@@ -42,18 +42,14 @@ D.identifier=''; % optional identifer to add to end of outputted SPM folder name
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % list of image names within each subject folder
-D.imglist = {'scondition_1-3.nii'
-            'scondition_2-4.nii'
-            'scondition_5-7_flip.nii'
-            'scondition_6-8_flip.nii'
-            'scondition_9-11.nii'
-            'scondition_10-12.nii'
-            'scondition_13-15_flip.nii'
-            'scondition_14-16_flip.nii'
-            'scondition_17-19.nii'
-            'scondition_18-20.nii'
-            'scondition_21-23_flip.nii'
-            'scondition_22-24_flip.nii'};
+D.imglist = {'scondition_c1.nii'
+            'scondition_c2.nii'
+            'scondition_c3.nii'
+            'scondition_c4.nii'
+            'scondition_c5.nii'
+            'scondition_c6.nii'
+            'scondition_c7.nii'
+            'scondition_c8.nii'};
         
 %% analysis design and parameters
 %-------------------------------------------------------------
@@ -65,23 +61,17 @@ D.para = 1;
 D.time_ana = []; % applies a mask to the data
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
-D.cond_list = [
-              1 1
+D.cond_list =  [1 1
               1 2
               1 1
               1 2
               2 1
               2 2
               2 1
-              2 2
-              3 1
-              3 2
-              3 1
-              3 2
-              ];
+              2 2];
 % factors and statistical model
-D.factors = {'CP', 'Grp', 'DC', 'Subject'}; % must include a subject factor at the end
-D.factortype = {'w','g','w','s'}; % w = within, s = subject, g = subject group
+D.factors = {'Grp', 'Att', 'Exp', 'Subject'}; % must include a subject factor at the end; Group factor must be first if being used
+D.factortype = {'g','w','w','s'}; % w = within, s = subject, g = subject group
 
 % Main effects and interactions: 
 %   - for spm, can specify the highest-level interaction to produc results
@@ -92,54 +82,43 @@ D.interactions = [1 1 1 0]; % one column per factor; one row per interaction
 D.maineffects = [0 0 0 0]; % one column per factor 
 %   - for snpm, only a single main effect or 2-way interaction can be performed each time, e.g.
 %D.interactions = [0 0 0 0]; % one column per factor
-%D.maineffects = [0 0 1 0]; % one column per factor 
+%D.maineffects = [1 0 0 0]; % one column per factor 
+
+D.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
+D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA
 
 % names of nuisance covariates
 %cov_names = {'Age','Gender'};
 D.cov_names = {};
 
-D.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
-D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA
-
-% SPM only:
+% the following are for spm analysis, not snpm
 D.GMsca = [0 0 0 0]; %grand mean scaling
 D.ancova = [0 0 0 0]; %covariate
-% after model estimation, constrasts to display (SPM, not SnPM)
+% after model estimation, constrasts to display
 D.fcontrasts = {
-    [1 -1 -1 1 -1 1 1 -1 0 0 0 0; 0 0 0 0 1 -1 -1 1 -1 1 1 -1], 'CP * Grp * DC'
-    [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Grp'
-    [1 -1 1 -1 -1 1 -1 1 0 0 0 0; 0 0 0 0 1 -1 1 -1 -1 1 -1 1], 'CP * DC'
-    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * DC'
-    [1 1 1 1 -1 -1 -1 -1 0 0 0 0; 0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP'
-    [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp'
-    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC'
-    };
-D.tcontrasts = {
-    [-1 -1 1 1 1 1 -1 -1 0 0 0 0], 'CP12 * Grp'
-    [0 0 0 0 -1 -1 1 1 1 1 -1 -1], 'CP23 * Grp'
-    [-1 1 1 -1 -1 1 1 -1 -1 1 1 -1], 'Grp * DC1'
-    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * DC3'
-    [1 1 1 1 -1 -1 -1 -1 0 0 0 0], 'CP12'
-    [0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP23'
-    [-1 -1 1 1 -1 -1 1 1 -1 -1 1 1], 'Grp 1'
-    [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp 2'
-    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC1'
-    [-1 1 -1 1 -1 1 -1 1 -1 1 -1 1], 'DC3'
+    [-1 1 1 -1 1 -1 -1 1], 'Grp * Att * Exp'
+    [1 -1 1 -1 -1 1 -1 1], 'Grp * Exp'
+    [1 1 -1 -1 -1 -1 1 1], 'Grp * Att'
+    [1 -1 -1 1 1 -1 -1 1], 'Exp * Att'
+    [1 1 1 1 -1 -1 -1 -1], 'Grp'
+    [1 -1 1 -1 1 -1 1 -1], 'Exp'
+    [1 1 -1 -1 1 1 -1 -1], 'Att'
     };
 
+D.tcontrasts = {
+    };
 % the following are for SnPM, not SPM
 D.nPerm = 5000; % permutations
 D.vFWHM = [20 20 20]; % variance smoothing (should be same as data smoothing used)
 D.bVolm = 1; % 1=high memory usage, but faster
-D.ST_U = 0.05; % cluster forming threshold
+D.ST_U = 0.001; % cluster forming threshold
 
 % Write residuals? For normality tests
-D.resid = 0;
+D.resid = 1;
 
 %% run design_batch function
 D=design_batch(D);
 
-%% load results
 if D.para==1
     spm eeg
     load(fullfile(D.spm_path,'SPM.mat'));
