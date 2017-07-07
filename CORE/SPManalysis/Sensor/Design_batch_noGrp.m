@@ -38,14 +38,55 @@ D.identifier=''; % optional identifer to add to end of outputted SPM folder name
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % list of image names within each subject folder
+%D.imglist = {'scondition_c1.nii'
+%            'scondition_c2.nii'
+%            'scondition_c3.nii'
+%            'scondition_c4.nii'
+%            'scondition_c5.nii'
+%            'scondition_c6.nii'
+%            'scondition_c7.nii'
+%            'scondition_c8.nii'
+%            'scondition_c9.nii'
+%            'scondition_c10.nii'
+%            'scondition_c11.nii'
+%            'scondition_c12.nii'
+%            'scondition_c13.nii'
+%            'scondition_c14.nii'
+%            'scondition_c15.nii'
+%            'scondition_c16.nii'
+%            'scondition_c17.nii'
+%            'scondition_c18.nii'
+%            'scondition_c19.nii'
+%            'scondition_c20.nii'
+%            'scondition_c21.nii'
+%            'scondition_c22.nii'
+%            'scondition_c23.nii'
+%            'scondition_c24.nii'};
+        
 D.imglist = {'scondition_c1.nii'
             'scondition_c2.nii'
             'scondition_c3.nii'
             'scondition_c4.nii'
-            'scondition_c5.nii'
-            'scondition_c6.nii'
-            'scondition_c7.nii'
-            'scondition_c8.nii'};
+            'scondition_c5_flip.nii'
+            'scondition_c6_flip.nii'
+            'scondition_c7_flip.nii'
+            'scondition_c8_flip.nii'
+            'scondition_c9.nii'
+            'scondition_c10.nii'
+            'scondition_c11.nii'
+            'scondition_c12.nii'
+            'scondition_c13_flip.nii'
+            'scondition_c14_flip.nii'
+            'scondition_c15_flip.nii'
+            'scondition_c16_flip.nii'
+            'scondition_c17.nii'
+            'scondition_c18.nii'
+            'scondition_c19.nii'
+            'scondition_c20.nii'
+            'scondition_c21_flip.nii'
+            'scondition_c22_flip.nii'
+            'scondition_c23_flip.nii'
+            'scondition_c24_flip.nii'};
         
 %% analysis design and parameters
 %-------------------------------------------------------------
@@ -57,16 +98,34 @@ D.para = 1;
 D.time_ana = []; % applies a mask to the data
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
-D.cond_list =  [1 1 1
+D.cond_list = [
+              1 1 1
+              1 1 2
+              1 2 1
+              1 2 2
+              1 1 1
               1 1 2
               1 2 1
               1 2 2
               2 1 1
               2 1 2
               2 2 1
-              2 2 2];
+              2 2 2
+              2 1 1
+              2 1 2
+              2 2 1
+              2 2 2
+              3 1 1
+              3 1 2
+              3 2 1
+              3 2 2
+              3 1 1
+              3 1 2
+              3 2 1
+              3 2 2
+              ];
 % factors and statistical model
-D.factors = {'Att', 'Int', 'Exp', 'Subject'}; % must include a subject factor at the end
+D.factors = {'CP', 'Odd', 'DC', 'Subject'}; % must include a subject factor at the end
 D.factortype = {'w','w','w','s'}; % w = within, s = subject, g = subject group
 
 % Main effects and interactions: 
@@ -92,19 +151,25 @@ D.GMsca = [0 0 0 0]; %grand mean scaling
 D.ancova = [0 0 0 0]; %covariate
 % after model estimation, constrasts to display (SPM, not SnPM)
 D.fcontrasts = {
-    [-1 1 1 -1 1 -1 -1 1], 'Att * Exp * Int'
-    [1 -1 1 -1 -1 1 -1 1], 'Att * Exp'
-    [1 1 -1 -1 -1 -1 1 1], 'Att * Int'
-    [1 -1 -1 1 1 -1 -1 1], 'Exp * Int'
-    [1 1 1 1 -1 -1 -1 -1], 'Att'
-    [1 -1 1 -1 1 -1 1 -1], 'Exp'
-    [1 1 -1 -1 1 1 -1 -1], 'Int'
-    [0 0 1 -1 0 0 -1 1], 'M Att * Exp'
-    [0 0 1 1 0 0 -1 -1], 'M Att'
-    [0 0 1 -1 0 0 1 -1], 'M Exp'
-    [1 -1 0 0 -1 1 0 0], 'L Att * Exp'
-    [1 1 0 0 -1 -1 0 0], 'L Att'
-    [1 -1 0 0 1 -1 0 0], 'L Exp'
+    [1 -1 -1 1 -1 1 1 -1 0 0 0 0; 0 0 0 0 1 -1 -1 1 -1 1 1 -1], 'CP * Odd * DC'
+    [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Odd'
+    [1 -1 1 -1 -1 1 -1 1 0 0 0 0; 0 0 0 0 1 -1 1 -1 -1 1 -1 1], 'CP * DC'
+    [1 -1 -1 1 1 -1 -1 1 0 0 0 0], 'Odd * DC'
+    [1 1 1 1 -1 -1 -1 -1 0 0 0 0; 0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP'
+    [1 1 -1 -1 1 1 -1 -1 0 0 0 0], 'Odd'
+    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC'
+    };
+D.tcontrasts = {
+    [-1 -1 1 1 1 1 -1 -1 0 0 0 0], 'CP12 * Odd'
+    [0 0 0 0 -1 -1 1 1 1 1 -1 -1], 'CP23 * Odd'
+    [-1 1 1 -1 -1 1 1 -1 0 0 0 0], 'Odd * DC1'
+    [1 -1 -1 1 1 -1 -1 1 0 0 0 0], 'Odd * DC3'
+    [1 1 1 1 -1 -1 -1 -1 0 0 0 0], 'CP12'
+    [0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP23'
+    [-1 -1 1 1 -1 -1 1 1 0 0 0 0], 'Odd'
+    [1 1 -1 -1 1 1 -1 -1 0 0 0 0], 'Stan'
+    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC1'
+    [-1 1 -1 1 -1 1 -1 1 -1 1 -1 1], 'DC3'
     };
 
 % the following are for SnPM, not SPM
@@ -114,7 +179,7 @@ D.bVolm = 1; % 1=high memory usage, but faster
 D.ST_U = 0.05; % cluster forming threshold
 
 % Write residuals? For normality tests
-D.resid = 1;
+D.resid = 0;
 
 %% run design_batch function
 D=design_batch(D);
