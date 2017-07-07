@@ -26,8 +26,8 @@ timewin = [-200 300];
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
 cd(outpath)
 
-for f = sort(1:length(files),'descend')
-%for 1:length(files)
+%for f = sort(1:length(files),'descend')
+for f=14%1:length(files)
     S=struct;
     S.dataset = fullfile(filepath,files(f).name);
     [pth nme ext] = fileparts(files(f).name);

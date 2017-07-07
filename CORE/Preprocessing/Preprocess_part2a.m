@@ -16,7 +16,7 @@ ALLEEG_save = 1; % 1= save multiple ERPs from one file; 2 = save one ERP from mu
 basebins = [-0.2 0; % for epoching, TSOT(2)
             -0.05 0]; % for epoching, TSOT(4)
         
-files_ana = [5 6 77:86]% 1:length(files);
+files_ana = [87 88]% 1:length(files);
 for f = files_ana
     [pth nme ext] = fileparts(files(f).name); 
     C = strsplit(nme,'_');

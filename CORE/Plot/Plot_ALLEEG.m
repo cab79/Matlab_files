@@ -5,7 +5,7 @@ files = dir('*_conds_ALLEEG.mat');
 trials_ana = 1; % propotion of trials to analyse
 
 %% plot conditions
-for f =57%:length(files)
+for f =59%:length(files)
     [pth nme ext] = fileparts(files(f).name); 
     C = strsplit(nme,'_');
     load(fullfile(filepath,files(f).name));

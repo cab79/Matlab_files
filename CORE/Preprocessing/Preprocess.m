@@ -6,9 +6,9 @@
 %%
 
 clear all
-origpath = 'C:\CORE\Orig\';
-anapath = 'C:\CORE\Preprocessed_100Hz';
-design_path = 'C:\CORE\Raw';
+origpath = 'C:\Data\CORE\Orig\';
+anapath = 'C:\Data\CORE\Preprocessed_100Hz';
+design_path = 'C:\Data\CORE\Raw';
 cd(origpath);
 files = dir('*orig.set');
 cd(anapath);
@@ -30,7 +30,7 @@ rightmarkers = [5:8 13:16 21:24];
 targets = [1 2 5 6 9 10 13 14 17 18 21 22];
 nontargets = [3 4 7 8 11 12 15 16 19 20 23 24];
 
-files_ana = 1:length(files);
+files_ana = [68 69]%1:length(files);
 trials_ana = 1; fname_ext = '';
 
 for f = files_ana

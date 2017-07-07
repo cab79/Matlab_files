@@ -20,7 +20,7 @@ stimtypematch = [
     22,24];
 
 
-files_ana = 1:length(files);
+files_ana = [34]%1:length(files);
 for f = files_ana
     [pth nme ext] = fileparts(files(f).name); 
     C = strsplit(nme,'_');
