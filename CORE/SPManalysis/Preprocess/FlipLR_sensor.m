@@ -1,12 +1,12 @@
 clear all
 
 %% SPECIFY DATA
-filepath = 'C:\CORE\SPMdata\sensorimages'; 
+filepath = 'C:\Data\CORE\SPMdata\sensorimages'; 
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of folders
 fpref = 't-200_299_b-200_0_mspm12';
 fmid = '';
-fsuff = '_4_cleaned_tm';
+fsuff = '_4_merged_cleaned';
 
 % conditions to flip (right stim only):
 fcond = [5:8 13:16 21:24];

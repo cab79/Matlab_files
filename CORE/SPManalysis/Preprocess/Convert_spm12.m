@@ -4,8 +4,8 @@ clear all
 
 % path of EEGLAB .set files after preprocessing, path of SPM outputs, and
 % prefix of output files
-filepath = 'C:\CORE\Preprocessed_100Hz'; 
-outpath = 'C:\CORE\SPMdata'; 
+filepath = 'C:\Data\CORE\Preprocessed_100Hz'; 
+outpath = 'C:\Data\CORE\SPMdata'; 
 outprefix = 'spm12_';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
@@ -13,7 +13,7 @@ outprefix = 'spm12_';
 fpref = '';
 fmid = '';
 %fsuff = '_4_merged_cleaned.set';
-fsuff = '_4_cleaned_tm.set';
+fsuff = '_4_merged_cleaned.set';
 
 % set data type: 'epoched' or 'continuous'
 dattype ='epoched';
@@ -27,7 +27,7 @@ files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
 cd(outpath)
 
 %for f = sort(1:length(files),'descend')
-for f=14%1:length(files)
+for f=1:length(files)
     S=struct;
     S.dataset = fullfile(filepath,files(f).name);
     [pth nme ext] = fileparts(files(f).name);

@@ -9,23 +9,23 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Matlab_files\CORE\SPManalysis\Sensor\Design_batch_noGrp.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\CORE\SPManalysis\Sensor\Design_batch_noGrp.m';
 % template flexible factorial matlabbatch
-D.ffbatch = 'C:\CORE\SPMstats\matlabbatch_flexiblefactorial_template';
+D.ffbatch = 'C:\Data\CORE\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
-D.npbatch = 'C:\CORE\SPMstats\matlabbatch_SnPM_template';
+D.npbatch = 'C:\Data\CORE\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\CORE\SPMdata\sensorimages';
+D.data_path = 'C:\Data\CORE\SPMdata\sensorimages';
 % directory in which image masks are saved
-D.mask_path = 'C:\CORE\SPMdata\masks';
+D.mask_path = 'C:\Data\CORE\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
-D.pdatfile = 'C:\CORE\SPMstats\Participant_data.xlsx';
+D.pdatfile = 'C:\Data\CORE\SPMstats\Participant_data.xlsx';
 % names of headers in the above xls file:
     D.subhead = 'Subject';
     D.grphead = 'Group';
     D.inchead = 'Include';
 % directory in which SPM analyses will be saved (new folder created)
-D.spmstats_path = 'C:\CORE\SPMstats';
+D.spmstats_path = 'C:\Data\CORE\SPMstats';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -34,7 +34,7 @@ D.anapref = 't-200_299_b-200_0'; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_'; % generic prefix for the SPM file type
-D.subdirsuff = '_4_cleaned_tm'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_4_merged_cleaned'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
 D.identifier=''; % optional identifer to add to end of outputted SPM folder name

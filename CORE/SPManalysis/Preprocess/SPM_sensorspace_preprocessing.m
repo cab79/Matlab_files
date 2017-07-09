@@ -1,16 +1,16 @@
 clear all
 
 %% SPECIFY DATA
-filepath = 'C:\CORE\SPMdata'; 
-outpath = 'C:\CORE\SPMdata\sensorimages'; 
-batchpath = 'C:\Matlab_files\CORE\SPManalysis\Sensor';
+filepath = 'C:\Data\CORE\SPMdata'; 
+outpath = 'C:\Data\CORE\SPMdata\sensorimages'; 
+batchpath = 'C:\Data\Matlab\Matlab_files\CORE\SPManalysis\Sensor';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
 fpref = 'spm12';
 fmid = '';
 %fsuff = '4_merged_cleaned.mat';
-fsuff = '_4_cleaned_tm.mat';
+fsuff = '_4_merged_cleaned.mat';
 
 %for ordering conditions
 conds=1:24;
@@ -53,7 +53,7 @@ delete_unsmoothed = 1;
 
 %% RUN
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
-files_ana=34%1:length(files);
+files_ana=1:length(files);
 
 for f = files_ana
     fname = files(f).name;
