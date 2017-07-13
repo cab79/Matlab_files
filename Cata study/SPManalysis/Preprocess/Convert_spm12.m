@@ -1,4 +1,7 @@
 clear all
+rmpath(genpath('C:\Data\Matlab\fieldtrip-20170113'))
+addpath('C:\Data\Matlab\spm12')
+addpath(genpath('C:\Data\Matlab\spm12\external'));
 
 %% SPECIFY DATA
 

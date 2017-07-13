@@ -227,7 +227,7 @@ function [pred, accuracy, wei] = cosmo_crossvalidate_CAB(ds, classifier, partiti
         % the classifier, and store these in the k-th column of all_pred.
         try
             [p, model] = classifier(train_data, train_targets, test_data, opt);
-            wei(:,:,fold) = model.class_weight;
+            wei(1:size(model.class_weight,1),:,fold) = model.class_weight;
         catch
             p = classifier(train_data, train_targets, test_data, opt);
         end

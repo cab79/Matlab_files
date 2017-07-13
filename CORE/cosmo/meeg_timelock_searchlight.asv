@@ -42,8 +42,8 @@ time_SL =0;
 average_train_count = 3; % average over this many trials
 average_train_resamplings = 3; % reuse trials this many times
 
-% set time window of interest in ms (EMPTY: whole epoch)
-S.timewin = []; 
+% set time window of interest in ms (advise whole epoch)
+S.timewin = [0 100];
 
 % choose factor of interest
 S.factcon = 'Odd';
@@ -125,10 +125,6 @@ for f = 3%:length(files)
     % load data
     data_fn=fullfile(S.data_path,files(f).name);
     EEG=pop_loadset(data_fn);
-    
-    if isempty(S.timewin)
-        S.timewin = [EEG.xmin EEG.xmax]*1000;
-    end
     
     % convert to cosmomvpa struct
     %ds_tl=cosmo_meeg_dataset(EEG,'data_field','data');
@@ -424,11 +420,11 @@ for f = 3%:length(files)
     end
     
     %% create thresholded weight map
-    thresh = 0;
+    thresh = 0.51;
     wmt = weimat(1,:)-weimat(2,:);
-    wmt(sl_tl_ds.samples(1,:)<thresh)=0;
-    sl_wmt=sl_tl_ds;
-    sl_wmt.samples=wmt;
+    wmt(sl_tl_ds.samples(1,:)<thresh)=NaN;
+    sl_wmt{t}=sl_tl_ds;
+    sl_wmt{t}.samples=wmt;
     sl_wmt_ft=cosmo_map2meeg(sl_wmt);
     figure();
     cfg = [];
@@ -439,29 +435,14 @@ for f = 3%:length(files)
     cfg.layout       = layout;
 
     % show figure with plots for each sensor
-    ft_multiplotER(cfg, sl_wmt_ft);
+    ft_multiplotER(cfg, sl_wmt_ft{t});
 
     % visualize topology results
     figure();
     cfg.xlim=0:0.005:0.1;
-    cfg.zlim=[-0.05 0.05];%'maxmin';
+    cfg.zlim='maxmin';
     cfg.commentpos ='middlebottom';
-    ft_topoplotER(cfg, sl_wmt_ft);
-    
-    % create mismatch estimate over trials
-    mm = ds_tl.samples*wmt';
-    figure
-    plot(mm)
-    figure
-    
-    % generate t stats
-    scatter(ds_tl.sa.targets,mm);
-    [h,p,ci,stats] = ttest(mm(ds_tl.sa.targets==1),mm(ds_tl.sa.targets==2))
-    
-    % reshape wmt
-    %wmt_eeg = reshape(wmt,size(data,1),[]);
-    %wmt_eeg = permute(EEG.data(:,latidx,:),[3 1 2]);
-    
+    ft_topoplotER(cfg, sl_wmt_ft{t});
     %
     if EEGLAB_logit
         fc = find(filter_cond);

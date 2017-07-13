@@ -139,11 +139,11 @@ function [predicted, model] = cosmo_classify_lda_CAB(samples_train, targets_trai
             %   show        - if>0 will show first two dimensions
             show=0;
             %   regularize  - [1|0] -> [yes|no]
-            regularize =opt.regularization>0;
+            regularize =1;
             %   lambda      - regularization constant for weight decay. Makes
             %		  logistic regression into a support vector machine
             %		  for large lambda (cf. Clay Spence). Defaults to 10^-6.
-            lambda = opt.regularization;
+            lambda = 1e-6;
             %   lambdasearch- [1|0] -> search for optimal regularization constant lambda
             lambdasearch=0;
             %   eigvalratio - if the data does not fill D-dimensional space,
@@ -151,7 +151,7 @@ function [predicted, model] = cosmo_classify_lda_CAB(samples_train, targets_trai
             %		    eigenvalue ratio relative to the largest eigenvalue
             %		    of the SVD.  All dimensions with smaller eigenvalues
             %		    will be eliminated prior to the discrimination. 
-            eigvalratio = 0.01;
+            eigvalratio = 1e-6;
             v = logist(samples_train,targets_train,vinit,show,regularize,lambda,lambdasearch,eigvalratio);
 
             model=struct();
@@ -219,18 +219,18 @@ function predicted=test(model, samples_test)
                 size(class_weight,2),size(samples_test,2));
     end
     
+    class_proj=bsxfun(@plus,-.5*class_offset,class_weight*samples_test');
 
-    if size(class_weight,1)==1 %CAB - use logit
-        class_proj=bsxfun(@plus,class_offset,class_weight*samples_test');
+    if size(class_weight,2)==1 %CAB - use logit
+        
+        class1=classesclass_proj>0;
+        [unused,class_idxs]=max(class_proj);
+        predicted=classes(class_idxs);
     else
-        class_proj=bsxfun(@plus,-.5*class_offset,class_weight*samples_test');
-        class_proj = class_proj(1,:)-class_proj(2,:);
+
+        [unused,class_idxs]=max(class_proj);
+        predicted=classes(class_idxs);
     end
-    class1=classes(1)*single(class_proj>0);%CAB 
-    class2=classes(2)*single(class_proj<=0);%CAB 
-    predicted=class1+class2;%CAB 
-    %[unused,class_idxs]=max(class_proj);%CAB 
-    %predicted=classes(class_idxs);%CAB 
 
 function unq_xs=fast_vector_unique(xs)
     xs_sorted=sort(xs(:));
