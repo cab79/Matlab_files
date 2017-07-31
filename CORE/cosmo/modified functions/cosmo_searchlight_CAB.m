@@ -216,6 +216,8 @@ function results_map=run_searchlight_with_worker(worker_opt)
     ncenters=numel(nbrhood.neighbors);
     res_cell=cell(ncenters,1);
     weights=cell(ncenters,1);%CAB
+    offsets=cell(ncenters,1);%CAB
+    prior=cell(ncenters,1);%CAB
 
     % see if progress is to be reported
     show_progress=~isempty(progress) && ...
@@ -284,7 +286,11 @@ function results_map=run_searchlight_with_worker(worker_opt)
 
         if isfield(res,'weights') % CAB
             weights{center_id}=res.weights; % CAB
+            offsets{center_id}=res.offsets; % CAB
+            prior{center_id}=res.prior; % CAB
             res = rmfield(res,'weights'); % CAB
+            res = rmfield(res,'offsets'); % CAB
+            res = rmfield(res,'prior'); % CAB
         end
         res_cell{center_id}=res;
 
@@ -337,6 +343,8 @@ function results_map=run_searchlight_with_worker(worker_opt)
     end
     
     results_map.weights=weights; % CAB
+    results_map.offsets=offsets; % CAB
+    results_map.prior=prior; % CAB
 
 
 function nbrhood_cell=split_nbrhood_for_workers(nbrhood,center_ids,nproc)

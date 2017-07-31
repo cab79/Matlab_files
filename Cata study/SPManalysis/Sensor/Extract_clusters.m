@@ -12,7 +12,7 @@ function Extract_clusters(S)
 %Num=16;    %- number of maxima per cluster [3]
 %Dis=8;    %- min distance among clusters {mm} [8]
 %Str='';    %- header string
-
+dbstop if error
 %% RUN
 if isempty(S.spm_dir)
     S.spm_paths = dir(fullfile(S.spmstats_path,'*spm*'));
@@ -84,12 +84,13 @@ for sp = 1:length(S.spm_paths)
         [dum,ai] = ismember(A,C) ;
         [dum,bi] = ismember(B,C) ;
         [tfn,loc] = ismember(ai,bi,'rows');
-        colind = find(tf);
+        colind = find(tfn);
 
         % add new column to save temporal extent of cluster
         clustable=S.clustab{tf(cont)};
-        clustable(2,end+1)={'Temporal extent (ms)'};
-        clustable(2,end+1)={'F_temporal'};
+        colwidth = size(clustable,2);
+        clustable(2,colwidth+1)={'Temporal extent (ms)'};
+        clustable(2,colwidth+2)={'F_temporal'};
 
         % re-draw stats using cluster extent threshold
         SPMset.k=xSPM.uc(3)-1;
@@ -132,8 +133,8 @@ for sp = 1:length(S.spm_paths)
             clustable{Nhead+c,Nrhead+6} = vec2str(round([clustable{Nhead+c,Nrhead+6}])',{},{},0);
             loc = [TabDat.dat{:,colind(end)}];
             locF = [TabDat.dat{:,9}];
-            clustable(Nhead+c,size(clustable,2)+1)={loc(3,:)};
-            clustable(Nhead+c,size(clustable,2)+1)={locF};
+            clustable(Nhead+c,colwidth+1)={loc(3,:)};
+            clustable(Nhead+c,colwidth+2)={locF};
 
             % save cluster volume image for masking
             cfname = fullfile(S.clus_path{cont},[cname '_mask']);

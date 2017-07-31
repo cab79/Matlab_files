@@ -4,19 +4,10 @@ close all
 %% Group analysis - data and conditions
 filepath = 'C:\Data\CORE\Preprocessed_100Hz';
 cd(filepath);
-files = dir('*4_conds_ALLEEG.mat');
+files = dir('*ACSTP_conds_ALLEEG.mat');
 files_ana = 1:length(files)-1;
 trials_ana = 1; % propotion of trials to analyse
 
-%right hand, all probs
-name = 'R_allprob';
-datadd = [5 6 13 14 21 22]; % change
-datsub = [7 8 15 16 23 24]; % no change
-
-%left hand, all probs
-name = 'L_allprob';
-datadd = [1 2 9 10 17 18];
-datsub = [3 4 11 12 19 20];
 
 
 %left hand, low prob
@@ -77,6 +68,15 @@ datsub = [16]; % no change
     datadd = [6];
     datsub = [8];
 
+%right hand, all probs
+name = 'R_allprob';
+datadd = [5 6 13 14 21 22]; % change
+datsub = [7 8 15 16 23 24]; % no change
+
+%left hand, all probs
+name = 'L_allprob';
+datadd = [1 2 9 10 17 18];
+datsub = [3 4 11 12 19 20];
 
 %% Analysis / plotting
 GRPEEG=struct;
@@ -92,7 +92,9 @@ for f =files_ana
         no_trials_add = ceil(length(EEG.epoch)*trials_ana);
         totadd = totadd+no_trials_add;
         selecttrials = 1:no_trials_add;
-        ALLEEG(datadd(ad)) = pop_select(EEG,'trial',selecttrials);
+        if no_trials_add>0
+            ALLEEG(datadd(ad)) = pop_select(EEG,'trial',selecttrials);
+        end
     end
     
     totsub = 0;
@@ -101,7 +103,9 @@ for f =files_ana
         no_trials_sub = ceil(length(EEG.epoch)*trials_ana);
         totsub = totsub+no_trials_sub;
         selecttrials = 1:no_trials_sub;
-        ALLEEG(datsub(ad)) = pop_select(EEG,'trial',selecttrials);
+        if no_trials_sub>0
+            ALLEEG(datsub(ad)) = pop_select(EEG,'trial',selecttrials);
+        end
     end
     
     numtrials(f,:)=[totadd totsub];

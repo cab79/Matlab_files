@@ -1,17 +1,14 @@
 clear all
 filepath = 'C:\Data\CORE\Preprocessed_100Hz';
 cd(filepath);
-files = dir('*_conds_ALLEEG.mat');
+files = dir('*ACSTP_conds_ALLEEG.mat');
 trials_ana = 1; % propotion of trials to analyse
 
 %% plot conditions
-for f =59%:length(files)
+for f =2%:length(files)
     [pth nme ext] = fileparts(files(f).name); 
     C = strsplit(nme,'_');
     load(fullfile(filepath,files(f).name));
-    %left hand, all probs
-    datadd = [1 2 9 10 17 18];
-    datsub = [3 4 11 12 19 20];
     
     %left hand, low prob
     datadd = [1 2];
@@ -29,10 +26,6 @@ for f =59%:length(files)
     datadd = [17 18];
     datsub = [19 20];
     
-    %right hand, all probs
-    datadd = [5 6 13 14 21 22];
-    datsub = [7 8 15 16 23 24];
-    
     %right hand, low prob
     datadd = [5 6];
     datsub = [7 8];
@@ -48,6 +41,14 @@ for f =59%:length(files)
     %right hand, low prob, 3 change
     datadd = [6];
     datsub = [8];
+   
+    %right hand, all probs
+    datadd = [5 6 13 14 21 22];
+    datsub = [7 8 15 16 23 24];
+    
+    %left hand, all probs
+    datadd = [1 2 9 10 17 18];
+    datsub = [3 4 11 12 19 20];
     
     totadd = 0;
     for ad = 1:length(datadd)
@@ -72,6 +73,8 @@ for f =59%:length(files)
     
     [erp1 erp2 erpsub] = pop_comperp(ALLEEG, 1, datadd, datsub,'addavg','on','subavg','on','diffavg','on','ylim',[-3 3]);
 end
+
+return
 
 %% plot digits
 %left hand, 3 digit change

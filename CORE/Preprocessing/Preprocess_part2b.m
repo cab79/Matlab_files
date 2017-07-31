@@ -6,7 +6,7 @@ fname_ext = '';
 fname_ext2 = '';
 %fname_ext2 = '_ACSTP';
 fname_ext3 = '';
-files = dir(['*' fname_ext '_merged' fname_ext2 '.set']);
+files = dir(['*_2_*' fname_ext '_merged' fname_ext2 '.set']);
 load('C:\Data\Matlab\Matlab_files\CORE\Supporting_functions\chanlocs.mat');
 
 ALLEEG=struct;
@@ -15,19 +15,21 @@ ALLEEG_save = 1; % 1= save multiple ERPs from one file; 2 = save one ERP from mu
 basebins = [-0.2 0; % for epoching, TSOT(2)
             -0.05 0]; % for epoching, TSOT(4)
         
-files_ana = [47]%1:length(files);
+files_ana = 1:length(files);
 for f = files_ana
-    [pth nme ext] = fileparts(files(f).name); 
-    C = strsplit(nme,'_');
-    EEG = pop_loadset('filename',files(f).name,'filepath',filepath);
-    EEG = FTrejman(EEG,[0 0]);
-    EEG = eeg_interp(EEG,eeg_mergelocs(chanlocs),'spherical');
-    
-    %EEG = EP_den_EEG(EEG,5,[],'do_den_all',[],[],34);
-    
-    %EEG = pop_autorej(EEG, 'nogui','on','threshold',1000,'startprob',15);
-    sname = [C{1} '_' C{2} fname_ext '_merged_cleaned' fname_ext2 '.set'];
-    EEG = pop_saveset(EEG,'filename',sname,'filepath',filepath); 
+    if ~strcmp(fname_ext2,'_ACSTP')
+        [pth nme ext] = fileparts(files(f).name); 
+        C = strsplit(nme,'_');
+        EEG = pop_loadset('filename',files(f).name,'filepath',filepath);
+        EEG = FTrejman(EEG,[0 0]);
+        EEG = eeg_interp(EEG,eeg_mergelocs(chanlocs),'spherical');
+
+        %EEG = EP_den_EEG(EEG,5,[],'do_den_all',[],[],34);
+
+        %EEG = pop_autorej(EEG, 'nogui','on','threshold',1000,'startprob',15);
+        sname = [C{1} '_' C{2} fname_ext '_merged_cleaned' fname_ext2 '.set'];
+        EEG = pop_saveset(EEG,'filename',sname,'filepath',filepath); 
+    end
 end
 
 %for f = files_ana
@@ -52,7 +54,11 @@ end
 for f = files_ana
     [pth nme ext] = fileparts(files(f).name); 
     C = strsplit(nme,'_');
-    EEG = pop_loadset('filename',[C{1} '_' C{2} fname_ext '_merged_cleaned' fname_ext2 fname_ext3 '.set'],'filepath',filepath);
+    if strcmp(fname_ext2,'_ACSTP')
+        EEG = pop_loadset('filename',[C{1} '_' C{2} fname_ext '_merged' fname_ext2 fname_ext3 '.set'],'filepath',filepath);
+    else
+        EEG = pop_loadset('filename',[C{1} '_' C{2} fname_ext '_merged_cleaned' fname_ext2 fname_ext3 '.set'],'filepath',filepath);
+    end
     
     if strcmp(C{2},'2')
         basebin = basebins(1,:);

@@ -23,6 +23,7 @@
 clear all
 close all
 dbstop if error
+plot_on=0;
 %S.use_measure = 'correlation';
 S.use_measure = 'crossvalidation';
 S.parti='take-one-out';
@@ -39,14 +40,21 @@ S.use_chunks = 'balance_targets';
 time_chan_SL=1;
 time_SL =0;
 
-average_train_count = 3; % average over this many trials
-average_train_resamplings = 3; % reuse trials this many times
+% averaging: MAKES CALCULATIONS MUCH SLOWER
+%average_train_count = 1; % average over this many trials
+%average_train_resamplings = 1; % reuse trials this many times
 
-% set time window of interest in ms (advise whole epoch)
-S.timewin = [0 100];
+% set time window of interest in ms (EMPTY: whole epoch)
+%S.timewin = [0 50]; 
+%S.timewin = [50 100]; 
+%S.timewin = [100 150]; 
+%S.timewin = [150 300];  
+S.timewin = [30 50]; 
 
 % choose factor of interest
 S.factcon = 'Odd';
+
+S.runname = 'LDA_part4_timechan_test';
 
 
 %% SPECIFY DATA
@@ -65,7 +73,7 @@ S.outpath = 'C:\Data\CORE\cosmo';
 % the folder
 S.fpref = '';
 S.fmid = '';
-S.fsuff = '_4_cleaned_tm.set';
+S.fsuff = '4_merged_cleaned.set'; balance_dataset_and_partitions =1;
 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 S.pdatfile = 'C:\Data\CORE\SPMstats\Participant_data.xlsx';
@@ -121,10 +129,30 @@ cosmo_check_external('-tic');
 files = dir(fullfile(S.data_path,[S.fpref '*' S.fmid  '*' S.fsuff]));
 cd(S.outpath)
 
-for f = 3%:length(files)
+% create FT channel layout
+cfglayout = 'C:\Data\Matlab\Matlab_files\CORE\cosmo\modified functions\GSN92.sfp';
+cfgoutput = 'C:\Data\Matlab\Matlab_files\CORE\cosmo\modified functions\GSN92.lay';
+cfg.layout = cfglayout;
+cfg.output = cfgoutput;
+layout = ft_prepare_layout(cfg);
+
+rundir=fullfile(S.outpath,[S.runname '_' num2str(S.timewin(1)) '_' num2str(S.timewin(2))]);
+if ~exist(rundir,'dir')
+    mkdir(rundir)
+end
+
+for f = 1%:length(files)
     % load data
     data_fn=fullfile(S.data_path,files(f).name);
     EEG=pop_loadset(data_fn);
+    sname = strsplit(EEG.filename,'_');
+    
+    if isempty(S.timewin)
+        S.timewin = [EEG.xmin EEG.xmax]*1000;
+    end
+    
+    % obtain trial indices
+    [conds, tnums, fnums, bnums] = get_markers(EEG);
     
     % convert to cosmomvpa struct
     %ds_tl=cosmo_meeg_dataset(EEG,'data_field','data');
@@ -142,6 +170,9 @@ for f = 3%:length(files)
         end
         clear EEGflip ds_tl_flip
     end
+    
+    % assign full dataset
+    ds_tl_full=ds_tl;
 
     % reduce conditions to factors of interest
     factind = find(strcmp(S.factors,S.factcon));
@@ -169,6 +200,21 @@ for f = 3%:length(files)
 
     % set the chunks (independent measurements)
     ds_tl.sa.chunks=[1:size(ds_tl.samples,1)]';
+    
+    if balance_dataset_and_partitions
+        ds_tl_orig = ds_tl;
+        ti_orig = ti;
+        [ds_tl,idxs,classes]=cosmo_balance_dataset(ds_tl);
+        ti = nan(size(ds_tl.sa.trialinfo));
+        for i = targ
+            factcon{i} = find(condana==i);
+            for c = 1:length(factcon{i})
+                ti(find(ds_tl.sa.trialinfo(:,1)==factcon{i}(c)),1)=i;
+            end
+            condind = find(ti(:,1)==i);
+            ti(condind,2) = 1:length(condind);
+        end
+    end
 
     % get rid of features with at least one NaN value across samples
     fa_nan_mask=sum(isnan(ds_tl.samples),1)>0;
@@ -204,7 +250,9 @@ for f = 3%:length(files)
         % the partitions are *balanced*, i.e. each target (or class) is presented
         % equally often in each chunk
         partitions=cosmo_nchoosek_partitioner(ds_tl,1);
-        partitions=cosmo_balance_partitions(partitions, ds_tl);
+        if balance_dataset_and_partitions
+            partitions=cosmo_balance_partitions(partitions, ds_tl);
+        end
     elseif strcmp(S.parti,'splithalf')
         % split-half, if there are just two chunks
         % (when using a classifier, do not use 'half' but the number of chunks to
@@ -229,9 +277,6 @@ for f = 3%:length(files)
     time_nbrhood=cosmo_interval_neighborhood(ds_tl,'time',...
                                                 'radius',time_radius);
                                             
-    cfg.layout = 'C:\Data\Matlab\Matlab_files\CORE\cosmo\modified functions\GSN92.sfp';
-    cfg.output = 'C:\Data\Matlab\Matlab_files\CORE\cosmo\modified functions\GSN92.lay';
-    layout = ft_prepare_layout(cfg);
     if time_SL
         nbrhood=time_nbrhood;
         nbrhood_nfeatures=cellfun(@numel,nbrhood.neighbors);
@@ -241,8 +286,8 @@ for f = 3%:length(files)
         % define the neighborhood for channels
         cfg.senstype ='EEG';
         cfg.method = 'triangulation';
-        cfg.elecfile=cfg.layout;
-        cfg.layout=cfg.output;
+        cfg.elecfile=cfglayout;
+        cfg.layout=cfgoutput;
         ft_nbrs = ft_prepare_neighbours(cfg);
         chan_nbrhood=cosmo_meeg_chan_neighborhood(ds_tl, ft_nbrs);
         
@@ -265,8 +310,17 @@ for f = 3%:length(files)
         % (classifier and partitions) in a measure_args struct.
         measure = @cosmo_crossvalidation_measure_CAB;
         h0_mean = 1/length(targ);
-        measure_args.average_train_count = average_train_count; 
-        measure_args.average_train_resamplings =average_train_resamplings;
+        try
+            measure_args.average_train_count = average_train_count; 
+            measure_args.average_train_resamplings =average_train_resamplings;
+        end
+        measure_args.priors = []; % leave blank to calculate from data
+        if ~balance_dataset_and_partitions
+            measure_args.check_partitions=0;
+            %average_train_count = 1; % average over this many trials
+            %average_train_resamplings = 1; % reuse trials this many times
+        end
+        %measure_args.priors = [sum(ti(:,1)==1),sum(ti(:,1)==2)];
     elseif strcmp(S.use_measure,'correlation')
 
         %% measure: correlation
@@ -318,7 +372,11 @@ for f = 3%:length(files)
     % map to FT struct for visualization 
     if isfield(sl_tl_ds,'weights') 
         weights=sl_tl_ds.weights; 
+        offsets=sl_tl_ds.offsets; 
+        prior=sl_tl_ds.prior; 
         sl_tl_ds = rmfield(sl_tl_ds,'weights'); 
+        sl_tl_ds = rmfield(sl_tl_ds,'offsets'); 
+        sl_tl_ds = rmfield(sl_tl_ds,'prior');
     end
     
     if time_SL
@@ -336,25 +394,27 @@ for f = 3%:length(files)
         % correct so that zero = chance accuracy
         %sl_tl_ft.avg = sl_tl_ft.avg-1/length(targ);
 
-        figure();
-        cfg = [];
-        cfg.interactive = 'yes';
-        cfg.zlim=[-1 1];
-        cfg.ylim ='maxmin';
-        cfg.baseline='no';
-        cfg.layout       = layout;
+        if plot_on
+            figure();
+            cfg = [];
+            cfg.interactive = 'yes';
+            cfg.zlim=[-1 1];
+            cfg.ylim ='maxmin';
+            cfg.baseline='no';
+            cfg.layout       = layout;
 
-        % show figure with plots for each sensor
-        ft_multiplotER(cfg, sl_tl_ft);
+            % show figure with plots for each sensor
+            ft_multiplotER(cfg, sl_tl_ft);
 
-        %% visualize topology results
-        % show figure with topology for 0 to 600ms after stimulus onset in bins of
-        % 100 ms
-        figure();
-        cfg.xlim=0:0.005:0.1;
-        cfg.zlim='maxmin';
-        cfg.commentpos ='middlebottom';
-        ft_topoplotER(cfg, sl_tl_ft);
+            %% visualize topology results
+            % show figure with topology for 0 to 600ms after stimulus onset in bins of
+            % 100 ms
+            figure();
+            cfg.xlim=0:0.005:0.1;
+            cfg.zlim='maxmin';
+            cfg.commentpos ='middlebottom';
+            ft_topoplotER(cfg, sl_tl_ft);
+        end
 
         %% for each feature and class, obtain all weights for that feature
         % obtained from analysis of neighbouring features
@@ -369,11 +429,20 @@ for f = 3%:length(files)
                         weicell{2,idx} = [weicell{2,idx},weights{w}(2,i)];
                     end
                 end
+                offmat(1,w) = offsets{w}(1); 
+                offmat(2,w) = offsets{w}(2);
+                primat(1,w) = prior{w}(1); 
+                primat(2,w) = prior{w}(2);
             end
             for w = 1:length(weicell)
-                weimat(:,w) = mean(vertcat(weicell{:,w}),2);
+                weimat(:,w) = mean(vertcat(weicell{:,w}),2)/length(weicell{1,w}); % weights should get proportionally smaller with the number of features
             end
+            offmat = mean(offmat,2);
+            primat = mean(primat,2);
             weimat(find(all(isnan(weimat),2)),:) =[]; % remove NaN rows
+            offmat(find(all(isnan(offmat),2)),:) =[]; % remove NaN rows
+            primat(find(all(isnan(primat),2)),:) =[]; % remove NaN rows
+            
             for t = 1:size(weimat,1)
                 sl_wei{t}=sl_tl_ds;
                 sl_wei{t}.samples=weimat(t,:);
@@ -382,67 +451,106 @@ for f = 3%:length(files)
                 sl_wei{t+1}=sl_wei{t};
                 sl_wei{t+1}.samples = weimat(1,:)-weimat(2,:);
             end
-            for t = 1:size(sl_wei,2)
-                sl_wei_ft{t}=cosmo_map2meeg(sl_wei{t});
-                figure();
-                cfg = [];
-                cfg.interactive = 'yes';
-                cfg.zlim=[-1 1];
-                cfg.ylim ='maxmin';
-                cfg.baseline='no';
-                cfg.layout       = layout;
+            if plot_on
+                for t = 1:size(sl_wei,2)
+                    sl_wei_ft{t}=cosmo_map2meeg(sl_wei{t});
+                    figure();
+                    cfg = [];
+                    cfg.interactive = 'yes';
+                    cfg.zlim=[-1 1];
+                    cfg.ylim ='maxmin';
+                    cfg.baseline='no';
+                    cfg.layout       = layout;
 
-                % show figure with plots for each sensor
-                ft_multiplotER(cfg, sl_wei_ft{t});
+                    % show figure with plots for each sensor
+                    ft_multiplotER(cfg, sl_wei_ft{t});
 
-                % visualize topology results
-                figure();
-                cfg.xlim=0:0.005:0.1;
-                cfg.zlim='maxmin';
-                cfg.commentpos ='middlebottom';
-                ft_topoplotER(cfg, sl_wei_ft{t});
+                    % visualize topology results
+                    figure();
+                    cfg.xlim=0:0.005:0.1;
+                    cfg.zlim='maxmin';
+                    cfg.commentpos ='middlebottom';
+                    ft_topoplotER(cfg, sl_wei_ft{t});
+                end
             end
 
         end
         %% 1 sample t-test
-        opt=struct();
-        opt.h0_mean=h0_mean;
-        sl_tl_ds.sa.targets =1;
-        sl_tl_ds.sa.chunks =1;
+     %   opt=struct();
+     %   opt.h0_mean=h0_mean;
+     %   sl_tl_ds.sa.targets =1;
+     %   sl_tl_ds.sa.chunks =1;
         % set the number of iterations.
         % At least 10000 is adviced for publication-quality analyses; because that
         % takes quite a while to compute, here we use 200
-        opt.niter=200;
-        cl_nh=cosmo_cluster_neighborhood(sl_tl_ds);
-        tfce_sl_tl_ds=cosmo_montecarlo_cluster_stat(...
-                                            sl_tl_ds,cl_nh,opt);
-        save(fullfile(S.outpath,['testrun_' datestr(now,30)]),'sl_tl_ds','weights','weimat','nbrhood');
+     %   opt.niter=200;
+     %   cl_nh=cosmo_cluster_neighborhood(sl_tl_ds);
+     %   tfce_sl_tl_ds=cosmo_montecarlo_cluster_stat(...
+     %                                       sl_tl_ds,cl_nh,opt);
+        save(fullfile(rundir,[sname{1} '_' sname{2} '_SLdata.mat']),'sl_tl_ds','weimat','offmat','primat','nbrhood');
     end
     
     %% create thresholded weight map
-    thresh = 0.51;
-    wmt = weimat(1,:)-weimat(2,:);
-    wmt(sl_tl_ds.samples(1,:)<thresh)=NaN;
-    sl_wmt{t}=sl_tl_ds;
-    sl_wmt{t}.samples=wmt;
-    sl_wmt_ft=cosmo_map2meeg(sl_wmt);
-    figure();
-    cfg = [];
-    cfg.interactive = 'yes';
-    cfg.zlim=[-1 1];
-    cfg.ylim ='maxmin';
-    cfg.baseline='no';
-    cfg.layout       = layout;
+    if plot_on
+        thresh = 0;
+        wmt = weimat(1,:)-weimat(2,:);
+        wmt(sl_tl_ds.samples(1,:)<thresh)=0;
+        sl_wmt=sl_tl_ds;
+        sl_wmt.samples=wmt;
+        sl_wmt_ft=cosmo_map2meeg(sl_wmt);
+        figure();
+        cfg = [];
+        cfg.interactive = 'yes';
+        cfg.zlim=[-1 1];
+        cfg.ylim ='maxmin';
+        cfg.baseline='no';
+        cfg.layout       = layout;
 
-    % show figure with plots for each sensor
-    ft_multiplotER(cfg, sl_wmt_ft{t});
+        % show figure with plots for each sensor
+        ft_multiplotER(cfg, sl_wmt_ft);
 
-    % visualize topology results
-    figure();
-    cfg.xlim=0:0.005:0.1;
-    cfg.zlim='maxmin';
-    cfg.commentpos ='middlebottom';
-    ft_topoplotER(cfg, sl_wmt_ft{t});
+        % visualize topology results
+        figure();
+        cfg.xlim=0:0.005:0.1;
+        cfg.zlim='maxmin';%[-0.0005 0.0005];%
+        cfg.commentpos ='middlebottom';
+        ft_topoplotER(cfg, sl_wmt_ft);
+    end
+    
+    % create mismatch estimate over trials of original data
+    if ~exist('ds_tl_orig','var')
+        ds_tl_orig=ds_tl;
+        ti_orig=ti;
+    end
+    
+    % calculate projection on all trials from factor of interest
+    class_proj=bsxfun(@plus,offmat+primat,weimat*ds_tl_orig.samples');
+    mm = class_proj(1,:)-class_proj(2,:);
+    class1=targ(1)*single(mm>0);%CAB 
+    class2=targ(2)*single(mm<=0);%CAB 
+    predicted=class1+class2;%CAB 
+    correct=bsxfun(@eq,ti_orig(:,1)',predicted);
+    accuracy=[sum(correct)/length(ti_orig(:,1)) sum(ti_orig(:,1)==1)/length(ti_orig(:,1))]
+    ratio = accuracy(1)/accuracy(2)
+    
+    % generate t stats
+    [h,p,ci,stats] = ttest2(mm(ti_orig(:,1)==1),mm(ti_orig(:,1)==2))
+    if plot_on
+        figure
+        plot(mm)
+        figure
+        scatter(ti_orig(:,1),mm');
+    end
+    
+    % calculate projection on all trials including previously excluded
+    % factors
+    class_proj=bsxfun(@plus,offmat+primat,weimat*ds_tl_full.samples');
+    mm = class_proj(1,:)-class_proj(2,:);
+    
+    % save
+    
+    save(fullfile(rundir,[sname{1} '_' sname{2} '_mm_projection.mat']),'mm','class_proj','ti_orig','tnums','predicted');
+    
     %
     if EEGLAB_logit
         fc = find(filter_cond);

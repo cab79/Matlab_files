@@ -9,23 +9,23 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Matlab_files\CORE\SPManalysis\Sensor\Design_batch_Grp.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\CORE\SPManalysis\Sensor\Design_batch_Grp.m';
 % template flexible factorial matlabbatch
-D.ffbatch = 'C:\CORE\SPMstats\matlabbatch_flexiblefactorial_template';
+D.ffbatch = 'C:\Data\CORE\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
-D.npbatch = 'C:\CORE\SPMstats\matlabbatch_SnPM_template';
+D.npbatch = 'C:\Data\CORE\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\CORE\SPMdata\sensorimages';
+D.data_path = 'C:\Data\CORE\SPMdata\sensorimages';
 % directory in which image masks are saved
-D.mask_path = 'C:\CORE\SPMdata\masks';
+D.mask_path = 'C:\Data\CORE\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
-D.pdatfile = 'C:\CORE\SPMstats\Participant_data.xlsx';
+D.pdatfile = 'C:\Data\CORE\Participant_data.xlsx';
 % names of headers in the above xls file:
     D.subhead = 'Subject';
     D.grphead = 'Group';
     D.inchead = 'Include';
 % directory in which SPM analyses will be saved (new folder created)
-D.spmstats_path = 'C:\CORE\SPMstats';
+D.spmstats_path = 'C:\Data\CORE\SPMstats';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -42,18 +42,43 @@ D.identifier=''; % optional identifer to add to end of outputted SPM folder name
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % list of image names within each subject folder
-D.imglist = {'scondition_1-3.nii'
-            'scondition_2-4.nii'
-            'scondition_5-7_flip.nii'
-            'scondition_6-8_flip.nii'
-            'scondition_9-11.nii'
-            'scondition_10-12.nii'
-            'scondition_13-15_flip.nii'
-            'scondition_14-16_flip.nii'
-            'scondition_17-19.nii'
-            'scondition_18-20.nii'
-            'scondition_21-23_flip.nii'
-            'scondition_22-24_flip.nii'};
+D.imglist = {'scondition_1.nii'
+            'scondition_2.nii'
+            'scondition_3.nii'
+            'scondition_4.nii'
+            'scondition_5_flip.nii'
+            'scondition_6_flip.nii'
+            'scondition_7_flip.nii'
+            'scondition_8_flip.nii'
+            'scondition_9.nii'
+            'scondition_10.nii'
+            'scondition_11.nii'
+            'scondition_12.nii'
+            'scondition_13_flip.nii'
+            'scondition_14_flip.nii'
+            'scondition_15_flip.nii'
+            'scondition_16_flip.nii'
+            'scondition_17.nii'
+            'scondition_18.nii'
+            'scondition_19.nii'
+            'scondition_20.nii'
+            'scondition_21_flip.nii'
+            'scondition_22_flip.nii'
+            'scondition_23_flip.nii'
+            'scondition_24_flip.nii'};
+        
+%D.imglist = {'scondition_1-3.nii'
+%            'scondition_2-4.nii'
+%            'scondition_5-7_flip.nii'
+%            'scondition_6-8_flip.nii'
+%            'scondition_9-11.nii'
+%            'scondition_10-12.nii'
+%            'scondition_13-15_flip.nii'
+%            'scondition_14-16_flip.nii'
+%            'scondition_17-19.nii'
+%            'scondition_18-20.nii'
+%            'scondition_21-23_flip.nii'
+%            'scondition_22-24_flip.nii'};
         
 %% analysis design and parameters
 %-------------------------------------------------------------
@@ -62,25 +87,52 @@ D.imglist = {'scondition_1-3.nii'
 % interaction with SnPM it will output all 2-way interactions (actually, t-tests on subtracted data)
 D.para = 1;
 % specify a time window to analyse
-D.time_ana = []; % applies a mask to the data
+D.time_ana = [0 299]; % applies a mask to the data
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
 D.cond_list = [
               1 1
-              1 2
               1 1
               1 2
+              1 2
+              1 1
+              1 1
+              1 2
+              1 2
+              2 1
               2 1
               2 2
+              2 2
+              2 1
               2 1
               2 2
+              2 2
+              3 1
               3 1
               3 2
+              3 2
               3 1
+              3 1
+              3 2
               3 2
               ];
+%D.cond_list = [
+%              1 1
+%              1 2
+%              1 1
+%              1 2
+%              2 1
+%              2 2
+%              2 1
+%              2 2
+%              3 1
+%              3 2
+%              3 1
+%              3 2
+%              ];
+          
 % factors and statistical model
-D.factors = {'CP', 'Grp', 'DC', 'Subject'}; % must include a subject factor at the end
+D.factors = {'CP', 'Grp', 'Odd', 'Subject'}; % must include a subject factor at the end
 D.factortype = {'w','g','w','s'}; % w = within, s = subject, g = subject group
 
 % Main effects and interactions: 
@@ -106,25 +158,25 @@ D.GMsca = [0 0 0 0]; %grand mean scaling
 D.ancova = [0 0 0 0]; %covariate
 % after model estimation, constrasts to display (SPM, not SnPM)
 D.fcontrasts = {
-    [1 -1 -1 1 -1 1 1 -1 0 0 0 0; 0 0 0 0 1 -1 -1 1 -1 1 1 -1], 'CP * Grp * DC'
+    [1 -1 -1 1 -1 1 1 -1 0 0 0 0; 0 0 0 0 1 -1 -1 1 -1 1 1 -1], 'CP * Grp * Odd'
     [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Grp'
-    [1 -1 1 -1 -1 1 -1 1 0 0 0 0; 0 0 0 0 1 -1 1 -1 -1 1 -1 1], 'CP * DC'
-    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * DC'
+    [1 -1 1 -1 -1 1 -1 1 0 0 0 0; 0 0 0 0 1 -1 1 -1 -1 1 -1 1], 'CP * Odd'
+    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * Odd'
     [1 1 1 1 -1 -1 -1 -1 0 0 0 0; 0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP'
     [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp'
-    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC'
+    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'Odd'
     };
 D.tcontrasts = {
     [-1 -1 1 1 1 1 -1 -1 0 0 0 0], 'CP12 * Grp'
     [0 0 0 0 -1 -1 1 1 1 1 -1 -1], 'CP23 * Grp'
-    [-1 1 1 -1 -1 1 1 -1 -1 1 1 -1], 'Grp * DC1'
-    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * DC3'
+    [-1 1 1 -1 -1 1 1 -1 -1 1 1 -1], 'Grp * Odd1'
+    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * Odd3'
     [1 1 1 1 -1 -1 -1 -1 0 0 0 0], 'CP12'
     [0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP23'
     [-1 -1 1 1 -1 -1 1 1 -1 -1 1 1], 'Grp 1'
     [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp 2'
-    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC1'
-    [-1 1 -1 1 -1 1 -1 1 -1 1 -1 1], 'DC3'
+    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'Odd1'
+    [-1 1 -1 1 -1 1 -1 1 -1 1 -1 1], 'Odd3'
     };
 
 % the following are for SnPM, not SPM

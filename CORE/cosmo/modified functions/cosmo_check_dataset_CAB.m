@@ -222,7 +222,7 @@ function msg=check_fields(ds)
         return;
     end
 
-    delta=setdiff(fieldnames(ds),{'samples','fa','sa','a','weights'}); % CAB
+    delta=setdiff(fieldnames(ds),{'samples','fa','sa','a','weights','offsets','prior'}); % CAB
     if ~isempty(delta)
         msg=sprintf('illegal field .%s', delta{1});
         return

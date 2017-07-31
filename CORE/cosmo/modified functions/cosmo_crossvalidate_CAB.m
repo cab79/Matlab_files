@@ -1,4 +1,4 @@
-function [pred, accuracy, wei] = cosmo_crossvalidate_CAB(ds, classifier, partitions, opt)
+function [pred, accuracy, wei,off,prior] = cosmo_crossvalidate_CAB(ds, classifier, partitions, opt)
 % performs cross-validation using a classifier
 %
 % [pred, accuracy] = cosmo_crossvalidate(dataset, classifier, partitions, opt)
@@ -184,6 +184,8 @@ function [pred, accuracy, wei] = cosmo_crossvalidate_CAB(ds, classifier, partiti
     
     ntarg = length(unique(targets)); % CAB
     wei=NaN(ntarg,nfeat,npartitions); % CAB
+    off=NaN(ntarg,npartitions); % CAB
+    prior=NaN(ntarg,npartitions); % CAB
 
     % process each fold
     for fold=1:npartitions
@@ -228,6 +230,8 @@ function [pred, accuracy, wei] = cosmo_crossvalidate_CAB(ds, classifier, partiti
         try
             [p, model] = classifier(train_data, train_targets, test_data, opt);
             wei(1:size(model.class_weight,1),:,fold) = model.class_weight;
+            off(1:size(model.class_offset,1),fold) = model.class_offset;
+            prior(1:size(model.class_offset,1),fold) = model.class_prior;
         catch
             p = classifier(train_data, train_targets, test_data, opt);
         end

@@ -170,24 +170,24 @@ function [predicted, model] = cosmo_classify_lda_CAB(samples_train, targets_trai
                 msk=targets_train==classes(k);
 
                 % number of samples in k-th class
-                n=sum(msk);
+                n(k)=sum(msk);
 
                 if k==1
-                    if n<2
+                    if n(k)<2
                         error(['Need at least two samples per class '...
                                     'in training']);
                     end
-                    nfirst=n; % keep track of number of samples
-                elseif nfirst~=n
-                    error(['Different number of classes (%d and %d) - this '...
-                            'is not supported. When using partitions, '...
-                            'consider using cosmo_balance_partitions'], ...
-                             n, nfirst);
+                    nfirst=n(k); % keep track of number of samples
+                %elseif nfirst~=n(k)
+                %    error(['Different number of classes (%d and %d) - this '...
+                %            'is not supported. When using partitions, '...
+                %            'consider using cosmo_balance_partitions'], ...
+                %             n(k), nfirst);
                 end
 
                 class_samples=samples_train(msk,:);
 
-                class_mean(k,:) = sum(class_samples,1)/n; % class mean
+                class_mean(k,:) = sum(class_samples,1)/n(k); % class mean
                 res = bsxfun(@minus,class_samples,class_mean(k,:)); % residuals
                 class_cov = class_cov+res'*res; % estimate common covariance matrix
             end;
@@ -196,15 +196,26 @@ function [predicted, model] = cosmo_classify_lda_CAB(samples_train, targets_trai
             class_cov=class_cov/ntrain;
             reg=eye(nfeatures)*trace(class_cov)/max(1,nfeatures);
             class_cov_reg=class_cov+reg*regularization;
+            
+            % Assign prior probabilities
+            if  ~isempty(opt.priors)
+                % Use the user-supplied priors
+                PriorProb = opt.priors;
+            else
+                % Use the sample probabilities
+                PriorProb = n / ntrain;
+            end
 
             % linear discriminant
             class_weight=class_mean/class_cov_reg;
-            class_offset=sum(class_weight .* class_mean,2);
+            class_offset=-.5*sum(class_weight .* class_mean,2);
+            class_prior =log(PriorProb)'; %CAB added priorprob
 
             model=struct();
             model.class_offset=class_offset;
             model.class_weight=class_weight;
             model.classes=classes;
+            model.class_prior=class_prior;
         end
 
 function predicted=test(model, samples_test)
@@ -212,6 +223,7 @@ function predicted=test(model, samples_test)
 
     class_offset=model.class_offset;
     class_weight=model.class_weight;
+    class_prior=model.class_prior;
     classes=model.classes;
 
     if size(samples_test,2)~=size(class_weight,2)
@@ -221,9 +233,9 @@ function predicted=test(model, samples_test)
     
 
     if size(class_weight,1)==1 %CAB - use logit
-        class_proj=bsxfun(@plus,class_offset,class_weight*samples_test');
+        class_proj=bsxfun(@plus,class_offset+class_prior,class_weight*samples_test');
     else
-        class_proj=bsxfun(@plus,-.5*class_offset,class_weight*samples_test');
+        class_proj=bsxfun(@plus,class_offset+class_prior,class_weight*samples_test');
         class_proj = class_proj(1,:)-class_proj(2,:);
     end
     class1=classes(1)*single(class_proj>0);%CAB 

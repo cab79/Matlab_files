@@ -7,14 +7,12 @@ batchpath = 'C:\Data\Matlab\Matlab_files\CORE\SPManalysis\Sensor';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
-fpref = 'spm12';
+%fpref = 'spm12';conds=1:24; 
+fpref = 'spm12_blockmismatch';conds=1:12; 
 fmid = '';
 %fsuff = '4_merged_cleaned.mat';
-fsuff = '_4_merged_cleaned.mat';
+fsuff = '_4_cleaned_tm.mat';
 
-%for ordering conditions
-conds=1:24;
-conditionlabels = cellfun(@num2str, num2cell(conds), 'UniformOutput', false);
 
 %% SPECIFY OPTIONS
 
@@ -41,11 +39,7 @@ mode = 'scalp x time';
 % time and frequecy windows
 freqwin = []; % empty if not requiring freq analysis
 timewin = [-200 299]; % empty will include whole epoch
-basewin = [-200 0]; % empty will not baseline correct
-%timewin = [-3000 0]; % empty will include whole epoch
-%basewin = [-3000 -2500]; % empty will not baseline correct
-%timewin = [-500 1500]; % empty will include whole epoch
-%basewin = [-500 0]; % empty will not baseline correct
+basewin = [-50 0]; % empty will not baseline correct
 
 %smooth output images (specify FWHM or 0 for no smoothing)
 spmsmooth = 20;
@@ -125,6 +119,7 @@ for f = files_ana
         end
         
         % prepare file: order conditions
+        conditionlabels = cellfun(@num2str, num2cell(conds), 'UniformOutput', false);
         if ~isempty(conditionlabels)
             matlabbatch{1}.spm.meeg.preproc.prepare.D = {S.D};
             matlabbatch{1}.spm.meeg.preproc.prepare.task{1}.sortconditions.label = conditionlabels;
