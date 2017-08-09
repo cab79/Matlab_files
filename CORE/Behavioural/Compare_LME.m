@@ -19,31 +19,78 @@ models = {
     %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT-4alphas\results'; % parameter estimability is poor
     %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT-4alpri\results'; % parameter estimability is poor
     %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF\results'; % parameter estimability is poor
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF2\results'; % parameter estimability is poor
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF2-alt\results'; % parameter estimability is poor
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev-soft\results'; % parameter estimability is poor
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-soft\results'; % parameter estimability is poor
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT-soft\results'; % parameter estimability is poor
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev-RT\results'; % parameter estimability is poor
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-RT\results'; % parameter estimability is poor
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-RT-newprior\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT-RT\results'; % parameter estimability is poor
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev-RTsoft\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_RTsoft_new\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-RTsoft\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT-RTsoft\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-RTsoft-b0\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-RTsoft-b1\results';
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-RTsoft-b5\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-RTsoft-b0s0\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-RTsoft-b1s0\results';
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF-RTsoft-b5s0\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT-RTsoft-b0s0\results'; 
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT-RTsoft-b1s0\results';
-    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT-RTsoft-b5s0\results'; 
-    'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mm\results';
-    'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mmtrials\results';
-    'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mmtrials_mmpos\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF2\results'; % parameter estimability is poor 
+    
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_soft_noprior\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_soft\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_soft\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_soft\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RT_noprior\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RT\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_RT\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_RT\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RTsoft_noprior\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RTsoft\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_RTsoft\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_RTsoft\results';
+    
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_soft_a4_noprior\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_soft_a4\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_soft_a4\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_soft_a4\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RT_a4_noprior\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RT_a4\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_RT_a4\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_RT_a4\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RTsoft_a4_noprior\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RTsoft_a4\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_RTsoft_a4\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_RTsoft_a4\results';
+    
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_soft_a2_noprior\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_soft_a2\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_soft_a2\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_soft_a2\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RT_a2_noprior\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RT_a2\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_RT_a2\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_RT_a2\results';
+    
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_sd1\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_mm_thresh_sd1\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mm_thresh_sd1\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_mm_thresh_sd1\results';
+    
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_sd1\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_mm_thresh_b0_sd1\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mm_thresh_b0_sd1\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_mm_thresh_b0_sd1\results';
+    
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_sd05\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_mm_thresh_b0_sd05\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mm_thresh_b0_sd05\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_mm_thresh_b0_sd05\results';
+    
+   % 'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_sd0\results';
+   % 'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_mm_thresh_b0_sd0\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mm_thresh_b0_sd0\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_mm_thresh_b0_sd0\results';
+    
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_sd15\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_mm_thresh_b0_sd15\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mm_thresh_b0_sd15\results';
+    %'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_mm_thresh_b0_sd15\results';
+    
+    'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_mmtrials\results';
+    'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_mm_thresh_b0_mmtrials\results';
+    'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mm_thresh_b0_mmtrials\results';
+    'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_mm_thresh_b0_mmtrials\results';
+    
+    'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_sd05_0-150\results';
+    'C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_mm_thresh_b0_sd05_0-150\results';
+    'C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mm_thresh_b0_sd05_0-150\results';
+    'C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_mm_thresh_b0_sd05_0-150\results';
+    
     };
 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -58,9 +105,11 @@ grp_col = find(strcmp(pdata(1,:),grphead));
 inc_col = find(strcmp(pdata(1,:),inchead));
 inc_idx = cellfun(@(x) ismember(x,include_codes), pdata(2:end,inc_col), 'UniformOutput', 0);
 inc_idx = find(cell2mat(inc_idx));
-grp = pdata(1+inc_idx,grp_col);
+grp = pdata(2:end,grp_col);
 [grpuni,~,grpnum] = unique(grp);
+grpnum = grpnum(inc_idx);
 
+%% Compare LME
 for m = 1:length(models)
     fname = [models{m} '.xlsx'];
     T = readtable([fname]);
@@ -68,9 +117,37 @@ for m = 1:length(models)
     for g = 1:length(grpuni)
         gdat{1,g}(m,:) = T.LME_av(grpnum==g)';
     end
-    g_all(m,:) = T.LME_av';
+    g_all(m,:) = T.LME_av(grpnum>0)';
 end
-
 [h, p] = VBA_groupBMC_btwGroups(gdat)
 %[g_all_posterior,g_all_out] = VBA_groupBMC(g_all);
 
+
+if 0
+    %% Compare parameters
+    paraname = 'al0'; % first part of name common to all names
+    % compare rows (meaned within rows)
+    paranum = [1;2]; % 
+               %3;4]; % 
+    for m = 1:length(models)
+        fname = [models{m} '.xlsx'];
+        T = readtable([fname]);
+        hdr = T.Properties.VariableNames;
+        temp = strfind(hdr,paraname);
+        hi = find(not(cellfun('isempty', temp)));
+        xy=[];
+        for pn = 1:size(paranum,1)
+            pi=paranum(pn,:);
+            pv=[];
+            for pii = 1:length(pi)
+                pv(:,pii)=T.(hdr{hi(paranum(pn,pii))});
+            end
+            xy(:,pn)=reshape(pv,1,[]);
+        end
+        pval(m) = friedman(xy,pii,'off');
+        %figure;errorbar(1:size(xy,2),mean(xy),std(xy))
+        cind = repmat(1:size(xy,2),size(xy,1),1);
+        figure;line(1:size(xy,2),xy);
+        title(models{m})
+    end
+end

@@ -1,6 +1,7 @@
 function dataimport_bv(filepath, basename, parts, combine, savepath)% use the very specific file name, and the whole of it!
 
-eval(['cd ' filepath]);
+%eval(['cd ' filepath]);
+eval(sprintf('%s', ['cd(''' filepath ''')']));
 
 chanexcl = [31,32];
 

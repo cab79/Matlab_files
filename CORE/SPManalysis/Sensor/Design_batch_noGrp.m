@@ -19,7 +19,7 @@ D.data_path = 'C:\Data\CORE\SPMdata\sensorimages';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\CORE\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
-D.pdatfile = 'C:\Data\CORE\SPMstats\Participant_data.xlsx';
+D.pdatfile = 'C:\Data\CORE\Participant_data.xlsx';
 % names of headers in the above xls file:
     D.subhead = 'Subject';
     D.grphead = 'Group';
@@ -34,7 +34,7 @@ D.anapref = 't-200_299_b-200_0'; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_'; % generic prefix for the SPM file type
-D.subdirsuff = '_4_merged_cleaned'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_4_cleaned_tm'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
 D.identifier=''; % optional identifer to add to end of outputted SPM folder name
@@ -74,7 +74,7 @@ D.imglist = {'scondition_1.nii'
 % interaction with SnPM it will output all 2-way interactions (actually, t-tests on subtracted data)
 D.para = 1;
 % specify a time window to analyse
-D.time_ana = []; % applies a mask to the data
+D.time_ana = [0 299]; % applies a mask to the data
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
 D.cond_list = [
@@ -133,9 +133,9 @@ D.fcontrasts = {
     [1 -1 -1 1 -1 1 1 -1 0 0 0 0; 0 0 0 0 1 -1 -1 1 -1 1 1 -1], 'CP * Odd * DC'
     [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Odd'
     [1 -1 1 -1 -1 1 -1 1 0 0 0 0; 0 0 0 0 1 -1 1 -1 -1 1 -1 1], 'CP * DC'
-    [1 -1 -1 1 1 -1 -1 1 0 0 0 0], 'Odd * DC'
+    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Odd * DC'
     [1 1 1 1 -1 -1 -1 -1 0 0 0 0; 0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP'
-    [1 1 -1 -1 1 1 -1 -1 0 0 0 0], 'Odd'
+    [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Odd'
     [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC'
     };
 D.tcontrasts = {
@@ -145,8 +145,8 @@ D.tcontrasts = {
     [1 -1 -1 1 1 -1 -1 1 0 0 0 0], 'Odd * DC3'
     [1 1 1 1 -1 -1 -1 -1 0 0 0 0], 'CP12'
     [0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP23'
-    [-1 -1 1 1 -1 -1 1 1 0 0 0 0], 'Odd'
-    [1 1 -1 -1 1 1 -1 -1 0 0 0 0], 'Stan'
+    [-1 -1 1 1 -1 -1 1 1 -1 -1 1 1], 'Odd'
+    [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Stan'
     [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC1'
     [-1 1 -1 1 -1 1 -1 1 -1 1 -1 1], 'DC3'
     };

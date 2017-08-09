@@ -1,20 +1,21 @@
 clear all
+dbstop if error
 addpath('C:\Data\Matlab\Matlab_files\CORE\Experiment');
 addpath('C:\Data\Matlab\HGF\HGFv5.0');
 addpath('C:\Data\Matlab\Matlab_files\CORE\Behavioural\HGF_functions')
 
 dname='C:\Data\CORE\Design';
 rname='C:\Data\CORE\Behaviour';
-aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mm_thresh'; bayes_opt=0; part='part4';
+aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_sd05_0-150'; bayes_opt=0; part='part4';
 %aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mmpredict_soft'; bayes_opt=0; part='part4';
-%aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_soft'; bayes_opt=0; part='part2';
+%aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_soft_a2'; bayes_opt=0; part='part2';
 %aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_Bayes_part4'; bayes_opt=0; part='part2';
 %cd(rname);
 
 % directory containing cosmo projections - part4 analysis only
 cosdir = 'C:\Data\CORE\cosmo';
 % range of cosdir extensions, each with different MM projections
-cosdirext = {'LDA_part4_timechan'};
+cosdirext = {'LDA_part4_timechan_0_150'};
 % generic filename
 cosname = '_4_mm_projection.mat';
 % options
@@ -31,14 +32,14 @@ acc = 0;
 %ic = [1 2 3 4 5 6 7]; prc_config = 'tapas_hgf_binary_pu_CORE_config'; % "alpha 7"
 %ic = [1 2 3 4 NaN NaN NaN]; prc_config = 'tapas_hgf_binary_pu_CORE_config_alpha4'; % "alpha 4"
 %ic = [1 1 2 2 NaN NaN NaN]; prc_config = 'tapas_hgf_binary_pu_CORE_config_alpha2';% "alpha 2a"
-%ic = [1 2 1 2 NaN NaN NaN]; prc_config = 'tapas_hgf_binary_pu_CORE_config_alpha2';% "alpha 2b"
+%ic = [1 2 1 2 NaN NaN NaN]; prc_config = 'GBM_config_3lev'; obs_config = 'logrt_softmax_binary_soft_config'; nstim=[];% either muin or alphain set to 4
 %ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'tapas_hgf_binary_pu_CORE_config_alpha1';% 
 %ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'tapas_sdt_config';% 
-%ic = [1 2 3 4 NaN NaN NaN]; prc_config = 'tapas_sdt_config';% either muin or alphain set to 4
-%ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_3lev'; obs_config = 'tapas_bayes_optimal_binary_config';
-%ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_KF'; obs_config = 'logrt_softmax_binary_soft_config';
-ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_KF'; obs_config = 'mismatch_response_binary_config';
-%ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_KF'; obs_config = 'mismatch_softmax_binary_config';
+%ic = [1 2 3 4 NaN NaN NaN]; prc_config = 'GBM_config_SDT_noprior'; obs_config = 'logrt_softmax_binary_RTsoft_config'; nstim=[];% either muin or alphain set to 4
+%ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_3lev'; obs_config = 'tapas_bayes_optimal_binary_config'; nstim=[];
+%ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_SDT_noprior'; obs_config = 'logrt_softmax_binary_soft_config'; nstim=[];
+ic = [1 2 1 2 NaN NaN NaN]; prc_config = 'GBM_config_SDT_noprior'; obs_config = 'mismatch_response_binary_sd05_config'; nstim=[];
+%ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_KF'; obs_config = 'mismatch_softmax_binary_config'; nstim=[];
 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 pdatfile = 'C:\Data\CORE\Participant_data.xlsx';
@@ -84,7 +85,7 @@ factor_matrix = [
 
 %% RUN
 
-if ~exist(aname,'dir')
+if ~exist(aname,'dir') && hgf
     mkdir(aname)
 end
 
@@ -103,8 +104,12 @@ acc_all=header;
 rt_all=header;
 dp_all=header;
 cri_all=header;
+hit_all=header;
+fa_all=header;
 dp_all(1,end+1)= {'total'};
 cri_all(1,end+1)= {'total'};
+hit_all(1,end+1)= {'total'};
+fa_all(1,end+1)= {'total'};
 
 [~,~,pdata] = xlsread(pdatfile);
 grp_col = find(strcmp(pdata(1,:),grphead));
@@ -141,6 +146,8 @@ for f = files_ana'
         rt_all(1+f,1)= pdata(f+1,sub_col);
         dp_all(1+f,1)= pdata(f+1,sub_col);
         cri_all(1+f,1)= pdata(f+1,sub_col);
+        hit_all(1+f,1)= pdata(f+1,sub_col);
+        fa_all(1+f,1)= pdata(f+1,sub_col);
     end
         
     if strcmp(part,'part2')
@@ -327,16 +334,18 @@ for f = files_ana'
             [dp,cri] = signal_detection(hit,fa);
             dp_all(f+1,2:size(dp,2)+1)=num2cell(dp');
             cri_all(f+1,2:size(cri,2)+1)=num2cell(cri');
+            hit_all(f+1,2:size(dp,2)+1)=num2cell(hit');
+            fa_all(f+1,2:size(cri,2)+1)=num2cell(fa');
         end
 
     elseif strcmp(part,'part4')
         load(fullfile(cosdir,cosdirext{1},['CORE' C{2} cosname]));
-        y=nan(length(u),4);
+        y=nan(length(u),3);
         
-        mm=class_proj(1,:)';
+        %mm=class_proj(1,:)';
         
         % standardise mm
-        mm=zscore(mm);
+        %mm=zscore(mm);
         
         % add raw mm to column 3 of y
         y(tnums,3)=mm;
@@ -391,10 +400,15 @@ for f = files_ana'
     if hgf && exist(fullfile(aname,sname),'file') && overwrite==0
         load(fullfile(aname,sname));
     elseif hgf
-        if bayes_opt
-            bopars = tapas_fitModel_CAB([], u, prc_model, obs_model, opt_algo); %BAYES OPTIMAL
+        if isempty(nstim)
+            nst=length(u);
         else
-            bopars = tapas_fitModel_CAB(y, u, prc_model, obs_model, opt_algo);
+            nst=nstim;
+        end
+        if bayes_opt
+            bopars = tapas_fitModel_CAB([], u(1:nst,:), prc_model, obs_model, opt_algo); %BAYES OPTIMAL
+        else
+            bopars = tapas_fitModel_CAB(y(1:nst,:), u(1:nst,:), prc_model, obs_model, opt_algo);
         end
         bopars.conds=condi;
         save(fullfile(aname,sname),'bopars');
@@ -434,6 +448,8 @@ end
 if sdt
     xlswrite(['dprime' opt_name '.xlsx'],dp_all);
     xlswrite(['criterion' opt_name '.xlsx'],cri_all);
+    xlswrite(['hitrate' opt_name '.xlsx'],hit_all);
+    xlswrite(['farate' opt_name '.xlsx'],fa_all);
 end
 
 if hgf

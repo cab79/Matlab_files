@@ -1,4 +1,4 @@
-function c = GBM_config_SDT
+function c = GBM_config_SDT_noprior
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Config structure
@@ -52,9 +52,9 @@ c.irregular_intervals = false;
 %c.logsa_0sa = [NaN,          0,      0];
 
 % Fixed Priors
-c.mu_0mu = [NaN, repmat(-1.5,1,c.n_muin)];
-%c.mu_0sa = [NaN, repmat(0,1,c.n_inputs)];% fixed prior
-c.mu_0sa = [NaN, repmat(1,1,c.n_muin)];% estimated prior
+c.mu_0mu = [NaN, repmat(0.5,1,c.n_muin)];
+c.mu_0sa = [NaN, repmat(0,1,c.n_muin)];% fixed prior
+%c.mu_0sa = [NaN, repmat(1,1,c.n_muin)];% estimated prior
 c.logsa_0mu = [NaN, repmat(log(0.1),1,c.n_muin)];
 c.logsa_0sa = [NaN, repmat(0,1,c.n_muin)];
 

@@ -6,7 +6,7 @@ filepath = 'C:\Data\CORE\SPMdata\sensorimages';
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of folders
 fpref = 't-200_299_b-200_0_mspm12';
 fmid = '';
-fsuff = '_4_merged_cleaned';
+fsuff = '_4_cleaned_tm';
 
 % conditions to subtract: column 2 minus column 1
 subcond = [
@@ -28,7 +28,7 @@ use_flip=1;
 %% RUN
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
 
-for f = 1:length(files)
+for f = 34%1:length(files)
     fname = files(f).name;
  
     % subtract the images

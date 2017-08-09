@@ -61,11 +61,7 @@ xlines = [0];
 
 % plot topographies
 plot_topo=1;
-plot_diff_wave = 1;
-% conditions to flip (e.g. right stim only):
-use_flipped=1;
-fcond = [5:8 13:16 21:24];
-%eventtypes = 1:24;
+eventtypes = 1:24;
 eeglab_path = 'C:\Data\CORE\Preprocessed_100Hz';
 no_plot_ele=[];
 
@@ -133,28 +129,18 @@ if plot_topo && ~exist(fullfile(eeglab_path,'ERP_DAT.mat'),'file')
         
         %get imglist condition order
         [~,nme,~] = fileparts(S.imglist{i});
-        C=strsplit(nme,'_');
-        condlabels(i,1) = str2num(C{2});
+        C=
+        condlabels(i,1) = 
     end
-    condlabels = unique(condlabels,'stable');
     [fnames,~,fni] = unique(fnames,'stable');
-    DAT=cell(length(fnames),length(condlabels));
+    DAT=cell(length(fnames),length(eventtypes));
     for f = 1:length(fnames)
         EEGall=pop_loadset([fnames{f} '.set'],eeglab_path);
         % obtain trial indices
         [conds, tnums, fnums, bnums] = get_markers(EEGall);
-        if use_flipped
-            EEGflip = flipchan(EEGall);
-            for i = fcond
-                trialind = find(conds==i);
-                EEGall.data(:,:,trialind)= EEGflip.data(:,:,trialind);
-            end
-            clear EEGflip
-        end
-        
-        for e = 1:length(condlabels)
+        for e = 1:length(eventtypes)
             %if any(strcmp({EEGall.event.type},eventtypes{e}))
-               EEG = pop_select(EEGall,'trial',find(conds==condlabels(e)));
+               EEG = pop_select(EEGall,'trial',find(conds==eventtypes(e)));
                DAT{f,e} = mean(EEG.data,3);
             %end
         end
@@ -283,17 +269,13 @@ for cl = 1:length(clnames)
         end
         figure
         for p = 1:Nplots
-            peakdata(:,:,p) = mean(cat(3,DATa{Fi_ind{p}}),3);
+            peakdata = mean(cat(3,DATa{Fi_ind{p}}),3);
             plotchans=1:length(chanlocs);
             plotchans(no_plot_ele)=[];
             %[~,markchans] = intersect(plotchans,tp);
             lat = find(EEGtimes==E_val(1));
-            subplot(1,Nplots+1,p); topoplot(mean(peakdata(:,lat,p),2), chanlocs,'maplimits','absmax','electrodes','on','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
+            subplot(1,Nplots,p); topoplot(mean(peakdata(:,lat),2), chanlocs,'maplimits','absmax','electrodes','on','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
             colorbar
-        end
-        if p>1 && plot_diff_wave
-            dw = peakdata(:,:,1) - peakdata(:,:,2);
-            subplot(1,Nplots+1,p+1); topoplot(mean(dw(:,lat),2), chanlocs,'maplimits','absmax','electrodes','on','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
         end
         %save figure 
         if save_topo

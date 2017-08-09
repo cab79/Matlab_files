@@ -52,6 +52,13 @@ for sp = 1:length(S.spm_paths)
         load(fullfile(S.spm_path,'SPM.mat'));
         allcon = {SPM.xCon.name};
         con = find(strcmp(allcon,contrast));
+        
+        % fudge to prevent a crash if two contrasts are named the same:
+        if length(con)>1
+            con = con(con>prev_con);
+            con=con(1);
+        end
+        prev_con = con;
 
         % settings
         SPMset.swd=S.spm_path;
@@ -93,12 +100,14 @@ for sp = 1:length(S.spm_paths)
         clustable(2,colwidth+2)={'F_temporal'};
 
         % re-draw stats using cluster extent threshold
-        SPMset.k=xSPM.uc(3)-1;
-        s_merged = rmfield(SPM, intersect(fieldnames(SPM), fieldnames(SPMset)));
-        names = [fieldnames(s_merged); fieldnames(SPMset)];
-        SPM = cell2struct([struct2cell(s_merged); struct2cell(SPMset)], names, 1);
-        [hReg,xSPM,SPM] = spm_results_ui('setup',SPM);
-        TabDat = spm_list('List',xSPM,hReg);
+        if S.clusterextent
+            SPMset.k=xSPM.uc(3)-1;
+            s_merged = rmfield(SPM, intersect(fieldnames(SPM), fieldnames(SPMset)));
+            names = [fieldnames(s_merged); fieldnames(SPMset)];
+            SPM = cell2struct([struct2cell(s_merged); struct2cell(SPMset)], names, 1);
+            [hReg,xSPM,SPM] = spm_results_ui('setup',SPM);
+            TabDat = spm_list('List',xSPM,hReg);
+        end
 
         % move on to the next contrast if there are no significant results
         if isempty(TabDat.dat)
@@ -125,7 +134,10 @@ for sp = 1:length(S.spm_paths)
             spm_results_ui('SetCoords',xyz);
             TabDat = spm_list('ListCluster',xSPM,hReg);
             clustable(Nhead+c,Nrhead)={cname};
-
+            
+            if isempty(TabDat.dat)
+                continue
+            end
             % extract table data
             clustable(Nhead+c,Nrhead+(1:length(colind)))=TabDat.dat(1,colind);
             clustable(Nhead+c,Nrhead+7:Nrhead+9) = num2cell(round([clustable{Nhead+c,Nrhead+6}])');

@@ -43,24 +43,52 @@ for fg = 1:Nfg
         %dat.Data = sign(dat.Data).*log(abs(dat.Data)+1); %log-modulus
         
         % extract data from each cell for normality tests
-        [datnum,dattxt,datraw] = xlsread(fullfile(P.pth,fnames{fi}));
-        factdat=dattxt(2:end,1:end-2);
-        for fd = 1:size(factdat,2)
-            [~,~,ind] = unique(factdat(:,fd));
-            factdatnum(:,fd) = ind;
-        end
-        [~,~,cells] = unique(factdatnum,'rows','stable');
-        for c=1:length(unique(cells))
-            %h(c,fi) = kstest(dat.Data(cells==c));
-            [h(c,fi),pval(c,fi),~] = swtest(dat.Data(cells==c), 0.05);
+        %[datnum,dattxt,datraw] = xlsread(fullfile(P.pth,fnames{fi}));
+        %factdat=dattxt(2:end,1:end-2);
+        %for fd = 1:size(factdat,2)
+        %    [~,~,ind] = unique(factdat(:,fd));
+        %    factdatnum(:,fd) = ind;
+        %end
+        %[~,~,cells] = unique(factdatnum,'rows','stable');
+        %for c=1:length(unique(cells))
+        %    %h(c,fi) = kstest(dat.Data(cells==c));
+        %    [h(c,fi),pval(c,fi),~] = swtest(dat.Data(cells==c), 0.05);
+        %end
+        
+        
+        % Change data format for line plots
+        if any(strcmp(plottypes,'line'))
+            xvar = unique(dat.(genvarname(xaxisnames{fi})),'stable');
+            xvar = 1:length(xvar);
+            [Sn,Su,Si]=unique(dat.Subject,'stable');
+            ydata = dat.(genvarname(datnames{fi}));
+            if ~isempty(subplotnames)
+                sublevels = dat.(genvarname(subplotnames{fi}));
+                if isnumeric(P.sublevel)
+                    yi = find(sublevels == P.sublevel);
+                end
+                Si=Si(yi);
+                ydata = ydata(yi);
+            end
+            for s = 1:length(Sn)
+                yvar{s,1}=ydata(Si==s);
+            end
+            gvar = dat.(genvarname(groupingnames{fi}));
+            gvar = gvar(Su)';
+            lvar = Sn;
+            g(f,1)=gramm('x',xvar,'y',yvar,'color',gvar);%,'marker',dat.Group);%,'subset',cars.Cylinders~=3 & cars.Cylinders~=5);
+        else
+            xvar = dat.(genvarname(xaxisnames{fi}));
+            yvar = dat.(genvarname(datnames{fi}));
+            gvar = dat.(genvarname(groupingnames{fi}));
+            lvar = dat.Subject;
+            g(f,1)=gramm('x',xvar,'y',yvar,'color',gvar,'label',lvar);%,'marker',dat.Group);%,'subset',cars.Cylinders~=3 & cars.Cylinders~=5);
+            % Subdivide the data in subplots
+            if ~isempty(subplotnames{fi})
+                g(f,1).facet_grid([],dat.(genvarname(subplotnames{fi})));
+            end
         end
         
-        g(f,1)=gramm('x',dat.(genvarname(xaxisnames{fi})),'y',dat.(genvarname(datnames{fi})),'color',dat.(genvarname(groupingnames{fi})),'label',dat.Subject);%,'marker',dat.Group);%,'subset',cars.Cylinders~=3 & cars.Cylinders~=5);
-
-        % Subdivide the data in subplots
-        if ~isempty(subplotnames{fi})
-            g(f,1).facet_grid([],dat.(genvarname(subplotnames{fi})));
-        end
 
         % names the axes and legend
         g(f,1).set_names('x',xaxisnames{fi},'y',yaxisnames{fi},'color',groupingnames{fi},'column','','row','');
@@ -99,6 +127,13 @@ for fg = 1:Nfg
             g(f,p)=copy(template);
             g(f,p).stat_summary('geom',{'bar','black_errorbar'});
         end
+        
+        %Line plots
+        if any(strcmp(plottypes,'line'))
+            p=p+1;
+            g(f,p)=copy(template);
+            g(f,p).geom_line('dodge',0,'alpha',1);
+        end
 
         %Raw data as scatter plot
         %g(2,1).geom_point();
@@ -109,7 +144,9 @@ for fg = 1:Nfg
     end
     g.set_title(fignames{fg});
     g.set_text_options('base_size',P.textsize);
-    g.set_color_options('map',P.groupcolours);
+    if ~isempty(P.groupcolours)
+        g.set_color_options('map',P.groupcolours);
+    end
     %g.set_point_options('markers',{'o','s'});
     %figure('Position',[100 100 800 550]);
     fig=figure;%('Position',[100 100 800 550]);
@@ -121,7 +158,7 @@ for fg = 1:Nfg
         g.export('file_name',[C{1} '_plots'],'export_path',P.pth,'file_type','png','width',p*sizefig,'height',sizefig,'units','centimeters');
     end
 end
-norm_head = horzcat({''},fnames);
-norm_rows = num2cell(unique(cells));
-h = vertcat(norm_head,horzcat(norm_rows,num2cell(h)))
-pval = vertcat(norm_head,horzcat(norm_rows,num2cell(pval)))
+%norm_head = horzcat({''},fnames);
+%norm_rows = num2cell(unique(cells));
+%h = vertcat(norm_head,horzcat(norm_rows,num2cell(h)))
+%pval = vertcat(norm_head,horzcat(norm_rows,num2cell(pval)))

@@ -4,11 +4,11 @@ addpath('C:\Data\Matlab\HGF\HGFv5.0');
 addpath('C:\Data\Matlab\Matlab_files\CORE\Behavioural\HGF_functions')
 
 dname=('C:\Data\CORE\Design');
-pname='C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_RTsoft'; % parameters
-aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\Sim_3lev_RTsoft';
+pname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RT_a2_noprior'; % parameters
+aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\Sim_SDT_RT_a2_noprior';
 % input codes (for stimulus types 1 to 7)
 % code 'NaN' to ignore, otherwise give it a unique value
-ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_3lev'; prc_model = 'GBM'; part='part4'; %obs_config = 'logrt_softmax_binary_RT_config'; obs_model = 'logrt_softmax_binary';% RT model
+ic = [1 2 1 2 NaN NaN NaN]; prc_config = 'GBM_config_SDT_noprior'; prc_model = 'GBM'; part='part4'; %obs_config = 'logrt_softmax_binary_RT_config'; obs_model = 'logrt_softmax_binary';% RT model
 
 overwrite=0;
 hgf=1;
@@ -317,12 +317,14 @@ for f = files_ana'
     if hgf && exist(fullfile(aname,sname),'file') && overwrite==0
         continue
     elseif hgf
-        sim = tapas_simModel_CAB(u, prc_model, bopars.p_prc.p, [], [], prc_config, []);
-        %sim = tapas_simModel_CAB(u, prc_model, bopars.p_prc.p, obs_model, bopars.p_obs.p, prc_config, obs_config);
-        %bopars = tapas_fitModel_CAB(y, u, prc_model, obs_model, opt_algo);
-        %bopars = tapas_fitModel([], u, prc_model, obs_model, opt_algo); %BAYES OPTIMAL
-        bopars.conds=condi;
-        save(fullfile(aname,sname),'sim');
+        try
+            sim = tapas_simModel_CAB(u, prc_model, bopars.p_prc.p, [], [], prc_config, []);
+            %sim = tapas_simModel_CAB(u, prc_model, bopars.p_prc.p, obs_model, bopars.p_obs.p, prc_config, obs_config);
+            %bopars = tapas_fitModel_CAB(y, u, prc_model, obs_model, opt_algo);
+            %bopars = tapas_fitModel([], u, prc_model, obs_model, opt_algo); %BAYES OPTIMAL
+            bopars.conds=condi;
+            save(fullfile(aname,sname),'sim');
+        end
         % PLOTS
         %tapas_hgf_binary_plotTraj(bopars)
         %tapas_fit_plotResidualDiagnostics(bopars);

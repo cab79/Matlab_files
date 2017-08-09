@@ -27,7 +27,7 @@
 %%
 %-----------------------------------------------------------------------  
 function D=design_batch(D)
-
+dbstop if error
 % select parametric or non-parametric analyses and the range of models
 if D.para==1
     load(D.ffbatch);

@@ -1,11 +1,11 @@
 clear all
 filepath = 'C:\Data\CORE\Preprocessed_100Hz';
 cd(filepath);
-files = dir('*ACSTP_conds_ALLEEG.mat');
+files = dir('*tm_conds_ALLEEG.mat');
 trials_ana = 1; % propotion of trials to analyse
 
 %% plot conditions
-for f =2%:length(files)
+for f =32%:length(files)
     [pth nme ext] = fileparts(files(f).name); 
     C = strsplit(nme,'_');
     load(fullfile(filepath,files(f).name));

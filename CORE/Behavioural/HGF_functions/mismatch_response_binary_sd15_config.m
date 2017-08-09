@@ -1,4 +1,4 @@
-function c = mismatch_response_binary_config(r)
+function c = mismatch_response_binary_sd05_config(r)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Contains the configuration for the linear log-reaction time response model according to as
@@ -69,7 +69,7 @@ c.logzesa = log(2);
 
 
 % Threshold
-c.thmu = 0; % number of SDs
+c.thmu = 1.5; % number of SDs
 c.thsa = 0;
 
 % Gather prior settings in vectors

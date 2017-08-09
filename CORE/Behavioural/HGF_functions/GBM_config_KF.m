@@ -11,7 +11,7 @@ c.model = 'GBM';
 c.n_levels = 1;
 
 % Number of inputs (minimum: 1)
-c.n_alphain = 1;
+c.n_alphain = 2;
 c.n_muin = 1;
 
 % Number of target stimuli

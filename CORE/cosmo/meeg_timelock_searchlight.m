@@ -49,7 +49,7 @@ time_SL =0;
 %S.timewin = [50 100]; 
 %S.timewin = [100 150]; 
 %S.timewin = [150 300];  
-S.timewin = [0 300]; 
+S.timewin = [0 150]; 
 
 % choose factor of interest
 S.factcon = 'Odd';

@@ -52,6 +52,7 @@ S.imgmask = '';
 % cluster forming threshold
 S.thresDesc = 'none'; % 'FWE' or 'none'
 S.clusformthresh = 0.001;
+S.clusterextent =1; % 1 = only significant is above cluster extent threshold
 
 %% run functions (sit back and relax)
 Extract_clusters(S);

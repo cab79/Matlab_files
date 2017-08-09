@@ -86,7 +86,15 @@ end
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % REDUCED MODEL
-logmm = be0 + be2.*daureg +be3.*da1reg;
+try % CAB
+    logmm = be2.*daureg +be3.*da1reg +be4.*da2reg +be5.*da3reg;
+catch
+    if l<2
+        logmm = be0 +be1.*surp +be2.*daureg +be3.*da1reg;
+    elseif l<3
+        logmm = be0 +be1.*surp +be2.*daureg +be3.*da1reg +be4.*da2reg;
+    end
+end
 
 % FULL MODEL
 %try % CAB

@@ -1,5 +1,5 @@
 clear all
-dname='C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mmtrials_nan'; num_lev=1;
+dname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_sd05_0-150'; num_lev=2;
 
 cd(dname);
 dbstop if error
@@ -70,17 +70,17 @@ fol = {'p_prc','p_prc','p_prc','p_prc','traj','traj','traj','traj','traj','traj'
 num_stimtypes = [num_stim*ones(1,10) ones(1,6) ones(1,8)];
 % 3lev
 if num_lev==3
-    numvar = [1, 1, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]; %3 level model
+    numvar = [2, 2, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]; %3 level model
     num_cond = [1, 1, 1, 1, 1, 1, 1, ncond, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; %num conds to extract. 1= average across conditions, >1 = extract each condition
     incl_abs = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
 elseif num_lev==2
 % 2lev, e.g. SDT
-    numvar = [1, 1, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0];
+    numvar = [2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0];
     num_cond = [1, 1, 1, 1, 1, 1, 1, ncond, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; %num conds to extract. 1= average across conditions, >1 = extract each condition
     incl_abs = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
 elseif num_lev==1
 % 1lev, e.g. KF
-    numvar = [1, 1, 0, 1, 1, 0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]; %3 level model
+    numvar = [2, 2, 0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]; %3 level model
     num_cond = [1, 1, 1, 1, 1, 1, 1, ncond, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; %num conds to extract. 1= average across conditions, >1 = extract each condition
     incl_abs = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
 end

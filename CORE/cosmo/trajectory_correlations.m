@@ -5,14 +5,14 @@ dbstop if error
 cosdir = 'C:\Data\CORE\cosmo';
 % range of cosdir extensions, each with different MM projections
 %cosdirext = {'LDA_part4_timechan_0_50','LDA_part4_timechan_50_100','LDA_part4_timechan_100_150','LDA_part4_timechan_150_300'};
-cosdirext = {'LDA_part4_timechan'};
+cosdirext = {'LDA_part4_timechan_0_300'};
 % generic filename
 cosname = 'CORE*_4_mm_projection.mat';
 
 % directory containing HGF projections
 hgfdir = 'C:\Data\CORE\Behaviour\July2017\HGF_Results';
-%hgfmodels = {'Sim_KF-RT','Sim_KF-RTsoft','Sim_KF-soft','Sim_3lev-RT','Sim_3lev_RTsoft','Sim_3lev-soft','3lev_Bayes_part4','KF_Bayes_part4'};
-hgfmodels = {'Sim_3lev_RTsoft','Sim_KF-RT','3lev_Bayes_part4','KF_Bayes_part4'};
+hgfmodels = {'Sim_SDT_RT_a2','Sim_SDT_RT_a2_noprior','Sim_KF_RT_a2','Sim_3lev_RT_a2'};%,'3lev_Bayes_part4','KF_Bayes_part4'};
+%hgfmodels = {'3lev_Bayes_part4'};
 %hgfmodels = {'Sim_3lev_RTsoft'};
 %hgfmodels = {'Sim_KF-RTsoft'};
 hgfname = '_aff.mat';
@@ -20,7 +20,8 @@ combine_inputs = 1;
 
 % HGF trajectories
 %trajnames = {'mu','sa','muhat','sahat','dau','da','ud','wt','psi','epsi'};
-trajnames = {'dau','da','epsi','ud'};
+%trajnames = {'dau','da','epsi','ud','null'};
+trajnames = {'dau','da','null1'};
 
 results = struct;
 for c = 1:length(cosdirext)
@@ -43,7 +44,11 @@ for c = 1:length(cosdirext)
             try
                 mod = load(fullfile(hgfdir,hgfmodels{m},hfname1));
             catch
-                mod = load(fullfile(hgfdir,hgfmodels{m},hfname2));
+                try
+                    mod = load(fullfile(hgfdir,hgfmodels{m},hfname2));
+                catch
+                    continue
+                end
             end
 
             % make valid fieldname
@@ -56,6 +61,7 @@ for c = 1:length(cosdirext)
 
             % find inputs
             in = sim.u(:,1);
+            incond = sim.u(:,1) .* sim.u(:,2);
             if combine_inputs
                 ni = 1;
                 iii{1}=tnums;
@@ -77,7 +83,11 @@ for c = 1:length(cosdirext)
                 trcount=0;
                 for tr = 1:length(trajnames)
                     trajname = trajnames{tr};
-                    trajmat = sim.traj.(trajname);
+                    if strcmp(trajname,'null1')
+                        trajmat = in;
+                    else
+                        trajmat = sim.traj.(trajname);
+                    end
                     for tl = 1:size(trajmat,2)
                         if all(isnan(trajmat(:,tl)))
                             continue
@@ -106,7 +116,7 @@ for c = 1:length(cosdirext)
                             [C,P,F] = spm_PEB(mmi',P);
                             results.(cosextname).(modname).([trajname num2str(tl)]).F(f,i) = F;
                         else
-                            results.(cosextname).(modname).([trajname num2str(tl)]).F(f,i) = -100000;
+                            results.(cosextname).(modname).([trajname num2str(tl)]).F(f,i) = -10000;
                         end
                         %%
                         %figure
@@ -121,13 +131,13 @@ for c = 1:length(cosdirext)
         end
     end
 end
-save(fullfile(cosdir,['Traj_corr_results_' datestr(now,30)]),'results','ni');
-
+savename = ['Traj_corr_results_' datestr(now,30)];
+save(fullfile(cosdir,savename),'results','ni');
 
 % combine results
 if 0
-    file1 = 'C:\Data\CORE\cosmo\LDA_part4_timechan\Traj_corr_results_20170729T203536.mat';
-    file2 = 'C:\Data\CORE\cosmo\LDA_part4_timechan\Traj_corr_results_20170729T195853.mat';
+    file1 = 'C:\Data\CORE\cosmo\LDA_part4_timechan\Null_model_results.mat';
+    file2 = ['C:\Data\CORE\cosmo\LDA_part4_timechan\' savename];
     f1=load(file1);
     f2=load(file2);
     fieldNames = fieldnames(f1.results);
@@ -147,12 +157,13 @@ cosmoselect = '';
 %model comparison for a single trajectory
 modelselect = ''; % blank to compare all models
 %trajectory comparison for a single model
-trajselect = 'da1'; % blank to compare all trajectories
+trajselect = ''; % blank to compare all trajectories
 
 % restructure data for VBA
 cosmonames = fieldnames(results);
 if ~isempty(cosmoselect); cosmoselect = matlab.lang.makeValidName(cosmoselect);end;
 nmod = 0;
+names = {};
 for c = 1:length(cosmonames)
     % select cosmo trajectory
     if ~isempty(cosmoselect)
@@ -183,14 +194,31 @@ for c = 1:length(cosmonames)
 
             % extract data
             Ft=results.(cosmonames{c}).(modelnames{m}).(trajnames{tr}).F;
-            for in = 1:ni; % for each input type
-                Fs{in}(:,nmod) = Ft(:,in);
+            for nin = 1:ni; % for each input type
+                Fs{nin}(:,nmod) = Ft(:,nin);
+                names{length(names)+1,1} = [cosmonames{c} '_' modelnames{m} '_' trajnames{tr} '_' num2str(nin)];
             end
         end
     end
 end
 
+% remove rows with zero values
+rem_rows = find(any((Fs{nin}==0)'));
+Fs{nin}(rem_rows,:)=[];
+
+% remove columns with low evidence
+rem_cols = find(any(Fs{nin}==-10000));
+Fs{nin}(:,rem_cols)=[];
+
 % apply VBA
-for in = 1:ni; % for each input type
-    [VBAposterior,VBAout] = VBA_groupBMC(Fs{in}')
+for nin = 1:ni; % for each input type
+    [VBAposterior,VBAout] = VBA_groupBMC(Fs{nin}')
 end
+names
+
+
+compare=[1 2];
+% Bayes factors
+BF = exp(Fs{nin}(:,compare(1)) - Fs{nin}(:,compare(2)));
+% Group Bayes factor - sensitive to outliers!
+GBF = prod(BF);
