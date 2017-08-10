@@ -3,7 +3,7 @@
 
 clear all
 close all
-dbstop if error
+%dbstop if error
 
 % choose factor of interest
 S.factcon = 'Odd';
@@ -19,13 +19,18 @@ S.centrechan= 'E93';
 % number of neighbours to include in spatial region
 S.nbr_levels= 2; 
 % masking threshold to apply to individual subject ERP contrasts         
-mask_thresh=0.2; % e.g. if 0.2 = 20%
+S.mask_thresh=0.2; % e.g. if 0.2 = 20%
+% baseline to correct the difference wave to
+S.baseline = [-50 0];
 
 
 
 %% SPECIFY DATA
 
 addpath('C:\Data\Matlab\fieldtrip-20170113')
+
+% Use previously saved data?
+S.use_data=1;
 
 % path of EEGLAB .set files after preprocessing, path of SPM outputs, and
 % prefix of output files
@@ -112,72 +117,117 @@ if ~exist(rundir,'dir')
     mkdir(rundir)
 end
 
+erp_sname = ['ERP_diffwave_flip' num2str(S.flipside) '_base_' num2str(S.baseline(1)) '_' num2str(S.baseline(2)) '.mat'];
+
+% group data structure
+GD=struct;
+
+if ~exist(fullfile(S.outpath,erp_sname),'file') || ~S.use_data
+    for f = 1:length(files_bal)
+        
+        % load BALANCED data
+        data=fullfile(S.data_path,files_bal(f).name);
+        EEG=pop_loadset(data);
+        sname = strsplit(EEG.filename,'_');
+
+        % whole epoch used if timewin not specified
+        if isempty(S.timewin)
+            S.timewin = [EEG.xmin EEG.xmax]*1000;
+        end
+
+        % obtain trial indices
+        [conds, tnums, fnums, bnums] = get_markers(EEG);
+
+        % create flipped version for RHS stimulation trials
+        if S.flipside
+            EEGflip = flipchan(EEG);
+            sideind = find(strcmp(S.factors,'Side'));
+            flipind = find(S.factor_matrix(:,sideind)==S.flipside);
+            flipcond = S.conds(flipind);
+            for i = flipcond
+                trialind = find(conds==i);
+                EEG.data(:,:,trialind)= EEGflip.data(:,:,trialind);
+            end
+            clear EEGflip
+        end
+
+        % reduce conditions to factors of interest
+        factind = find(strcmp(S.factors,S.factcon));
+        condana = S.factor_matrix(S.useconds,factind);
+        targ = unique(condana)';
+
+        % identify target indices
+        ti = nan(size(conds'));
+        for i = targ
+            factcon{i} = find(condana==i);
+            for c = 1:length(factcon{i})
+                ti(find(conds==factcon{i}(c)),1)=i;
+            end
+        end
+        filter_cond=~any(isnan(ti),2);
+        ti=ti(filter_cond,:);
+
+
+        %% create ERP difference wave and baseline correct
+
+        % individual waves
+        for i = 1:length(targ)
+            iw(:,:,targ(i)) = mean(EEG.data(:,:,ti==targ(i)),3);
+        end
+
+        % difference wave
+        dw = iw(:,:,1)-iw(:,:,2);
+
+        % plot
+        %figure
+        %plot(mean(iw(elec,:,1),1),'r'); hold on;
+        %plot(mean(iw(elec,:,2),1),'b'); hold on;
+        %plot(mean(dw(elec,:),1),'k');
+        %figure
+        %topoplot(mean(dw(:,timewin(1):timewin(2)),2),EEG.chanlocs)
+
+        % baseline correct dw
+        basewin=dsearchn(EEG.times',S.baseline');
+        base = mean(dw(:,basewin(1):basewin(2)-1),2);
+        dw = dw - repmat(base,1,size(dw,2));
+
+        % add to GD
+        GD.giw(:,:,:,f) = iw;
+        GD.gdw(:,:,f) = dw;
+    end
+    GD.chanlocs = EEG.chanlocs;
+    GD.times = EEG.times;
+    GD.S = S; % save settings for future reference
+    save(fullfile(S.outpath,erp_sname),'GD');
+else
+    load(fullfile(S.outpath,erp_sname));
+end
+
+% define channels for spatial mask
+allchan = {GD.chanlocs.labels};
+elec_centre = find(strcmp(S.centrechan,allchan));
+load(fullfile(S.outpath,'ft_nbrs.mat'));
+if S.nbr_levels==1
+    elec = sort([elec_centre find(ismember({ft_nbrs(:).label},ft_nbrs(elec_centre).neighblabel))]);
+elseif S.nbr_levels==2
+    temp = sort([elec_centre find(ismember({ft_nbrs(:).label},ft_nbrs(elec_centre).neighblabel))]);
+    temp2=[];
+    for e = 1:length(temp)
+        temp2 = [temp2 find(ismember({ft_nbrs(:).label},ft_nbrs(temp(e)).neighblabel))];
+    end
+    elec = unique(temp2);
+end
+
 for f = 1:length(files_bal)
-    % load BALANCED data
-    data=fullfile(S.data_path,files_bal(f).name);
-    EEG=pop_loadset(data);
-    sname = strsplit(EEG.filename,'_');
-    
-    % whole epoch used if timewin not specified
-    if isempty(S.timewin)
-        S.timewin = [EEG.xmin EEG.xmax]*1000;
-    end
-    
-    % obtain trial indices
-    [conds, tnums, fnums, bnums] = get_markers(EEG);
-    
-    % create flipped version for RHS stimulation trials
-    if S.flipside
-        EEGflip = flipchan(EEG);
-        sideind = find(strcmp(S.factors,'Side'));
-        flipind = find(S.factor_matrix(:,sideind)==S.flipside);
-        flipcond = S.conds(flipind);
-        for i = flipcond
-            trialind = find(conds==i);
-            EEG.data(:,:,trialind)= EEGflip.data(:,:,trialind);
-        end
-        clear EEGflip
-    end
-    
-    % reduce conditions to factors of interest
-    factind = find(strcmp(S.factors,S.factcon));
-    condana = S.factor_matrix(S.useconds,factind);
-    targ = unique(condana)';
-    
-    % identify target indices
-    ti = nan(size(conds'));
-    for i = targ
-        factcon{i} = find(condana==i);
-        for c = 1:length(factcon{i})
-            ti(find(conds==factcon{i}(c)),1)=i;
-        end
-    end
-    filter_cond=~any(isnan(ti),2);
-    ti=ti(filter_cond,:);
-    
-    %% create spatio-temporal mask to apply to each subject's ERPs
+    %% create spatio-temporal mask to apply to each subject's ERP DW
     
     % spatial mask
-    allchan = {EEG.chanlocs.labels};
-    elec_centre = find(strcmp(S.centrechan,allchan));
-    load(fullfile(S.outpath,'ft_nbrs.mat'));
-    if S.nbr_levels==1
-        elec = sort([elec_centre find(ismember({ft_nbrs(:).label},ft_nbrs(elec_centre).neighblabel))]);
-    elseif S.nbr_levels==2
-        temp = sort([elec_centre find(ismember({ft_nbrs(:).label},ft_nbrs(elec_centre).neighblabel))]);
-        temp2=[];
-        for e = 1:length(temp)
-            temp2 = [temp2 find(ismember({ft_nbrs(:).label},ft_nbrs(temp(e)).neighblabel))];
-        end
-        elec = unique(temp2);
-    end
-    spatmask = zeros(size(EEG.data));
+    spatmask = zeros(size(GD.gdw(:,:,f)));
     spatmask(elec,:,:) = 1; 
     
-    
     % temporal mask
-    tempmask = zeros(size(EEG.data));
-    timewin=dsearchn(EEG.times',S.timewin');
+    tempmask = zeros(size(GD.gdw(:,:,f)));
+    timewin=dsearchn(GD.times',S.timewin');
     tempmask(:,timewin(1):timewin(2),:) = 1; 
 
     % combine spatial and temporal
@@ -187,22 +237,17 @@ for f = 1:length(files_bal)
     %figure
     %topoplot(mean(squeeze(mean(erp_mask(:,timewin(1):timewin(2),:),2)),2),EEG.chanlocs)
     
-    %% create ERP difference wave and baseline correct
+    %% apply mask to ERP difference wave to identify individual subjects' spatiotemporal ROI
+    (GD.gdw(:,:,f) .* erp_mask)
+    S.mask_thresh
+    x = the_matrix;
+[~,idx] = sort(x(:));
+y = x(idx(1:10));
     
-    % individual waves
-    for i = 1:length(targ)
-        iw(:,:,targ(i)) = mean(EEG.data(:,:,targ(i)),3);
-    end
-    
-    % difference wave
-    dw = iw(:,:,1)-iw(:,:,2);
-    
-    % plot
-    figure
-    plot(mean(iw(elec,:,1),1),'r'); hold on;
-    plot(mean(iw(elec,:,2),1),'b'); hold on;
-    plot(mean(dw(elec,:),1),'k');
-    figure
-    topoplot(mean(squeeze(mean(erp_mask(:,timewin(1):timewin(2),:),2)),2),EEG.chanlocs)
-
 end
+figure
+topoplot(mean(mean(giw(:,timewin(1):timewin(2),1,:),2),3),EEG.chanlocs)
+figure
+topoplot(mean(mean(giw(:,timewin(1):timewin(2),2,:),2),3),EEG.chanlocs)
+figure
+topoplot(mean(mean(gdw(:,timewin(1):timewin(2),:),2),3),EEG.chanlocs)
