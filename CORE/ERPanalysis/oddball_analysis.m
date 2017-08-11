@@ -257,14 +257,25 @@ save(fullfile(rundir,mask_sname),'M');
 %% load single-trial data
 st_sname = ['EEG_trials_flip' num2str(S.flipside) '.mat'];
 % group single-trial structure
-GS=struct;
-if ~exist(fullfile(S.outpath,st_sname),'file') || ~S.use_data
-    for f = 1:length(files)
+SS=struct;    
+MM=struct;
+
+% for diagnostics
+TS=struct;
+Nplots=length(files);
+Nx=ceil(sqrt(Nplots));
+Ny=ceil(Nplots/Nx);
+%fig=figure;
+
+for f = 1:length(files)
+    
+    fname=strrep(files(f).name,S.fsuff,st_sname);
+    if ~exist(fullfile(S.outpath,st_sname),'file') || ~S.use_data
         
         % load BALANCED data
         data=fullfile(S.data_path,files(f).name);
         EEG=pop_loadset(data);
-        sname = strsplit(EEG.filename,'_');
+        %sname = strsplit(EEG.filename,'_');
 
         % obtain trial indices
         [conds, tnums, fnums, bnums] = get_markers(EEG);
@@ -288,56 +299,51 @@ if ~exist(fullfile(S.outpath,st_sname),'file') || ~S.use_data
         targ = unique(condana)';
 
         % identify target indices
-        GS(f).ti = nan(size(conds'));
+        SS.ti = nan(size(conds'));
         for i = targ
             factcon{i} = find(condana==i);
             for c = 1:length(factcon{i})
-                GS(f).ti(find(conds==factcon{i}(c)),1)=i;
+                SS.ti(find(conds==factcon{i}(c)),1)=i;
             end
         end
-        filter_cond=~any(isnan(GS(f).ti),2);
-        GS(f).ti=GS(f).ti(filter_cond,:);
+        filter_cond=~any(isnan(SS.ti),2);
+        SS.ti=SS.ti(filter_cond,:);
 
         %% create single-trial difference waves and baseline correct
 
         % difference wave
-        GS(f).dw = EEG.data-repmat(GD(f).iw(:,:,2),1,1,size(EEG.data,3));
+        SS.dw = EEG.data-repmat(GD(f).iw(:,:,2),1,1,size(EEG.data,3));
 
         % baseline correct dw
         basewin=dsearchn(EEG.times',S.baseline');
-        base = mean(GS(f).dw(:,basewin(1):basewin(2)-1,:),2);
-        GS(f).dw = GS(f).dw - repmat(base,1,size(GS(f).dw,2),1);
+        base = mean(SS.dw(:,basewin(1):basewin(2)-1,:),2);
+        SS.dw = SS.dw - repmat(base,1,size(SS.dw,2),1);
         
-
+        save(fullfile(S.outpath,fname),'SS');
+    else
+        load(fullfile(S.outpath,fname));
     end
-    save(fullfile(S.outpath,st_sname),'GS');
-else
-    load(fullfile(S.outpath,st_sname));
-end
-
-%% Apply single-subject mask to single-trial data to create deviant signal projection over time
-MM=struct;
-for f = 1:length(files)
-    for t = 1:size(GS(f).dw,3)
-        temp=GS(f).dw(:,:,t) .* M(f).mask_erp;
+    
+    %% Apply single-subject mask to single-trial data to create deviant signal projection over time
+    for t = 1:size(SS.dw,3)
+        temp=SS.dw(:,:,t) .* M(f).mask_erp;
         MM(f).mm(t,1) = mean(temp(:));
     end
+
+    %% Diagnostics
+    %for f = 1:length(files)
+         % generate t stats
+        [TS(f).h,TS(f).p,ci,stats] = ttest2(MM(f).mm(SS.ti==1),MM(f).mm(SS.ti==2))
+        subplot(Nx,Ny,f); scatter(SS.ti,MM(f).mm'); hold on
+    %end
+    %plot(MM(f).mm)
+    
 end
 mm_sname = ['mm_proj_' dtstr];
 save(fullfile(rundir,mm_sname),'MM');
+ts_sname = ['Tstat_' dtstr];
+save(fullfile(rundir,ts_sname),'TS');
 
-%% Diagnostics
-TS=struct;
-Nplots=length(files);
-Nx=ceil(sqrt(Nplots));
-Ny=ceil(Nplots/Nx);
-figure
-for f = 1:length(files)
-     % generate t stats
-    [TS(f).h,TS(f).p,ci,stats] = ttest2(MM(f).mm(GS(f).ti==1),MM(f).mm(GS(f).ti==2))
-    subplot(Nx,Ny,f); scatter(GS(f).ti,MM(f).mm');
-end
-%plot(MM(f).mm)
 
 %figure
 %topoplot(mean(mean(giw(:,timewin(1):timewin(2),1,:),2),3),EEG.chanlocs)
