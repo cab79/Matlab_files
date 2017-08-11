@@ -1,5 +1,5 @@
 clear all
-dname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_sd05_0-150'; num_lev=2;
+dname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_mm_thresh_b0_sd05_0-150'; num_lev=2;
 
 cd(dname);
 dbstop if error

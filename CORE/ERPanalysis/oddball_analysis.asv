@@ -7,6 +7,7 @@ close all
 
 % choose factor of interest
 S.factcon = 'Odd';
+S.runname = 'run1';
 
 % time window to create temporal region of interest, e.g. decided from
 % group statistics. Should be kept broad to accomodate all subjects
@@ -16,8 +17,8 @@ S.timewin = [33 73];
 S.centrechan= 'E93'; 
 % number of neighbours to include in spatial region
 S.nbr_levels= 2; 
-% masking threshold to apply to individual subject ERP contrasts         
-S.mask_thresh=0.5; % e.g. if 0.5 = 50%. 50% of an area is (0.5) = 
+% masking threshold to apply to individual subject ERP contrasts: percentage area of space * time       
+S.mask_thresh=0.2; % e.g. if 0.2 = 20%
 % baseline to correct the difference wave to
 S.baseline = [-50 0];
 
@@ -28,7 +29,7 @@ S.baseline = [-50 0];
 addpath('C:\Data\Matlab\fieldtrip-20170113')
 
 % Use previously saved data?
-S.use_data=1;
+S.use_data=0;
 
 % path of EEGLAB .set files after preprocessing, path of SPM outputs, and
 % prefix of output files
@@ -192,9 +193,6 @@ if ~exist(fullfile(S.outpath,erp_sname),'file') || ~S.use_data
         base = mean(GD(f).dw(:,basewin(1):basewin(2)-1),2);
         GD(f).dw = GD(f).dw - repmat(base,1,size(GD(f).dw,2));
 
-        % add to GD
-        GD(f).iw = iw;
-        GD(f).dw = dw;
     end
     GD(1).chanlocs = EEG.chanlocs;
     GD(1).times = EEG.times;
@@ -247,13 +245,14 @@ for f = 1:length(files_bal)
     M(f).mask_erp = zeros(size(temp));
     [~,idx] = sort(temp(:),'descend');
     erp_mask2 = idx(1:nd_mask*S.mask_thresh);
-    M(f).mask_erp(M(f).erp_mask2)=1;
+    M(f).mask_erp(erp_mask2)=1;
     M(f).mask_erp = reshape(M(f).mask_erp,size(GD(f).dw));
+    %length(find(M(f).mask_erp))
     
 end
 dtstr = datestr(now,30);
 mask_sname = ['ERP_mask_' dtstr];
-save(mask_sname,'M');
+save(fullfile(rundir,mask_sname),'M');
 
 %% load single-trial data
 st_sname = ['EEG_trials_flip' num2str(S.flipside) '.mat'];
