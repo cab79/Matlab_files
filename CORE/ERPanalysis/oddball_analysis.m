@@ -29,7 +29,7 @@ S.baseline = [-50 0];
 addpath('C:\Data\Matlab\fieldtrip-20170113')
 
 % Use previously saved data?
-S.use_data=0;
+S.use_data=1;
 
 % path of EEGLAB .set files after preprocessing, path of SPM outputs, and
 % prefix of output files
