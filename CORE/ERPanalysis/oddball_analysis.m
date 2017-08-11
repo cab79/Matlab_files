@@ -244,7 +244,7 @@ for f = 1:length(files_bal)
     temp = reshape((GD(f).dw .* M(f).erp_mask),1,[]);
     M(f).mask_erp = zeros(size(temp));
     [~,idx] = sort(temp(:),'descend');
-    erp_mask2 = idx(1:nd_mask*S.mask_thresh);
+    erp_mask2 = idx(1:ceil(nd_mask*S.mask_thresh));
     M(f).mask_erp(erp_mask2)=1;
     M(f).mask_erp = reshape(M(f).mask_erp,size(GD(f).dw));
     %length(find(M(f).mask_erp))
