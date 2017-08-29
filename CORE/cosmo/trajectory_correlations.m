@@ -3,15 +3,19 @@ clear all
 dbstop if error
 % directory containing cosmo projections
 cosdir = 'C:\Data\CORE\cosmo';
+%cosdir='C:\Data\CORE\ERPs';
 % range of cosdir extensions, each with different MM projections
 %cosdirext = {'LDA_part4_timechan_0_50','LDA_part4_timechan_50_100','LDA_part4_timechan_100_150','LDA_part4_timechan_150_300'};
-cosdirext = {'LDA_part4_timechan_0_300'};
+cosdirext = {'LDA_part4_timechan_0_150'};
+%cosdirext = {'run1_timewin_33_73_basewin_-50_0_centrechan_E93_nNeighbours_2_maskthresh_0.2'};
 % generic filename
 cosname = 'CORE*_4_mm_projection.mat';
+%cosname = '*_mm_proj.mat';
 
 % directory containing HGF projections
 hgfdir = 'C:\Data\CORE\Behaviour\July2017\HGF_Results';
-hgfmodels = {'Sim_SDT_RT_a2','Sim_SDT_RT_a2_noprior','Sim_KF_RT_a2','Sim_3lev_RT_a2'};%,'3lev_Bayes_part4','KF_Bayes_part4'};
+%hgfmodels = {'Sim_SDT_RT_a2_noprior','Sim_SDT_RT_a2','Sim_KF_RT_a2','Sim_3lev_RT_a2'};
+hgfmodels = {'Sim_SDT_soft_a2_noprior','Sim_SDT_soft_a2','Sim_KF_soft_a2','Sim_3lev_soft_a2'};%,'3lev_Bayes_part4','KF_Bayes_part4'};
 %hgfmodels = {'3lev_Bayes_part4'};
 %hgfmodels = {'Sim_3lev_RTsoft'};
 %hgfmodels = {'Sim_KF-RTsoft'};
@@ -21,7 +25,7 @@ combine_inputs = 1;
 % HGF trajectories
 %trajnames = {'mu','sa','muhat','sahat','dau','da','ud','wt','psi','epsi'};
 %trajnames = {'dau','da','epsi','ud','null'};
-trajnames = {'dau','da','null1'};
+trajnames = {'null1','dau','da'};
 
 results = struct;
 for c = 1:length(cosdirext)
@@ -78,7 +82,11 @@ for c = 1:length(cosdirext)
 
             % for each input type
             for i = 1:ni
-                mmi = zscore(mm(IB{i}));
+                try
+                    mmi = zscore(mm(IB{i}));
+                catch
+                    mmi = zscore(MM.mm(IB{i}))';
+                end
 
                 trcount=0;
                 for tr = 1:length(trajnames)

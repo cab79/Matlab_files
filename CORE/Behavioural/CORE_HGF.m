@@ -6,20 +6,22 @@ addpath('C:\Data\Matlab\Matlab_files\CORE\Behavioural\HGF_functions')
 
 dname='C:\Data\CORE\Design';
 rname='C:\Data\CORE\Behaviour';
-aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDTnp_mm_thresh_b0_sd05_0-150'; bayes_opt=0; part='part4';
+aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_mmERPrun1_thresh_b0_mmtrials'; bayes_opt=0; part='part4';
 %aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\KF_mmpredict_soft'; bayes_opt=0; part='part4';
 %aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_soft_a2'; bayes_opt=0; part='part2';
 %aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_Bayes_part4'; bayes_opt=0; part='part2';
 %cd(rname);
 
 % directory containing cosmo projections - part4 analysis only
-cosdir = 'C:\Data\CORE\cosmo';
+%cosdir = 'C:\Data\CORE\cosmo';
+cosdir='C:\Data\CORE\ERPs';
 % range of cosdir extensions, each with different MM projections
-cosdirext = {'LDA_part4_timechan_0_150'};
+%cosdirext = {'LDA_part4_timechan_0_150'};
+cosdirext = {'run1_timewin_33_73_basewin_-50_0_centrechan_E93_nNeighbours_2_maskthresh_0.2'};
 % generic filename
-cosname = '_4_mm_projection.mat';
+cosname = '_mm_proj.mat';
 % options
-mm_trials = 0; % 1 = use only mismatch trials
+mm_trials = 1; % 1 = use only mismatch trials
 mm_positive = 0; % 1 = use only positive values of mm projection
 
 overwrite=0;
@@ -38,7 +40,7 @@ acc = 0;
 %ic = [1 2 3 4 NaN NaN NaN]; prc_config = 'GBM_config_SDT_noprior'; obs_config = 'logrt_softmax_binary_RTsoft_config'; nstim=[];% either muin or alphain set to 4
 %ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_3lev'; obs_config = 'tapas_bayes_optimal_binary_config'; nstim=[];
 %ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_SDT_noprior'; obs_config = 'logrt_softmax_binary_soft_config'; nstim=[];
-ic = [1 2 1 2 NaN NaN NaN]; prc_config = 'GBM_config_SDT_noprior'; obs_config = 'mismatch_response_binary_sd05_config'; nstim=[];
+ic = [1 2 1 2 NaN NaN NaN]; prc_config = 'GBM_config_3lev'; obs_config = 'mismatch_response_binary_config'; nstim=[];
 %ic = [1 1 1 1 NaN NaN NaN]; prc_config = 'GBM_config_KF'; obs_config = 'mismatch_softmax_binary_config'; nstim=[];
 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -348,7 +350,11 @@ for f = files_ana'
         %mm=zscore(mm);
         
         % add raw mm to column 3 of y
-        y(tnums,3)=mm;
+        try
+            y(tnums,3)=mm;
+        catch
+            y(tnums,3)=MM.mm;
+        end
         if mm_trials
             y(:,3) = y(:,3).*u(:,1);
         end

@@ -4,12 +4,13 @@ clear all
 filepath = 'C:\Data\CORE\SPMdata\sensorimages'; 
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of folders
-fpref = 't-200_299_b-200_0_mspm12';
+fpref = 't-200_899_b-200_0_mspm12';
 fmid = '';
-fsuff = '_4_cleaned_tm';
+fsuff = '_2_merged_cleaned';
 
 % conditions to flip (right stim only):
-fcond = [5:8 13:16 21:24];
+%fcond = [5:8 13:16 21:24];
+fcond = [5:8];
 
 % conditions to flip (right stim only):
 %fcond = [3 4 7 8 11 12];
@@ -17,7 +18,7 @@ fcond = [5:8 13:16 21:24];
 %% RUN
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
 
-for f = 34%1:length(files)
+for f = 1:length(files)
     fname = files(f).name;
  
     % re-orient the images

@@ -13,14 +13,26 @@ outprefix = 'spm12_';
 fpref = '';
 fmid = '';
 %fsuff = '_4_merged_cleaned.set';
-fsuff = '_4_merged_cleaned.set';
+fsuff = '_2_merged_cleaned.set';
 
 % set data type: 'epoched' or 'continuous'
 dattype ='epoched';
-overwrite = 0;
+overwrite = 1;
 
 % set time window of interest in ms (advise whole epoch)
-timewin = [-200 300];
+timewin = [-200 900];
+
+% conditions within each marker
+mark = {
+    [1 9 17]; % left, Odd, DC1
+    [2 10 18]; % left, Odd, DC3
+    [3 11 19]; % left, stan, DC1
+    [4 12 20]; % left, stan, DC3
+    [5 13 21]; % right, Odd
+    [6 14 22]; % right, Odd
+    [7 15 23]; % right, stan
+    [8 16 24]; % right, Stan
+};
 
 %% LOAD AND CONVERT
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
@@ -57,7 +69,13 @@ for f=35:length(files)
 
         % for data recorded with EGI system and STIM/DIN markers
         [conds, tnums, fnums, bnums] = get_markers(EEG);
-        S.conditionlabels = cellfun(@num2str, num2cell(conds), 'UniformOutput', false);
+        cmark = nan(1,length(conds));
+        for m = 1:length(mark)
+            idx = ismember(conds,mark{m});
+            cmark(idx) = m;
+        end
+        
+        S.conditionlabels = cellfun(@num2str, num2cell(cmark), 'UniformOutput', false);
     
         %spm_eeg_convert(S);
         spm_eeg_convert_eeglab_epoched(S,1);  % faster version of spm_eeg_convert, only works with EEGLAB epoched data

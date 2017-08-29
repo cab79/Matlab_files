@@ -1,5 +1,5 @@
 clear all
-dname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_mm_thresh_b0_sd05_0-150'; num_lev=2;
+dname='C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_mmERPrun1_thresh_b0_mmtrials'; num_lev=3;
 
 cd(dname);
 dbstop if error
@@ -65,24 +65,27 @@ nsub =length(subs);
 num_stim = 1; % number of event markers per trial; e.g. anticipation cue AND laser stimulus = 2 stim
 ncond = max(ci); % two hands * two DC
 
-var = {'al0','al1','rb','om','dau','da','ud','wt','psi','epsi','mu','sa','AIC','BIC','LME','irr','be0','be1','be2','be3','be4','be5','ze','be'};
-fol = {'p_prc','p_prc','p_prc','p_prc','traj','traj','traj','traj','traj','traj','traj','traj','optim','optim','optim','irr','p_obs','p_obs','p_obs','p_obs','p_obs','p_obs','p_obs','p_obs'};
-num_stimtypes = [num_stim*ones(1,10) ones(1,6) ones(1,8)];
+var = {'al0','al1','rb','om','dau','da','ud','wt','psi','epsi','mu','sa','muhat','sahat','AIC','BIC','LME','irr','be0','be1','be2','be3','be4','be5','ze','be'};
+fol = {'p_prc','p_prc','p_prc','p_prc','traj','traj','traj','traj','traj','traj','traj','traj','traj','traj','optim','optim','optim','irr','p_obs','p_obs','p_obs','p_obs','p_obs','p_obs','p_obs','p_obs'};
+num_stimtypes = [num_stim*ones(1,10) ones(1,8) ones(1,8)];
 % 3lev
 if num_lev==3
-    numvar = [2, 2, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]; %3 level model
-    num_cond = [1, 1, 1, 1, 1, 1, 1, ncond, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; %num conds to extract. 1= average across conditions, >1 = extract each condition
-    incl_abs = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
+    numvar = [2, 2, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]; %3 level model
+    num_cond = [1, 1, 1, 1, 1, 1, 1, ncond, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; %num conds to extract. 1= average across conditions, >1 = extract each condition
+    incl_abs = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
+    split_input = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
 elseif num_lev==2
 % 2lev, e.g. SDT
-    numvar = [2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0];
-    num_cond = [1, 1, 1, 1, 1, 1, 1, ncond, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; %num conds to extract. 1= average across conditions, >1 = extract each condition
-    incl_abs = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
+    numvar = [2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0];
+    num_cond = [1, 1, 1, 1, 1, 1, 1, ncond, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; %num conds to extract. 1= average across conditions, >1 = extract each condition
+    incl_abs = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
+    split_input = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
 elseif num_lev==1
 % 1lev, e.g. KF
-    numvar = [2, 2, 0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]; %3 level model
-    num_cond = [1, 1, 1, 1, 1, 1, 1, ncond, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; %num conds to extract. 1= average across conditions, >1 = extract each condition
-    incl_abs = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
+    numvar = [2, 2, 0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]; %3 level model
+    num_cond = [1, 1, 1, 1, 1, 1, 1, ncond, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; %num conds to extract. 1= average across conditions, >1 = extract each condition
+    incl_abs = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
+    split_input = [0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
 end
 
 nme_list = {};
@@ -95,6 +98,7 @@ fol(numvar==0)=[];
 num_stimtypes(numvar==0)=[];
 num_cond(numvar==0)=[];
 incl_abs(numvar==0)=[];
+split_input(numvar==0)=[];
 numvar(numvar==0)=[];
 
 mu_traj = nan(nsub,max(numvar),length(results(1).u));
@@ -124,6 +128,13 @@ for v=1:length(var)
             if incl_abs(v)==1
                 nme_list{length(nme_list)+1} = [nme '_abs']; 
                 %V.(nme).name = [nme '_abs'];
+            end
+            if split_input(v)==1
+                inp = unique(results(1).u(:,1));
+                inp(isnan(inp))=[];
+                for i = 1:length(inp)
+                    nme_list{length(nme_list)+1} = [nme '_i' num2str(inp(i))]; 
+                end
             end
 
             if num_cond(v)>1
@@ -186,6 +197,10 @@ for s = 1:nsub;
                                 for nc = 1:num_cond(v)
                                     eval([nme '(s,nc) = nanmean(a(cond==nc));']);
                                 end
+                            elseif split_input(v)==1
+                                for i = 1:length(inp)
+                                    eval([nme '(s,i) = nanmean(a(results(s).u(:,1)==inp(i)));']);
+                                end
                             else
                                 eval([nme '(s,1) = nanmean(a,1);']);
                             end
@@ -201,6 +216,10 @@ for s = 1:nsub;
                             if num_cond(v)>1
                                 for nc = 1:num_cond(v)
                                     eval([nme '(s,nc) = nanmean(a(cond==nc));']);
+                                end
+                            elseif split_input(v)==1
+                                for i = 1:length(inp)
+                                    eval([nme '(s,i) = nanmean(a(results(s).u(:,1)==inp(i)));']);
                                 end
                             else
                                 eval([nme '(s,1) = nanmean(a,1);']);
@@ -219,6 +238,10 @@ for s = 1:nsub;
                             if num_cond(v)>1
                                 for nc = 1:num_cond(v)
                                     eval([nme '(s,nc) = nanmean(a(cond==nc));']);
+                                end
+                            elseif split_input(v)==1
+                                for i = 1:length(inp)
+                                    eval([nme '(s,i) = nanmean(a(results(s).u(:,1)==inp(i)));']);
                                 end
                             else
                                 eval([nme '(s,1) = nanmean(a,1);']);
@@ -240,6 +263,10 @@ for s = 1:nsub;
                             if num_cond(v)>1
                                 for nc = 1:num_cond(v)
                                     eval([nme '(s,nc) = nanmean(a(cond==nc));']);
+                                end
+                            elseif split_input(v)==1
+                                for i = 1:length(inp)
+                                    eval([nme '(s,i) = nanmean(a(results(s).u(:,1)==inp(i)));']);
                                 end
                             else
                                 eval([nme '(s,1) = nanmean(a,1);']);
@@ -282,6 +309,13 @@ for v=1:length(var)
             if num_cond(v)>1
                 for nc = 1:num_cond(v)
                     eval([nme '_' num2str(nc) '= squeeze(nanmean(' nme '(:,nc),2));']);
+                end
+            end
+            
+            % average per input type
+            if split_input(v)==1
+                for i = 1:length(inp)
+                    eval([nme '_i' num2str(inp(i)) '= squeeze(nanmean(' nme '(:,i),2));']);
                 end
             end
 

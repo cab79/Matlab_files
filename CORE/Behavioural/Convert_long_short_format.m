@@ -12,21 +12,21 @@ clear all
 %% file info
 D.format = 'short'; %CURRENT format of data
 % file path and name
-D.pdatfile = 'C:\Data\CORE\Behaviour\July2017\reactiontime_aff.xlsx';
+D.pdatfile = 'C:\Data\CORE\Behaviour\July2017\GOT_short.xlsx';
 % columns to sort INPUT by, in order. negative will sort descending.
 D.sortby_in = []; 
 % factors to sort OUTPUT by, in order (can include old and new factors). Negative will sort descending.
 D.sortby_out = [];
 % number of factors in the input (should all be leftmost columns):
-D.Nfact_in = 4;
+D.Nfact_in = 5;
 % number of data columns in the input (should all be rightmost column):
-D.Ndat_in = 12;
+D.Ndat_in = 2;
 % number of header columns in input data
 D.Nhead = 1; 
 % OUTPUT factor numbers to NOT average data over (blank does no averaging)
 D.avg = []; 
 % average over any non-unique rows in output
-D.mean_nonunique=1;
+D.mean_nonunique=0;
 
 %% enter info for converting from LONG to SHORT (only runs if data is currently long format):
 % columns of factors to remove:
@@ -34,13 +34,13 @@ D.fact_rm = [];
 
 %% enter info for converting from SHORT to LONG (only runs if data is currently short format):
 % name the new factors to create:
-D.fact_new = {}; 
+D.fact_new = {'Side'}; 
 % number of levels of each new factor
-D.Nlev_fact_new = []; 
+D.Nlev_fact_new = [2]; 
 
 %% create factor averages for data outputs in short format
 % turn on this feature (1 = on, 0 = off)
-D.factavg = 1; 
+D.factavg = 0; 
 % name the factor averages to create (must be *all* the factors in short form in the output):
 D.factavg_new = {'Change Probability','Side','Digit Change'}; % strings must be contained within the factor names in the file header
 % number of levels of each new factor
@@ -48,7 +48,7 @@ D.factavg_lev = [3 2 2];
 
 %% apply operation (e.g. subtraction) to levels of one factor for data outputs in short format
 % 1 = turn on, 0 = turn off
-D.applyop = 1;
+D.applyop = 0;
 % name ALL factors in short format in the output:
 D.factshort = {'Change Probability','Side','Digit Change'}; % strings must be contained within the factor names in the file header
 % number of levels of each current short-form factor

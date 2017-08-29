@@ -7,7 +7,7 @@ close all
 
 % choose factor of interest
 S.factcon = 'Odd';
-S.runname = 'run1';
+S.runname = 'run2';
 
 % time window to create temporal region of interest, e.g. decided from
 % group statistics. Should be kept broad to accomodate all subjects
@@ -20,7 +20,7 @@ S.nbr_levels= 2;
 % masking threshold to apply to individual subject ERP contrasts: percentage area of space * time       
 S.mask_thresh=0.2; % e.g. if 0.2 = 20%
 % baseline to correct the difference wave to
-S.baseline = [-50 0];
+S.baseline = [-200 0];
 
 
 
@@ -115,7 +115,7 @@ if 0
     save(fullfile(S.outpath,'ft_nbrs.mat'), 'ft_nbrs');
 end
 
-rundir=fullfile(S.outpath,[S.runname '_timewin_' num2str(S.timewin(1)) '_' num2str(S.timewin(2)) '_centrechan_' S.centrechan '_nNeighbours_' num2str(S.nbr_levels)]);
+rundir=fullfile(S.outpath,[S.runname '_timewin_' num2str(S.timewin(1)) '_' num2str(S.timewin(2)) '_basewin_' num2str(S.baseline(1)) '_' num2str(S.baseline(2)) '_centrechan_' S.centrechan '_nNeighbours_' num2str(S.nbr_levels) '_maskthresh_' num2str(S.mask_thresh)]);
 if ~exist(rundir,'dir')
     mkdir(rundir)
 end
@@ -258,7 +258,6 @@ save(fullfile(rundir,mask_sname),'M');
 st_sname = ['EEG_trials_flip' num2str(S.flipside) '.mat'];
 % group single-trial structure
 SS=struct;    
-MM=struct;
 
 % for diagnostics
 TS=struct;
@@ -270,9 +269,9 @@ Ny=ceil(Nplots/Nx);
 for f = 1:length(files)
     
     fname=strrep(files(f).name,S.fsuff,st_sname);
-    if ~exist(fullfile(S.outpath,st_sname),'file') || ~S.use_data
+    %if ~exist(fullfile(S.outpath,fname),'file') || ~S.use_data
         
-        % load BALANCED data
+        % load UNBALANCED data
         data=fullfile(S.data_path,files(f).name);
         EEG=pop_loadset(data);
         %sname = strsplit(EEG.filename,'_');
@@ -319,28 +318,33 @@ for f = 1:length(files)
         base = mean(SS.dw(:,basewin(1):basewin(2)-1,:),2);
         SS.dw = SS.dw - repmat(base,1,size(SS.dw,2),1);
         
-        save(fullfile(S.outpath,fname),'SS');
-    else
-        load(fullfile(S.outpath,fname));
-    end
+        save(fullfile(S.outpath,fname),'SS','tnums');
+    %else
+    %    load(fullfile(S.outpath,fname));
+    %    disp(['loading ' fname]);
+    %end
     
     %% Apply single-subject mask to single-trial data to create deviant signal projection over time
+    MM=struct;
     for t = 1:size(SS.dw,3)
         temp=SS.dw(:,:,t) .* M(f).mask_erp;
-        MM(f).mm(t,1) = mean(temp(:));
+        MM.mm(t,1) = mean(temp(:));
     end
+    
+    mm_sname=strrep(files(f).name,S.fsuff,['mm_proj.mat']);
+    save(fullfile(rundir,mm_sname),'MM','tnums');
 
     %% Diagnostics
     %for f = 1:length(files)
-         % generate t stats
-        [TS(f).h,TS(f).p,ci,stats] = ttest2(MM(f).mm(SS.ti==1),MM(f).mm(SS.ti==2))
-        subplot(Nx,Ny,f); scatter(SS.ti,MM(f).mm'); hold on
+    % generate t stats
+    [TS(f).h,TS(f).p,ci,stats] = ttest2(MM.mm(SS.ti==1),MM.mm(SS.ti==2))
+    subplot(Nx,Ny,f); scatter(SS.ti,MM.mm'); hold on
     %end
     %plot(MM(f).mm)
     
 end
-mm_sname = ['mm_proj_' dtstr];
-save(fullfile(rundir,mm_sname),'MM');
+%mm_sname = ['mm_proj_' dtstr];
+%save(fullfile(rundir,mm_sname),'MM');
 ts_sname = ['Tstat_' dtstr];
 save(fullfile(rundir,ts_sname),'TS');
 
@@ -351,3 +355,17 @@ save(fullfile(rundir,ts_sname),'TS');
 %topoplot(mean(mean(giw(:,timewin(1):timewin(2),2,:),2),3),EEG.chanlocs)
 %figure
 %topoplot(mean(mean(gdw(:,timewin(1):timewin(2),:),2),3),EEG.chanlocs)
+
+%% plot example subject's data for figures
+if 0
+    clear all
+    load('ERP_diffwave_flip2_base_-50_0.mat')
+    load('CORE010_mm_proj.mat')
+    plot(MM.mm(1:500))
+    set(gca,'FontSize', 15);
+    load('ERP_mask_20170821T091053.mat')
+    load('chanlocs.mat')
+    topoplot(any(M(10).mask_erp,2),chanlocs)
+    area(GD(1).times,any(M(10).mask_erp,1))
+    set(gca,'FontSize', 15);
+end

@@ -105,7 +105,7 @@ c.logkasa = [NaN,      0];
 % HIERARCHICAL MODELS
 % Format: row vector of length n_levels.
 % Undefined (therefore NaN) at the first level.
-c.ommu = [NaN,  -6,  -3];
+c.ommu = [NaN,  -6,  -6];
 c.omsa = [NaN, 4^2, 4^2];
 
 % STATE MODELS (for Kalman Filter)

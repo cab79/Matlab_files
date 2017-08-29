@@ -1,6 +1,6 @@
 % Run SASICA and view components
 % CLEAR ALL BEFORE FIRST RUN
-startf=35;
+startf=145;
 if exist('EEG','var') && exist('f','var')
     pop_saveset(EEG,'filename',EEG.filename,'filepath',EEG.filepath); 
     save f f
@@ -13,7 +13,7 @@ else
 end
 
 anapath = 'C:\Data\CORE\Preprocessed_100Hz';
-files = dir('*_2_*_1st_ICA.set');
+files = dir('*_1st_ICA.set');
 fname_ext = '';
 timebins = [-0.2 0.9; % for epoching, TSOT(2)
             -0.2 0.3]; % for epoching, TSOT(4)

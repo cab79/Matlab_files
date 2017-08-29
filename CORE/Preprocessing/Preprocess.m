@@ -15,7 +15,7 @@ design_path = 'C:\Data\CORE\Raw'; % contains some related information about the 
 
 % FIND THE DATA FILES
 cd(origpath);
-files = dir('*2_orig.set');
+files = dir('*_orig.set');
 
 cd(anapath);
 
@@ -57,7 +57,7 @@ if 0
 end
 nbr_levels=2;
 
-files_ana = 1:length(files);
+files_ana = 68:73%1:length(files);
 trials_ana = 1; fname_ext = '';
 
 for f = files_ana
@@ -94,27 +94,31 @@ for f = files_ana
     elseif notch_on==2
         EEG.data = rm50Hz(EEG.data,[2 1 3],EEG.srate,20);
     elseif notch_on==3
-        %% Parameters for PrepPipeline - performs line denoising and robust re-referencing
-        % conventional re-referencing to the common average, prior to
-        % cleaning could introduce artefact to otherwise clean channels.
-        % Robust averaging as done here gets around this.
-        params = struct();
-        params.lineFrequencies = [50, 100, 150, 200];
-        %params.referenceChannels = 1:64;
-        %params.evaluationChannels = 1:64;
-        %params.rereferencedChannels = 1:70;
-        %params.detrendChannels = 1:70;
-        %params.lineNoiseChannels = 1:70;
-        params.detrendType = 'high pass';
-        params.detrendCutoff = 1;
-        params.referenceType = 'robust';
-        params.meanEstimateType = 'median';
-        params.interpolationOrder = 'post-reference';
-        params.keepFiltered = false;
-        %params.name = thisName;
-        [EEG, computationTimes] = prepPipeline(EEG, params);
-        fprintf('Computation times (seconds):\n   %s\n', ...
-            getStructureString(computationTimes));
+        if strcmp(C{2},'2')
+            %% Parameters for PrepPipeline - performs line denoising and robust re-referencing
+            % conventional re-referencing to the common average, prior to
+            % cleaning could introduce artefact to otherwise clean channels.
+            % Robust averaging as done here gets around this.
+            params = struct();
+            %params.lineFrequencies = [50, 100, 150, 200];
+            params.lineFrequencies = [];
+            %params.referenceChannels = 1:64;
+            %params.evaluationChannels = 1:64;
+            %params.rereferencedChannels = 1:70;
+            %params.detrendChannels = 1:70;
+            %params.lineNoiseChannels = 1:70;
+            params.detrendType = 'high pass';
+            params.detrendCutoff = 1;
+            params.referenceType = 'robust';
+            params.meanEstimateType = 'median';
+            params.interpolationOrder = 'post-reference';
+            params.keepFiltered = false;
+            params.ignoreBoundaryEvents = true;
+            %params.name = thisName;
+            [EEG, computationTimes] = prepPipeline(EEG, params);
+            fprintf('Computation times (seconds):\n   %s\n', ...
+                getStructureString(computationTimes));
+        end
         EEG = pop_eegfiltnew(EEG,45,55,[],1); 
         EEG = pop_eegfiltnew(EEG,95,105,[],1); 
     end
@@ -307,12 +311,12 @@ for f = files_ana
             EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath);
         elseif strcmp(C{2},'2') %|| strcmp(C{2},'4')
            numcomp = numcompeig(EEG);
-           EEG = pop_runica(EEG, 'extended',1,'interupt','on','pca',numcomp); see https://sccn.ucsd.edu/pipermail/eeglablist/2010/003339.html
+           EEG = pop_runica(EEG, 'extended',1,'interupt','on','pca',numcomp); %see https://sccn.ucsd.edu/pipermail/eeglablist/2010/003339.html
            sname = [C{1} '_' C{2} '_' handname fname_ext '_1st_ICA.set'];
            EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath); 
         elseif strcmp(C{2},'4') %|| strcmp(C{2},'4')
            numcomp = numcompeig(EEG);
-           EEG = pop_runica(EEG, 'extended',1,'interupt','on');%,'pca',numcomp); see https://sccn.ucsd.edu/pipermail/eeglablist/2010/003339.html
+           EEG = pop_runica(EEG, 'extended',1,'interupt','on','pca',numcomp);%,'pca',numcomp); see https://sccn.ucsd.edu/pipermail/eeglablist/2010/003339.html
            sname = [C{1} '_' C{2} '_' handname fname_ext '_1st_ICA.set'];
            EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath); 
         end

@@ -4,11 +4,11 @@ addpath('C:\Data\Matlab\HGF\HGFv5.0');
 addpath('C:\Data\Matlab\Matlab_files\CORE\Behavioural\HGF_functions')
 
 dname=('C:\Data\CORE\Design');
-pname='C:\Data\CORE\Behaviour\July2017\HGF_Results\SDT_RT_a2_noprior'; % parameters
-aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\Sim_SDT_RT_a2_noprior';
+pname='C:\Data\CORE\Behaviour\July2017\HGF_Results\3lev_soft_a2'; % parameters
+aname='C:\Data\CORE\Behaviour\July2017\HGF_Results\Sim_3lev_soft_a2';
 % input codes (for stimulus types 1 to 7)
 % code 'NaN' to ignore, otherwise give it a unique value
-ic = [1 2 1 2 NaN NaN NaN]; prc_config = 'GBM_config_SDT_noprior'; prc_model = 'GBM'; part='part4'; %obs_config = 'logrt_softmax_binary_RT_config'; obs_model = 'logrt_softmax_binary';% RT model
+ic = [1 2 1 2 NaN NaN NaN]; prc_config = 'GBM_config_3lev'; prc_model = 'GBM'; part='part4'; %obs_config = 'logrt_softmax_binary_RT_config'; obs_model = 'logrt_softmax_binary';% RT model
 
 overwrite=0;
 hgf=1;

@@ -8,7 +8,7 @@ cd(filepath);
 fname_ext = '_1st_ICA';
 fname_ext2 = '';
 %fname_ext2 = '_ACSTP';
-files = dir(['*_2_*' fname_ext fname_ext2 '.set']);
+files = dir(['*2*' fname_ext fname_ext2 '.set']);
 load('C:\Data\Matlab\Matlab_files\CORE\Supporting_functions\chanlocs.mat');
 
 ALLEEG=struct;
@@ -17,7 +17,7 @@ ALLEEG_save = 1; % 1= save multiple ERPs from one file; 2 = save one ERP from mu
 basebins = [-0.2 0; % for epoching, TSOT(2)
             -0.05 0]; % for epoching, TSOT(4)
         
-files_ana =1:length(files);
+files_ana =97:length(files);
 for f = files_ana
     [pth nme ext] = fileparts(files(f).name); 
     C = strsplit(nme,'_');
@@ -42,7 +42,7 @@ for f = files_ana
         LEEG = pop_loadset('filename',leftname,'filepath',filepath);
         REEG = pop_loadset('filename',rightname,'filepath',filepath);
         EEG = pop_mergeset(LEEG,REEG);
-        sname = [C{1} '_' C{2} fname_ext '_merged' fname_ext2 '.set'];
+        sname = [C{1} '_' C{2} '_merged' fname_ext2 '.set'];
         EEG = pop_saveset(EEG,'filename',sname,'filepath',filepath); 
         complete = C{1};
     end

@@ -2,12 +2,12 @@ clear all
 filepath = 'C:\Data\CORE\Preprocessed_100Hz';
 cd(filepath);
 
-fname_ext = '';
-%fname_ext2 = 'merged';
+%fname_ext = '';
+fname_ext = '_merged';
+fname_ext2 = '';
 %fname_ext2 = '_ACSTP';
-fname_ext2 = 'cleaned_tm';
 fname_ext3 = '';
-files = dir(['*_4_*' fname_ext '' fname_ext2 '.set']);
+files = dir(['*' fname_ext '' fname_ext2 '.set']);
 load('C:\Data\Matlab\Matlab_files\CORE\Supporting_functions\chanlocs.mat');
 
 ALLEEG=struct;
@@ -16,7 +16,7 @@ ALLEEG_save = 1; % 1= save multiple ERPs from one file; 2 = save one ERP from mu
 basebins = [-0.2 0; % for epoching, TSOT(2)
             -0.05 0]; % for epoching, TSOT(4)
         
-files_ana = 1:length(files);
+files_ana = 38:length(files);
 for f = files_ana
     if ~strcmp(fname_ext2,'_ACSTP') && ~strcmp(fname_ext2,'cleaned_tm')
         [pth nme ext] = fileparts(files(f).name); 
@@ -28,7 +28,7 @@ for f = files_ana
         %EEG = EP_den_EEG(EEG,5,[],'do_den_all',[],[],34);
 
         %EEG = pop_autorej(EEG, 'nogui','on','threshold',1000,'startprob',15);
-        sname = [C{1} '_' C{2} fname_ext '_merged_cleaned' fname_ext2 '.set'];
+        sname = [C{1} '_' C{2} fname_ext '_cleaned' fname_ext2 '.set'];
         EEG = pop_saveset(EEG,'filename',sname,'filepath',filepath); 
     end
 end
@@ -60,7 +60,7 @@ for f = files_ana
     elseif strcmp(fname_ext2,'cleaned_tm')
         EEG = pop_loadset('filename',[C{1} '_' C{2} fname_ext '_' fname_ext2 fname_ext3 '.set'],'filepath',filepath);
     else
-        EEG = pop_loadset('filename',[C{1} '_' C{2} fname_ext '_merged_cleaned' fname_ext2 fname_ext3 '.set'],'filepath',filepath);
+        EEG = pop_loadset('filename',[C{1} '_' C{2} fname_ext '_cleaned' fname_ext2 fname_ext3 '.set'],'filepath',filepath);
     end
     
     if strcmp(C{2},'2')
@@ -149,7 +149,7 @@ for f = files_ana
             %if strcmp(fname_ext2,'cleaned_tm')
             %    sname = [C{1} '_' C{2} fname_ext fname_ext2 '_conds_ALLEEG_tm.mat'];
             %else
-                sname = [C{1} '_' C{2} fname_ext fname_ext2 '_conds_ALLEEG.mat'];
+                sname = [C{1} '_' C{2} fname_ext2 '_conds_ALLEEG.mat'];
             %end
         end
         save(sname,'ALLEEG');

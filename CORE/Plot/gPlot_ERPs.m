@@ -10,11 +10,15 @@ close all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % directory in which SPM is saved
-P.spm_path = 'C:\Data\CORE\SPMstats\t-200_299_b-200_0_m_0_299_CP_Odd_DC_Subject_4_cleaned_tm_spm';
+%P.spm_path = 'C:\Data\CORE\SPMstats\t-200_299_b-200_0_m_0_299_CP_Odd_DC_Subject_4_cleaned_tm_spm';
+%P.spm_path = 'C:\Data\CORE\SPMstats\t-200_299_b-200_0_m_0_299_CP_Grp_Odd_Subject_4_cleaned_tm_spm';
+P.spm_path = 'C:\Data\CORE\SPMstats\t-200_899_b-200_0_m_0_899_Grp_Odd_DC_Subject_2_merged_cleaned_spm';
 
 %cluster directory name, which also specifies the constrast that will be
 %plotted (i.e. the characters before the underscore)
-P.clusdir='Odd_clusters';
+%P.clusdir='Odd_clusters';
+P.clusdir='Grp_Odd_clusters';
+
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -33,24 +37,28 @@ P.subfactname = 'Subject';
 %factor(s) to plot - if more than one, first factor levels will be on separate plots
 %must be the same characters as used to name the factors in design_batch
 %P.facplot={'Odd','Grp'};
+P.facplot={'Grp','Odd'};
 %P.facplot={'CP','Odd'};
-P.facplot={'Odd','DC'};
+%P.facplot={'Odd','DC'};
 %Full factor names to use for labelling the plots
 fact_names = {
     %'Change Probability';
+    'Group';
     'Oddball effect';
-    'Digit Change';
-    %'Group';
+    %'Digit Change';
+    %'Side';
     };
 %condition labels, i.e. levels of each condition, in the same order as in
 %the SPM design matrix. One row per factor. second column in plotting order
 cval={
     %{'10%','30%','50%'};
+    {'CRPS','HC'};
     {'Oddball','Standard'};
-    {'DC1','DC3'};
-    %{'CRPS','HC'}
+    %{'DC1','DC3'};
+    %{'Affected','Unaffected'}
     };
-colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red
+%colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red
+colours = [0.2 1 0.2; 0.8 0.2 0.8]; % green, purple 
 % axis names - can differ according the experiment
 P.xaxisname = {'peri-stimulus time (ms)'};
 P.yaxisname = {'amplitude (arbitrary units)'};
@@ -60,7 +68,7 @@ xlimits = [];
 xlines = [0];
 
 % plot topographies
-plot_topo=1;
+plot_topo=0;
 plot_diff_wave = 1;
 % conditions to flip (e.g. right stim only):
 use_flipped=1;
