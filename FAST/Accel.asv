@@ -202,8 +202,8 @@ for f = 1:length(afiles)
             end
             
             % create new times that are the centre (mean) of each cluster
-            for i = unique(pr_ti)'
-                pr_tu(i,:) = datevec(mean(datenum(pr_dt_vec(pr_ti==i,:))));
+            for i = unique(pr_ti)
+                pr_dt_vec(pr_ti==i)
             end
         else
             error('this time window is not yet programmed!');
