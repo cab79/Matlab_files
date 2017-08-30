@@ -88,6 +88,8 @@ nHead = size(D);
 
 for f = 1:length(afiles)
     
+    clear pr_head pr_out acc_head acc_out
+    
     % load each accel file in turn and also load it's corresponding pain
     % ratings data file (if there is one)
     
@@ -129,6 +131,8 @@ for f = 1:length(afiles)
         pr_dt_col = ismember(pr(1,:),S.pr_datehead);
         % datetime data
         pr_dt_dat = pr(2:end,pr_dt_col);
+        % fix Excel bug that causes 00:00 times to not be imported via xlsread
+        pr_dt_dat(cellfun(@length,pr_dt_dat)~=19)=strcat(pr_dt_dat(cellfun(@length,pr_dt_dat)~=19),' 00:00:00');
         % parse into dates and times
         temp = cellfun(@(x) strsplit(x,' '),pr_dt_dat,'UniformOutput',0);
         pr_ds = cellfun(@(x) x(1),temp,'UniformOutput',0);
