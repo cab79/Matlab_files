@@ -57,7 +57,7 @@ if 0
 end
 nbr_levels=2;
 
-files_ana = 68:73%1:length(files);
+files_ana = 1:length(files);
 trials_ana = 1; fname_ext = '';
 
 for f = files_ana
