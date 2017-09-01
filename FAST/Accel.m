@@ -1,6 +1,7 @@
 %% create settings structure (don't change)
 clear all
 S=struct;
+dbstop if error
 
 %% INPUT FILE SETUP
 
@@ -24,8 +25,7 @@ S.pr_data = 'Pain score';
 
 %% OUTPUT FILE DIRECTORY AND NAME
 S.out_dir = 'C:\Matlab\FAST';
-% save new file for each subject (saveeach = 1), or all subjects in one
-% file (=0)? (0 is not currently programmed)
+% save new file for each subject (saveeach = 1), or all subjects in one file (=0)?
 S.saveeach = 1;
 % generic file name (subject identifier will be added as prefix)
 S.out_file = '_output.xlsx'; 
@@ -36,12 +36,12 @@ S.out_file = '_output.xlsx';
 % Also, define the accelerometer time window with respect to the pain ratings time window (S.acc_cen)
 
 % time window to apply to accelerometer data
-S.acc_tw = '2'; % current options: 'daily'. Other options: a number of hours, e.g. '2' 
+S.acc_tw = 'all'; % current options: 'daily'. Other options: a number of hours, e.g. '2' (not yet programmed)
 % time window to apply to pain ratings data
-S.pr_tw = '1'; % current options: 'daily'. Other options: a number of hours, e.g. '1' 
+S.pr_tw = 'all'; % current options: 'daily'. Other options: a number of hours, e.g. '2' (not yet programmed)
 % centering of accelerometer data with respect to pain ratings outputs.
 % if left empty as '', analysis of accelerometer data will proceed independently of pain ratings data
-S.acc_cen = 'end'; % 'end' analyses accel data occuring before pain ratings. Other options: 'start' or 'middle' (not yet programmed))
+S.acc_cen = ''; % 'end' analyses accel data occuring before pain ratings. Other options: 'start' or 'middle' (not yet programmed))
 
 % List functions to apply to each type of data
 % Output file will include the results of these functions
@@ -84,8 +84,8 @@ S.pr_fun(1).fun = 'mean(X)';
 
 %% RUN SCRIPT
 
-% create date/time string to add to output file name (not used)
-%runtime = datestr(now,30);
+% create date/time string to add to output file name
+runtime = datestr(now,30);
 % list all accelerometer files in the directory
 afiles = dir(fullfile(S.acc_dir,['*' S.acc_file]));
 
@@ -143,8 +143,6 @@ for f = 1:length(afiles)
         % find indices of first unique entry and remove duplicates
         [~,pr_dt_uni,~] = unique(pr_dt_dat,'stable');
         pr_dt_dat = pr_dt_dat(pr_dt_uni);
-        % convert to datevec
-        pr_dt_vec = datevec(pr_dt_dat,'dd/mm/yyyy HH:MM:SS');
         % parse into dates and times
         temp = cellfun(@(x) strsplit(x,' '),pr_dt_dat,'UniformOutput',0);
         pr_ds = cellfun(@(x) x(1),temp,'UniformOutput',0);
@@ -161,7 +159,7 @@ for f = 1:length(afiles)
         pr_col = strmatch(S.pr_data,pr(1,:));
         % pain ratings data
         pr_dat = pr(2:end,pr_col);
-        % value only from unique dates/times
+        % values only from unique dates/times
         pr_dat = pr_dat(pr_dt_uni);
         
         % find indices of data according to the specified time window
@@ -171,49 +169,18 @@ for f = 1:length(afiles)
             % time column is empty
             pr_tu(:,2)=cell(length(pr_tu),1);
             pr_tu(:,2)={''};
-        elseif ~isnan(str2double(S.pr_tw)) % if a scalar value, e.g. number of hours
-            % run through times and cluster together if within S.pr_tw of
-            % each other
-            pr_ti = zeros(length(pr_dt_vec),1); % assignment of times to a cluster index
-            for i = 1:length(pr_dt_vec)-1
-                % if the difference between two adjacent times is less than
-                % S.pr_tw
-                if abs(etime(pr_dt_vec(i+1,:),pr_dt_vec(i,:)))/60 < str2double(S.pr_tw)*60
-                    try 
-                        % if the current time is already part of a cluster
-                        if pr_ti(i)==pr_ti(i-1)
-                            % assign the next time also to the same cluster
-                            pr_ti(i+1) = pr_ti(i);
-                        else
-                            % otherwise create a new cluster
-                            pr_ti(i:i+1) = max(pr_ti)+1;
-                        end
-                    catch
-                        % by default, create a new cluster
-                        pr_ti(i:i+1) = max(pr_ti)+1;
-                    end
-                elseif pr_ti(i)==0
-                    pr_ti(i) = max(pr_ti)+1;
-                end
-            end
-            % complete the last value if it's not part of a cluster already
-            if pr_ti(end)==0
-                pr_ti(end) = max(pr_ti)+1;
-            end
-            
-            % create new times that are the centre (mean) of each cluster
-            for i = unique(pr_ti)'
-                pr_tu(i,:) = datevec(mean(datenum(pr_dt_vec(pr_ti==i,:))));
-            end
+        elseif strcmp(S.pr_tw,'all')
+            pr_tu = {'all',''};
+            pr_ti = ones(length(pr_ds),1);
         else
             error('this time window is not yet programmed!');
         end
-        
+
         % calculate functions over specified time window
         for fi = 1:length(S.pr_fun)
             % create column header
             pr_head(1,fi) = {[genvarname(S.pr_data) '_' genvarname(S.pr_fun(fi).name)]};
-            for i = 1:length(pr_tu)
+            for i = 1:size(pr_tu,1)
                 % get data
                 X = cell2mat(pr_dat(pr_ti==i,:));
                 % apply function
@@ -241,6 +208,9 @@ for f = 1:length(afiles)
         % time column is empty
         acc_tu(:,2)=cell(length(acc_tu),1);
         acc_tu(:,2)={''};
+    elseif strcmp(S.acc_tw,'all')
+        acc_tu = {'all',''};
+        acc_ti = ones(length(acc_ds),1);
     else
         error('this time window is not yet programmed!');
     end
@@ -250,7 +220,7 @@ for f = 1:length(afiles)
     for fi = 1:length(S.acc_fun)
         % create column header
         acc_head(1,fi) = {[genvarname(S.acc_data) '_' genvarname(S.acc_fun(fi).name)]};
-        for i = 1:length(acc_tu)
+        for i = 1:size(acc_tu,1)
             % get data
             X = cell2mat(acc_dat(acc_ti==i,:));
             % apply function
@@ -275,8 +245,8 @@ for f = 1:length(afiles)
         temp = [pr_tu;acc_tu];
         [~,i1,i2] = unique(cell2mat(temp),'rows');
         out_tu = temp(i1,:);
-        pr_tu_i = 1:length(pr_tu);
-        acc_tu_i = length(pr_tu)+1:length(pr_tu)+length(acc_tu);
+        pr_tu_i = 1:size(pr_tu,1);
+        acc_tu_i = size(pr_tu,1)+1:size(pr_tu,1)+size(acc_tu,1);
         pr_tu_i = i2(pr_tu_i);
         acc_tu_i = i2(acc_tu_i);
         
