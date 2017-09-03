@@ -152,21 +152,44 @@ if get(hObject, 'Value') == get(hObject, 'Max')
     
     t = transpose((1:handles.dur*handles.fs)/handles.fs);
     
-    % oddball
-    fodd = 2; % Hz
-    i1 = ones((1/fodd)*handles.fs,1); 
-    i2 = zeros((1/fodd)*handles.fs,1); 
-    i12 = repmat([i1;i2],handles.dur,1);
-    
     % construct the player object: left
     x = sin(2*pi*handles.f0*t);
-    x2 = sin(2*pi*(handles.f0+100)*t);
-    x(find(i12)) = x2(find(i12));
-    
     % construct the player object: right
     y = sin(2*pi*(handles.f0+handles.df)*t);
-    y2 = sin(2*pi*(handles.f0+handles.df+100)*t);
-    y(find(i12)) = y2(find(i12));
+    
+    % ERP / freq tag settings
+    fpitch = 0; % Hz - 1/fpitch must be an integer multiple of 1/handles.df 
+    pitchdiff = 100;
+    finten = 2.5; % Hz - 1/finten must be an integer multiple of 1/handles.df 
+    intendiff = 0.75; % multiple of normal intensity (value between 0 and 1)
+    
+    % pitch changes
+    if fpitch>0
+        % alternate sin waves
+        x2 = sin(2*pi*(handles.f0+pitchdiff)*t);
+        y2 = sin(2*pi*(handles.f0+handles.df+pitchdiff)*t);
+        % define durations
+        i1 = ones((1/fpitch)*handles.fs,1); 
+        i2 = zeros((1/fpitch)*handles.fs,1); 
+        i12 = repmat([i1;i2],handles.dur*(handles.fs/(length(i1)+length(i2))),1);
+        % splice them in
+        x(find(i12)) = x2(find(i12));
+        y(find(i12)) = y2(find(i12));
+    end
+    
+    % intensity changes
+    if finten>0
+        % alternate sin waves
+        x2 = intendiff*sin(2*pi*(handles.f0)*t);
+        y2 = intendiff*sin(2*pi*(handles.f0+handles.df)*t);
+        % define durations
+        i1 = ones((1/finten)*handles.fs,1); 
+        i2 = zeros((1/finten)*handles.fs,1); 
+        i12 = repmat([i1;i2],handles.dur*(handles.fs/(length(i1)+length(i2))),1);
+        % splice them in
+        x(find(i12)) = x2(find(i12));
+        y(find(i12)) = y2(find(i12));
+    end
     
     LRchan = audioplayer([x y], handles.fs);
     
