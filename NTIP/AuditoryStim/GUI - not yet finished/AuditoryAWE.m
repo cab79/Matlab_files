@@ -160,7 +160,7 @@ if get(hObject, 'Value') == get(hObject, 'Max')
     % ERP / freq tag settings
     fpitch = 0; % Hz - 1/fpitch must be an integer multiple of 1/handles.df 
     pitchdiff = 100;
-    finten = 2.5; % Hz - 1/finten must be an integer multiple of 1/handles.df 
+    finten = 0; % Hz - 1/finten must be an integer multiple of 1/handles.df 
     intendiff = 0.75; % multiple of normal intensity (value between 0 and 1)
     
     % pitch changes
