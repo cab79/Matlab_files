@@ -1,0 +1,12 @@
+function h = D188(h,opt)
+
+switch opt
+    case 'setup'
+        if ~isfield(h,'D188'); 
+            h.d188.delay=1;  % delay between commands to D188 in ms
+        end
+    case 'outchan'
+        % set output channel
+        Error = ljud_AddRequest(dt.ljHandle,LJ_ioPUT_DIGITAL_PORT,8,h.D188.chan,4,0);
+        Error_Message(Error)
+end

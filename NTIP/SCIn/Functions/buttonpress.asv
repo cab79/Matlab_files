@@ -1,0 +1,22 @@
+function h = buttonpress(h,opt)
+
+h.button.opt = {'1','2','3'};
+
+switch opt
+    case 'select'
+        h.button.select = inputdlg('Button to use for sujbect response; leave blank if no button press required): ');
+    case 'start'
+        disp('The experiment will start when after pressing the footswitch');
+        if h.button.press2start
+            % get GUI data
+            GUIh = guidata(h.GUIhname);
+            GUIh.button.press
+            GUIh = rmfield(GUIh.button,'press');
+            guidata(h.GUIhname,GUIh)
+        end
+        %keyIsDown=0;
+        %pause(1)
+        %while keyIsDown==0
+        %    [keyIsDown,secs, keyCode] = KbCheck;
+        %end
+end
