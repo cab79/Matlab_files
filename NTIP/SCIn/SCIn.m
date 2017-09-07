@@ -194,9 +194,10 @@ function SaveSeq_Callback(hObject, eventdata, h)
 % Hint: get(hObject,'Value') returns toggle state of SaveSeq
 set(h.info, 'String', 'Saving sequence...');
 filename = ['Sequence_' h.SettingsFun '_Option' h.OptName];
-seq=h.Seq;
 global d
-uisave({'seq'},fullfile(d.root,d.seq,filename));
+seq = h.Seq;
+settings = h.Settings;
+uisave({'seq','settings'},fullfile(d.root,d.seq,filename));
 set(h.info, 'String', 'Sequence saved.');
 
 % update seqopt
@@ -257,16 +258,16 @@ if get(hObject, 'Value') == get(hObject, 'Max')
         opt = get(h.SeqOpt,'Value');
         h.SeqName = seq{opt};
     end
-    if ~isfield(h,'Seq')
+    if ~isfield(h,'Seq') || ~isfield(h,'Settings')
         % load sequence
         load(fullfile(d.root,d.seq,h.SeqName));
         h.Seq = seq;
+        h.Settings = settings;
     end
     if ~isfield(h,'startblock')
         h.startblock = '1';
     end
     guidata(hObject, h)
-    
     
     % select blocks to run
     set(h.info, 'String', 'Setting blocks...');

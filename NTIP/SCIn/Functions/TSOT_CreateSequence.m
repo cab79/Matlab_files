@@ -1,7 +1,7 @@
 function h = TSOT_CreateSequence(h)
 
-if h.distblocks==1 && h.nblocks>1
-    rep_design = h.nblocks;
+if h.Settings.distblocks==1 && h.Settings.nblocks>1
+    rep_design = h.Settings.nblocks;
 else
     rep_design = 1;
 end
@@ -11,13 +11,13 @@ combdesign=[];
 for rp = 1:rep_design
 
     %% initiate parameters (from TSOT_parameters script)
-    nfreq = length(h.freq); % number of frequencies of stimulation to use
-    num_prob = size(h.change_prob_init,2); % number of probabilities of stimulus change to use
-    change_prob_init = repmat(h.change_prob_init,1,h.num_changes*h.num_hands); % change probs for each block type
-    cond_rep_init = repmat(h.cond_rep_init/rep_design,1,h.num_changes*h.num_hands); % block repetitions for each block type
-    digiouts_init = reshape(reshape(repmat(h.digiouts_init,1,num_prob)',h.num_changes*h.num_hands*num_prob*2,1)',2,h.num_changes*h.num_hands*num_prob);
-    cond_num_init = reshape(reshape(repmat(h.cond_num_init,1,num_prob)',h.num_changes*h.num_hands*num_prob*2,1)',2,h.num_changes*h.num_hands*num_prob);
-    cp_stims_init = repmat(h.cp_stims_init',1,h.num_hands*h.num_changes);
+    nfreq = length(h.Settings.freq); % number of frequencies of stimulation to use
+    num_prob = size(h.Settings.change_prob_init,2); % number of probabilities of stimulus change to use
+    change_prob_init = repmat(h.Settings.change_prob_init,1,h.Settings.num_changes*h.Settings.num_hands); % change probs for each block type
+    cond_rep_init = repmat(h.Settings.cond_rep_init/rep_design,1,h.Settings.num_changes*h.Settings.num_hands); % block repetitions for each block type
+    digiouts_init = reshape(reshape(repmat(h.Settings.digiouts_init,1,num_prob)',h.Settings.num_changes*h.Settings.num_hands*num_prob*2,1)',2,h.Settings.num_changes*h.Settings.num_hands*num_prob);
+    cond_num_init = reshape(reshape(repmat(h.Settings.cond_num_init,1,num_prob)',h.Settings.num_changes*h.Settings.num_hands*num_prob*2,1)',2,h.Settings.num_changes*h.Settings.num_hands*num_prob);
+    cp_stims_init = repmat(h.Settings.cp_stims_init',1,h.Settings.num_hands*h.Settings.num_changes);
 
     % if there are a number of probabilities (of stimulus change) during the
     % experiment, we need separate condition numbers for each.
@@ -80,9 +80,9 @@ for rp = 1:rep_design
         digit_start=digiout(1);
 
         i = find(cond_rep_init==cond_rep(b));
-        nchanges_per_cond_b = h.nchanges_per_cond(i(1))/rep_design;
+        nchanges_per_cond_b = h.Settings.nchanges_per_cond(i(1))/rep_design;
 
-        nchanges_per_block = nchanges_per_cond_b/(cond_rep(b)*h.num_changes);
+        nchanges_per_block = nchanges_per_cond_b/(cond_rep(b)*h.Settings.num_changes);
 
         if ~any(cell2mat(cellfun(@(x) ~isempty(x),digit_changes,'UniformOutput', false)))
             for nd = 1:ndigits
@@ -200,9 +200,9 @@ for rp = 1:rep_design
 end
 design = combdesign;
 
-if rep_design==1 && h.nblocks>1
-    for nb = 1:h.nblocks
-        b_end = floor(nb*(size(design,2)/h.nblocks));
+if rep_design==1 && h.Settings.nblocks>1
+    for nb = 1:h.Settings.nblocks
+        b_end = floor(nb*(size(design,2)/h.Settings.nblocks));
         ns=b_end;
         while ns < size(design,2)
             if design(2,ns)==0
