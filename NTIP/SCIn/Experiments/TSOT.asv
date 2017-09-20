@@ -162,9 +162,9 @@ while h.ct-h.st>h.trialdur
                         h.out.presstime{h.i} = h.button.presstime;
                         h.out.RT{h.i} = h.button.presstime-st;
                     end
-                    % if stimulation requires adaptive tuning to responses
-                    if isfield(h.Settings,'adaptive')
-                        if ~isempty(h.Settings.adaptive)
+                    % if button options are specified
+                    if isfield(h.Settings,'buttonopt')
+                        if ~isempty(h.Settings.buttonopt)
                             
                         end
                     end

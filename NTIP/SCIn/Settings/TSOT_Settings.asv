@@ -215,7 +215,7 @@ h.Settings.buttonopt = {'left arrow','right arrow'};
 % correct answer
 h.Settings.adaptive.signalval = [1 2];
 % starting level of adaptive staircase
-h.Settings.adaptive.startinglevel = 10; % arbitrary number that is used as a benchmark to the actual starting value?
+h.Settings.adaptive.startinglevel = 10; % arbitrary number that is used as a ben
 
 %if h.Settings.num_changes*h.Settings.num_hands~=length(h.Settings.digiouts_init)
 %    error('parameters incorrectly entered. Check: num_hands, num_changes');
