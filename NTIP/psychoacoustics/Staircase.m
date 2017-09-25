@@ -23,7 +23,7 @@ if ~isempty(s)
             i=i+1;
         end
     end
-    % here I define the variable row of output that contains all the output values of the
+    % here I define the variable rowof output that contains all the output values of the
     % function. In the current function the output is updated at the end of the while loop
     % this are the values and the labels
     output = [];
