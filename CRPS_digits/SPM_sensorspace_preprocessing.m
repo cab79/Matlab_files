@@ -1,13 +1,13 @@
 clear all;
 
-   filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception\SPM image files\eleposnorm';
-   %filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception_exp1\alltrials';
+   %filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception\SPM image files\eleposnorm';
+   filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception_exp1\alltrials';
     run('C:\Data\Matlab\Matlab_files\CRPS_digits\loadsubj.m');
 %end
 cd(filepath);
 %grplists = {36;38}; %sublist_side = {'L','R','L','R'}; %Affected vs unaffected exp1
-%grplists = {39; 40; 41; 42}; %sublist_side = {'L','R','L','R'}; %Affected vs unaffected exp1
-grplists = {2; 30}; %sublist_side = {'L','R','L','R'}; %Affected vs unaffected exp2
+grplists = {39; 40; 41; 42}; %sublist_side = {'L','R','L','R'}; %Affected vs unaffected exp1
+%grplists = {2; 30}; %sublist_side = {'L','R','L','R'}; %Affected vs unaffected exp2
 %grplists = {47;48;49;50}; %sublist_side = {'L','R','L','R'}; %Affected vs unaffected exp2
 %grplists = {35;37};
 %grplists = {37};
@@ -16,6 +16,7 @@ subspergrp = 13;
 templist = 1:subspergrp;
 start = 1;
 use_flipped=1;
+balance_trials = 1;
 suffix = '';
 %suffix = '_change';
 
@@ -93,6 +94,45 @@ for g = 1:ngrps
             %D     = spm_eeg_load(fullfile(pwd,fname));
             %save(D);
        % end%%
+       
+       
+        % Match imbalanced conditions
+        %==========================================================================
+        if balance_trials
+            balance = {{'1','2','3','4','5'; % old conditions
+                        1 2 2 2 1}; % new conditions to balance with respect to - number of trials of 1 will be the same as ntrials of 2
+                        {'6','7','8','9','10';
+                        1 2 2 2 1};
+                        };
+            E=struct(D);
+            [A,B,C] = unique({E.trials.label});
+            for u = 1:length(A)
+                nA(u) = sum(C==u);
+            end
+            % get new conditions to balance with
+            sumtypes = [];
+            if any(ismember(A,balance{1}(1,:)))
+                for ii = 1:length(A)
+                    sumtypes(ii) = balance{1}{2,strcmp(A{ii},balance{1}(1,:))};
+                end
+            elseif any(ismember(A,balance{2}(1,:)))
+                for ii = 1:length(A)
+                    sumtypes(ii) = balance{2}{2,strcmp(A{ii},balance{2}(1,:))};
+                end
+            end
+            nC = unique(sumtypes);
+            for ii = nC
+                nT(ii) = sum(nA(sumtypes==ii));
+            end
+            maxi = find(ismember(C,find(sumtypes==nC(find(nT==max(nT)))))); % indices of C that are from the conditions with max number of trials
+            mini = find(ismember(C,find(sumtypes==nC(find(nT==min(nT)))))); % indices of C that are from the conditions with min number of trials
+            randi = randsample(1:max(nT), min(nT));
+            cond_select = sort([maxi(randi);mini]);
+            cond_reject = 1:D.ntrials;
+            cond_reject(cond_select) = [];
+            D = reject(D, cond_reject, 1)
+            save(D)
+        end
 
         % Average over trials per condition
         %==========================================================================

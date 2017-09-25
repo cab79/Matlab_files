@@ -1,7 +1,7 @@
 function plotdotbox(P) 
 
 nf = regexp(P.filenames,'*');
-if ~isempty(nf{:})
+if ~all(cellfun(@isempty,nf));
     files = dir(fullfile(P.pth,P.filenames{:}));
     fnames = {files(:).name};
     datnames=repmat(P.datnames,1,length(fnames));
