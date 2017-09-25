@@ -1,12 +1,12 @@
-function handles = AuditoryCreateSequence(handles)
+function h = AuditoryCreateSequence(h)
 
 % create random list of indices of duropt rows
-probs = handles.duropt(:,3);
+probs = h.Settings.duropt(:,3);
 minprob = min(probs); % min prob is the divisor
 mult = probs/minprob; % multiplier is the min number of repetitions of each duration option (rows of duropt)
 tot = sum(mult); % total number of dur pairs
-totdur = sum(sum(handles.duropt(:,1:2),2) .* mult);% total duration of one set of dur pairs
-num_sets = ceil(handles.dur/totdur);% number of sets that can provide at least handles.dur of stimulation
+totdur = sum(sum(h.Settings.duropt(:,1:2),2) .* mult);% total duration of one set of dur pairs
+num_sets = ceil(h.Settings.dur/totdur);% number of sets that can provide at least h.Settings.dur of stimulation
 mod_dur = num_sets*totdur; % modified duration
 % create non-randomised indices of a single set
 setind = [];
@@ -49,12 +49,12 @@ for i = 1:num_sets
     randind = [randind setind(1:nX) candidate];
 end
 
-t = transpose((1:mod_dur*handles.fs)/handles.fs);
+t = transpose((1:mod_dur*h.Settings.fs)/h.Settings.fs);
 
 % construct the player object: left
-x = sin(2*pi*handles.f0*t);
+x = sin(2*pi*h.Settings.f0*t);
 % construct the player object: right
-y = sin(2*pi*(handles.f0+handles.df)*t);
+y = sin(2*pi*(h.Settings.f0+h.Settings.df)*t);
 
 % define durations - for duropt durations
 i12 = [];
@@ -62,13 +62,13 @@ to = [];
 for i = 1:length(randind)
     i12 = [
         i12;
-        ones(round(handles.duropt(randind(i),1)*handles.fs),1); 
-        zeros(round(handles.duropt(randind(i),2)*handles.fs),1)];
-    if handles.tone_dur>0
+        ones(round(h.Settings.duropt(randind(i),1)*h.Settings.fs),1); 
+        zeros(round(h.Settings.duropt(randind(i),2)*h.Settings.fs),1)];
+    if h.Settings.tone_dur>0
         to = [
             to;
-            ones(round(handles.tone_dur*handles.fs),1); zeros(round((handles.duropt(randind(i),1)-handles.tone_dur)*handles.fs),1);
-            ones(round(handles.tone_dur*handles.fs),1); zeros(round((handles.duropt(randind(i),2)-handles.tone_dur)*handles.fs),1);
+            ones(round(h.Settings.tone_dur*h.Settings.fs),1); zeros(round((h.Settings.duropt(randind(i),1)-h.Settings.tone_dur)*h.Settings.fs),1);
+            ones(round(h.Settings.tone_dur*h.Settings.fs),1); zeros(round((h.Settings.duropt(randind(i),2)-h.Settings.tone_dur)*h.Settings.fs),1);
         ];
     else
         to = ones(length(t),1);
@@ -81,15 +81,15 @@ if length(i12)~=length(t)
 end
 
 % pitch changes
-if handles.fpitch>0
+if h.Settings.fpitch>0
     % alternate sin waves
-    x2 = sin(2*pi*(handles.f0+handles.pitchdiff)*t);
-    y2 = sin(2*pi*(handles.f0+handles.df+handles.pitchdiff)*t);
+    x2 = sin(2*pi*(h.Settings.f0+h.Settings.pitchdiff)*t);
+    y2 = sin(2*pi*(h.Settings.f0+h.Settings.df+h.Settings.pitchdiff)*t);
 
     % define durations - for identical durations
-    %i1 = ones((1/fpitch)*handles.fs,1); 
-    %i2 = zeros((1/fpitch)*handles.fs,1); 
-    %i12 = repmat([i1;i2],mod_dur*(handles.fs/(length(i1)+length(i2))),1);
+    %i1 = ones((1/fpitch)*h.Settings.fs,1); 
+    %i2 = zeros((1/fpitch)*h.Settings.fs,1); 
+    %i12 = repmat([i1;i2],mod_dur*(h.Settings.fs/(length(i1)+length(i2))),1);
 
     % splice them in
     x(find(i12)) = x2(find(i12));
@@ -97,15 +97,15 @@ if handles.fpitch>0
 end
 
 % intensity changes
-if handles.finten>0
+if h.Settings.finten>0
     % alternate sin waves
-    x2 = handles.intendiff*sin(2*pi*(handles.f0)*t);
-    y2 = handles.intendiff*sin(2*pi*(handles.f0+handles.df)*t);
+    x2 = h.Settings.intendiff*sin(2*pi*(h.Settings.f0)*t);
+    y2 = h.Settings.intendiff*sin(2*pi*(h.Settings.f0+h.Settings.df)*t);
 
     % define durations - for identical durations
-    %i1 = ones((1/finten)*handles.fs,1); 
-    %i2 = zeros((1/finten)*handles.fs,1); 
-    %i12 = repmat([i1;i2],mod_dur*(handles.fs/(length(i1)+length(i2))),1);
+    %i1 = ones((1/finten)*h.Settings.fs,1); 
+    %i2 = zeros((1/finten)*h.Settings.fs,1); 
+    %i12 = repmat([i1;i2],mod_dur*(h.Settings.fs/(length(i1)+length(i2))),1);
 
     % splice them in
     x(find(i12)) = x2(find(i12));
@@ -114,4 +114,5 @@ end
 x = x.*to;
 y = y.*to;
 
-handles.Seq = audioplayer([x y], handles.fs);
+h.Seq.signal = audioplayer([x y], h.Settings.fs);
+h.Seq.blocks = ones(1,1:length(h.Seq.signal));

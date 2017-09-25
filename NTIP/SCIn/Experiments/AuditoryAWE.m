@@ -1,15 +1,15 @@
-function handles = AuditoryAWE(handles,opt)
+function h = AuditoryAWE(h,opt)
 
 switch opt
     case 'start'
-        play(handles.Seq)
+        play(h.Seq.signal)
         
     case 'pause'
-        pause(handles.Seq);
+        pause(h.Seq.signal);
     
     case 'resume'
-        resume(handles.Seq);
+        resume(h.Seq.signal);
     
     case 'stop'
-        stop(handles.Seq);
+        stop(h.Seq.signal);
 end
