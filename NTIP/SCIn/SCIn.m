@@ -16,7 +16,7 @@ dbstop if error
 global d
 d.root = 'C:\Matlab_files\NTIP\SCIn';
 addpath(genpath(d.root))
-d.expts = 'Experiments';
+d.expts = 'Design';
 d.settings = 'Settings';
 d.seq = 'Sequences';
 d.out = 'Outputs';
@@ -243,6 +243,11 @@ function StartStop_Callback(hObject, eventdata, h)
 % h    structure with h and user data (see GUIDATA)
 global d
 
+% get GUI handle name: necessary if 'h' is empty because not called from
+% the base workspace
+GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
+h = guihandles(GUIhname);
+
 % check if the button is pressed
 if get(hObject, 'Value') == get(hObject, 'Max')
 
@@ -268,6 +273,11 @@ if get(hObject, 'Value') == get(hObject, 'Max')
         h.startblock = '1';
     end
     guidata(hObject, h)
+    
+    % setup
+    set(h.info, 'String', 'Setting up...');
+    opt = 'setup';
+    eval(['h = ' h.exptFun '(h,opt);']);
     
     % select blocks to run
     set(h.info, 'String', 'Setting blocks...');
@@ -306,25 +316,27 @@ if get(hObject, 'Value') == get(hObject, 'Max')
     
 else
 
-    % enable all GUI componets if the toggle buttons are unpressed
-    if get(h.StartStop, 'Value') == get(h.StartStop, 'Min')
-        set(h.ExptOpt, 'Enable', 'on')
-        set(h.SeqOpt, 'Enable', 'on')
-        set(h.SettingsOpt, 'Enable', 'on')
-        %set(h.StartStop, 'Enable', 'on')
-    else
-        set(h.ExptOpt, 'Enable', 'off')
-        set(h.SeqOpt, 'Enable', 'off')
-        set(h.SettingsOpt, 'Enable', 'off')
-        %set(h.StartStop, 'Enable', 'off')
-    end
+    try
+        % enable all GUI components if the toggle buttons are unpressed
+        if get(h.StartStop, 'Value') == get(h.StartStop, 'Min')
+            set(h.ExptOpt, 'Enable', 'on')
+            set(h.SeqOpt, 'Enable', 'on')
+            set(h.SettingsOpt, 'Enable', 'on')
+            %set(h.StartStop, 'Enable', 'on')
+        else
+            set(h.ExptOpt, 'Enable', 'off')
+            set(h.SeqOpt, 'Enable', 'off')
+            set(h.SettingsOpt, 'Enable', 'off')
+            %set(h.StartStop, 'Enable', 'off')
+        end
 
-    % info
-    set(h.info, 'String', 'Stopped.');
-    
-    % stop 
-    opt = 'stop';
-    eval(['h = ' h.exptFun '(h,opt);']);
+        % info
+        set(h.info, 'String', 'Stopped.');
+
+        % stop 
+        opt = 'stop';
+        eval(['h = ' h.exptFun '(h,opt);']);
+    end
 
     % change the button text
     set(hObject, 'String', 'Start')
@@ -336,18 +348,48 @@ function PauseResume_Callback(hObject, eventdata, h)
 % hObject    handle to PauseResume (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % h    structure with h and user data (see GUIDATA)
-
 % Hint: get(hObject,'Value') returns toggle state of PauseResume
+global d
+% get GUI handle name: necessary if 'h' is empty because not called from
+% the base workspace
+GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
+h = guihandles(GUIhname);
+
+if 0
+    % load fields if they don't exist
+    if ~isfield(h,'exptFun')
+        expts = get(h.ExptOpt,'String');
+        opt = get(h.ExptOpt,'Value');
+        [~,h.exptFun,] = fileparts(expts{opt});
+    end
+    if ~isfield(h,'SeqName')
+        seq = get(h.SeqOpt,'String');
+        opt = get(h.SeqOpt,'Value');
+        h.SeqName = seq{opt};
+    end
+    if ~isfield(h,'Seq') || ~isfield(h,'Settings')
+        % load sequence
+        load(fullfile(d.root,d.seq,h.SeqName));
+        h.Seq = seq;
+        h.Settings = settings;
+    end
+    if ~isfield(h,'startblock')
+        h.startblock = '1';
+    end
+    guidata(hObject, h)
+end
 
 % check if the button is pressed
 if get(hObject, 'Value') == get(hObject, 'Max')
 
     % info
-    set(h.info, 'String', 'Paused.');
+    %try
+        set(h.info, 'String', 'Paused.');
+        % pause
+        %opt = 'pause';
+        %eval(['h = ' h.exptFun '(h,opt);']);
+    %end
     
-    % pause
-    opt = 'pause';
-    eval(['h = ' h.exptFun '(h,opt);']);
 
     % change the button text
     set(hObject, 'String', 'Resume')
@@ -355,11 +397,13 @@ if get(hObject, 'Value') == get(hObject, 'Max')
 else
 
     % info
-    set(h.info, 'String', 'Running sequence...');
+    %try
+        set(h.info, 'String', 'Running sequence...');
+        % resume 
+        %opt = 'resume';
+        %eval(['h = ' h.exptFun '(h,opt);']);
+    %end
     
-    % resume 
-    opt = 'resume';
-    eval(['h = ' h.exptFun '(h,opt);']);
 
     % change the button text
     set(hObject, 'String', 'Pause')
@@ -413,14 +457,14 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 % --- Executes on key press with focus on SCIn or any of its controls.
-function SCIn_WindowKeyPressFcn(hObject, eventdata, h)
+%function SCIn_WindowKeyPressFcn(hObject, eventdata, h)
 % hObject    handle to SCIn (see GCBO)
 % eventdata  structure with the following fields (see FIGURE)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
-h.button.press = eventdata.Key;
-h.button.presstime = GetSecs;
-guidata(hObject, h)
-disp(['button press: ' h.button.press])
+%set(h.buttonpressed, 'String', eventdata.Key);
+%set(h.buttontime, 'String', GetSecs);
+%guidata(hObject, h)
+%disp(['button press: ' eventdata.Key])
