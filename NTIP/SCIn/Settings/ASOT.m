@@ -110,7 +110,7 @@ h.Settings.atten = -30; % attenuation level in decibels
 % buttonpress options: key: keyboard inputs. Blank for no button press
 h.Settings.buttontype='key';
 % range of keyboard presses indicating a recordable response
-h.Settings.buttonopt = {'left','right'}; 
+h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
 %display RT, 1=yes, 0=no
 h.Settings.displayRT=0;
 

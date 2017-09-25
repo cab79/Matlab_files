@@ -29,6 +29,12 @@ switch opt
                     h.BV.delay = 0.001;
                 end
                 h.BV.status = 0;
+                
+            elseif strcmp(h.Settings.record_EEG,'serial')
+                PortNum=h.Settings.EEGport; % PortNum variable is a string use eg: 'LPT1'
+                global spt1
+                spt1 = serial(PortNum); 
+                fopen(spt1)
             end
         catch
             choice = questdlg('EEG not connected. Stop or continue?', ...
@@ -103,5 +109,13 @@ switch opt
             % send command
             Error = ljud_GoOne(h.ljHandle);
             Error_Message(Error)
+        elseif strcmp(h.Settings.record_EEG,'serial')
+            try
+                global spt1
+                TriggerNum = h.Seq.signal(h.i);
+                fprintf(spt1,num2str(32+TriggerNum));
+            catch
+                disp('EEG not connected');
+            end
         end
 end

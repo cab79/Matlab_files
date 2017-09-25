@@ -109,12 +109,13 @@ switch opt
         ];
     
     %% Equipment options
-    % record EEG, NS: netstation, BV: brainvision
-    h.Settings.record_EEG='';
+    % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
+    h.Settings.record_EEG='serial';
+    h.Settings.EEGport = 'LPT1'; % only needed for 'serial' EEG triggers
     % buttonpress options: key: keyboard inputs. Blank for no button press
     h.Settings.buttontype='key';
     % range of keyboard presses indicating a recordable response
-    h.Settings.buttonopt = {'left','right'}; 
+    h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
     % record responses during experiment? 0 or 1
     h.Settings.record_response = 1;
     % require button press to start and re-start after a pause? 0 or 1

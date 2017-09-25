@@ -86,11 +86,23 @@ switch opt
         if isfield(h.Settings,'buttontype')
             if ~isempty(h.Settings.buttontype)
                 if h.Settings.record_response
+                    KbName('UnifyKeyNames'); %used for cross-platform compatibility of keynaming
+                    KbQueueCreate; %creates cue using defaults
+                    KbQueueStart;  %starts the cue
+                    
+                    % KBCheck results
                     h.out.presstrial = [];
                     h.out.pressbutton = [];
                     h.out.presstime = [];
                     h.out.RT = [];
                     h.out.presstimedelta = [];
+                    
+                    % KBQueueCheck results
+                    h.out.firstpressbutton = allout;
+                    h.out.firstpress = allout;
+                    h.out.firstrelease = allout;
+                    h.out.lastpress = allout;
+                    h.out.lastrelease = allout;
                 end
             end
         end
@@ -169,6 +181,9 @@ while h.i<length(h.Seq.signal);
         end
     end
     
+    % Flush Buffer so only responses after stim onset are recorded
+    KbQueueFlush; 
+    
     % define the duration of this trial
     h.trialdur = 1/h.Settings.freq;
     
@@ -186,6 +201,21 @@ while h.i<length(h.Seq.signal);
         break
     end
     
+    % record first and last responses on this trial
+    if isfield(h.Settings,'buttontype')
+        if ~isempty(h.Settings.buttontype)
+            if h.Settings.record_response
+                [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck;
+                if pressed
+                    h.out.firstpressbutton{h.i} = KbName(firstPress);
+                    h.out.firstpress{h.i} = firstPress(firstPress>0);
+                    h.out.firstrelease{h.i} = firstRelease(firstRelease>0);
+                    h.out.lastpress{h.i} = lastPress(lastPress>0);
+                    h.out.lastrelease{h.i} = lastRelease(lastRelease>0);
+                end
+            end
+        end
+    end
 end
 
 % for continuous sequences
@@ -257,7 +287,6 @@ while (h.ct-h.st)<h.trialdur
               %      if ~strcmp(btnstr,'Waiting')
               
                 % OPTION 2: get kbcheck data
-                keyIsDown=0;
                 [keyIsDown,presstime, keyCode, deltaSecs] = KbCheck;
                 btnstr = KbName(keyCode);
                 
@@ -411,6 +440,14 @@ while (h.ct-h.st)<h.trialdur
             PsychPortAudio('Close', h.pahandle);
         end
         
+        try
+            global spt1
+            fclose(spt1);
+        end
+        
+        % release keyboard cue
+        KbQueueRelease; 
+        
         break
         %pause(0.1)
         %while get(StartStop, 'Value')        
@@ -501,6 +538,24 @@ end
 trials = find(h.Seq.trialend > h.currentsample);
 if h.i ~= trials(1)
     
+    % record first and last responses on previous trial
+    if h.i>1
+        if isfield(h.Settings,'buttontype')
+            if ~isempty(h.Settings.buttontype)
+                if h.Settings.record_response
+                    [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck;
+                    if pressed
+                        h.out.firstpressbutton{h.i} = KbName(firstPress);
+                        h.out.firstpress{h.i} = firstPress(firstPress>0);
+                        h.out.firstrelease{h.i} = firstRelease(firstRelease>0);
+                        h.out.lastpress{h.i} = lastPress(lastPress>0);
+                        h.out.lastrelease{h.i} = lastRelease(lastRelease>0);
+                    end
+                end
+            end
+        end
+    end
+    
     %create h.i
     h.i = trials(1);
     
@@ -525,6 +580,9 @@ if h.i ~= trials(1)
             h = recordEEG(h,opt);
         end
     end
+    
+    % Flush Buffer so only responses after stim onset are recorded
+    KbQueueFlush; 
     
     % display
     t=toc/60;
