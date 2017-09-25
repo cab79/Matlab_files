@@ -3,25 +3,32 @@ function h = buttonpress(h,opt)
 
 switch opt
     case 'setup'
-        %h.button.select = inputdlg('Button to use for subject response; leave blank if any key can be used): ');
+        %% initialise GUI button info
+        %GUIh = guidata(h.GUIhname);
+        %set(GUIh.buttonpressed, 'String', 'Waiting');
+        %set(GUIh.buttontime, 'String', 0);
+        %guidata(h.GUIhname,GUIh)
     case 'start'
-        disp('The experiment will start when after pressing the button');
-        pressed=0;
-        % get GUI data
-        while pressed==0
-            GUIh = guidata(h.GUIhname);
-            if isfield(GUIh.button,'press')
-                GUIh = rmfield(GUIh.button,'press');
-                guidata(h.GUIhname,GUIh)
-                disp('Button pressed: Starting experiment');
-                pressed=1;
-            end
-        end
+        GUIh = guidata(h.GUIhname);
+        disp('The experiment will start after pressing the button');
+        set(GUIh.info, 'String', 'Press button to start');
+        pause(0.001)
+        %% get GUI data
+        %pressed=0;
+        %while pressed==0
+            %GUIh = guidata(h.GUIhname);
+        %    pause(0.01)
+        %    if ~strcmp(get(GUIh.buttonpressed,'String'),'Waiting')
+        %        disp('Button pressed: Starting experiment');
+        %        pressed=1;
+        %    end
+        %end
         
         %% to do the same thing using Psychotoolbox rather than GUI:
-        %keyIsDown=0;
-        %pause(1)
-        %while keyIsDown==0
-        %    [keyIsDown,secs, keyCode] = KbCheck;
-        %end
+        keyIsDown=0;
+        while keyIsDown==0
+            keyIsDown = KbCheck;
+        end
+        disp('Button pressed: Starting experiment');
+        set(GUIh.info, 'String', 'Running sequence...');
 end

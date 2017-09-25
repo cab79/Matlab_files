@@ -1,8 +1,21 @@
-function [output, expthresholds] = AdaptStair(s)
+function h = AdaptStair(h)
+if isfield(h,'s')
+    s=h.s;
+    % only run once per trial
+    if isfield(s,'lasttrialrun')
+        if ~(s.lasttrialrun == h.i)
+            s.lasttrialrun = h.i;
+        else
+            return
+        end
+    else
+        s.lasttrialrun = h.i;
+    end
+end
+
 
 %% Task:
-% in roving oddball with task of detecting changes in intensity,
-% 
+% in roving oddball with task of detecting changes in intensity
 
 % REMOVE THESE PARAMETERS LATER
 
@@ -14,25 +27,26 @@ function [output, expthresholds] = AdaptStair(s)
 %s.MATSAVEDATA = INIZIALIZES A MATRIX FOR SAVING THE DATA
 
 tracking = 'Staircase';
-%s.standard= -30;
+block=1;
+%s.standard= -30; % attentuation applied to the standard tone - needs to be less that max possible intensity
 s.feature='TwoDownOneUp';
 s.down=2;
 s.feedback= 1;
 s.reversals = [4;8];
 s.stepsize = [2;sqrt(2)];
-s.fileout = 'data.txt';
+%s.fileout = 'data.txt';
 s.SaveResults =1;
 s.tasktype = 1;
 s.exppos = 1;
-s.experiment = 'IntensityDiscriminationPureTone_S';
+%s.experiment = 'IntensityDiscriminationPureTone_S';
 s.thresholdtype='Arithmetic';
 s.reversalForthresh = 8;
 s.isstep = 0;
 s.nafc=3;
-s.NameStepSize='Factor';
+%s.NameStepSize='Factor';
 
 % if this is the first run, do some setup
-if s.count_of_n_of_reversals == 0
+if ~isfield(s,'count_of_n_of_reversals')
     if length(s.reversals) ~= length(s.stepsize)
         error('The number of s.reversals and the number of steps must be identical.');
     end
@@ -47,17 +61,16 @@ if s.count_of_n_of_reversals == 0
             i=i+1;
         end
     end
-    % here I define the variable row of output that contains all the output values of the
+    % here I define the variable 'row of output' that contains all the output values of the
     % function. In the current function the output is updated at the end of the while loop
     % this are the values and the labels
-    output = [];
+    s.output = [];
     rowofoutput = zeros(1, 6);
-    expthresholds = zeros(1, 1);
+    s.expthresholds = zeros(1, 1);
 
-
-    clc
-    input('Press return to begin ', 's');
-    pause(1)
+    %clc
+    %input('Press return to begin ', 's');
+    %pause(1)
     % indexes for the while loop
     s.count_of_n_of_reversals = 0;
     s.adaptive.trial = 1;
@@ -69,12 +82,16 @@ if s.count_of_n_of_reversals == 0
     s.pos = 0;
     s.neg = 0;
     s.trend = 30;
-    s.StimulusLevel = s.Settings.adaptive.startinglevel;
+    s.StimulusLevel = h.Settings.adaptive.startinglevel;
     s.actualstep = s.expplan(1, 2);
 end
 
-if s.count_of_n_of_reversals < sum(s.reversals);
-    pause(0.5)
+if size(s.expplan,1)==s.count_of_n_of_reversals
+    s.expplan(end+1,:) = s.expplan(end,:);
+end
+
+%if s.count_of_n_of_reversals < sum(s.reversals);
+    %pause(0.5)
     %fprintf('[%1.0f] ', s.adaptive.trial);
     
     % here I get the answer from the simulated listener
@@ -82,10 +99,10 @@ if s.count_of_n_of_reversals < sum(s.reversals);
     %[CorrectAnswer, Question] =  eval(fun);
     
     % evaluate the subject's response
-    resi = ismember(s.out.pressbutton{s.i},h.Settings.buttonopt); % which button was pressed?
-    resfun = s.Settings.adaptive.signalval(resi); %what is meaning of this response?
+    resi = find(strcmp(h.out.pressbutton{h.i},h.Settings.buttonopt)); % which button was pressed?
+    resfun = h.Settings.adaptive.signalval(resi); %what is meaning of this response?
     
-    if resfun == s.Seq.signal(s.i);
+    if resfun == h.Seq.signal(h.i);
     %s.SubjectAccuracy(s.adaptive.trial)= EvaluateAnswer(CorrectAnswer,s.feedback,Question);   %evaluing the subject answer (right or wrong)
         s.SubjectAccuracy(s.adaptive.trial)= 1;
     else
@@ -93,7 +110,7 @@ if s.count_of_n_of_reversals < sum(s.reversals);
     end
     
     % UPDATE THE ROWOFOUTPUT
-    %rowofoutput (1, 1) = block;
+    rowofoutput (1, 1) = block;
     rowofoutput (1, 2) = s.adaptive.trial;
     rowofoutput (1, 3) = s.StimulusLevel;
     rowofoutput (1, 4) = s.SubjectAccuracy(s.adaptive.trial);
@@ -109,9 +126,9 @@ if s.count_of_n_of_reversals < sum(s.reversals);
             if s.pos ==1 && s.neg == -1
                 s.count_of_n_of_reversals = s.count_of_n_of_reversals + 1;
                 % calculate the threshold
-                blockthresholds(s.n_threshold)=(s.StimulusLevel + rowofoutput(1, 3))/2;
+                s.blockthresholds(s.n_threshold)=(s.StimulusLevel + rowofoutput(1, 3))/2;
                 s.n_threshold = s.n_threshold + 1;
-                s.actualstep = expplan(s.count_of_n_of_reversals, 2);
+                s.actualstep = s.expplan(s.count_of_n_of_reversals, 2);
                 s.pos = s.trend;
                 s.neg = s.trend;
             end
@@ -130,7 +147,7 @@ if s.count_of_n_of_reversals < sum(s.reversals);
         if s.pos ==1 && s.neg == -1
             s.count_of_n_of_reversals = s.count_of_n_of_reversals + 1;
             % calculate the threshold
-            blockthresholds(s.n_threshold)=(s.StimulusLevel + rowofoutput(1, 3))/2;
+            s.blockthresholds(s.n_threshold)=(s.StimulusLevel + rowofoutput(1, 3))/2;
             s.n_threshold = s.n_threshold + 1;
             s.actualstep = s.expplan(s.count_of_n_of_reversals, 2);
             s.pos = s.trend;
@@ -148,28 +165,29 @@ if s.count_of_n_of_reversals < sum(s.reversals);
     % update the number of trials
     s.adaptive.trial = s.adaptive.trial + 1;
     % UPDATE THE GLOBAL OUTPUT VARIABLE
-    output = [output; rowofoutput];
-end
-% here I calculate the threshol for the block
-switch s.thresholdtype
-    case 'Arithmetic'
-        expthresholds(block)=mean(blockthresholds(end-(s.reversalForthresh-1):end));
-    case 'Geometric'
-        expthresholds(block)=prod(blockthresholds(end-(s.reversalForthresh-1):end))^(1/length(blockthresholds(end-(s.reversalForthresh-1):end)));
-    case 'Median'
-        expthresholds(block)=median(blockthresholds(end-(s.reversalForthresh-1):end));
-    otherwise
-        disp('Unknown calculation type.')
-end
-fprintf('Threshold equal to %1.3f\n', expthresholds(block));
-fprintf('Press return to continue\n');
-pause
-fprintf ('\nBLOCK ENDED\n');
-pause(2)
-%clc
-%fprintf ('\nEXPERIMENT ENDED\n\n');
-%s.MATSAVEDATA = output;
-%if s.SaveResults
-%    WriteDataFile(tracking,s.fileout,output,s.nsub,s.name,s.gender,s.age,s.note,expthresholds);
+    s.output = [s.output; rowofoutput];
 %end
-%clear all
+
+%disp(['length_blockthresh = ' num2str(length(s.blockthresholds))]);
+disp(['nreversals = ' num2str(s.count_of_n_of_reversals)]);
+disp(['level = ' num2str(s.StimulusLevel)]);
+
+% here I calculate the threshol for the block
+if length(s.blockthresholds)>=s.reversalForthresh
+    switch s.thresholdtype
+        case 'Arithmetic'
+            s.expthresholds(block)=mean(s.blockthresholds(end-(s.reversalForthresh-1):end));
+        case 'Geometric'
+            s.expthresholds(block)=prod(s.blockthresholds(end-(s.reversalForthresh-1):end))^(1/length(s.blockthresholds(end-(s.reversalForthresh-1):end)));
+        case 'Median'
+            s.expthresholds(block)=median(s.blockthresholds(end-(s.reversalForthresh-1):end));
+        otherwise
+            disp('Unknown calculation type.')
+    end
+    fprintf('Threshold equal to %1.3f\n', s.expthresholds(block));
+end
+h.s =s;
+%fprintf('Press return to continue\n');
+%pause
+%fprintf ('\nBLOCK ENDED\n');
+%pause(2)
