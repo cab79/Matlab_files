@@ -1,7 +1,7 @@
-function h = blockstart(h)
+function h = blockstart(h,opt)
 % command options to start each block
 
-switch h.Settings.blockstart
+switch opt
     case 'msgbox'
         h.go = msgbox('Press OK to start the block.','Message');
         uiwait(h.go);
@@ -22,6 +22,9 @@ switch h.Settings.blockstart
     case 'buttonpress'
         opt = 'start';
         h = buttonpress(h,opt);
+        
+    case 'audio'
+        h = audio(h);
 
 %pause(1);
 

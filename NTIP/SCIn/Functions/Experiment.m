@@ -3,11 +3,6 @@ function h = Experiment(h,opt)
 % GUI handle name
 h.GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
 
-%get(h.GUIhname, 'WindowKeyPressFcn')
-%set(h.GUIhname, 'WindowKeyPressFcn', []);
-%get(h.GUIhname, 'WindowKeyPressFcn')
-%set(h.GUIhname, 'WindowKeyPressFcn', @(hObject,eventdata) SCIn('SCIn_WindowKeyPressFcn',hObject,eventdata,guidata(hObject)));
-%get(h.GUIhname, 'WindowKeyPressFcn')
 switch opt
     
     case 'setup'
@@ -42,8 +37,7 @@ switch opt
         
         if isfield(h.Settings,'stimcontrol') 
             if strcmp(h.Settings.stimcontrol,'PsychPortAudio')
-                opt = 'setup';
-                h = PTBaudio(h,opt);
+                h = PTBaudio(h);
             end
         end
         
@@ -57,17 +51,17 @@ switch opt
     
     case 'start'
         
+        % require input to start, e.g. scanner trigger, msgbox
         if isfield(h.Settings,'blockstart')
             if ~isempty(h.Settings.blockstart)
-                h = blockstart(h);
-            end
-        end
-        
-        if isfield(h.Settings,'buttontype')
-            if ~isempty(h.Settings.buttontype)
-                if h.Settings.buttonstart
-                    opt = 'start';
-                    h = buttonpress(h,opt);
+                if iscell(h.Settings.blockstart)
+                    for i = 1:length(h.Settings.blockstart)
+                        opt = h.Settings.blockstart{i};
+                        h = blockstart(h,opt);
+                    end
+                else
+                    opt = h.Settings.blockstart;
+                    h = blockstart(h,opt);
                 end
             end
         end
@@ -290,7 +284,7 @@ while (h.ct-h.st)<h.trialdur
                 [keyIsDown,presstime, keyCode, deltaSecs] = KbCheck;
                 btnstr = KbName(keyCode);
                 
-                    if keyIsDown
+                    if keyIsDown && ~isempty(btnstr)
                         recordresp=1;
                         % if button options are specified
                         if isfield(h.Settings,'buttonopt')

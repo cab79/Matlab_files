@@ -3,7 +3,7 @@ function h = OddballCreateSequence(h)
 % stimtype = e.g. stimtypets (if multiple stimtypets stimulated)
 
 if h.Settings.distblocks==1 && h.Settings.nblocks>1
-    rep_design = h.Settings.nblocks;
+    rep_design = h.Settings.nblocks; % create uniquely randomsised sequences for each block that are balanced by conditions
 else
     rep_design = 1;
 end
@@ -13,13 +13,13 @@ combdesign=[];
 for rp = 1:rep_design
 
     %% initiate parameters (from parameters script)
-    nfreq = length(h.Settings.freq); % number of frequencies of stimulation to use
+    nfreq = length(h.Settings.freq); % number of frequencies (ISIs) of stimulation to use
     num_prob = size(h.Settings.change_prob_init,2); % number of probabilities of stimulus change to use
-    change_prob_init = repmat(h.Settings.change_prob_init,1,h.Settings.num_changes*h.Settings.num_hands); % change probs for each block type
-    cond_rep_init = repmat(h.Settings.cond_rep_init/rep_design,1,h.Settings.num_changes*h.Settings.num_hands); % block repetitions for each block type
-    stimtypeouts_init = reshape(reshape(repmat(h.Settings.stimtypeouts_init,1,num_prob)',h.Settings.num_changes*h.Settings.num_hands*num_prob*2,1)',2,h.Settings.num_changes*h.Settings.num_hands*num_prob);
-    cond_num_init = reshape(reshape(repmat(h.Settings.cond_num_init,1,num_prob)',h.Settings.num_changes*h.Settings.num_hands*num_prob*2,1)',2,h.Settings.num_changes*h.Settings.num_hands*num_prob);
-    cp_stims_init = repmat(h.Settings.cp_stims_init',1,h.Settings.num_hands*h.Settings.num_changes);
+    change_prob_init = repmat(h.Settings.change_prob_init,1,h.Settings.num_oddballtypes*h.Settings.num_chantypes); % change probs for each block type
+    cond_rep_init = repmat(h.Settings.cond_rep_init/rep_design,1,h.Settings.num_oddballtypes*h.Settings.num_chantypes); % block repetitions for each block type
+    stimtypeouts_init = reshape(reshape(repmat(h.Settings.stimtypeouts_init,1,num_prob)',h.Settings.num_oddballtypes*h.Settings.num_chantypes*num_prob*2,1)',2,h.Settings.num_oddballtypes*h.Settings.num_chantypes*num_prob);
+    cond_num_init = reshape(reshape(repmat(h.Settings.cond_num_init,1,num_prob)',h.Settings.num_oddballtypes*h.Settings.num_chantypes*num_prob*2,1)',2,h.Settings.num_oddballtypes*h.Settings.num_chantypes*num_prob);
+    cp_stims_init = repmat(h.Settings.cp_stims_init',1,h.Settings.num_chantypes*h.Settings.num_oddballtypes); % all possible N stimuli occuring before an oddball change
 
     % if there are a number of probabilities (of stimulus change) during the
     % experiment, we need separate condition numbers for each.
@@ -37,13 +37,13 @@ for rp = 1:rep_design
     stimtypeouts = [];
     cond_num = [];
     cp_stims = [];
-    for i = 1:length(cond_rep_init)
+    for i = 1:length(cond_rep_init) % for each condition
         change_prob_temp = [];
         cond_rep_temp = [];
         stimtypeouts_temp = [];
         cond_num_temp = [];
         cp_stims_temp = [];
-        for j = 1:cond_rep_init(i)
+        for j = 1:cond_rep_init(i) % for each repetition of that condition
             cond_rep_temp = [cond_rep_temp cond_rep_init(:,i)];
             change_prob_temp = [change_prob_temp change_prob_init(:,i)];
             stimtypeouts_temp = [stimtypeouts_temp stimtypeouts_init(:,i)];
@@ -73,18 +73,18 @@ for rp = 1:rep_design
 
 
     designs = [];
-
+    % LOOP TO CREATE ODDBALL SEQUENCES FOR EACH CONDITION (AFTER CONDS HAVE BEEN RANDOMISED)
     for b = 1:size(stimtypeouts,1)
 
-        stimtypeout = stimtypeouts(b,:);
+        stimtypeout = stimtypeouts(b,:); % e.g. each channel
         nstimtypes = length(stimtypeout);
         stimtype_changes = cell(1,nstimtypes);
-        stimtype_start=stimtypeout(1);
+        stimtype_start=stimtypeout(1); % stimulus type to start the sequence
 
-        i = find(cond_rep_init==cond_rep(b));
+        i = find(cond_rep_init==cond_rep(b)); % index of cond_rep_init for this condition
         nchanges_per_cond_b = h.Settings.nchanges_per_cond(i(1))/rep_design;
 
-        nchanges_per_block = nchanges_per_cond_b/(cond_rep(b)*h.Settings.num_changes);
+        nchanges_per_block = nchanges_per_cond_b/(cond_rep(b)*h.Settings.num_oddballtypes);
 
         if ~any(cell2mat(cellfun(@(x) ~isempty(x),stimtype_changes,'UniformOutput', false)))
             for nd = 1:nstimtypes

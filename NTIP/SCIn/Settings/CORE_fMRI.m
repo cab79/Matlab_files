@@ -7,9 +7,11 @@ switch opt
     case 'setoptions'
         
     % settings options
-    h.SettingsOptions = {'1'};
+    h.SettingsOptions = {'practice','fMRI_run'};
     
-    case '1'
+    case 'practice'
+        
+    case 'fMRI_run'
         % set general options
         h = setgeneral(h);
         %record response, 1=yes, 0=no
@@ -17,41 +19,43 @@ switch opt
         %between-train frequency (1000 divided by ISI in ms)
         h.Settings.freq = 1./(h.Settings.trialdur);
         % stimulus types
-        % rows = conditions (stimuli randomised together), columns = output points within each condition
+        % rows = conditions (stimuli randomised together), columns = outputs within each condition
         % if using D188, would be the output channels 
-        % if auditory, would be the pitch or intensity options
-        h.Settings.stimtypeouts_init = [1 2];
-        %number of hands being stimulated
-        h.Settings.num_hands = 1;
+        % if auditory, would be the pitch, intensity or channel indices (actual channel numbers on device are
+        % specified later by h.Settings.stimchan).
+        h.Settings.stimtypeouts_init = [1 2; 3 4]; % [1 2; 3 4] digit 1 vs digit 5; left vs. right ear
         %condition numbers to associate with each condition; rows = conditions,
-        %column1 = no change conditions, column 2 = change condition.
-        h.Settings.cond_num_init = [1 2];
+        %column1 = no change condition, column 2 = change condition.
+        h.Settings.cond_num_init = [1 2; 3 4]; %[1 2; 3 4]; 
+        %number of output channel types, e.g. hands being stimulated, modalities (auditory plus tactile).
+        h.Settings.num_chantypes = 2;
         %on each hand, number of conditions (e.g. 3 digit changes vs 1 digit changes; or two different pitch/intensity changes)
-        h.Settings.num_changes = 1;
+        h.Settings.num_oddballtypes = 1;
         %list of probabilities of a stimulus changing location on each trial
         h.Settings.change_prob_init = [0.2 0.4];
         %for each change probability (rows), list of number of trials in which the stimuli remain in same
         %location - these will be randomised within a block. Sum must be integer divider of h.Settings.nchanges_per_cond
         h.Settings.cp_stims_init = [2 4 6 8; 1 2 3 4];
-        %number of blocks of each change probability
-        h.Settings.cond_rep_init = [1 1];
-        %number of stimulus location changes within each condition
-        h.Settings.nchanges_per_cond = [20, 20]; 
+        %number of blocks of each change probability (CP)
+        h.Settings.cond_rep_init = [2 2]; % this DIVIDES nchanges_per_cond, i.e. does not increase the number of changes
+        %number of stimulus location changes within each CP condition
+        h.Settings.nchanges_per_cond = [80, 80]; % multiply desired n changes PER CP CONDITION by cond_rep_init to get this number
         
-        % BLOCKING OPTIONS
-        % 'divide' = equally divide trial by nblocks; 
+        % BLOCKING/RUN OPTIONS
+        % 'divide' = equally divide trials by nblocks; 
         % 'cond' = separate block for each condition
-        h.Settings.blockopt = 'cond';
+        h.Settings.blockopt = 'divide';
         % further options for 'divide':
-            % number of blocks (containing multiple conditions) in which experiment is run until a pause
-            h.Settings.nblocks = 2; 
+            % number of blocks (containing multiple conditions)
+            h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
             %distribute conditions equally among blocks
-            h.Settings.distblocks = 0;
-        % options to start sequence at beginning of every block
-        % 'msgbox', 'labjack', 'buttonpress'
-        h.Settings.blockstart = 'buttonpress';
-        % require additional button press to start and re-start, including after a pause? 0 or 1
-        h.Settings.buttonstart = 0;
+            h.Settings.distblocks = 1;
+        % options to start sequence at beginning of every run
+        % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
+        % cell array
+        h.Settings.blockstart = {'audio','buttonpress','audio'}; % audio,labjack,audio
+        % names of any audiofiles
+        h.Settings.audiofile = {'instruct.wav','start.wav'}; % labjack
         
 end
 
@@ -64,15 +68,17 @@ h.Settings.design = 'trials';
 %Use labjack for controlling any equipment?
 %h.Settings.labjack=1;
 % How to control stimulator? Options: audioplayer, PsychPortAudio, labjack, spt
-h.Settings.stimcontrol='PsychPortAudio';
+h.Settings.stimcontrol='audioplayer';
 % if using PsychPortAudio with more than 2 channels:
     %7.1 soundcard channel numbers:
     %front = 1,2
     %C-sub = 3,4
     %rear = 5,6
     %side = 7,8
-h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
-h.Settings.stimchan = [1 2]; % channels on stimulator to use
+% total number of channels, e.g. on sound card
+h.Settings.nrchannels = 2; % 8 
+% channels on stimulator to use
+h.Settings.stimchan = [1 2, 1 2]; % [7 8 3 4]
 % Use D188
 %h.Settings.D188 = 1;
 % message box with OK press to start experiment?
@@ -81,31 +87,37 @@ h.Settings.stimchan = [1 2]; % channels on stimulator to use
 %h.Settings.record_EEG='NS';
 
 %% STIMULUS PARAMETERS
+% Condition method: do the stimtypes indexed by
+% h.Settings.stimtypeouts_init (oddball method) differ by any other
+% characteristic? E.g. different modalities ma requrie different pitches
+h.Settings.conditionmethod = {'pitch','intensity'};
+% for each number in h.Settings.stimtypeouts_init, what value of the above method (e.g. 'pitch', defined in h.Settings.f0) does this
+% refer to?
+h.Settings.conditionvalue = [1 1 2 2; 1 1 2 2];
 % Oddball method: intensity, pitch, channel
-h.Settings.oddball = 'intensity'; % can use same type for pattern only if oddball intensity is adaptive
-% Pattern type method: intensity, pitch, channel, duration
-h.Settings.pattern = 'pitch';
-% duration of stimulus sequence in seconds
+h.Settings.oddball = 'channel'; % can use same type for pattern only if oddball intensity is adaptive
+% Pattern type method: intensity, pitch. Not supported: channel, duration
+%h.Settings.pattern = 'intensity';
+% minimum total duration of stimulus sequence in seconds
 %h.Settings.totdur = 60; 
 % duration of trial in seconds
-h.Settings.trialdur = 0.5;
-% duration of stimulus in seconds
-%h.Settings.stimdur = 0.25; 
-h.Settings.stimdur = [0.02:0.02:0.10]; % could also randomise these
+h.Settings.trialdur = 1;
+% duration of stimulus in seconds. Can be single value or number of values
+% to form a pattern
+h.Settings.stimdur = [0.5];
 % 'rand' or 'reg' spacing?
-h.Settings.stimdurtype = 'rand';
-%REMOVE: h.Settings.npulses = 1;
+h.Settings.stimdurtype = 'reg';
 % Apply Tukey window?
 h.Settings.Tukey = 0.25;
-% ratio of on:off periods during stimulu
+% ratio of on:off periods during stimulus
 h.Settings.ratio_on = 1; % not yet implemented
 % sampling rate
 h.Settings.fs = 96000; % don't change this, unless sure soundcard supports higher rates
-% Pitch
-h.Settings.f0 = [500:100:900]; % uses only first, or both if oddball selected
-% Intensities
-h.Settings.inten = [1]; % one per column of h.Settings.stimdur OR oddball condition
-h.Settings.atten = -30; % attenuation level in decibels
+% Pitch/freq: can be a range corresponding to h.Settings.stimdur
+h.Settings.f0 = [200 500]; % uses only first, or more than one if oddball, conditionmethod, or pattern is set to "pitch"
+% Intensities: can be a range corresponding to h.Settings.stimdur OR oddball condition
+h.Settings.inten = [1 1]; % uses only first, or more than one if oddball, conditionmethod, or pattern is set to "intensity"
+h.Settings.atten = 0; % attenuation level in decibels
 %% RESPONSE PARAMETERS
 % buttonpress options: key: keyboard inputs. Blank for no button press
 h.Settings.buttontype='key';
@@ -116,10 +128,10 @@ h.Settings.displayRT=0;
 
 %% ADAPTIVE
 % adaptive staircase: meanings of the buttonopt
-h.Settings.adaptive.buttonfun = {'low','high'}; 
+%h.Settings.adaptive.buttonfun = {'low','high'}; 
 % adaptive staircase: corresponding signal values that would signify a
 % correct answer
-h.Settings.adaptive.signalval = [1 2];
+%h.Settings.adaptive.signalval = [1 2];
 % starting level of adaptive staircase
-h.Settings.adaptive.startinglevel = 10; % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100)
+%h.Settings.adaptive.startinglevel = 10; % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100)
 

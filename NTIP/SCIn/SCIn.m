@@ -242,11 +242,13 @@ function StartStop_Callback(hObject, eventdata, h)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % h    structure with h and user data (see GUIDATA)
 global d
-
 % get GUI handle name: necessary if 'h' is empty because not called from
 % the base workspace
 GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
 h = guihandles(GUIhname);
+
+h.d=d;
+guidata(hObject, h)
 
 % check if the button is pressed
 if get(hObject, 'Value') == get(hObject, 'Max')

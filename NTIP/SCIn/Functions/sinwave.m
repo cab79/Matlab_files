@@ -89,6 +89,23 @@ for tr = trials
         end
     end
     
+    % optional condition method
+    if isfield(h.Settings,'conditionmethod')
+        if ~isempty(h.Settings.conditionmethod) && iscell(h.Settings.conditionmethod)
+            for i = 1:length(h.Settings.conditionmethod)
+                conditionmethod = h.Settings.conditionmethod{i};
+                if strcmp(conditionmethod,'pitch')
+                    h.pitch = h.pitch(h.Settings.conditionvalue(i,h.Seq.signal(tr)));
+                end
+                if strcmp(conditionmethod,'intensity')
+                    h.inten = h.inten(h.Settings.conditionvalue(i,h.Seq.signal(tr)));
+                end
+            end
+        else
+            error('h.Settings.conditionmethod must be a cell');
+        end
+    end
+    
     % time index of sound
     t = transpose((1:sum(h.dur)*h.Settings.fs)/h.Settings.fs);
     
@@ -270,77 +287,3 @@ for tr = trials
     h.Seq.stimseq = [h.Seq.stimseq h.mwav];
     h.Seq.trialend(tr,1) = size(h.Seq.stimseq,2);
 end
-
-function h = sinwave_cont(h)
-
-t = transpose((1:h.totdur*h.Settings.fs)/h.Settings.fs);
-
-% construct the player object: left
-x = sin(2*pi*h.Settings.f0*t);
-% construct the player object: right
-y = sin(2*pi*(h.Settings.f0+h.Settings.df)*t);
-
-if length(i12)~=length(t)
-    error('lengths do not match')
-end
-
-% define durations - for duropt durations
-i12 = [];
-to = [];
-for i = 1:length(randind)
-    i12 = [
-        i12;
-        ones(round(h.Settings.duropt(randind(i),1)*h.Settings.fs),1); 
-        zeros(round(h.Settings.duropt(randind(i),2)*h.Settings.fs),1)];
-    if h.Settings.tone_dur>0
-        to = [
-            to;
-            ones(round(h.Settings.tone_dur*h.Settings.fs),1); zeros(round((h.Settings.duropt(randind(i),1)-h.Settings.tone_dur)*h.Settings.fs),1);
-            ones(round(h.Settings.tone_dur*h.Settings.fs),1); zeros(round((h.Settings.duropt(randind(i),2)-h.Settings.tone_dur)*h.Settings.fs),1);
-        ];
-    else
-        to = ones(length(t),1);
-    end
-    disp(['SETUP SEQUENCE: Pair ' num2str(i) '/' num2str(length(randind)) ' appended']);
-end
-
-if length(i12)~=length(t)
-    error('lengths do not match')
-end
-
-% pitch changes
-if h.Settings.fpitch>0
-    % alternate sin waves
-    x2 = sin(2*pi*(h.Settings.f0+h.Settings.pitchdiff)*t);
-    y2 = sin(2*pi*(h.Settings.f0+h.Settings.df+h.Settings.pitchdiff)*t);
-
-    % define durations - for identical durations
-    %i1 = ones((1/fpitch)*h.Settings.fs,1); 
-    %i2 = zeros((1/fpitch)*h.Settings.fs,1); 
-    %i12 = repmat([i1;i2],mod_dur*(h.Settings.fs/(length(i1)+length(i2))),1);
-
-    % splice them in
-    x(find(i12)) = x2(find(i12));
-    y(find(i12)) = y2(find(i12));
-end
-
-% intensity changes
-if h.Settings.finten>0
-    % alternate sin waves
-    x2 = h.Settings.intendiff*sin(2*pi*(h.Settings.f0)*t);
-    y2 = h.Settings.intendiff*sin(2*pi*(h.Settings.f0+h.Settings.df)*t);
-
-    % define durations - for identical durations
-    %i1 = ones((1/finten)*h.Settings.fs,1); 
-    %i2 = zeros((1/finten)*h.Settings.fs,1); 
-    %i12 = repmat([i1;i2],mod_dur*(h.Settings.fs/(length(i1)+length(i2))),1);
-
-    % splice them in
-    x(find(i12)) = x2(find(i12));
-    y(find(i12)) = y2(find(i12));
-end
-x = x.*to;
-y = y.*to;
-
-h.Seq.signal = audioplayer([x y], h.Settings.fs);
-h.Seq.blocks = ones(1,1:length(x));

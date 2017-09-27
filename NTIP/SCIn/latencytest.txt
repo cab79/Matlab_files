@@ -1,0 +1,10 @@
+audioplayer,0.0986
+audioplayer,0.0310
+audioplayer,0.0581
+audioplayer,0.0599
+audioplayer,0.0607
+audioplayer,0.0586
+audioplayer,0.0705
+audioplayer,0.0646
+audioplayer,0.0550
+audioplayer,0.0521
