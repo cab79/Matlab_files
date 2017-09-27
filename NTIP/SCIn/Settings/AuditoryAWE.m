@@ -32,66 +32,82 @@ switch opt
     %% TRIALS OR CONTINUOUS?
     h.Settings.design = 'continuous';
     
-    %% ENTRAINMENT SETTINGS
-
-    % duration of trial in seconds
-    h.Settings.trialdur = 0; % 0 = all stimuli are continuous
+    %% EQUIPMENT CONTROL
+    % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
+    h.Settings.record_EEG='serial';
+    h.Settings.EEGport = 'LPT1'; % only needed for 'serial' EEG triggers
+    h.Settings.labjack=0; % Use labjack for controlling any equipment?
+    h.Settings.stimcontrol='audioplayer'; % How to control stimulator? Options: audioplayer, labjack, spt
+    h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
+    h.Settings.stimchan = [1 2]; % channels on stimulator to use
+    
+    %% BLOCKING/RUN OPTIONS
+    % 'divide' = equally divide trials by nblocks; 
+    % 'cond' = separate block for each condition
+    %h.Settings.blockopt = 'divide';
+    % further options for 'divide':
+        % number of blocks (containing multiple conditions)
+    %    h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
+        %distribute conditions equally among blocks
+    %    h.Settings.distblocks = 1;
+    % options to start sequence at beginning of every run
+    % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
+    % cell array
+    h.Settings.blockstart = {'audio','buttonpress'}; % audio,labjack,audio
+    % names of any audiofiles
+    h.Settings.audiofile = {'instruct.wav'}; % labjack
+    
+    %% Condition-independent stimulus parameters - can be superceded by condition-dependent parameters
     % duration of stimulus sequence in seconds
     h.Settings.totdur = 60; 
+    % duration of trial in seconds
+    h.Settings.trialdur = 0; % superceded by oddball settings
+    % duration of stimulus in seconds
+    h.Settings.stimdur = 0; % superceded by oddball settings
+    % Pattern type method: intensity, pitch. Not supported: channel, duration
+    h.Settings.patternmethod = 'pitch';
+    h.Settings.patternvalue = [200 400]; % one per stimdur
+    % 'rand' or 'reg' spacing?
+    h.Settings.stimdurtype = 'reg'; % not needed unless 'rand'
     % sampling rate
     h.Settings.fs = 96000; % don't change this
-    % Left ear carrier frequency (pitch)
-    h.Settings.f0 = [200 400]; % one per column of h.Settings.stimdur OR oddball condition
     % Binarual beats frequency: creates right ear frequency of f0+df
     h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-
-    %% ERP / FREQ TAG SETTINGS
-    % Note: advise only using pitch changes OR intensity changes, not both!
-
-    % Oddball type: intensity, pitch, channel, duration
-    h.Settings.oddball = 'duration';
-    % Pattern type method: intensity, pitch, channel, duration
-    h.Settings.pattern = 'pitch';
-    % Frequency of pitch changes
-    h.Settings.fpattern = 2.5; % Hz - 1/fpattern must be an integer multiple of 1/h.Settings.df. Set to 0 to turn off pitch changes.
-    % Intensity difference: e.g 0.75 produces 75% of the intensity to
-    % alternate with 100% intensity.
-    h.Settings.inten = [1 0.1]; % multiple of normal intensity (value between 0 and 1)
     h.Settings.atten = -30; % attenuation level in decibels
-    % tone duration: only if distinct tones are needed with gaps of silence (not needed for current experiment)
-    %h.Settings.tone_space = 0; % set to 0 for tones to fill whole trial
-    
+    % pitch
+    h.Settings.f0 = 500; % Left ear carrier frequency (pitch)
+    %intensity
+    h.Settings.inten = 1; % value between 0 and 1
 
-    %% DURATION DEVIANT TRIALS SETTINGS
+    %% Condition-dependent stimulus parameters
+    % Condition method: intensity, pitch, channel
+    h.Settings.conditionmethod = {};
+    h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
+    % Oddball method: intensity, pitch, channel
+    h.Settings.oddballmethod = 'duration'; % can use same type for pattern only if oddball intensity is adaptive
+    % Odball value: DURATION DEVIANTS
     % i.e. all possible duration options and their probability
-
-    fc = h.Settings.fpattern; % dont change: finds the frequency of change (of either pitch or intensity)
-    %h.Settings.fc=fc;
-    
-    %STIMDUR
     % In general, each row is a different stim type, with columns providing
     % within-stimulus temporal patterns of pitch, intensity or channel.
     % Here the options are chosen as:
         % left column = 1st inten/pitch
         % right column = 2nd inten/pitch
     % and the temporal pattern is defined by fc (from either fpitch or finten)
-    h.Settings.stimdur = [
+    sd = h.Settings.stimdur;
+    h.Settings.oddballvalue = [
         % standard
-        1/fc, 1/fc
+        sd, sd
         % oddballs on first pitch/intensity
-        1/fc*0.5+1/h.Settings.df*0.5, 1/fc
-        1/fc*1.5-1/h.Settings.df*0.5, 1/fc
-        1/fc*0.5+1/h.Settings.df*0.25, 1/fc
-        1/fc*1.5-1/h.Settings.df*0.25, 1/fc
+        sd*0.5+1/h.Settings.df*0.5, sd
+        sd*1.5-1/h.Settings.df*0.5, sd
+        sd*0.5+1/h.Settings.df*0.25, sd
+        sd*1.5-1/h.Settings.df*0.25, sd
         % oddballs on second pitch/intensity
-        1/fc, 1/fc*0.5+1/h.Settings.df*0.5
-        1/fc, 1/fc*1.5-1/h.Settings.df*0.5
-        1/fc, 1/fc*0.5+1/h.Settings.df*0.25
-        1/fc, 1/fc*1.5-1/h.Settings.df*0.25
+        sd, sd*0.5+1/h.Settings.df*0.5
+        sd, sd*1.5-1/h.Settings.df*0.5
+        sd, sd*0.5+1/h.Settings.df*0.25
+        sd, sd*1.5-1/h.Settings.df*0.25
         ];
-    
-    % 'rand' or 'reg' spacing?
-    h.Settings.stimdurtype = 'reg'; % not needed unless 'rand'
     
     h.Settings.durprob = [
         % standard
@@ -108,25 +124,16 @@ switch opt
         0.025
         ];
     
-    %% Equipment options
-    % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
-    h.Settings.record_EEG='serial';
-    h.Settings.EEGport = 'LPT1'; % only needed for 'serial' EEG triggers
+    
+    %% RESPONSE PARAMETERS
+    % record responses during experiment? 0 or 1
+    h.Settings.record_response = 1;
     % buttonpress options: key: keyboard inputs. Blank for no button press
     h.Settings.buttontype='key';
     % range of keyboard presses indicating a recordable response
     h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
-    % record responses during experiment? 0 or 1
-    h.Settings.record_response = 1;
-    % require button press to start and re-start after a pause? 0 or 1
-    h.Settings.buttonstart = 1;
-    % Use labjack for controlling any equipment?
-    h.Settings.labjack=0;
-    % How to control stimulator? Options: audioplayer, labjack, spt
-    h.Settings.stimcontrol='audioplayer';
-    h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
-    h.Settings.stimchan = [1 2]; % channels on stimulator to use
     
+    %% Output options
     % save sinwave from all trials as part of stim sequence file
     h.Settings.savesinwave = 1;
     

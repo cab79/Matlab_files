@@ -5,7 +5,7 @@ probs = h.Settings.durprob;
 minprob = min(probs); % min prob is the divisor
 mult = probs/minprob; % multiplier is the min number of repetitions of each duration option (rows of duropt)
 tot = sum(mult); % total number of dur pairs
-totdur = sum(sum(h.Settings.stimdur,2) .* mult);% total duration of one set of dur pairs
+totdur = sum(sum(h.Settings.oddballvalue,2) .* mult);% total duration of one set of dur pairs
 num_sets = ceil(h.Settings.totdur/totdur);% number of sets that can provide at least h.Settings.dur of stimulation
 h.totdur = num_sets*totdur; % modified duration
 % create non-randomised indices of a single set

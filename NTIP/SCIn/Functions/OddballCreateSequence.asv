@@ -255,9 +255,8 @@ h.Seq.blocks = design(4,:);
 
 % response probe sequence
 %augment conditions
-aug_factor = (numel(cond_num_init)/numel(h.Settings.cond_num_init)-1) * max(h.Settings.cond_num_init(:));
-RPconds = [h.Settings.RPconds h.Settings.RPconds+aug_factor];
-RPi = find(ismember(h.Seq.condnum,RPconds)); % indices of all possible stims to use
+cond_num_init/
+RPi = find(ismember(h.Seq.condnum,h.Settings.RPconds)); % indices of all possible stims to use
 nSelect = round(h.Settings.RPprob*length(RPi));
 RPrand = RPi(randperm(length(RPi)));
 RPselect = RPrand(1:nSelect);

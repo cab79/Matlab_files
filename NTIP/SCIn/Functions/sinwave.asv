@@ -105,45 +105,7 @@ for tr = trials
             end
         end
     end
-       
-    %apply pitch pattern?
-    pitchpattern=0;
-    if isfield(h.Settings,'patternmethod')
-        if strcmp(h.Settings.patternmethod,'pitch') % pitch changes
-            pitchpattern=1;
-            h.pitch = h.Settings.patternvalue;
-        end
-    end
-    % apply response probe?
-    if isfield(h.Settings,'RPmethod')
-        if strcmp(h.Settings.RPmethod,'pitch')
-            if h.Seq.RP(tr)==1
-                pitchpattern=1;
-                h.pitch = h.Settings.RPvalue;
-                h.dur = h.Settings.RPdur;
-            end
-        end
-    end
-    %apply intensity pattern?
-    intenpattern=0;
-    if isfield(h.Settings,'patternmethod')
-        if strcmp(h.Settings.patternmethod,'intensity') % intensity changes
-            intenpattern=1;
-            h.inten = h.Settings.patternvalue;
-        end
-    end
-    % apply response probe?
-    if isfield(h.Settings,'RPmethod')
-        if strcmp(h.Settings.RPmethod,'intensity')
-            if h.Seq.RP(tr)==1
-                intenpattern=1;
-                h.inten = h.Settings.RPvalue;
-                h.dur = h.Settings.RPdur;
-            end
-        end
-    end
     
-    %% CONSTRUCT WAVEFORM
     % time index of sound
     t = transpose((1:sum(h.dur)*h.Settings.fs)/h.Settings.fs);
     
@@ -161,22 +123,46 @@ for tr = trials
     else
         df=0;
     end
-    
-    if pitchpattern
-        if length(h.dur)~=length(h.pitch)
-            error('num column of stimdur must equate to number of pitches');
+       
+    % apply pattern method to construct waveform?
+    if isfield(h.Settings,'patternmethod')
+        if strcmp(h.Settings.patternmethod,'pitch') % pitch changes
+            
+            h.pitch = h.Settings.patternvalue;
         end
-        for i = 1:length(h.pitch)
-            h.mwav(chan(1),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i))*t + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
-            if df; h.mwav(chan(2),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
+    end
+    % apply response probe?
+    if isfield(h.Settings,'RPmethod')
+        if ~isempty(h.Settings.RPmethod) && strcmp(h.Settings.RPmethod,h.Settings.patternmethod)
+            if h.Seq.RP(tr)==1
+                h.pitch = h.Settings.RPvalue;
+            end
         end
-    elseif intenpattern
-        if length(h.dur)~=length(h.inten)
-            error('num column of stimdur must equate to number of intensities');
-        end
-        for i = 1:length(h.inten)
-            h.mwav(chan(1),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1))*t + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs);
-            if df; h.mwav(chan(2),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
+    end
+            if length(h.dur)~=length(h.pitch)
+                error('num column of stimdur must equate to number of pitches');
+            end
+            for i = 1:length(h.pitch)
+                h.mwav(chan(1),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i))*t + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
+                if df; h.mwav(chan(2),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
+            end
+        elseif strcmp(h.Settings.patternmethod,'intensity') % intensity changes
+            h.inten = h.Settings.patternvalue;
+            % apply response probe?
+            if isfield(h.Settings,'RPmethod')
+                if ~isempty(h.Settings.RPmethod) && strcmp(h.Settings.RPmethod,h.Settings.patternmethod)
+                    if h.Seq.RP(tr)==1
+                        h.inten = h.Settings.RPvalue;
+                    end
+                end
+            end
+            if length(h.dur)~=length(h.inten)
+                error('num column of stimdur must equate to number of intensities');
+            end
+            for i = 1:length(h.inten)
+                h.mwav(chan(1),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1))*t + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs);
+                if df; h.mwav(chan(2),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
+            end
         end
     end
     
