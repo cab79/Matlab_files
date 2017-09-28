@@ -63,7 +63,7 @@ switch opt
     % duration of trial in seconds
     h.Settings.trialdur = 0; % superceded by oddball settings
     % duration of stimulus in seconds
-    h.Settings.stimdur = 0; % superceded by oddball settings
+    h.Settings.stimdur = 0.4; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
     h.Settings.patternmethod = 'pitch';
     h.Settings.patternvalue = [200 400]; % one per stimdur

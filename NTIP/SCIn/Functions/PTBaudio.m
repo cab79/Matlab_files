@@ -1,8 +1,11 @@
 function h = PTBaudio(h,varargin)
 global pah
-Ncset=0;Fsset=0;
+Ncset=0;Fsset=0;master=0;
 % varargin = sampling rate that is different from settings
 if ~isempty(varargin)
+    if length(varargin)>2
+        master = varargin{3};
+    end
     if length(varargin)>1
         h.Nc = varargin{2};
         Ncset=1;
@@ -13,10 +16,10 @@ if ~isempty(varargin)
     end
 end
 
-if ~isfield(h,'Fs') || ~Fsset
+if ~isfield(h,'Fs') || isempty(h.Fs) || ~Fsset
     h.Fs = h.Settings.fs;
 end
-if ~isfield(h,'Nc') || ~Ncset
+if ~isfield(h,'Nc') || isempty(h.Nc) || ~Ncset
     h.Nc = h.Settings.nrchannels;
 end
 
@@ -32,7 +35,12 @@ if ~isfield(h,'pahandle')
         h.DeviceN = []; % default sound device
     end
 else
-    PsychPortAudio('Close', h.pahandle);
+    try
+        PsychPortAudio('Close', h.pahandle);
+    end
+    try 
+        PsychPortAudio('Close',pah);
+    end
 end
 
 try
@@ -41,19 +49,17 @@ try
     % (3) 1 = default level of latency
     % (4) Requested frequency in samples per second
     % (5) 2 = number of channels
-    h.pahandle = PsychPortAudio('Open', h.DeviceN, 1, 1, h.Fs, h.Nc);
+    if master
+        h.pahandle = PsychPortAudio('Open', h.DeviceN, 1+8, 1, h.Fs, h.Nc);
+    else
+        h.pahandle = PsychPortAudio('Open', h.DeviceN, 1, 1, h.Fs, h.Nc);
+    end
     pah = h.pahandle;
 catch
-    try 
-        PsychPortAudio('Close',pah);
-        h.pahandle = PsychPortAudio('Open', h.DeviceN, 1, 1, h.Fs, h.Nc);
-        pah = h.pahandle;
-    catch
-        % Failed. Retry with default frequency as suggested by device:
-        fprintf('\nCould not open device at wanted playback frequency of %i Hz. Will retry with device default sampling rate.\n', Fs);
-        fprintf('Sound may sound a bit out of tune, ...\n\n');%%
-        psychlasterror('reset');
-        h.pahandle = PsychPortAudio('Open', h.DeviceN, [], 0, [], h.Nc);
-        %pahandle = 1;
-    end
+    % Failed. Retry with default frequency as suggested by device:
+    fprintf('\nCould not open device at wanted playback frequency of %i Hz. Will retry with device default sampling rate.\n', h.Fs);
+    fprintf('Sound may sound a bit out of tune, ...\n\n');%%
+    psychlasterror('reset');
+    h.pahandle = PsychPortAudio('Open', h.DeviceN, [], 0, [], h.Nc);
+    %pahandle = 1;
 end
