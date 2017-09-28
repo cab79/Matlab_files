@@ -14,7 +14,7 @@ dbstop if error
 
 % set global variable d: list of directories
 global d
-d.root = 'C:\Matlab_files\NTIP\SCIn';
+d.root = pwd;
 addpath(genpath(d.root))
 d.expts = 'Functions';
 d.settings = 'Settings';
@@ -268,9 +268,9 @@ if get(hObject, 'Value') == get(hObject, 'Max')
     end
     if ~isfield(h,'Seq') || ~isfield(h,'Settings')
         % load sequence
-        load(fullfile(d.root,d.seq,h.SeqName));
-        h.Seq = seq;
-        h.Settings = settings;
+        A=load(fullfile(d.root,d.seq,h.SeqName));
+        h.Seq = A.seq;
+        h.Settings = A.settings;
     end
     if ~isfield(h,'startblock')
         h.startblock = '1';

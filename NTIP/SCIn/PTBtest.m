@@ -1,25 +1,26 @@
-load('C:\Matlab_files\NTIP\SCIn\wavetest.mat')
+load('C:\Data\Matlab\Matlab_files\NTIP\SCIn\wavetest.mat')
 
 h.Settings.fs=96000;
 h.Settings.nrchannels=2;
-h = PTBaudio(h,[],[],1);
-%PsychPortAudio('FillBuffer', h.pahandle, wavetest);
-PsychPortAudio('Start', h.pahandle, 0, 0, 1);
+%h = PTBaudio(h,[],[],1);
+h = PTBaudio(h);
+buff = PsychPortAudio('CreateBuffer', h.pahandle, wavetest);
+%PsychPortAudio('Start', h.pahandle, 0, 0, 1);
 
-h.pa1 = PsychPortAudio('OpenSlave', h.pahandle, 1);
-h.pa2 = PsychPortAudio('OpenSlave', h.pahandle, 1);
+%h.pa1 = PsychPortAudio('OpenSlave', h.pahandle, 1);
+%h.pa2 = PsychPortAudio('OpenSlave', h.pahandle, 1);
 
 % Create audio buffers prefilled with the 3 sounds:
 % eventually need to fill these buffers on trial-1
-pabuffer1 = PsychPortAudio('CreateBuffer', [], wavetest);
-pabuffer2 = PsychPortAudio('CreateBuffer', [], wavetest);
+%pabuffer1 = PsychPortAudio('CreateBuffer', [], wavetest);
+%pabuffer2 = PsychPortAudio('CreateBuffer', [], wavetest);
 
 % Demo of sound schedules: Build a sound schedule (a "playlist") that will
 % play the sound buffers.
 % The schedule shall contain exactly 2 slots:
-PsychPortAudio('UseSchedule', h.pa1, 1, 750);
-% Add 1st sound buffer
-PsychPortAudio('AddToSchedule', h.pa1, pabuffer1);
+PsychPortAudio('UseSchedule', h.pahandle, 1, 750);
+PsychPortAudio('AddToSchedule', h.pahandle, buff);
+st = PsychPortAudio('Start', h.pahandle, 0, 0, waitForDeviceStart);
 
 keyIsDown=0;
 delay = [];
@@ -40,9 +41,10 @@ while i<8
     catch
         old_st=0;
     end
-    st = PsychPortAudio('Start', h.pa1, 0, 0, waitForDeviceStart);
     % Add next trial to sound buffer
-    PsychPortAudio('AddToSchedule', h.pa1, pabuffer1);
+    buff = PsychPortAudio('CreateBuffer', h.pahandle, wavetest);
+    PsychPortAudio('AddToSchedule', h.pahandle, buff);
+    %st = PsychPortAudio('Start', h.pahandle, 0, 0, waitForDeviceStart);
     % stop playback at end of each trial
     %PsychPortAudio('Start', h.pahandle, 1, startCue, waitForDeviceStart);
     %status = PsychPortAudio('GetStatus', h.pahandle);
@@ -64,7 +66,6 @@ while i<8
     %est2 = meandelay;
     %est3 = meandelay+pl;
     
-    
     t2 = GetSecs;
     %playtime = t2-st; % shorter than 0.8 due to start delay; should get even shorter with startCue>0
     %playtimefromcommand = t2-commandtime; % stops it 0.8s after command time
@@ -72,8 +73,5 @@ while i<8
     %actendtime = st+playtime;
     %startCue = actendtime-est3; % can't subtract from the current time! Need to stop playing sooner...
 end
-PsychPortAudio('Stop', h.pa1, 1);
-
+PsychPortAudio('Stop', h.pahandle, 1);
 PsychPortAudio('Close', h.pahandle)
-PsychPortAudio('Close', h.pa1)
-PsychPortAudio('Close', h.pa2)

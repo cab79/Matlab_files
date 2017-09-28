@@ -35,9 +35,17 @@ switch opt
             end
         end
         
-        if isfield(h.Settings,'stimcontrol') 
-            if strcmp(h.Settings.stimcontrol,'PsychPortAudio')
-                h = PTBaudio(h);
+        %if isfield(h.Settings,'stimcontrol') 
+        %    if strcmp(h.Settings.stimcontrol,'PsychPortAudio')
+        %        h = PTBaudio(h);
+        %    end
+        %end
+        
+        % setup stim control
+        if isfield(h.Settings,'stimcontrol')
+            if ~isempty(h.Settings.stimcontrol)
+                opt = 'setup';
+                h = stimtrain(h,opt);
             end
         end
         
@@ -160,7 +168,8 @@ while h.i<length(h.Seq.signal);
     % send stimulus
     if isfield(h.Settings,'stimcontrol')
         if ~isempty(h.Settings.stimcontrol)
-            h = stimtrain(h); % stimulus train
+            opt = 'start';
+            h = stimtrain(h,opt); % stimulus train
         end
     end
     
@@ -179,11 +188,7 @@ while h.i<length(h.Seq.signal);
     KbQueueFlush; 
     
     % define the duration of this trial
-    h.trialdur = 1/h.Settings.freq;
-    
-    %set(h.GUIhname, 'WindowKeyPressFcn', @(hObject,eventdata) SCIn('SCIn_WindowKeyPressFcn',hObject,eventdata,guidata(hObject)));
-                %pause(0.001);
-               
+    h.trialdur = h.Settings.trialdur; % if stimdur is zero, will start next trial immediately after stimulus ends
     
     % enter waiting time loop 
     h.stop=0;
@@ -223,12 +228,16 @@ if isfield(h.Settings,'stimcontrol')
         opt = 'start';
         h = stimtrain(h,opt); % stimulus train
         opt = 'getsample';
-        h = stimtrain(h,opt); % stimulus train
+        h = stimtrain(h,opt);
     end
 end
 
 % trial duration
-h.trialdur = h.totalsamples/h.Settings.fs;
+if isfield(h,'totalsamples')
+    h.trialdur = h.totalsamples/h.Settings.fs;
+else
+    h.trialdur = h.totdur;
+end
 
 % start time of trial
 h.st = GetSecs;
@@ -528,9 +537,40 @@ if isfield(h.Settings,'stimcontrol')
 end
 %disp([num2str(h.currentsample) ' / ' num2str(h.totalsamples)])
 
-% trial events
+% projected end time of trial
+if h.i>1
+    triallength = h.Seq.trialend(h.i)-h.Seq.trialend(h.i-1);
+    proj_end = h.out.stimtime{h.i} + triallength/h.Settings.fs;
+elseif h.i==1
+    triallength = h.Seq.trialend(h.i);
+    proj_end = h.out.stimtime{h.i} + triallength/h.Settings.fs;
+else
+    triallength = 0;
+    proj_end = h.st + h.Seq.trialend(1)/h.Settings.fs;
+end
+nowtime = GetSecs;
+
+% trial events:
+% if current sample is greater than the sample at the end of the trial 
+% OR if projected time of the end sample is greater than the current time
 trials = find(h.Seq.trialend > h.currentsample);
-if h.i ~= trials(1)
+newtrial=0;
+if ~isempty(trials)
+    if h.i ~= trials(1)
+        newtrial = 1;
+    end
+end
+if nowtime>=proj_end
+    newtrial = 1;
+end
+
+if newtrial
+    try
+        disp(['Current sample error: ' num2str((h.currentsample - h.Seq.trialend(h.i))/h.Settings.fs)])
+    catch
+        disp(['Current sample error: ' num2str(h.currentsample - h.Seq.trialend(1))])
+    end
+    disp(['Current time error: ' num2str(nowtime - proj_end)])
     
     % record first and last responses on previous trial
     if h.i>1
@@ -551,21 +591,37 @@ if h.i ~= trials(1)
     end
     
     %create h.i
-    h.i = trials(1);
+    try
+        h.i = h.i+1;
+    catch
+        h.i = 1;
+    end
+    
+
+    % record stimulus timing
+    h.out.stimtime{h.i} = GetSecs;
     
     % ISI
     try
-        isi = (h.Seq.trialend(h.i) - h.Seq.trialend(h.i-1))/h.Settings.fs;
+        h.out.isi{h.i} = h.out.stimtime{h.i}-h.out.stimtime{h.i-1};
     catch
-        isi = h.Seq.trialend(h.i)/h.Settings.fs;
+        h.out.isi{h.i} = 0;
     end
     
-    % record stimulus timing
-    h.out.stimtime{h.i} = GetSecs;
-    % expected timing
-    h.out.expstimtime{h.i} = h.playstart + (h.Seq.trialend(h.i)/h.Settings.fs - isi);
+    % expected isi
+    h.out.expisi{h.i} = triallength/h.Settings.fs;
     % discrepency
-    h.out.discrep{h.i} = h.out.expstimtime{h.i} - h.out.stimtime{h.i};
+    h.out.discrep{h.i} = h.out.isi{h.i} - h.out.expisi{h.i};
+    
+    
+    % D188 - set output channel
+    if isfield(h,'D188')
+        %if h.Settings.D188
+            opt = 'setchan';
+            h.D188.chan = h.Seq.signal(h.i);
+            h = D188(h,opt);
+        %end
+    end
     
     % STIM marker on EEG
     if isfield(h.Settings,'record_EEG')
@@ -578,10 +634,22 @@ if h.i ~= trials(1)
     % Flush Buffer so only responses after stim onset are recorded
     KbQueueFlush; 
     
+    % add next n trials to the buffer (unless buffer full)
+    % send stimulus
+    if isfield(h.Settings,'stimcontrol')
+        if ~isempty(h.Settings.stimcontrol)
+            opt = 'start';
+            h = stimtrain(h,opt); % stimulus train
+        end
+    end
+    
     % display
     t=toc/60;
-    tot = h.totalsamples/h.Settings.fs/60;
-    disp(['Trial' num2str(h.i) '. Elapsed time is ' num2str(t) '/' num2str(tot) ' mins. ISI is ' num2str(isi) ' s. Onset discrepency: ' num2str(h.out.discrep{h.i})]);
-    % send EEG trigger on new trial
+    %try
+    %    tot = h.totalsamples/h.Settings.fs/60;
+    %    disp(['Trial ' num2str(h.i) '. Elapsed time is ' num2str(t) '/' num2str(tot) ' mins. ISI is ' num2str(isi) ' s. Onset discrepency: ' num2str(h.out.discrep{h.i})]);
+    %catch
+        disp(['Trial ' num2str(h.i) '/' num2str(length(h.Seq.signal)) '. ISI is ' num2str(h.out.isi{h.i}) ' s. ISI discrepency is ' num2str(h.out.discrep{h.i}) ' s. ']);
+    %end
     
 end

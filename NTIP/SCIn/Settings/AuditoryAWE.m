@@ -29,15 +29,22 @@ switch opt
     
     case '10Hz'
         
-    %% TRIALS OR CONTINUOUS?
+    %% TRIALS or CONTINUOUS?
     h.Settings.design = 'continuous';
+    % if trials, how many trials ahead should be in the player schedule?
+    % (applied to stimulation via soundcard only)
+    h.Settings.ntrialsahead = 1;
+    
+    %% Output options
+    % save sinwave from all trials as part of stim sequence file
+    h.Settings.savesinwave = 0;
     
     %% EQUIPMENT CONTROL
     % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
     h.Settings.record_EEG='serial';
     h.Settings.EEGport = 'LPT1'; % only needed for 'serial' EEG triggers
     h.Settings.labjack=0; % Use labjack for controlling any equipment?
-    h.Settings.stimcontrol='audioplayer'; % How to control stimulator? Options: audioplayer, labjack, spt
+    h.Settings.stimcontrol='PsychPortAudio'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
     h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
     h.Settings.stimchan = [1 2]; % channels on stimulator to use
     
@@ -53,7 +60,7 @@ switch opt
     % options to start sequence at beginning of every run
     % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
     % cell array
-    h.Settings.blockstart = {'audio','buttonpress'}; % audio,labjack,audio
+    h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
     % names of any audiofiles
     h.Settings.audiofile = {'instruct.wav'}; % labjack
     
@@ -61,7 +68,7 @@ switch opt
     % duration of stimulus sequence in seconds
     h.Settings.totdur = 60; 
     % duration of trial in seconds
-    h.Settings.trialdur = 0; % superceded by oddball settings
+    h.Settings.trialdur = 0; % if 0, consecutive stimuli will occur with no gap
     % duration of stimulus in seconds
     h.Settings.stimdur = 0.4; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
@@ -133,9 +140,6 @@ switch opt
     % range of keyboard presses indicating a recordable response
     h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
     
-    %% Output options
-    % save sinwave from all trials as part of stim sequence file
-    h.Settings.savesinwave = 1;
     
 
 end

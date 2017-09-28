@@ -25,6 +25,7 @@ end
 
 %configure soundcard
 if ~isfield(h,'pahandle')
+    setpref('dsp','portaudioHostApi',3) 
     InitializePsychSound(1);
     h.edevices = PsychPortAudio('GetDevices');
     h.DeviceIndex = [h.edevices.DeviceIndex];

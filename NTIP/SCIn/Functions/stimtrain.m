@@ -61,21 +61,51 @@ switch h.Settings.stimcontrol
         end
         
     case 'PsychPortAudio'
-        h=sinwave(h);
-        
-        % Fill the audio playback buffer with the audio data:
-        %[h.actualStartTime, ~, ~, h.estStopTime] = 
-        PsychPortAudio('Stop', h.pahandle);%, 0, 1);
-        PsychPortAudio('FillBuffer', h.pahandle, h.Seq.stimseq);
-        %PsychPortAudio('Volume', h.pahandle,h.inten(1));
-        
-        % Compute new start time for follow-up beep, beepPauseTime after end of
-        % previous one
-        startCue = 0;%h.estStopTime + h.Settings.dur;
+        switch opt
+            case 'setup'
+                h = PTBaudio(h);
+                
+            case 'getsample'
+                s = PsychPortAudio('GetStatus', h.pahandle);
+                if s.Active == 1
+                    h.currentsample=s.ElapsedOutSamples;
+                    %h.totalsamples=;
+                end
+                
+            case 'create' 
+                h=sinwave(h);
+                if strcmp(h.Settings.design,'trials')
+                    PsychPortAudio('FillBuffer', h.pahandle, h.Seq.stimseq);
+                    
+                elseif strcmp(h.Settings.design,'continuous')
+                    h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);% Engine still running on a schedule?
+                   
+                end
+                
+            case 'start' 
+                h=sinwave(h);
+                if strcmp(h.Settings.design,'trials')
+                    h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);
+                    
+                    startCue = 0;%h.estStopTime + h.Settings.dur;
 
-        % Start audio playback
-        % Should we wait for the device to really start (1 = yes)
-        % INFO: See help PsychPortAudio
-        waitForDeviceStart = 0;
-        PsychPortAudio('Start', h.pahandle, 1, startCue, waitForDeviceStart);
+                    % Start audio playback
+                    % Should we wait for the device to really start (1 = yes)
+                    % INFO: See help PsychPortAudio
+                    waitForDeviceStart = 0;
+                    PsychPortAudio('Start', h.pahandle, 1, startCue, waitForDeviceStart);
+
+                elseif strcmp(h.Settings.design,'continuous')
+                    h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);
+                   
+                    s = PsychPortAudio('GetStatus', h.pahandle);
+                    if s.Active == 0
+                        PsychPortAudio('UseSchedule', h.pahandle, 1, length(h.Seq.signal));
+                        PsychPortAudio('AddToSchedule', h.pahandle, h.pabuffer);
+                        h.playstart = PsychPortAudio('Start', h.pahandle, 0, 0, 1);
+                    else
+                        PsychPortAudio('AddToSchedule', h.pahandle, h.pabuffer);
+                    end
+                end
+        end
 end
