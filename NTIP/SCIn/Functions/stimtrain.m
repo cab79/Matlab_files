@@ -74,26 +74,18 @@ switch h.Settings.stimcontrol
                 
             case 'create' 
                 h=sinwave(h);
-                if strcmp(h.Settings.design,'trials')
-                    PsychPortAudio('FillBuffer', h.pahandle, h.Seq.stimseq);
-                    
-                elseif strcmp(h.Settings.design,'continuous')
-                    h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);% Engine still running on a schedule?
-                   
-                end
+                %if strcmp(h.Settings.design,'trials')
+                %    PsychPortAudio('FillBuffer', h.pahandle, h.Seq.stimseq);
+                %    
+                %elseif strcmp(h.Settings.design,'continuous')
+                %    h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);% Engine still running on a schedule?
+                %   
+                %end
                 
             case 'start' 
-                h=sinwave(h);
                 if strcmp(h.Settings.design,'trials')
                     h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);
-                    
-                    startCue = 0;%h.estStopTime + h.Settings.dur;
-
-                    % Start audio playback
-                    % Should we wait for the device to really start (1 = yes)
-                    % INFO: See help PsychPortAudio
-                    waitForDeviceStart = 0;
-                    PsychPortAudio('Start', h.pahandle, 1, startCue, waitForDeviceStart);
+                    PsychPortAudio('Start', h.pahandle, 1, 0, waitForDeviceStart);
 
                 elseif strcmp(h.Settings.design,'continuous')
                     h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);
@@ -105,6 +97,7 @@ switch h.Settings.stimcontrol
                         h.playstart = PsychPortAudio('Start', h.pahandle, 0, 0, 1);
                     else
                         PsychPortAudio('AddToSchedule', h.pahandle, h.pabuffer);
+                        disp('new trial(s) added to schedule')
                     end
                 end
         end

@@ -1,11 +1,16 @@
 function h = CreateSequence(h)
 
 % create random list of indices of stimdur rows
-probs = h.Settings.durprob;
+probs = h.Settings.oddprob;
 minprob = min(probs); % min prob is the divisor
-mult = probs/minprob; % multiplier is the min number of repetitions of each duration option (rows of duropt)
+mult = probs/minprob; % multiplier is the min number of repetitions of each option (row)
 tot = sum(mult); % total number of dur pairs
-totdur = sum(sum(h.Settings.oddballvalue,2) .* mult);% total duration of one set of dur pairs
+if strcmp(h.Settings.oddballmethod,'duration')
+    stimdur = h.Settings.oddballvalue;
+else
+    stimdur = h.Settings.stimdur;
+end
+totdur = sum(sum(stimdur,2) .* mult);% total duration of one set of dur pairs
 num_sets = ceil(h.Settings.totdur/totdur);% number of sets that can provide at least h.Settings.dur of stimulation
 h.totdur = num_sets*totdur; % modified duration
 % create non-randomised indices of a single set
@@ -19,7 +24,7 @@ randind = [];
 for i = 1:num_sets 
 
     % find sequence in which oddball trials are apart by at least nX standards
-    nX = 2;
+    nX = h.Settings.sep_odd;
 
     % remove first nX standards - not to be randomised, but added to the
     % start of each set later
@@ -30,16 +35,24 @@ for i = 1:num_sets
 
         candidate = setindnX(randperm(length(setindnX)));
 
-        w = [false candidate==1 false]; %// "close" v with zeros, and transform to logical
+        w = [false candidate==h.Settings.standardind false]; %// "close" w with zeros, and transform to logical
         starts = find(w(2:end) & ~w(1:end-1)); %// find starts of runs of non-zeros
         ends = find(~w(2:end) & w(1:end-1))-1; %// find ends of runs of non-zeros
         result = cell2mat(arrayfun(@(s,e) length(candidate(s:e)), starts, ends, 'uniformout', false)); %// build result
 
         % must also be no consequtive oddballs
-        cand_odd = candidate>1;
-        diffcand = [diff(cand_odd) 0];
-
-        if all(result>=nX) && all(diffcand(cand_odd) ~= 0) %// check if no repeated values
+        if nX>0
+            no_conseq=0;
+            cand_odd = candidate>1;
+            diffcand = [diff(cand_odd) 0];
+            if all(diffcand(cand_odd) ~= 0) %// check if no repeated values
+                no_conseq=1;
+            end
+        else
+            no_conseq=1;
+        end
+        
+        if all(result>=nX) && no_conseq 
             sequence_found = true;
         end
     end

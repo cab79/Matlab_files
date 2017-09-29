@@ -1,4 +1,4 @@
-function h = AuditoryAWE(h,opt)
+function h = AudDiscrimAWE2(h,opt)
 
 %% NOTES ON SETTINGS:
 % 1/h.Settings.df*0.25 AND (1/df+1/pitchdiff)*0.25 needs to be a multiple of 1/f0 to prevent clicking caused by phase re-setting of the f0 sound
@@ -33,7 +33,7 @@ switch opt
     h.Settings.design = 'continuous';
     % if trials, how many trials ahead should be in the player schedule?
     % (applied to stimulation via soundcard only)
-    h.Settings.ntrialsahead = 2;  %0 = all trials
+    h.Settings.ntrialsahead = 1;  %0 = all trials
     
     %% Output options
     % save sinwave from all trials as part of stim sequence file
@@ -70,7 +70,7 @@ switch opt
     % duration of trial in seconds
     h.Settings.trialdur = 0; % if 0, consecutive stimuli will occur with no gap
     % duration of stimulus in seconds
-    h.Settings.stimdur = 0.4; % modified by oddball settings
+    h.Settings.stimdur = 6; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
     h.Settings.patternmethod = 'pitch';
     h.Settings.patternvalue = [200 400]; % one per stimdur
@@ -102,40 +102,32 @@ switch opt
     % and the temporal pattern is defined by fc (from either fpitch or finten)
     sd = h.Settings.stimdur;
     h.Settings.oddballvalue = [
-        % standard
-        sd, sd
-        % oddballs on first pitch/intensity
-        sd*0.5+1/h.Settings.df*0.5, sd
-        sd*1.5-1/h.Settings.df*0.5, sd
-        sd*0.5+1/h.Settings.df*0.25, sd
-        sd*1.5-1/h.Settings.df*0.25, sd
-        % oddballs on second pitch/intensity
-        sd, sd*0.5+1/h.Settings.df*0.5
-        sd, sd*1.5-1/h.Settings.df*0.5
-        sd, sd*0.5+1/h.Settings.df*0.25
-        sd, sd*1.5-1/h.Settings.df*0.25
+        sd, sd-2
+        sd, sd-4
+        sd, sd+2
+        sd, sd+4
+        sd-2, sd
+        sd-4, sd
+        sd+2, sd
+        sd+4, sd
         ];
     
     h.Settings.oddprob = [
-        % standard
-        0.8
-        % oddballs on first pitch/intensity
-        0.025
-        0.025
-        0.025
-        0.025
-        % oddballs on second pitch/intensity
-        0.025
-        0.025
-        0.025
-        0.025
+        0.125
+        0.125
+        0.125
+        0.125
+        0.125
+        0.125
+        0.125
+        0.125
         ];
     
     % index of oddball value that are standards
-    h.Settings.standardind = 1;
+    h.Settings.standardind = 0;
     
     % keep oddball trials apart by at least sep_odd standards
-    h.Settings.sep_odd = 2;
+    h.Settings.sep_odd = 0;
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1

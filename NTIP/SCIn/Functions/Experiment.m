@@ -225,18 +225,27 @@ tic
 % send stimulus
 if isfield(h.Settings,'stimcontrol')
     if ~isempty(h.Settings.stimcontrol)
+        if h.Settings.ntrialsahead
+            opt = 'create';
+            h = stimtrain(h,opt); % stimulus train
+        end
         opt = 'start';
         h = stimtrain(h,opt); % stimulus train
+        h.laststimload=GetSecs;
         opt = 'getsample';
         h = stimtrain(h,opt);
     end
 end
 
 % trial duration
-if isfield(h,'totalsamples')
-    h.trialdur = h.totalsamples/h.Settings.fs;
+if h.Settings.ntrialsahead
+    if isfield(h,'totalsamples')
+        h.trialdur = h.totalsamples/h.Settings.fs;
+    else
+        h.trialdur = h.totdur;
+    end
 else
-    h.trialdur = h.totdur;
+    h.trialdur = size(h.Seq.stimseq,2);
 end
 
 % start time of trial
@@ -535,6 +544,7 @@ if isfield(h.Settings,'stimcontrol')
         h = stimtrain(h,opt);
     end
 end
+nowtime = GetSecs;
 %disp([num2str(h.currentsample) ' / ' num2str(h.totalsamples)])
 
 % projected end time of trial
@@ -548,7 +558,6 @@ else
     triallength = 0;
     proj_end = h.st + h.Seq.trialend(1)/h.Settings.fs;
 end
-nowtime = GetSecs;
 
 % trial events:
 % if current sample is greater than the sample at the end of the trial 
@@ -597,22 +606,18 @@ if newtrial
         h.i = 1;
     end
     
-
     % record stimulus timing
-    h.out.stimtime{h.i} = GetSecs;
+    h.out.stimtime{h.i} = nowtime;
     
     % ISI
     try
-        h.out.isi{h.i} = h.out.stimtime{h.i}-h.out.stimtime{h.i-1};
-    catch
-        h.out.isi{h.i} = 0;
+        h.out.isi{h.i-1} = h.out.stimtime{h.i}-h.out.stimtime{h.i-1};
+
+        % expected isi
+        h.out.expisi{h.i-1} = triallength/h.Settings.fs;
+        % discrepency
+        h.out.discrep{h.i-1} = h.out.isi{h.i-1} - h.out.expisi{h.i-1};
     end
-    
-    % expected isi
-    h.out.expisi{h.i} = triallength/h.Settings.fs;
-    % discrepency
-    h.out.discrep{h.i} = h.out.isi{h.i} - h.out.expisi{h.i};
-    
     
     % D188 - set output channel
     if isfield(h,'D188')
@@ -636,20 +641,23 @@ if newtrial
     
     % add next n trials to the buffer (unless buffer full)
     % send stimulus
-    if isfield(h.Settings,'stimcontrol')
+    if isfield(h.Settings,'stimcontrol') && h.i<=length(h.Seq.signal)-h.Settings.ntrialsahead && h.Settings.ntrialsahead
         if ~isempty(h.Settings.stimcontrol)
+            opt = 'create';
+            h = stimtrain(h,opt); % stimulus train
             opt = 'start';
             h = stimtrain(h,opt); % stimulus train
+            h.laststimload = GetSecs;
         end
     end
     
     % display
-    t=toc/60;
-    %try
+    %t=toc/60;
+    try
     %    tot = h.totalsamples/h.Settings.fs/60;
     %    disp(['Trial ' num2str(h.i) '. Elapsed time is ' num2str(t) '/' num2str(tot) ' mins. ISI is ' num2str(isi) ' s. Onset discrepency: ' num2str(h.out.discrep{h.i})]);
     %catch
-        disp(['Trial ' num2str(h.i) '/' num2str(length(h.Seq.signal)) '. ISI is ' num2str(h.out.isi{h.i}) ' s. ISI discrepency is ' num2str(h.out.discrep{h.i}) ' s. ']);
-    %end
+        disp(['Trial ' num2str(h.i) '/' num2str(length(h.Seq.signal)) '. Last ISI was ' num2str(h.out.isi{h.i-1}) ' s. ISI discrepency was ' num2str(h.out.discrep{h.i-1}) ' s. ']);
+    end
     
 end

@@ -1,4 +1,4 @@
-function h = AuditoryAWE(h,opt)
+function h = AudDiscrimAWE(h,opt)
 
 %% NOTES ON SETTINGS:
 % 1/h.Settings.df*0.25 AND (1/df+1/pitchdiff)*0.25 needs to be a multiple of 1/f0 to prevent clicking caused by phase re-setting of the f0 sound
@@ -72,8 +72,8 @@ switch opt
     % duration of stimulus in seconds
     h.Settings.stimdur = 0.4; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
-    h.Settings.patternmethod = 'pitch';
-    h.Settings.patternvalue = [200 400]; % one per stimdur
+    h.Settings.patternmethod = '';
+    h.Settings.patternvalue = []; % one per stimdur
     % 'rand' or 'reg' spacing?
     h.Settings.stimdurtype = 'reg'; % not needed unless 'rand'
     % sampling rate
@@ -82,7 +82,7 @@ switch opt
     h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
     h.Settings.atten = -30; % attenuation level in decibels
     % pitch
-    h.Settings.f0 = 500; % Left ear carrier frequency (pitch)
+    h.Settings.f0 = [200 400]; % Left ear carrier frequency (pitch)
     %intensity
     h.Settings.inten = 1; % value between 0 and 1
 
@@ -91,7 +91,7 @@ switch opt
     h.Settings.conditionmethod = {};
     h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
     % Oddball method: intensity, pitch, channel
-    h.Settings.oddballmethod = 'duration'; % can use same type for pattern only if oddball intensity is adaptive
+    h.Settings.oddballmethod = 'pitch'; % can use same type for pattern only if oddball intensity is adaptive
     % Odball value: DURATION DEVIANTS
     % i.e. all possible duration options and their probability
     % In general, each row is a different stim type, with columns providing
@@ -100,42 +100,28 @@ switch opt
         % left column = 1st inten/pitch
         % right column = 2nd inten/pitch
     % and the temporal pattern is defined by fc (from either fpitch or finten)
-    sd = h.Settings.stimdur;
+    v = h.Settings.f0;
     h.Settings.oddballvalue = [
-        % standard
-        sd, sd
-        % oddballs on first pitch/intensity
-        sd*0.5+1/h.Settings.df*0.5, sd
-        sd*1.5-1/h.Settings.df*0.5, sd
-        sd*0.5+1/h.Settings.df*0.25, sd
-        sd*1.5-1/h.Settings.df*0.25, sd
-        % oddballs on second pitch/intensity
-        sd, sd*0.5+1/h.Settings.df*0.5
-        sd, sd*1.5-1/h.Settings.df*0.5
-        sd, sd*0.5+1/h.Settings.df*0.25
-        sd, sd*1.5-1/h.Settings.df*0.25
+        v(1)
+        v(1)
+        v(2)
+        v(2)
         ];
     
     h.Settings.oddprob = [
-        % standard
-        0.8
-        % oddballs on first pitch/intensity
-        0.025
-        0.025
-        0.025
-        0.025
-        % oddballs on second pitch/intensity
-        0.025
-        0.025
-        0.025
-        0.025
+        % standard vs oddball on first pitch/intensity/channel
+        0.4 
+        0.1
+        % standard vs oddball on second pitch/intensity/channel
+        0.4 
+        0.1
         ];
     
     % index of oddball value that are standards
-    h.Settings.standardind = 1;
+    h.Settings.standardind = 0;
     
     % keep oddball trials apart by at least sep_odd standards
-    h.Settings.sep_odd = 2;
+    h.Settings.sep_odd = 0;
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1

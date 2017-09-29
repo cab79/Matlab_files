@@ -39,9 +39,9 @@ end
 if strcmp(h.Settings.design,'trials') && isfield(h,'i') % if a single trial has been defined in "trials" design
     trials = h.i;
 elseif strcmp(h.Settings.design,'continuous')
-    if isfield(h.Settings,'ntrialsahead') && isfield(h,'i') % experiment is already running
+    if h.Settings.ntrialsahead>0 && isfield(h,'i') % experiment is already running
         trials = h.i+h.Settings.ntrialsahead;
-    elseif isfield(h.Settings,'ntrialsahead') && ~isfield(h,'i') % buffer needs pre-filling prior to experiment starting
+    elseif h.Settings.ntrialsahead>0 && ~isfield(h,'i') % buffer needs pre-filling prior to experiment starting
         trials = 1:h.Settings.ntrialsahead;
     else
         trials = 1:length(h.Seq.signal); % otherwise concatenate all trials
