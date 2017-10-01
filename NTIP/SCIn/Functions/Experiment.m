@@ -200,21 +200,7 @@ while h.i<length(h.Seq.signal);
         break
     end
     
-    % record first and last responses on this trial
-    if isfield(h.Settings,'buttontype')
-        if ~isempty(h.Settings.buttontype)
-            if h.Settings.record_response
-                [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck;
-                if pressed
-                    h.out.firstpressbutton{h.i} = KbName(firstPress);
-                    h.out.firstpress{h.i} = firstPress(firstPress>0);
-                    h.out.firstrelease{h.i} = firstRelease(firstRelease>0);
-                    h.out.lastpress{h.i} = lastPress(lastPress>0);
-                    h.out.lastrelease{h.i} = lastRelease(lastRelease>0);
-                end
-            end
-        end
-    end
+    h = record_response_prev_trial(h);
 end
 
 % for continuous sequences
@@ -256,7 +242,10 @@ h.ct=h.st;
 h.stop=0;
 h.savedRT=0;
 h.savedi=0;
-h.i=0;
+h.i=1;
+h.out.stimtime{h.i} = h.st;
+h.marktime = cell(1,length(h.Seq.signal));
+disp(['Trial ' num2str(h.i) '/' num2str(length(h.Seq.signal)) '.']);
 h = waitingloop(h);
 
 function h = waitingloop(h)
@@ -287,65 +276,7 @@ while (h.ct-h.st)<h.trialdur
 %end
 %t1=GetSecs; 
 
-    if isfield(h.Settings,'buttontype')
-        if ~isempty(h.Settings.buttontype)
-            if h.Settings.record_response
-                
-                % OPTION 1: get GUI data for button press
-              %  GUIh = guihandles(h.GUIhname);
-              %  if isfield(GUIh,'buttonpressed')
-              %      btnstr=get(GUIh.buttonpressed,'String');
-              %      presstime = get(GUIh.buttontime,'String');
-              %      if ~strcmp(btnstr,'Waiting')
-              
-                % OPTION 2: get kbcheck data
-                [keyIsDown,presstime, keyCode, deltaSecs] = KbCheck;
-                btnstr = KbName(keyCode);
-                
-                    if keyIsDown && ~isempty(btnstr)
-                        recordresp=1;
-                        % if button options are specified
-                        if isfield(h.Settings,'buttonopt')
-                            if ~isempty(h.Settings.buttonopt)
-                                if ~ismember(btnstr,h.Settings.buttonopt)
-                                    recordresp=0;
-                                end
-                            end
-                        end
-                        if recordresp
-                            h.out.presstrial = [h.out.presstrial h.i];
-                            h.out.pressbutton = [h.out.pressbutton {btnstr}];
-                            h.out.presstime = [h.out.presstime presstime];
-                            h.out.presstimedelta = [h.out.presstimedelta deltaSecs];
-                            if strcmp(h.Settings.design,'trials')
-                                h.out.RT = [h.out.RT presstime-h.st];
-                            elseif strcmp(h.Settings.design,'continuous')
-                                h.out.RT = [h.out.RT presstime-h.out.expstimtime{h.i}];
-                            end
-                            disp(['RESPONSE: ' btnstr])
-                        end
-                        
-                        % if stimulation requires adaptive tuning to responses
-                        if isfield(h.Settings,'adaptive')
-                            if ~isempty(h.Settings.adaptive)
-                                h = AdaptStair(h);
-                            end
-                        end
-                        
-                        % clear button press buffer if in continuous mode
-                        % (trial mode clears at the beginning of each new trial)
-                        %if isfield(h.Settings,'buttontype') %&& strcmp(h.Settings.design,'continuous')
-                        %    if ~isempty(h.Settings.buttontype)
-                        %        opt = 'setup';
-                        %        h = buttonpress(h,opt);
-                        %    end
-                        %end
-                    end
-                %end
-            end
-        end
-    end
-    
+    h = record_response(h,'current_trial');
     
     % update current time and exit if needed
     if strcmp(h.Settings.design,'trials')
@@ -442,7 +373,7 @@ while (h.ct-h.st)<h.trialdur
         % stop stimulus
         if isfield(h.Settings,'stimcontrol')
             if ~isempty(h.Settings.stimcontrol)
-                opt = 'pause';
+                opt = 'stop';
                 h = stimtrain(h,opt);
             end
         end
@@ -456,6 +387,7 @@ while (h.ct-h.st)<h.trialdur
             global spt1
             fclose(spt1);
         end
+       
         
         % release keyboard cue
         KbQueueRelease; 
@@ -547,19 +479,54 @@ end
 nowtime = GetSecs;
 %disp([num2str(h.currentsample) ' / ' num2str(h.totalsamples)])
 
+% mark EEG when pattern changes occur mid-trial
+if isfield(h.Settings,'record_EEG')
+    if h.Settings.record_EEG
+        if h.Settings.EEGMarkPattern
+            
+            if isempty(h.marktime{h.i})
+                % on this trial, what time to mark?
+                h.marktime{h.i} = repmat(h.out.stimtime{h.i},1,length(h.Seq.PatternSamples{h.i,1})) + h.Seq.PatternSamples{h.i,1}/h.Settings.fs;
+
+                % don't mark the end of the last event as this is a new trial (marked later)
+                if ~isempty(h.marktime{h.i})
+                    h.marktime{h.i}(end) = [];
+                end
+
+                % number of within-trial marks needed on this trial
+                h.imark{h.i} = 1:length(h.marktime{h.i});
+            end
+
+            % has the first time been exceeded?
+            if ~isempty(h.imark{h.i})
+                if h.marktime{h.i}(h.imark{h.i}(1))<nowtime
+                    % STIM marker on EEG
+                    opt = 'mark';
+                    h = recordEEG(h,opt);
+
+                    % remove marker index just marked
+                    if ~isempty(h.imark{h.i})
+                        h.imark{h.i}(1) = [];
+                    end
+                end
+            end
+        end
+    end
+end
+
 % projected end time of trial
 if h.i>1
     triallength = h.Seq.trialend(h.i)-h.Seq.trialend(h.i-1);
     proj_end = h.out.stimtime{h.i} + triallength/h.Settings.fs;
 elseif h.i==1
     triallength = h.Seq.trialend(h.i);
-    proj_end = h.out.stimtime{h.i} + triallength/h.Settings.fs;
-else
-    triallength = 0;
-    proj_end = h.st + h.Seq.trialend(1)/h.Settings.fs;
+    proj_end = h.st + triallength/h.Settings.fs;
+%else
+%    triallength = 0;
+%    proj_end = h.st + h.Seq.trialend(1)/h.Settings.fs;
 end
 
-% trial events:
+% new-trial events:
 % if current sample is greater than the sample at the end of the trial 
 % OR if projected time of the end sample is greater than the current time
 trials = find(h.Seq.trialend > h.currentsample);
@@ -575,36 +542,21 @@ end
 
 if newtrial
     try
-        disp(['Current sample error: ' num2str((h.currentsample - h.Seq.trialend(h.i))/h.Settings.fs)])
+        disp(['Currentsample error: ' num2str((h.currentsample - h.Seq.trialend(h.i))/h.Settings.fs)])
     catch
-        disp(['Current sample error: ' num2str(h.currentsample - h.Seq.trialend(1))])
+        disp(['Currentsample error: ' num2str(h.currentsample - h.Seq.trialend(1))])
     end
     disp(['Current time error: ' num2str(nowtime - proj_end)])
     
     % record first and last responses on previous trial
-    if h.i>1
-        if isfield(h.Settings,'buttontype')
-            if ~isempty(h.Settings.buttontype)
-                if h.Settings.record_response
-                    [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck;
-                    if pressed
-                        h.out.firstpressbutton{h.i} = KbName(firstPress);
-                        h.out.firstpress{h.i} = firstPress(firstPress>0);
-                        h.out.firstrelease{h.i} = firstRelease(firstRelease>0);
-                        h.out.lastpress{h.i} = lastPress(lastPress>0);
-                        h.out.lastrelease{h.i} = lastRelease(lastRelease>0);
-                    end
-                end
-            end
-        end
-    end
+    h = record_response(h,'previous_trial');
     
-    %create h.i
-    try
+    %update h.i
+    %try
         h.i = h.i+1;
-    catch
-        h.i = 1;
-    end
+    %catch
+    %    h.i = 1;
+    %end
     
     % record stimulus timing
     h.out.stimtime{h.i} = nowtime;
@@ -660,4 +612,122 @@ if newtrial
         disp(['Trial ' num2str(h.i) '/' num2str(length(h.Seq.signal)) '. Last ISI was ' num2str(h.out.isi{h.i-1}) ' s. ISI discrepency was ' num2str(h.out.discrep{h.i-1}) ' s. ']);
     end
     
+    if h.Settings.plottrials
+        h = plot_wave(h,h.Settings.plottrials);
+    end
+    
+end
+
+function h = record_response(h,opt)
+
+% initialise
+h.pressedlasttrial = 0;
+h.omittedlasttrial = 0;
+h.pressedthistrial = 0;
+h.pressedsinceoddball = 0;
+h.omittedsinceoddball = 0;
+
+switch opt
+   case 'prev_trial'
+        % record first and last responses on this trial
+        if isfield(h.Settings,'buttontype')
+            if ~isempty(h.Settings.buttontype)
+                if h.Settings.record_response
+                    [h.pressedlasttrial, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck;
+                    if h.pressedlasttrial
+                        h.out.firstpressbutton{h.i} = KbName(firstPress);
+                        h.out.firstpress{h.i} = firstPress(firstPress>0);
+                        h.out.firstrelease{h.i} = firstRelease(firstRelease>0);
+                        h.out.lastpress{h.i} = lastPress(lastPress>0);
+                        h.out.lastrelease{h.i} = lastRelease(lastRelease>0);
+                    else
+                        h.omittedlasttrial=1;
+                    end
+                end
+            end
+        end
+   case 'current_trial'
+        if isfield(h.Settings,'buttontype')
+            if ~isempty(h.Settings.buttontype)
+                if h.Settings.record_response
+
+                    % OPTION 1: get GUI data for button press
+                  %  GUIh = guihandles(h.GUIhname);
+                  %  if isfield(GUIh,'buttonpressed')
+                  %      btnstr=get(GUIh.buttonpressed,'String');
+                  %      presstime = get(GUIh.buttontime,'String');
+                  %      if ~strcmp(btnstr,'Waiting')
+
+                    % OPTION 2: get kbcheck data
+                    [keyIsDown,presstime, keyCode, deltaSecs] = KbCheck;
+                    btnstr = KbName(keyCode);
+
+                    if keyIsDown && ~isempty(btnstr)
+                        h.pressedthistrial=1;
+                        recordresp=1;
+                        % if button options are specified
+                        if isfield(h.Settings,'buttonopt')
+                            if ~isempty(h.Settings.buttonopt)
+                                if ~ismember(btnstr,h.Settings.buttonopt)
+                                    recordresp=0;
+                                end
+                            end
+                        end
+                        if recordresp
+                            h.out.presstrial = [h.out.presstrial h.i];
+                            h.out.pressbutton = [h.out.pressbutton {btnstr}];
+                            h.out.presstime = [h.out.presstime presstime];
+                            h.out.presstimedelta = [h.out.presstimedelta deltaSecs];
+                            if strcmp(h.Settings.design,'trials')
+                                h.out.RT = [h.out.RT presstime-h.st];
+                            elseif strcmp(h.Settings.design,'continuous')
+                                h.out.RT = [h.out.RT presstime-h.out.stimtime{h.i}];
+                            end
+                            disp(['RESPONSE: ' btnstr])
+                        end
+
+
+                        % clear button press buffer if in continuous mode
+                        % (trial mode clears at the beginning of each new trial)
+                        %if isfield(h.Settings,'buttontype') %&& strcmp(h.Settings.design,'continuous')
+                        %    if ~isempty(h.Settings.buttontype)
+                        %        opt = 'setup';
+                        %        h = buttonpress(h,opt);
+                        %    end
+                        %end
+                    end
+                end
+            end
+        end
+end
+
+% if stimulation requires adaptive tuning to responses
+if isfield(h.Settings,'adaptive')
+    if ~isempty(h.Settings.adaptive)
+        h = AdaptStair(h);
+    end
+end
+
+function h = plot_wave(h,ntrials)
+
+if ~isfield(h,'f')
+    h.f = figure; 
+end
+
+try
+    samples = h.Seq.trialend(h.i-ntrials):h.Seq.trialend(h.i);
+    %samples=samples-round(length(samples)/ntrials);
+    sig = h.Seq.stimseq(:,samples(samples>1));
+
+    figure(h.f)
+    subplot(3,1,1)
+    plot(1/96000:1/96000:size(sig,2)/96000,sig(1,:))
+    subplot(3,1,2)
+    plot(1/96000:1/96000:size(sig,2)/96000,sig(2,:))
+    subplot(3,1,3)
+    plot(1/96000:1/96000:size(sig,2)/96000,sig(1,:)-sig(2,:))
+    title(['Trial ' num2str(h.i)])
+    if h.i==21
+        pause
+    end
 end

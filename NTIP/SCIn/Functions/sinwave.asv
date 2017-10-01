@@ -210,7 +210,7 @@ for tr = trials
             mwav{i}(chan(1),:) = h.inten(i) *sin(2*pi*(h.pitch(1))*t{i} + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs);
             if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t{i} + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
         else % no pattern
-            mwav{i}(chan(1),:) = h.inten(i) *sin(2*pi*(h.pitch(i))*t{i} + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
+            mwav{i}(chan(1),:) = h.inten(i) *sin(2*pi*(h.pitch(i))*t{i} + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs);
             if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
         end
         

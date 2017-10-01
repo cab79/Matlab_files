@@ -91,10 +91,12 @@ switch h.Settings.stimcontrol
                     h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);
                    
                     s = PsychPortAudio('GetStatus', h.pahandle);
-                    if s.Active == 0
+                    if s.Active == 0 && ~isfield(h,'i') % new run
                         PsychPortAudio('UseSchedule', h.pahandle, 1, length(h.Seq.signal));
                         PsychPortAudio('AddToSchedule', h.pahandle, h.pabuffer);
                         h.playstart = PsychPortAudio('Start', h.pahandle, 0, 0, 1);
+                    elseif s.Active == 0 
+                        error('increase ntrialsahead in Settings')
                     else
                         PsychPortAudio('AddToSchedule', h.pahandle, h.pabuffer);
                         disp('new trial(s) added to schedule')

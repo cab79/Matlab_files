@@ -41,8 +41,9 @@ switch opt
     
     %% EQUIPMENT CONTROL
     % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
-    h.Settings.record_EEG='serial';
-    h.Settings.EEGport = 'LPT1'; % only needed for 'serial' EEG triggers
+    %h.Settings.record_EEG='serial';
+    %h.Settings.EEGport = 'COM3'; % only needed for 'serial' EEG triggers
+    %h.Settings.EEGMarkPattern = 1; % mark EEG for every change in stimulus pattern (0 = start of trial only)
     h.Settings.labjack=0; % Use labjack for controlling any equipment?
     h.Settings.stimcontrol='PsychPortAudio'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
     h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
@@ -66,11 +67,11 @@ switch opt
     
     %% Condition-independent stimulus parameters - can be superceded by condition-dependent parameters
     % duration of stimulus sequence in seconds
-    h.Settings.totdur = 60; 
+    h.Settings.totdur = 300; 
     % duration of trial in seconds
     h.Settings.trialdur = 0; % if 0, consecutive stimuli will occur with no gap
     % duration of stimulus in seconds
-    h.Settings.stimdur = 0.4; % modified by oddball settings
+    h.Settings.stimdur = 0.8; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
     h.Settings.patternmethod = '';
     h.Settings.patternvalue = []; % one per stimdur
@@ -79,10 +80,13 @@ switch opt
     % sampling rate
     h.Settings.fs = 96000; % don't change this
     % Binarual beats frequency: creates right ear frequency of f0+df
-    h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-    h.Settings.atten = -30; % attenuation level in decibels
+    h.Settings.df = 0; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
+    % Monaural beats instead? 
+    h.Settings.monaural = 0; 
+    % attenuation level in decibels
+    h.Settings.atten = -30; 
     % pitch
-    h.Settings.f0 = [200 400]; % Left ear carrier frequency (pitch)
+    h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
     %intensity
     h.Settings.inten = 1; % value between 0 and 1
 
@@ -92,36 +96,27 @@ switch opt
     h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
     % Oddball method: intensity, pitch, channel
     h.Settings.oddballmethod = 'pitch'; % can use same type for pattern only if oddball intensity is adaptive
-    % Odball value: DURATION DEVIANTS
-    % i.e. all possible duration options and their probability
-    % In general, each row is a different stim type, with columns providing
-    % within-stimulus temporal patterns of pitch, intensity or channel.
-    % Here the options are chosen as:
-        % left column = 1st inten/pitch
-        % right column = 2nd inten/pitch
-    % and the temporal pattern is defined by fc (from either fpitch or finten)
-    v = h.Settings.f0;
-    h.Settings.oddballvalue = [
-        v(1)
-        v(1)
-        v(2)
-        v(2)
-        ];
-    
+    h.Settings.oddballvalue = [200 400];
+    h.Settings.oddballtype = 'roving'; % options: 'roving', 'classical'
+  
     h.Settings.oddprob = [
-        % standard vs oddball on first pitch/intensity/channel
-        0.4 
-        0.1
-        % standard vs oddball on second pitch/intensity/channel
-        0.4 
-        0.1
+        % standard vs oddball
+        0.8 
+        0.2
         ];
     
-    % index of oddball value that are standards
-    h.Settings.standardind = 0;
+    % index of row of oddprob that are standards and oddballs
+    h.Settings.standardind = 1; % does not apply to 'roving oddball' design
+    h.Settings.oddind = 2; % does not apply to 'roving oddball' design
     
     % keep oddball trials apart by at least sep_odd standards
-    h.Settings.sep_odd = 0;
+    h.Settings.sep_odd = 2;
+    
+    % for each set, ensure a number of leading standards 
+    h.Settings.std_lead = 0;
+    
+    % number of minimum sets to randomised together
+    h.Settings.n_set = 1; % 1 = use min set size
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1
@@ -133,13 +128,23 @@ switch opt
     
     %% ADAPTIVE
     % adaptive staircase: meanings of the buttonopt
-    %h.Settings.adaptive.buttonfun = {'LeftArrow','RightArrow'}; 
+    h.Settings.adaptive.buttonfun = {'LeftArrow','RightArrow'}; 
     % adaptive staircase: corresponding signal values that would signify a
     % correct answer
-    %h.Settings.adaptive.signalval = [1 2];
+    h.Settings.adaptive.signalval = [1 2];
     % starting level of adaptive staircase
-    %h.Settings.adaptive.startinglevel = 100; % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100)
+    h.Settings.adaptive.startinglevel = max(h.Settings.oddballvalue)-min(h.Settings.oddballvalue); % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100)
+    % adapt to omissions of response (not suitable for 2AFC tasks!!)
+    h.Settings.adaptive.omit = 1; % 1 = omission is incorrect; 2 = omission is correct
+    % which trials (or oddballs if oddonly selected) to start adaptive procedure if there is an omission?
+    h.Settings.adaptive.startomit = 2;
+    % adapt on every trial or only just before an oddball?
+    h.Settings.adaptive.oddonly = 1;
+    % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
+    h.Settings.adaptive.resptrials = 4;
     
+    % number of trials of plot
+    h.Settings.plottrials=0;
     
 
 end
