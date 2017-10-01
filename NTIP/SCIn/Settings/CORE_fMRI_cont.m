@@ -62,10 +62,10 @@ end
 function h = setgeneral(h)
 
 %% TRIALS OR CONTINUOUS?
-h.Settings.design = 'trials';
+h.Settings.design = 'continuous';
 % if continuous, how many trials ahead should be in the player schedule?
 % (applies to stimulation via soundcard only)
-h.Settings.ntrialsahead = 0;  %0 = all trials
+h.Settings.ntrialsahead = 2;  %0 = all trials
 
 %% Output options
 % save sinwave from all trials as part of stim sequence file
@@ -95,12 +95,12 @@ h.Settings.nrchannels = 2; % 8
 % minimum total duration of stimulus sequence in seconds
 %h.Settings.totdur = 60; 
 % duration of trial in seconds
-h.Settings.trialdur = 1;
+h.Settings.trialdur = 0;
 % duration of stimulus in seconds
-h.Settings.stimdur = 0.5;
+h.Settings.stimdur = [0.5 0.5];
 % Pattern type method: intensity, pitch. Not supported: channel, duration
-h.Settings.patternmethod = '';
-h.Settings.patternvalue = []; % one per stimdur
+h.Settings.patternmethod = 'intensity';
+h.Settings.patternvalue = [1 0]; % one per stimdur
 % 'rand' or 'reg' spacing?
 h.Settings.stimdurtype = 'reg';
 % channels on stimulator to use
@@ -126,19 +126,15 @@ h.Settings.conditionvalue = [200 200 500 500; 1 1 1 1];% for each number in h.Se
 h.Settings.oddballmethod = 'channel'; % can use same type for pattern only if oddball intensity is adaptive
 h.Settings.oddballvalue = [1 2, 1 2]; % [7 8 3 4]
 
-%% For future adoption of CreateSequence
+%% SEQUENCE: For future adoption of CreateSequence
 h.Settings.oddballtype = 'roving'; % options: 'roving', 'classical'
-    
 % index of oddball value that are standards
 h.Settings.standardind = 1; % does not apply to 'roving oddball' design
 h.Settings.oddind = 2; % does not apply to 'roving oddball' design
-
 % keep oddball trials apart by at least sep_odd standards
 h.Settings.sep_odd = 2;
-
 % for each set, ensure a number of leading standards 
 h.Settings.std_lead = 0;
-
 % number of minimum sets to randomised together
 h.Settings.n_set = 1; % 1 = use min set size
 
@@ -153,8 +149,8 @@ h.Settings.displayRT=0;
 h.Settings.RPconds=[2 4]; % condition numbers to apply this
 h.Settings.RPprob=0.1;
 h.Settings.RPmethod='intensity';
-h.Settings.RPdur = [0.15 0.2 0.15];
-h.Settings.RPvalue=[1 0 1];
+h.Settings.RPdur = [0.15 0.2 0.15 0.5];
+h.Settings.RPvalue=[1 0 1 0];
 
 %% ADAPTIVE
 % adaptive staircase: meanings of the buttonopt

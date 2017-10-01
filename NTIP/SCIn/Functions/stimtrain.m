@@ -84,8 +84,8 @@ switch h.Settings.stimcontrol
                 
             case 'start' 
                 if strcmp(h.Settings.design,'trials')
-                    h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);
-                    PsychPortAudio('Start', h.pahandle, 1, 0, waitForDeviceStart);
+                    PsychPortAudio('FillBuffer', h.pahandle, h.Seq.stimseq);
+                    PsychPortAudio('Start', h.pahandle, 1, 0, 1);
 
                 elseif strcmp(h.Settings.design,'continuous')
                     h.pabuffer = PsychPortAudio('CreateBuffer', h.pahandle, h.Seq.stimseq);

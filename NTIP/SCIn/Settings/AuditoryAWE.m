@@ -35,8 +35,8 @@ switch opt
         
     %% TRIALS or CONTINUOUS?
     h.Settings.design = 'continuous';
-    % if trials, how many trials ahead should be in the player schedule?
-    % (applied to stimulation via soundcard only)
+    % if continuous, how many trials ahead should be in the player schedule?
+    % (applies to stimulation via soundcard only)
     h.Settings.ntrialsahead = 2;  %0 = all trials
     
     %% Output options
@@ -56,7 +56,7 @@ switch opt
     %% BLOCKING/RUN OPTIONS
     % 'divide' = equally divide trials by nblocks; 
     % 'cond' = separate block for each condition
-    %h.Settings.blockopt = 'divide';
+    h.Settings.blockopt = 'cond';
     % further options for 'divide':
         % number of blocks (containing multiple conditions)
     %    h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
@@ -124,6 +124,7 @@ switch opt
         sd, sd*1.5-1/h.Settings.df*0.25
         ];
     
+    %% SEQUENCE
     h.Settings.oddprob = [
         % standard
         0.8
@@ -137,7 +138,7 @@ switch opt
         0.025
         0.025
         0.025
-        ];
+        ]';
     
     h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
     
@@ -153,6 +154,11 @@ switch opt
     
     % number of minimum sets to randomised together
     h.Settings.n_set = 1; % 1 = use min set size
+    
+    % min number of oddballs within each CP condition
+    h.Settings.n_odd = [1]; % overrides h.Settings.totdur
+    % min number of oddballs per randomised set, per CP
+    h.Settings.n_odd_set = [1]; % overrides h.Settings.totdur
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1

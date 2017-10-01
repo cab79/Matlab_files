@@ -168,6 +168,8 @@ while h.i<length(h.Seq.signal);
     % send stimulus
     if isfield(h.Settings,'stimcontrol')
         if ~isempty(h.Settings.stimcontrol)
+            opt = 'create';
+            h = stimtrain(h,opt); % stimulus train
             opt = 'start';
             h = stimtrain(h,opt); % stimulus train
         end
@@ -200,7 +202,8 @@ while h.i<length(h.Seq.signal);
         break
     end
     
-    h = record_response_prev_trial(h);
+    % record first and last responses on previous trial
+    h = record_response(h,'previous_trial');
 end
 
 % for continuous sequences
@@ -228,7 +231,11 @@ if h.Settings.ntrialsahead
     if isfield(h,'totalsamples')
         h.trialdur = h.totalsamples/h.Settings.fs;
     else
-        h.trialdur = h.totdur;
+        try
+            h.trialdur = h.totdur;
+        catch
+            h.trialdur = sum(h.Settings.stimdur)*length(h.Seq.signal);
+        end
     end
 else
     h.trialdur = size(h.Seq.stimseq,2);

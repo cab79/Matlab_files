@@ -275,10 +275,12 @@ for tr = trials
         h.mwav(chan,:,:) = repmat(h.mwav(chan(1),:,:),length(chan),1); 
     end
     % monaural beats
-    if h.Settings.monaural && size(h.mwav,1)==2
-        h.mon=h.mwav;
-        h.mon(chan(1),:,:) = h.mon(chan(1),:,:) - h.mon(chan(2),:,:);
-        h.mon(chan(2),:,:) = h.mon(chan(1),:,:);
+    if isfield(h.Settings,'monaural')
+        if h.Settings.monaural && size(h.mwav,1)==2
+            h.mon=h.mwav;
+            h.mon(chan(1),:,:) = h.mon(chan(1),:,:) - h.mon(chan(2),:,:);
+            h.mon(chan(2),:,:) = h.mon(chan(1),:,:);
+        end
     end
     
     %else
@@ -427,22 +429,25 @@ for tr = trials
     else
         h.Seq.stimseq = [h.Seq.stimseq h.mwav];
     end;
-    if isfield(h,'i') % add to trialend according to true position in sequence
-        if h.i>1
-            h.Seq.trialend(h.i+h.Settings.ntrialsahead-1,1) = h.Seq.trialend(h.i-1+h.Settings.ntrialsahead-1,1)+size(h.mwav,2);
-            h.Seq.PatternSamples{h.i+h.Settings.ntrialsahead-1,1} = cumsum(h.dur*h.Settings.fs);
-        elseif h.i==1
-            h.Seq.trialend(h.i,1) = size(h.mwav,2);
-            h.Seq.PatternSamples{h.i,1} = cumsum(h.dur*h.Settings.fs);
-        end
-    else % experiment not started, so add to trialend using tr (which will start from 1)
-        try
-            h.Seq.trialend(tr,1) = h.Seq.trialend(tr-1,1)+size(h.mwav,2);
-        catch
-            h.Seq.trialend(tr,1) = size(h.mwav,2);
-        end
-        h.Seq.PatternSamples{tr,1} = cumsum(h.dur*h.Settings.fs);
-    end 
+    
+    if strcmp(h.Settings.design,'continuous')
+        if isfield(h,'i') % add to trialend according to true position in sequence
+            if h.i>1
+                h.Seq.trialend(h.i+h.Settings.ntrialsahead-1,1) = h.Seq.trialend(h.i-1+h.Settings.ntrialsahead-1,1)+size(h.mwav,2);
+                h.Seq.PatternSamples{h.i+h.Settings.ntrialsahead-1,1} = cumsum(h.dur*h.Settings.fs);
+            elseif h.i==1
+                h.Seq.trialend(h.i,1) = size(h.mwav,2);
+                h.Seq.PatternSamples{h.i,1} = cumsum(h.dur*h.Settings.fs);
+            end
+        else % experiment not started, so add to trialend using tr (which will start from 1)
+            try
+                h.Seq.trialend(tr,1) = h.Seq.trialend(tr-1,1)+size(h.mwav,2);
+            catch
+                h.Seq.trialend(tr,1) = size(h.mwav,2);
+            end
+            h.Seq.PatternSamples{tr,1} = cumsum(h.dur*h.Settings.fs);
+        end 
+    end
     
     %figure;plot(h.Seq.stimseq(2,h.Seq.PatternSamples{tr,1}(1)-500:h.Seq.PatternSamples{tr,1}(1)+500));
 end
