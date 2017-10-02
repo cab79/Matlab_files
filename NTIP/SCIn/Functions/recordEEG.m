@@ -42,7 +42,7 @@ switch opt
                     'Stop','Continue','Continue');
             switch choice
                 case 'Stop'
-                    error('Experiment stopped')
+                    disp('Experiment stopped')
             end
         end
     case 'start'
