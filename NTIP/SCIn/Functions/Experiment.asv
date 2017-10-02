@@ -293,8 +293,6 @@ while (h.ct-h.st)<h.trialdur
         end
     end
     
-    %
-    
     % get GUI data for pause/resume
     GUIh = guihandles(h.GUIhname);
 
@@ -311,9 +309,7 @@ while (h.ct-h.st)<h.trialdur
     catch
         px=0;
     end
-    if ~isfield(h,'disableGUI')
-        pause(0.001);
-    end
+    pause(0.001);
     while px
         
         % pause stimulus
@@ -339,9 +335,7 @@ while (h.ct-h.st)<h.trialdur
         catch
             rx=0;
         end
-        if ~isfield(h,'disableGUI')
-            pause(0.001);
-        end
+        pause(0.001);
         if rx   
             
             % Mark EEG
@@ -376,22 +370,21 @@ while (h.ct-h.st)<h.trialdur
                 end
             end
             
-            
             % update trial duration
             if h.Settings.ntrialsahead
                 if isfield(h,'totalsamples')
                     h.trialdur = (h.totalsamples-h.currentsample)/h.Settings.fs;
                 else
                     try
-                        h.trialdur = h.totdur - (GetSecs-h.st);
+                        h.trialdur = h.totdur;
                     catch
-                        h.trialdur = sum(h.Settings.stimdur)*length(h.Seq.signal) - (GetSecs-h.st);
+                        h.trialdur = sum(h.Settings.stimdur)*length(h.Seq.signal);
                     end
                 end
             else
-                h.trialdur = size(h.Seq.stimseq,2) - h.i;
+                h.trialdur = size(h.Seq.stimseq,2);
             end
-            
+
             % start time of trial
             h.st = GetSecs;
             h.ct=h.st;
@@ -415,9 +408,7 @@ while (h.ct-h.st)<h.trialdur
     catch
         sx=0;
     end
-    if ~isfield(h,'disableGUI')
-        pause(0.001);
-    end
+    pause(0.001);
     while sx
         
         % stop stimulus

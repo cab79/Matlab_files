@@ -36,13 +36,21 @@ switch opt
                 spt1 = serial(PortNum); 
                 fopen(spt1)
             end
+            
+            choice = questdlg('Using EEG: Disable GUI buttons? (more accurate EEG markers)', ...
+                    'Choice', ...
+                    'Yes','No','Yes');
+            switch choice
+                case 'Yes'
+                    h.disableGUI=1;
+            end
         catch
             choice = questdlg('EEG not connected. Stop or continue?', ...
                     'Choice', ...
                     'Stop','Continue','Continue');
             switch choice
                 case 'Stop'
-                    disp('Experiment stopped')
+                    error('Experiment stopped')
             end
         end
     case 'start'
