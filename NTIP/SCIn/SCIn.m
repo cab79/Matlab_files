@@ -12,14 +12,7 @@ function varargout = SCIn(varargin)
 % Begin initialization code - DO NOT EDIT
 dbstop if error
 
-% set global variable d: list of directories
-global d
-d.root = pwd;
-addpath(genpath(d.root))
-d.expts = 'Functions';
-d.settings = 'Settings';
-d.seq = 'Sequences';
-d.out = 'Outputs';
+
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -37,8 +30,16 @@ if nargout
 else
     gui_mainfcn(gui_State, varargin{:});
 end
-% End initialization code - DO NOT EDIT
 
+global d
+load rootdir
+d.root = root;
+d.expts = 'Functions';
+d.settings = 'Settings';
+d.seq = 'Sequences';
+d.out = 'Outputs';
+% End initialization code - DO NOT EDIT
+%disp('loaded')
 
 % --- Executes just before SCIn is made visible.
 function SCIn_OpeningFcn(hObject, eventdata, h, varargin)
@@ -59,6 +60,16 @@ set(hObject, 'Units', 'pixels')
 set(hObject, 'Position', [screensize(3)/2 - 200,...
                           screensize(4)/2 - 200,...
                           400, 400]);
+                      
+                      
+disp('*** SCIn VERSION 0.1 ***');
+
+% set global variable d: list of directories
+global d
+load rootdir
+d.root = root;
+cd(root)
+addpath(genpath(d.root))
 
 % --- Outputs from this function are returned to the command line.
 function varargout = SCIn_OutputFcn(hObject, eventdata, h) 

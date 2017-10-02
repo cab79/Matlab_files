@@ -1,4 +1,4 @@
-function h = AudDiscrimAWE(h,opt)
+function h = AudDiscrimAWE_multiprob(h,opt)
 
 %% NOTES ON SETTINGS:
 % 1/h.Settings.df*0.25 AND (1/df+1/pitchdiff)*0.25 needs to be a multiple of 1/f0 to prevent clicking caused by phase re-setting of the f0 sound
@@ -35,6 +35,10 @@ switch opt
     % (applied to stimulation via soundcard only)
     h.Settings.ntrialsahead = 2;  %0 = all trials
     
+    %% EXPERIMENTAL CONDIITIONS
+    % name the settings that define orthogonal condtions at a different row
+    h.Settings.conds = {'stimchan','oddprob'};
+    
     %% Output options
     % save sinwave from all trials as part of stim sequence file
     h.Settings.savesinwave = 0;
@@ -47,7 +51,7 @@ switch opt
     h.Settings.labjack=0; % Use labjack for controlling any equipment?
     h.Settings.stimcontrol='PsychPortAudio'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
     h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
-    h.Settings.stimchan = [1 2]; % channels on stimulator to use
+    h.Settings.stimchan = [1 2]; % channels on stimulator to use; use differenr rows for different pairs (e.g. for different conditions)
     
     %% BLOCKING/RUN OPTIONS
     % 'divide' = equally divide trials by nblocks; 
@@ -101,28 +105,24 @@ switch opt
   
     
     %% SEQUENCE
+    % Change probablity (CP): each condition is in columns
     h.Settings.oddprob = [
-        % standard vs oddball
+        % standard (left) vs oddball (right)
         0.8 0.2
+        0.6 0.4
         ];
-    
     % index of row of oddprob that are standards and oddballs
     h.Settings.standardind = 1; % does not apply to 'roving oddball' design
-    h.Settings.oddind = 2; % does not apply to 'roving oddball' design
-    
     % keep oddball trials apart by at least sep_odd standards
-    h.Settings.sep_odd = 2;
-    
+    h.Settings.sep_odd = [2 1]; % for each CP condition
     % for each set, ensure a number of leading standards 
-    h.Settings.std_lead = 0;
-    
-    % number of minimum sets to randomised together
-    h.Settings.n_set = 1; % 1 = use min set size
-    
+    h.Settings.std_lead = [0 0]; % for each CP condition
+    % number of minimum sets to randomise together
+    h.Settings.n_set = [1 1]; % 1 = use min set size, for each CP condition
     % min number of oddballs within each CP condition
-    h.Settings.n_odd = [1]; % overrides h.Settings.totdur
+    h.Settings.n_odd = [20, 20]; % overrides h.Settings.totdur
     % min number of oddballs per randomised set, per CP
-    h.Settings.n_odd_set = [1]; % overrides h.Settings.totdur
+    h.Settings.n_odd_set = [5, 5]; % overrides h.Settings.totdur
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1

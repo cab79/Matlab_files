@@ -7,15 +7,11 @@ h.Seq =struct;
 if isfield(h.Settings,'conds')
     conds = h.Settings.conds;
     for i = 1:length(conds)
-        condval{i} = h.Settings.(conds{i});
-        ncond(i) = size(condval{i},1);
-        for ii = 1:ncond(i)
-            condname{i}{ii} = [conds{i} num2str(condval{i}(ii,1))];
-        end
+        condval
+        ncond(i) = size(,1);
     end
 else
     conds = [];
-    ncond = 0;
 end
 
 % ensure probs are integers for gcd calculation

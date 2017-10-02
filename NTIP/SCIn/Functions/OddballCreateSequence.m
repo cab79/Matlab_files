@@ -1,5 +1,8 @@
 function h = OddballCreateSequence(h)
 
+disp('Creating sequence...');
+h.Seq =struct;
+
 % stimtype = e.g. stimtypets (if multiple stimtypets stimulated)
 
 if h.Settings.distblocks==1 && h.Settings.nblocks>1
@@ -263,3 +266,11 @@ RPrand = RPi(randperm(length(RPi)));
 RPselect = RPrand(1:nSelect);
 h.Seq.RP = zeros(1,length(h.Seq.condnum));
 h.Seq.RP(RPselect) = 1;
+
+% create all trials if design is continuous
+if isfield(h.Settings,'stimcontrol') && strcmp(h.Settings.design,'continuous') && h.Settings.savesinwave
+    if ~isempty(h.Settings.stimcontrol)
+        opt = 'create';
+        h = stimtrain(h,opt);
+    end
+end
