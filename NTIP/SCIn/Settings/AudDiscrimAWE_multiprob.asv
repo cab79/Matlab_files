@@ -52,7 +52,7 @@ switch opt
     %% BLOCKING/RUN OPTIONS
     % 'divide' = equally divide trials by nblocks; 
     % 'cond' = separate block for each condition
-    h.Settings.blockopt = 'cond';
+    %h.Settings.blockopt = 'divide';
     % further options for 'divide':
         % number of blocks (containing multiple conditions)
     %    h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
@@ -101,28 +101,24 @@ switch opt
   
     
     %% SEQUENCE
+    % Change probablity (CP): each condition is in columns
     h.Settings.oddprob = [
         % standard vs oddball
-        0.8 0.2
+        0.8 0.6
+        0.2 0.4
         ];
-    
     % index of row of oddprob that are standards and oddballs
     h.Settings.standardind = 1; % does not apply to 'roving oddball' design
-    h.Settings.oddind = 2; % does not apply to 'roving oddball' design
-    
     % keep oddball trials apart by at least sep_odd standards
     h.Settings.sep_odd = 2;
-    
     % for each set, ensure a number of leading standards 
     h.Settings.std_lead = 0;
-    
-    % number of minimum sets to randomised together
+    % number of minimum sets to randomise together
     h.Settings.n_set = 1; % 1 = use min set size
-    
     % min number of oddballs within each CP condition
-    h.Settings.n_odd = [1]; % overrides h.Settings.totdur
+    h.Settings.n_odd = [20, 20]; % overrides h.Settings.totdur
     % min number of oddballs per randomised set, per CP
-    h.Settings.n_odd_set = [1]; % overrides h.Settings.totdur
+    h.Settings.n_odd_set = [5, 5]; % overrides h.Settings.totdur
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1

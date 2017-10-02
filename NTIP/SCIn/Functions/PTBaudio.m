@@ -57,10 +57,20 @@ try
     end
     pah = h.pahandle;
 catch
+    try
+        PsychPortAudio('Close', h.pahandle);
+    end
+    try 
+        PsychPortAudio('Close',pah);
+    end
+    try 
+        PsychPortAudio('Close');
+    end
+    h = PTBaudio(h);
     % Failed. Retry with default frequency as suggested by device:
-    fprintf('\nCould not open device at wanted playback frequency of %i Hz. Will retry with device default sampling rate.\n', h.Fs);
-    fprintf('Sound may sound a bit out of tune, ...\n\n');%%
-    psychlasterror('reset');
-    h.pahandle = PsychPortAudio('Open', h.DeviceN, [], 0, [], h.Nc);
+    %fprintf('\nCould not open device at wanted playback frequency of %i Hz. Will retry with device default sampling rate.\n', h.Fs);
+    %fprintf('Sound may sound a bit out of tune, ...\n\n');%%
+    %psychlasterror('reset');
+    %h.pahandle = PsychPortAudio('Open', h.DeviceN, [], 0, [], h.Nc);
     %pahandle = 1;
 end

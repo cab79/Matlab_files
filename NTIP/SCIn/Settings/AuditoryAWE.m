@@ -13,6 +13,10 @@ function h = AuditoryAWE(h,opt)
 % seems to work if f0 and pitchdiff are both multiples of df, and f0 and
 % pitchdiff are also multiples of each other?
 
+% REVISED: f0 and f0+pitchdiff must be a multiple of: 
+%    1/((1/h.Settings.df)*0.25) 
+%    (for these particular settings - depends on stimdur)
+
 %if ~exist('opt','var')
 %    opt = {'10Hz'};
 %end
@@ -31,8 +35,8 @@ switch opt
         
     %% TRIALS or CONTINUOUS?
     h.Settings.design = 'continuous';
-    % if trials, how many trials ahead should be in the player schedule?
-    % (applied to stimulation via soundcard only)
+    % if continuous, how many trials ahead should be in the player schedule?
+    % (applies to stimulation via soundcard only)
     h.Settings.ntrialsahead = 2;  %0 = all trials
     
     %% Output options
@@ -43,6 +47,10 @@ switch opt
     % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
     h.Settings.record_EEG='serial';
     h.Settings.EEGport = 'COM3'; % only needed for 'serial' EEG triggers
+<<<<<<< HEAD
+=======
+    h.Settings.EEGMarkPattern = 1; % mark EEG for every change in stimulus pattern (0 = start of trial only)
+>>>>>>> f81b42d97677295c6aed4754528a3e6625e73555
     h.Settings.labjack=0; % Use labjack for controlling any equipment?
     h.Settings.stimcontrol='PsychPortAudio'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
     h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
@@ -51,7 +59,7 @@ switch opt
     %% BLOCKING/RUN OPTIONS
     % 'divide' = equally divide trials by nblocks; 
     % 'cond' = separate block for each condition
-    %h.Settings.blockopt = 'divide';
+    h.Settings.blockopt = 'cond';
     % further options for 'divide':
         % number of blocks (containing multiple conditions)
     %    h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
@@ -73,14 +81,17 @@ switch opt
     h.Settings.stimdur = 0.4; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
     h.Settings.patternmethod = 'pitch';
-    h.Settings.patternvalue = [200 400]; % one per stimdur
+    h.Settings.patternvalue = [200 240]; % one per stimdur
     % 'rand' or 'reg' spacing?
     h.Settings.stimdurtype = 'reg'; % not needed unless 'rand'
     % sampling rate
     h.Settings.fs = 96000; % don't change this
     % Binarual beats frequency: creates right ear frequency of f0+df
     h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-    h.Settings.atten = -30; % attenuation level in decibels
+    % Monaural beats instead? 
+    h.Settings.monaural = 1; 
+    % attenuation level in decibels
+    h.Settings.atten = -30; 
     % pitch
     h.Settings.f0 = 500; % Left ear carrier frequency (pitch)
     %intensity
@@ -116,6 +127,7 @@ switch opt
         sd, sd*1.5-1/h.Settings.df*0.25
         ];
     
+    %% SEQUENCE
     h.Settings.oddprob = [
         % standard
         0.8
@@ -129,13 +141,27 @@ switch opt
         0.025
         0.025
         0.025
-        ];
+        ]';
+    
+    h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
     
     % index of oddball value that are standards
-    h.Settings.standardind = 1;
+    h.Settings.standardind = 1; % does not apply to 'roving oddball' design
+    h.Settings.oddind = 2; % does not apply to 'roving oddball' design
     
     % keep oddball trials apart by at least sep_odd standards
     h.Settings.sep_odd = 2;
+    
+    % for each set, ensure a number of leading standards 
+    h.Settings.std_lead = 0;
+    
+    % number of minimum sets to randomised together
+    h.Settings.n_set = 1; % 1 = use min set size
+    
+    % min number of oddballs within each CP condition
+    h.Settings.n_odd = [1]; % overrides h.Settings.totdur
+    % min number of oddballs per randomised set, per CP
+    h.Settings.n_odd_set = [1]; % overrides h.Settings.totdur
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1
@@ -154,7 +180,8 @@ switch opt
     % starting level of adaptive staircase
     %h.Settings.adaptive.startinglevel = 100; % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100)
     
-    
+    % number of trials of plot
+    h.Settings.plottrials=0;
 
 end
 

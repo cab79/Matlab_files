@@ -62,14 +62,14 @@ end
 function h = setgeneral(h)
 
 %% TRIALS OR CONTINUOUS?
-h.Settings.design = 'trials';
+h.Settings.design = 'continuous';
 % if continuous, how many trials ahead should be in the player schedule?
 % (applies to stimulation via soundcard only)
 h.Settings.ntrialsahead = 0;  %0 = all trials
 
 %% Output options
 % save sinwave from all trials as part of stim sequence file
-h.Settings.savesinwave = 0;
+h.Settings.savesinwave = 1;
     
 %% EQUIPMENT CONTROL
 %Use labjack for controlling any equipment?
@@ -95,12 +95,12 @@ h.Settings.nrchannels = 2; % 8
 % minimum total duration of stimulus sequence in seconds
 %h.Settings.totdur = 60; 
 % duration of trial in seconds
-h.Settings.trialdur = 1;
+h.Settings.trialdur = 0;
 % duration of stimulus in seconds
-h.Settings.stimdur = 0.5;
+h.Settings.stimdur = 1;
 % Pattern type method: intensity, pitch. Not supported: channel, duration
-h.Settings.patternmethod = '';
-h.Settings.patternvalue = []; % one per stimdur
+h.Settings.patternmethod = 'intensity';
+h.Settings.patternvalue = [0.5 0]; % one per stimdur
 % 'rand' or 'reg' spacing?
 h.Settings.stimdurtype = 'reg';
 % channels on stimulator to use
