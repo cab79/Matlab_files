@@ -42,7 +42,7 @@ switch opt
     %% EQUIPMENT CONTROL
     % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
     h.Settings.record_EEG='serial';
-    h.Settings.EEGport = 'LPT1'; % only needed for 'serial' EEG triggers
+    h.Settings.EEGport = 'COM3'; % only needed for 'serial' EEG triggers
     h.Settings.labjack=0; % Use labjack for controlling any equipment?
     h.Settings.stimcontrol='PsychPortAudio'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
     h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
