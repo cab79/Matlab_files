@@ -32,7 +32,12 @@ else
 end
 
 global d
-load rootdir
+try
+    rootdir
+catch
+    %error('start SCIn from the SCIn directory')
+    error('update "rootdir.m" with the SCIn directory')
+end
 d.root = root;
 d.expts = 'Functions';
 d.settings = 'Settings';
@@ -66,7 +71,7 @@ disp('*** SCIn VERSION 0.1 ***');
 
 % set global variable d: list of directories
 global d
-load rootdir
+rootdir
 d.root = root;
 cd(root)
 addpath(genpath(d.root))

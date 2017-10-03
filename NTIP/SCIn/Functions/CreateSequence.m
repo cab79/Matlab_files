@@ -6,13 +6,16 @@ h.Seq =struct;
 % define orthgonal conditions
 if isfield(h.Settings,'conds')
     conds = h.Settings.conds;
+    allcondind='';
     for i = 1:length(conds)
         condval{i} = h.Settings.(conds{i});
-        ncond(i) = size(condval{i},1);
-        for ii = 1:ncond(i)
-            condname{i}{ii} = [conds{i} num2str(condval{i}(ii,1))];
+        if size(condval{i},1)<2
+            continue
         end
+        condind{i} = 1:size(condval{i},1);
+        allcondind = [allcondind ' condind{' num2str(i) '},'];
     end
+    eval(['allcond = allcomb(' allcondind(1:end-1) ');']);
 else
     conds = [];
     ncond = 0;
