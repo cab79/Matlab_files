@@ -105,7 +105,7 @@ switch opt
   
     
     %% SEQUENCE
-    % Change probablity (CP): each condition is in columns
+    % Change probablity (CP): each condition is in rows
     h.Settings.oddprob = [
         % standard (left) vs oddball (right)
         0.8 0.2
