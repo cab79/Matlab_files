@@ -195,6 +195,13 @@ if ~isfield(h,'SettingsFun')
     opt = get(h.SettingsOpt,'Value');
     [~,h.SettingsFun,] = fileparts(settings{opt});
 end
+
+if ~isfield(h,'OptName')
+    options = get(h.Options,'String');
+    opt = get(h.Options,'Value');
+    h.OptName = options{opt};
+end
+
 eval(['h = ' h.SettingsFun '(h,h.OptName);']);
 set(h.info, 'String', 'Creating sequence...');
 pause(0.1) % otherwise message not displayed
