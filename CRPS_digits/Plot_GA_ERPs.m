@@ -12,7 +12,7 @@ no_plot_ele=[44 74];
 pos_neg_peak = 1; %1 or -1
 num_ele = 3;
 lat = (lat_ms+200)/4;
-no_cond=10;
+plot_cond=[1 2 9 10];%1:10;
 av_grps = {1:2,3:4};
 
 % plot grand average
@@ -20,7 +20,7 @@ gavg = cell(4,1);
 for s = 1:length(subjects)
     tempgavg = zeros(el,length(times));
     for s2 = 1:length(subjects{s,1}) 
-        for i = 1:no_cond
+        for i = plot_cond
             if DATs{s,1}{s2,1}{i,4}>=min_trials_gavg
                 tempgavg = cat(3,tempgavg,DATs{s,1}{s2,1}{i,anaDAT});
             end

@@ -10,15 +10,13 @@ switch opt
 
                 ljud_LoadDriver; % Loads LabJack UD Function Library
                 ljud_Constants; % Loads LabJack UD constant file
-                [Error ljHandle] = ljud_OpenLabJack(LJ_dtU3,LJ_ctUSB,'1',1); % Returns ljHandle for open LabJack
+                [Error h.ljHandle] = ljud_OpenLabJack(LJ_dtU3,LJ_ctUSB,'1',1); % Returns ljHandle for open LabJack
                 Error_Message(Error)
 
                 %Start by using the pin_configuration_reset IOType so that all
                 %pin assignments are in the factory default condition.
-                Error = ljud_ePut (ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
+                Error = ljud_ePut (h.ljHandle, LJ_ioPIN_CONFIGURATION_RESET, 0, 0, 0);
                 Error_Message(Error) % Checks for errors and displays them if they occur
-
-                h.ljHandle = ljHandle;
 
             end
         catch
