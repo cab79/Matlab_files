@@ -51,7 +51,7 @@ switch opt
     h.Settings.labjack=0; % Use labjack for controlling any equipment?
     h.Settings.stimcontrol='PsychPortAudio'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
     h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
-    h.Settings.stimchan = [1 2]; % channels on stimulator to use; use differenr rows for different pairs (e.g. for different conditions)
+    h.Settings.stimchan = [1 2 ;3 4]; % channels on stimulator to use; use differenr rows for different pairs (e.g. for different conditions)
     
     %% BLOCKING/RUN OPTIONS
     % 'divide' = equally divide trials by nblocks; 
@@ -105,7 +105,7 @@ switch opt
   
     
     %% SEQUENCE
-    % Change probablity (CP): each condition is in columns
+    % Change probablity (CP): each condition is in rows
     h.Settings.oddprob = [
         % standard (left) vs oddball (right)
         0.8 0.2

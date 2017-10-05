@@ -3,20 +3,29 @@ function h = CreateSequence(h)
 disp('Creating sequence...');
 h.Seq =struct;
 
-% define orthgonal conditions
+%% define orthgonal conditions
 if isfield(h.Settings,'conds')
     conds = h.Settings.conds;
+    allcondind='';
     for i = 1:length(conds)
         condval{i} = h.Settings.(conds{i});
-        ncond(i) = size(condval{i},1);
-        for ii = 1:ncond(i)
-            condname{i}{ii} = [conds{i} num2str(condval{i}(ii,1))];
+        if size(condval{i},1)<2
+            continue
         end
+        condind{i} = 1:size(condval{i},1);
+        allcondind = [allcondind ' condind{' num2str(i) '},'];
     end
+    eval(['allcond = allcomb(' allcondind(1:end-1) ');']);
+    allcond = 1:i;
+    probcond = find(strcmp(conds,h.Settings.oddprob));
+    nonprobcond = allcond; nonprobcond(probcond) = [];
 else
     conds = [];
     ncond = 0;
+    nonprobcond = [];
 end
+
+%% work out parameters of each sequence set (length, number of oddballs, probability of oddballs, etc.)
 
 % ensure probs are integers for gcd calculation
 probs = h.Settings.oddprob*1000000;
@@ -58,6 +67,8 @@ end
 num_sets = max(num_sets,max(ceil(h.Settings.n_odd./min(mult))));
 
 h.totdur = num_sets*totdur; % modified duration
+
+%% create sequence sets
 
 % create non-randomised indices of a single set, separating each CP
 % condition
@@ -189,6 +200,12 @@ for cp = 1:nCP
     end
 end
 
+%% duplicate sequences for non-probability conditions
+if ~isempty(nonprobcond)
+    
+end
+
+%% create final sequences/blocks
 if ~isfield(h.Seq,'signal')
     h.Seq.signal=[];
     h.Seq.condnum=[];

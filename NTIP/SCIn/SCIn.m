@@ -32,7 +32,12 @@ else
 end
 
 global d
-load rootdir
+try
+    rootdir
+catch
+    %error('start SCIn from the SCIn directory')
+    error('update "rootdir.m" with the SCIn directory')
+end
 d.root = root;
 d.expts = 'Functions';
 d.settings = 'Settings';
@@ -66,7 +71,7 @@ disp('*** SCIn VERSION 0.1 ***');
 
 % set global variable d: list of directories
 global d
-load rootdir
+rootdir
 d.root = root;
 cd(root)
 addpath(genpath(d.root))
@@ -190,6 +195,13 @@ if ~isfield(h,'SettingsFun')
     opt = get(h.SettingsOpt,'Value');
     [~,h.SettingsFun,] = fileparts(settings{opt});
 end
+
+if ~isfield(h,'OptName')
+    options = get(h.Options,'String');
+    opt = get(h.Options,'Value');
+    h.OptName = options{opt};
+end
+
 eval(['h = ' h.SettingsFun '(h,h.OptName);']);
 set(h.info, 'String', 'Creating sequence...');
 pause(0.1) % otherwise message not displayed

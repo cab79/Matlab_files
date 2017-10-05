@@ -261,8 +261,9 @@ global d
 h.ct=GetSecs;
 while (h.ct-h.st)<h.trialdur
     
-    pause(0.001);
+    %WaitSecs(0.001);
         %h.ct=GetSecs;disp(['exit time = ' num2str(h.ct-h.st)]);
+        
     
     % update current time and exit if needed
     if strcmp(h.Settings.design,'trials')
@@ -270,21 +271,33 @@ while (h.ct-h.st)<h.trialdur
         if (h.ct-h.st)>h.trialdur; 
             break; 
         end;
-    end
-
-    % run special function for continuous sequences
-    if strcmp(h.Settings.design,'continuous')
-        h = ContFun(h);
     end
     
 %t2=GetSecs;
 %try
 %    disp(['delay = ' num2str(t2-t1)]);
 %end
-%t1=GetSecs; 
 
+    % run special function for continuous sequences
+    if strcmp(h.Settings.design,'continuous')
+        h = ContFun(h);
+    end
     h = record_response(h,'current_trial');
+
+    %only continue loop (which can be slow) if not too close to end of
+    %trial. Increases accuracy of EEG markers.
+    t1=GetSecs;
+    if h.i>1 && h.i<length(h.Seq.signal)
+        if h.out.projend{h.i}>t1+0.1
+            continue
+        end
+    end
     
+    %
+    
+    % get GUI data for pause/resume
+    GUIh = guihandles(h.GUIhname);
+
     % update current time and exit if needed
     if strcmp(h.Settings.design,'trials')
         h.ct=GetSecs;
@@ -293,14 +306,14 @@ while (h.ct-h.st)<h.trialdur
         end;
     end
     
-    % get GUI data for pause/resume
-    GUIh = guihandles(h.GUIhname);
     try
         px = get(GUIh.PauseResume, 'Value');
     catch
         px=0;
     end
-    pause(0.001);
+    if ~isfield(h,'disableGUI')
+        pause(0.001);
+    end
     while px
         
         % pause stimulus
@@ -320,13 +333,15 @@ while (h.ct-h.st)<h.trialdur
         end
 
         % get GUI data for pause/resume
-        GUIh = guihandles(h.GUIhname);
+        %GUIh = guihandles(h.GUIhname);
         try
             rx = ~get(GUIh.PauseResume, 'Value');
         catch
             rx=0;
         end
-        pause(0.001);
+        if ~isfield(h,'disableGUI')
+            pause(0.001);
+        end
         if rx   
             
             % Mark EEG
@@ -338,11 +353,17 @@ while (h.ct-h.st)<h.trialdur
             end
 
             % option to re-start on button press
-            if isfield(h.Settings,'buttontype')
-                if ~isempty(h.Settings.buttontype)
-                    if h.Settings.buttonstart
-                        opt = 'start';
-                        h = buttonpress(h,opt);
+            % require input to start, e.g. scanner trigger, msgbox
+            if isfield(h.Settings,'blockstart')
+                if ~isempty(h.Settings.blockstart)
+                    if iscell(h.Settings.blockstart)
+                        for i = 1:length(h.Settings.blockstart)
+                            opt = h.Settings.blockstart{i};
+                            h = blockstart(h,opt);
+                        end
+                    else
+                        opt = h.Settings.blockstart;
+                        h = blockstart(h,opt);
                     end
                 end
             end
@@ -354,6 +375,26 @@ while (h.ct-h.st)<h.trialdur
                     h = stimtrain(h,opt);
                 end
             end
+            
+            
+            % update trial duration
+            if h.Settings.ntrialsahead
+                if isfield(h,'totalsamples')
+                    h.trialdur = (h.totalsamples-h.currentsample)/h.Settings.fs;
+                else
+                    try
+                        h.trialdur = h.totdur - (GetSecs-h.st);
+                    catch
+                        h.trialdur = sum(h.Settings.stimdur)*length(h.Seq.signal) - (GetSecs-h.st);
+                    end
+                end
+            else
+                h.trialdur = size(h.Seq.stimseq,2) - h.i;
+            end
+            
+            % start time of trial
+            h.st = GetSecs;
+            h.ct=h.st;
 
             px=0;
         end
@@ -368,13 +409,15 @@ while (h.ct-h.st)<h.trialdur
     end
 
     % get GUI data for start/stop
-    GUIh = guihandles(h.GUIhname);
+    %GUIh = guihandles(h.GUIhname);
     try
         sx = ~get(GUIh.StartStop, 'Value');
     catch
         sx=0;
     end
-    pause(0.001);
+    if ~isfield(h,'disableGUI')
+        pause(0.001);
+    end
     while sx
         
         % stop stimulus
@@ -429,7 +472,20 @@ while (h.ct-h.st)<h.trialdur
                 end
             end
             
-            h = blockstart(h);
+            % require input to start, e.g. scanner trigger, msgbox
+            if isfield(h.Settings,'blockstart')
+                if ~isempty(h.Settings.blockstart)
+                    if iscell(h.Settings.blockstart)
+                        for i = 1:length(h.Settings.blockstart)
+                            opt = h.Settings.blockstart{i};
+                            h = blockstart(h,opt);
+                        end
+                    else
+                        opt = h.Settings.blockstart;
+                        h = blockstart(h,opt);
+                    end
+                end
+            end
             
             % Mark EEG
             if isfield(h.Settings,'record_EEG')
@@ -548,12 +604,12 @@ if nowtime>=proj_end
 end
 
 if newtrial
-    try
-        disp(['Currentsample error: ' num2str((h.currentsample - h.Seq.trialend(h.i))/h.Settings.fs)])
-    catch
-        disp(['Currentsample error: ' num2str(h.currentsample - h.Seq.trialend(1))])
-    end
-    disp(['Current time error: ' num2str(nowtime - proj_end)])
+    %try
+    %    disp(['Currentsample error: ' num2str((h.currentsample - h.Seq.trialend(h.i))/h.Settings.fs)])
+    %catch
+    %    disp(['Currentsample error: ' num2str(h.currentsample - h.Seq.trialend(1))])
+    %end
+    %disp(['Current time error: ' num2str(nowtime - proj_end)])
     
     % record first and last responses on previous trial
     h = record_response(h,'previous_trial');
@@ -576,6 +632,11 @@ if newtrial
         h.out.expisi{h.i-1} = triallength/h.Settings.fs;
         % discrepency
         h.out.discrep{h.i-1} = h.out.isi{h.i-1} - h.out.expisi{h.i-1};
+        
+        % projected end of this trial in s (for speeding up loop)
+        
+        triallength = (h.Seq.trialend(h.i)-h.Seq.trialend(h.i-1))/h.Settings.fs;
+        h.out.projend{h.i} = h.out.stimtime{h.i}+triallength;
     end
     
     % D188 - set output channel
@@ -734,7 +795,7 @@ try
     subplot(3,1,3)
     plot(1/96000:1/96000:size(sig,2)/96000,sig(1,:)-sig(2,:))
     title(['Trial ' num2str(h.i)])
-    if h.i==21
-        pause
-    end
+    %if h.i==21
+    %    pause
+    %end
 end
