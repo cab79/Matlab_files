@@ -35,7 +35,7 @@ S.freqwin = []; % empty if not requiring freq analysis
 %S.basewin = [-5500 -5000]; % empty will not baseline correct and will not produce a baseline image.
 %S.timewin = [-3000 0]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest.
 %S.basewin = [-3000 -2500]; % empty will not baseline correct and will not produce a baseline image.
-S.timewin = [100 800]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest.%
+S.timewin = [-500 1500]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest.
 S.basewin = [-500 0]; % empty will not baseline correct and will not produce a baseline image.
 S.baseest = 1; % 1 = baseline estimated in separate model
 % latency ranges of images to procedure. Will only produce images within
@@ -43,18 +43,18 @@ S.baseest = 1; % 1 = baseline estimated in separate model
 imout = []; % select which to produce on this run, or leave empty to run all
 images_out = {
         'base',[]; % outputs a baseline image at the range set by S.basewin
-   %     [-4660 -4278],[]; %Exp
-   %     [-4564 -4506],[]; %Grp
-   %     [-4552 -4468],[]; %Grp*Exp
-   %     [-4454 -4376],[]; %Grp
-        %[-4308 -4246],[]; %Grp*Exp
+        %[-4660 -4278],[]; %Exp
+        %[-4564 -4468],[]; %Grp,Grp*Exp
+        %[-4454 -4362],[]; %Grp,Grp*Exp
+        %[-4330 -4222],[]; %Grp*Exp
         %[-3364 -3292],[]; %Grp*Exp
         %[-3264 -3210],[]; %Grp*Exp
         %[-3050 -2946],[]; %Exp
-   %     [-2698 -2500],[]; %Exp, Grp*Exp
+        %[-2922 -2900],[]; %Exp
+        %[-2802 -2500],[]; %Exp, Grp*Exp
         %[-2514 -2448],[]; %Exp
-   %     [-2264 -2226],[]; %Exp
-   %     [-2252 -2202],[]; %Grp
+        %[-2362 -2338],[]; %Exp
+        %[-2264 -2202],[]; %Exp
         %[-2162 -2002],[]; %Grp
         %[-1288 -1076],[]; %Exp
         [416 478],[]; %Exp
@@ -400,7 +400,7 @@ for g = 1:Ngrp_ana
 
                 woi              = sort(woi)
                 
-                if max(woi)>max(contrasts{con,1}) || min(woi)<min(contrasts{con,1})
+                if max(woi)>max(contrasts{min(max(run_con),con),1}) || min(woi)<min(contrasts{min(max(run_con),con),1})
                     continue
                 end
                 
