@@ -8,16 +8,47 @@ switch opt
         
     case 'labjack'
         % RECEIVE SCANNER TRIGGER???
-        disp('Waiting for scanner trigger');
-        scantrig=[];
-        lj_chan = 4;
+        choice = questdlg('Wait for scanner trigger(s) before starting?', ...
+                'Choice', ...
+                'Yes','No','Yes');
+        switch choice
+            case 'Yes'
+                ljud_LoadDriver; % Loads LabJack UD Function Library
+                ljud_Constants; % Loads LabJack UD constant file
+                scantrig=[];
+                lj_chan = 4;
 
-        [ljError] = ljud_ePut (ljHandle,LJ_ioPUT_DIGITAL_PORT,lj_chan,0,0);
-        while isempty(scantrig)
-            [ljError, scantrig] = ljud_eGet (ljHandle,LJ_ioGET_DIGITAL_BIT_STATE,lj_chan,0,0);
+                i=0;
+                num_trig=0;
+                while num_trig<h.Settings.num_scanner_trig
+                    [ljError] = ljud_ePut(h.ljHandle,LJ_ioPUT_DIGITAL_BIT,lj_chan,0,0);
+                    scantrig=0;
+                    %t1=GetSecs;
+                    i=i+1;
+                    disp(['Waiting for scanner trigger ' num2str(i)])
+                    while scantrig==0
+                        [ljError, scantrig] = ljud_eGet(h.ljHandle,LJ_ioGET_DIGITAL_BIT,lj_chan,0,0);
+
+                        %% for testing only:
+                        %pause(1)
+                        %t2=GetSecs;
+                        %if t2-t1>=5
+                        %    [ljError] = ljud_ePut(h.ljHandle,LJ_ioPUT_DIGITAL_BIT,5,1,0);
+                        %end
+                        %% 
+                    end
+                    %% for testing only:
+                    %[ljError] = ljud_ePut(h.ljHandle,LJ_ioPUT_DIGITAL_BIT,5,0,0);
+                    %Error_Message(ljError)
+                    %%
+                    num_trig = num_trig+1;
+                    disp(['Triggered ' num2str(num_trig)]);
+                    pause(h.Settings.waittime_scanner_trig);
+                end
+                disp('Triggers complete');
+            case 'No'
+                return
         end
-        Error_Message(ljError)
-        disp('Triggered');
         
     case 'buttonpress'
         opt = 'start';

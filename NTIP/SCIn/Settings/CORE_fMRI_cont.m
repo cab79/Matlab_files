@@ -53,9 +53,14 @@ switch opt
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
         % cell array
-        h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
+        h.Settings.blockstart = {'labjack'}; % audio,labjack,audio,
         % names of any audiofiles
         h.Settings.audiofile = {'instruct.wav','start.wav'}; % labjack
+        % number of scanner triggers to wait for before starting the
+        % sequence
+        h.Settings.num_scanner_trig = 4;
+        % wait time between scanner triggers (s)
+        h.Settings.waittime_scanner_trig = 1;
         
 end
 
@@ -73,7 +78,7 @@ h.Settings.savesinwave = 0;
     
 %% EQUIPMENT CONTROL
 %Use labjack for controlling any equipment?
-h.Settings.labjack=0;
+h.Settings.labjack=1;
 % How to control stimulator? Options: audioplayer, PsychPortAudio, labjack, spt
 h.Settings.stimcontrol='PsychPortAudio';
 % if using PsychPortAudio with more than 2 channels:

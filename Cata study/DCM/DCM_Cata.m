@@ -27,7 +27,7 @@ S.excl_full = 0; % automatically excludes if any A/B/C matrix values are <0
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\DCMdata\_Time_Int_Exp_Subject_spm_t416_478\Int_run4'; 
+S.outpath = 'C:\Data\Catastrophising study\DCMdata\_Time_Int_Exp_Subject_spm_t416_478\Int_run5\modelA1'; 
 % name for group analysis output file
 S.outname = 'DCM_GROUP'; % CURRENTLY UNUSED
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates

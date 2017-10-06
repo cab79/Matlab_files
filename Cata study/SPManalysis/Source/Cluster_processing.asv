@@ -12,7 +12,7 @@ S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS';
 % directory in which SPM analysis is saved 
 S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source';
 % specific folder containing the SPM stats for this analysis
-S.spm_dir = '_Time_Grp_Exp_Subject_spm_t-2162_-2002';
+S.spm_dir = '_Time_Grp_Exp_Subject_spm_t-1288_-1076';
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
 S.batch = 'matlabbatch.mat';
