@@ -1,4 +1,4 @@
-function Extract_clusters(S)
+function Extract_clusters_source(S)
 
 %% Requires input structure S containing fields as follows. See Cluster_processing script for examples.
 %-------------------------------------------------------------
@@ -17,8 +17,10 @@ function Extract_clusters(S)
 if isempty(S.spm_dir)
     S.spm_paths = dir(fullfile(S.spmstats_path,'*spm*'));
     S.spm_paths = {S.spm_paths(:).name};
-else
+elseif ~iscell(S.spm_dir)
     S.spm_paths = {S.spm_dir};
+else
+    S.spm_paths = S.spm_dir;
 end
 
 for sp = 1:length(S.spm_paths)
