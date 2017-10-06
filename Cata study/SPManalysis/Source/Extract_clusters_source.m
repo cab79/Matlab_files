@@ -1,4 +1,4 @@
-function Extract_clusters(S)
+function Extract_clusters_source(S)
 
 %% Requires input structure S containing fields as follows. See Cluster_processing script for examples.
 %-------------------------------------------------------------
