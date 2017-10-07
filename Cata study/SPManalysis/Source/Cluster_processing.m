@@ -36,8 +36,8 @@ S.subinfo = 'sub_info.mat';
 %% contrast, factor and level information
 %-------------------------------------------------------------
 %contrast name to process - must match that in Matlabbatch (i.e. from design-batch script)
-S.contrasts={}; % leave empty to proccess ALL contrasts in Matlabbatch
-S.tf =2; % 1 if F-contrast, 2 or T-contrast, blank if not using S.contrasts
+S.contrasts={'T1 Grp * Exp','T1 Grp','T1 Exp','Time','Exp * Int','Time Med','Exp','Exp Med','Int'}; % leave empty to proccess ALL contrasts in Matlabbatch
+S.tf =1; % 1 if F-contrast, 2 or T-contrast, blank if not using S.contrasts
 % contrasts={'Exp'}; % example to enter one contrast only
 
 % stats to save in a table for each contrast and cluster
