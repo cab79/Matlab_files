@@ -39,8 +39,8 @@ D.subdirsuff = '*'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
 D.folder =0; % Is the data in a subject-specific folder?
 % time identifer for source image files, to add to end of outputted SPM folder name
-D.identifier='_t416_478'; 
-D.baseline='_t-500_0'; 
+D.identifier='_t-4660_-4278'; 
+D.baseline='_t-5500_-5000'; 
 
 %D.identifier = [D.identifier num2str(fm)];
 %D.data_path = [D.data_path num2str(fm)];

@@ -29,25 +29,26 @@ for sp = 1:length(S.spm_paths)
     if isempty(S.contrasts)
         % load SPM design and list contrasts
         load(fullfile(S.spm_path,S.batch));
-        S.contrasts = {};
+        contrasts = {};
         tf=[];
         for fc = 1:length(matlabbatch{3}.spm.stats.con.consess)
             try
-                S.contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.fcon.name;
+                contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.fcon.name;
                 tf=[tf 1];
             catch
-                S.contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.tcon.name;
+                contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.tcon.name;
                 tf=[tf 2];
             end
         end
     else
+        contrasts=S.contrasts;
         tf=S.tf;
     end
 
     spm eeg
     S.clus_path = {};
-    for cont = 1:length(S.contrasts)
-        contrast = S.contrasts{cont};
+    for cont = 1:length(contrasts)
+        contrast = contrasts{cont};
         Nhead = size(S.clustab{tf(cont)},1);
         Nrhead=1;
 
