@@ -27,8 +27,8 @@ end
 % temporary cell array
 niicell = {};
 n=0;
-for sp = 1:length(S.spm_paths)
-    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp});
+for sp = 1:size(S.spm_paths,1)
+    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
 
     if isempty(S.contrasts)
         % load SPM design and list contrasts
@@ -59,7 +59,8 @@ for sp = 1:length(S.spm_paths)
         for i = 1:length(cfnames)
             % load each nii img array into a cell
             n = n+1;
-            nii = load_nii(fullfile(S.clus_path,cfname(i).name));
+            nii = load_nii(fullfile(clus_path,cfnames(i).name));
+            disp(['loading image ' num2str(n)])
             niicell{n} =  nii.img;
         end
 
@@ -67,12 +68,43 @@ for sp = 1:length(S.spm_paths)
 end
         
 % for each cell, cycle through to identify unique voxel value in new image
-comnii = zeros(size(niicell{1})); % new image
+comimg = zeros(size(niicell{1})); % new image
 for n = 1:length(niicell)
     % current max value in comnii
-    maxval = max(comnii);
+    maxval = max(comimg(:));
     % adds new values that are unique to comnii
-    comnii = comnii+(maxval+1)*reshape((niicell{n}>1),size(comnii));
+    comimg = comimg+(maxval+1)*reshape((niicell{n}>1),size(comimg));
+end
+
+% remove regions of less than size S.clus_size_min
+[ucom,IA,IB] = unique(comimg);
+for u = 1:length(ucom)
+    if ucom(u)==0
+        continue
+    end
+    % how many connected areas?
+    binimg = zeros(size(comimg));
+    binimg(IB==u) = 1;
+    CC = bwconncomp(binimg,6);
+    
+    % only keep large, connected, regions
+    keep = find(cellfun(@length,CC.PixelIdxList)>S.clus_size_min);
+    voxkeep = CC.PixelIdxList(keep);
+    comimg(IB==u)=0;
+    for k = 1:length(voxkeep)
+        comimg(voxkeep{k}) = max(comimg(:))+1;
+    end
+end
+
+% make values consecutive
+[ucom,IA,IB] = unique(comimg);
+newu = 0:length(ucom)-1;
+comimg = reshape(newu(IB),size(comimg));
+
+clus_size = [];
+for u = 1:length(ucom)
+    % how many voxels?
+    clus_size(u,1) = sum(IB==u);
 end
         
 % save the new image
@@ -81,5 +113,7 @@ if ~isdir(imgpath)
     mkdir(imgpath)
 end
 
-save_nii(comnii,fullfile(imgpath,'comb_clus'));
+comnii = make_nii(comimg, nii.hdr.dime.pixdim(2:4),[0 0 0],16);
+save_nii(comnii,fullfile(imgpath,'comb_clus.nii'));
+save(fullfile(imgpath,'comb_clus.mat'),'clus_size');
 

@@ -7,12 +7,6 @@ switch h.Settings.stimcontrol
 
     case 'labjack'
         
-        if ~isfield(h,'ljHandle')
-            try
-                h.ljHandle = get(h.ljhandle, 'Value');
-            end
-        end
-        
         ljud_LoadDriver; % Loads LabJack UD Function Library
         ljud_Constants; % Loads LabJack UD constant file
         if h.Settings.stimchanforLJ
@@ -59,7 +53,7 @@ switch h.Settings.stimcontrol
                     %Execute the requests. 
                     Error = ljud_GoOne(h.ljHandle);
                     Error_Message(Error)
-                    disp('running')
+                    disp()
                 else
                     % pulse train instruction
                     for pr = 1:h.Settings.npulses_train % train

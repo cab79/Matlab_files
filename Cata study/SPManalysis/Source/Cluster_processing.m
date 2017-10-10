@@ -2,29 +2,40 @@
 % calls functions (need to be in Matlab search path): 
 % Extract_clusters, Extract_cluster_waveforms, Convert_VOI_to_excel
 clear all
- 
+dbstop if error
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % load .xlsx file containing 'Subject', 'Group', and covariates
 S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
-% root directory in which subject-specific folders are located
+% root directory in which source DATAFILES are located
+S.datafile_path = 'C:\Data\Catastrophising study\SPMdata';
+% root directory in which source IMAGES are located
 S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS';
 % directory in which SPM analysis is saved 
 S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source';
-% specific folder containing the SPM stats for this analysis
+% specific folder(s) containing the SPM stats for this analysis, 
+% the original data file suffix,
+% and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
-    %'_Time_Grp_Exp_Subject_spm_t-2264_-2202';
-    %'_Time_Grp_Exp_Subject_spm_t-2514_-2448'
-    %'_Time_Grp_Exp_Subject_spm_t-2362_-2338'
-    %'_Time_Grp_Exp_Subject_spm_t-2802_-2500'
-    %'_Time_Grp_Exp_Subject_spm_t-2922_-2900'
-    %'_Time_Grp_Exp_Subject_spm_t-3050_-2946'
-    %'_Time_Grp_Exp_Subject_spm_t-3264_-3210'
-    %'_Time_Grp_Exp_Subject_spm_t-3364_-3292'
-    %'_Time_Grp_Exp_Subject_spm_t-4330_-4222'
-    %'_Time_Grp_Exp_Subject_spm_t-4454_-4362'
-    %'_Time_Grp_Exp_Subject_spm_t-4564_-4468'
-    '_Time_Grp_Exp_Subject_spm_t-4660_-4278'
+    %'_Time_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat'
+    %'_Time_Grp_Exp_Subject_spm_t416_478',3, '_orig_cleaned_trialNmatch.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-1288_-1076',2, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-2162_-2002',2, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-2264_-2202',2, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-2514_-2448',2, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-2362_-2338',2, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-2802_-2500',1, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-2922_-2900',1, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-3050_-2946',1, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-3264_-3210',1, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-3364_-3292',1, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-4330_-4222',1, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-4454_-4362',1, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-4564_-4468',1, '_orig_cleaned.mat'
+    %'_Time_Grp_Exp_Subject_spm_t-4660_-4278',1, '_orig_cleaned.mat'
+    %'All_timewin',1, '_orig_cleaned.mat'
+    %'All_timewin',2, '_orig_cleaned.mat'
+    'All_timewin',3, '_orig_cleaned_trialNmatch.mat'
 };
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
@@ -33,10 +44,27 @@ S.batch = 'matlabbatch.mat';
 %design_batch)
 S.subinfo = 'sub_info.mat';
 
+%% for sourcewave extraction only:
+% spm data file prefix for all analyses/images
+S.prefix = 'mspm12_';
+% using strsplit on the image filename, index of file part for subject
+S.subname_index = 2;
+% using strsplit on the image filename, index of file part for subject
+%S.conname_index= 'end';
+% Separate clusters for each unique value in each cluster image?
+S.sep_clus =1;
+% min num of voxels required to constitutue a unique cluster region
+S.clus_size_min = 100;
+% max number of non-continguous regions
+%S.clus_obj_max = 1;
+% analyse per subject/trial? (alternative: concatenate all)
+S.ana_singlesub = 1;
+
 %% contrast, factor and level information
 %-------------------------------------------------------------
 %contrast name to process - must match that in Matlabbatch (i.e. from design-batch script)
-S.contrasts={'T1 Grp * Exp','T1 Grp','T1 Exp','Time','Exp * Int','Time Med','Exp','Exp Med','Int'}; % leave empty to proccess ALL contrasts in Matlabbatch
+S.contrasts={}; % leave empty to proccess ALL contrasts in Matlabbatch
+%S.contrasts={'T1 Grp * Exp','T1 Grp','T1 Exp','Time','Exp * Int','Time Med','Exp','Exp Med','Int'}; % leave empty to proccess ALL contrasts in Matlabbatch
 S.tf =1; % 1 if F-contrast, 2 or T-contrast, blank if not using S.contrasts
 % contrasts={'Exp'}; % example to enter one contrast only
 
@@ -68,8 +96,10 @@ S.thresDesc = 'none'; % 'FWE' or 'none'
 S.clusformthresh = 0.001;
 
 %% run functions (sit back and relax)
-Extract_clusters_source(S);
-%Extract_cluster_waveforms(S);
-Convert_VOImat_to_excel(S);
+%Extract_clusters_source(S);
+%Convert_VOImat_to_excel(S);
 %Extract_cluster_residuals(S);
 %Normality_test_residuals(S)
+%Combine_clusters_source(S)
+%Extract_cluster_waveforms_source(S);
+SW_connectivity(S)

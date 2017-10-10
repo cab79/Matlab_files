@@ -23,8 +23,8 @@ else
     S.spm_paths = S.spm_dir;
 end
 
-for sp = 1:length(S.spm_paths)
-    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp});
+for sp = 1:size(S.spm_paths,1)
+    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
 
     if isempty(S.contrasts)
         % load SPM design and list contrasts

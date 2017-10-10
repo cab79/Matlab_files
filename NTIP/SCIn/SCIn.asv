@@ -276,6 +276,7 @@ GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
 h = guihandles(GUIhname);
 
 h.d=d;
+guidata(hObject, h)
 
 % load functions if not already loaded
 set(h.info, 'String', 'Loading sequence...');
@@ -299,16 +300,17 @@ end
 if ~isfield(h,'startblock')
     h.startblock = '1';
 end
+guidata(hObject, h)
 
 % check if the button is pressed
 if get(hObject, 'Value') == get(hObject, 'Max')
 
+   
+    
     % setup
     set(h.info, 'String', 'Setting up...');
     opt = 'setup';
     eval(['h = ' h.exptFun '(h,opt);']);
-    set(h.ljhandle, 'Value', h.ljHandle);
- 
     
     % select blocks to run
     set(h.info, 'String', 'Setting blocks...');
