@@ -27,9 +27,12 @@ end
 % temporary cell array
 niicell = {};
 n=0;
+sname_sp = 'Timewin';
 for sp = 1:size(S.spm_paths,1)
+    sname_sp = [sname_sp '_' num2str(S.spm_paths{sp,2})];
     S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
 
+    
     if isempty(S.contrasts)
         % load SPM design and list contrasts
         load(fullfile(S.spm_path,S.batch));
@@ -108,12 +111,18 @@ for u = 1:length(ucom)
 end
         
 % save the new image
-imgpath = fullfile(S.spmstats_path,'Combined_clusters');
+imgpath = fullfile(S.spmstats_path,sname_sp,'Combined_clusters');
 if ~isdir(imgpath)
+    mkdir(imgpath)
+else
+    imgpath = [imgpath '_new'];
     mkdir(imgpath)
 end
 
 comnii = make_nii(comimg, nii.hdr.dime.pixdim(2:4),[0 0 0],16);
 save_nii(comnii,fullfile(imgpath,'comb_clus.nii'));
 save(fullfile(imgpath,'comb_clus.mat'),'clus_size');
+
+% copy across an example SPM
+copyfile(fullfile(S.spm_path,'SPM.mat'),fullfile(S.spmstats_path,sname_sp));
 

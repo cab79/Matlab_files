@@ -17,7 +17,7 @@ D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactoria
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', 'Include' and covariates

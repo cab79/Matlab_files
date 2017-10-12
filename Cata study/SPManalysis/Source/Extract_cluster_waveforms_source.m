@@ -12,8 +12,6 @@ function Extract_cluster_waveforms_source(S)
 % S.spm_dir: specific folder containing the SPM stats for this analysis
 % S.contrasts: contrast name cell array - must match that in Matlabbatch (i.e. from design-batch script). Leave empty to proccess ALL contrasts in Matlabbatch
 % S.clus_path: cell array of full paths to clusters to be analysed
-%generic cluster image name
-gclusname = 'comb_clus.nii';
 
 %% run
 
@@ -26,10 +24,26 @@ else
     S.spm_paths = S.spm_dir;
 end
 
-% For each analysis (time window)
-for sp = 1:size(S.spm_paths,1)
-    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
 
+% For each analysis (time window)
+last_tw=0;
+for sp = 1:size(S.spm_paths,1)
+    
+    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
+    
+    % run analysis on combined clusters?
+    if strcmp(S.gclusname,'comb_clus.nii')
+        anapath = fullfile(S.spmstats_path,['Timewin_' num2str(S.spm_paths{sp,2})]);
+        S.contrasts = {'Combined'};
+        % continue if this timewindow was just analysis
+        if last_tw==S.spm_paths{sp,2}
+            continue
+        end
+        last_tw = S.spm_paths{sp,2};
+    else
+        anapath = S.spm_path;
+    end
+    
     load(fullfile(S.spm_path,'SPM.mat'));
     S.Fm = SPM.xX.I; % factor matrix
     S.imglist = SPM.xY.P; % Subject-condition image list
@@ -51,20 +65,20 @@ for sp = 1:size(S.spm_paths,1)
 
     S.clus_path={};
     if isempty(S.contrasts)
-        alldir=dir(fullfile(S.spm_path,'*_clusters'));
+        alldir=dir(fullfile(anapath,'*_clusters'));
         for c = 1:length(alldir)
-            S.clus_path{c} = fullfile(S.spm_path,alldir(c).name);
+            S.clus_path{c} = fullfile(anapath,alldir(c).name);
         end
     else
         for c = 1:length(S.contrasts)
-            S.clus_path{c} = fullfile(S.spm_path,[S.contrasts{c} '_clusters']);
+            S.clus_path{c} = fullfile(anapath,[S.contrasts{c} '_clusters']);
         end
     end
 
     % For each contrast
     for cldir = 1:length(S.clus_path)
 
-        cimages = dir(fullfile(S.clus_path{cldir},gclusname));
+        cimages = dir(fullfile(S.clus_path{cldir},S.gclusname));
 
         % For each cluster
         S.wf=struct; % clears this variable for the next iteration
@@ -101,6 +115,7 @@ for sp = 1:size(S.spm_paths,1)
                     end
                 end
             end
+            S.wf.(cname).time = Ds.time;
             
             % remove empty cells
             rm_ind = cellfun(@isempty,S.wf.(cname).wf);

@@ -93,15 +93,20 @@ for sp = 1:size(S.spm_paths,1)
             % only analyse first one for now
             wfall=S.wf.(fnames{1}).wf;
             
-            if ~S.ana_singlesub
-                % concatenate over subjects and conditions
-                wfall = {cat(2,wf{:})};
+            if islogical(S.ana_singlesub)
+                if ~S.ana_singlesub
+                    % concatenate over subjects and conditions
+                    wfall = {cat(2,wf{:})};
+                end
+            elseif isnumeric(S.ana_singlesub)
+                wfall = wf(S.ana_singlesub);
             end
 
+            
             L=cell(size(wfall));
             for w = 1:length(wfall)
                 
-                wf = wfall{w}';
+                wf = wfall{:}';
                 
                 % get wf size to reshape later
                 sizewf = size(wf);
@@ -127,7 +132,7 @@ for sp = 1:size(S.spm_paths,1)
                     % weight matrix)
                     %try
                         [L{w}, ~, ~, W,r,asize] = symmetric_orthogonalise_CAB(ld_wf, 1);
-                        disp(['wf' num2str(w) ': rank = ' num2str(r) ', size = ' num2str(asize)])
+                        disp(['rank = ' num2str(r) ', size = ' num2str(asize)])
                     %catch
                     if (asize-r)/r > 0.05
                         tol=tol*10;
@@ -140,16 +145,16 @@ for sp = 1:size(S.spm_paths,1)
                 L{w} = demean(L{w}, 1);
             end
 
-            %if islogical(S.ana_singlesub)
-            %    if ~S.ana_singlesub
-            %        % convert back to subjects/conditions
-            %        L=reshape(L',size(L,2),[],sizewf(2));
-            %        % convert back to cells per subj/cond
-            %        L=squeeze(num2cell(L,[1 2]));
-            %    end
-            %elseif isnumeric(S.ana_singlesub)
-            %    L{w}=L{w};
-            %end
+            if islogical(S.ana_singlesub)
+                if ~S.ana_singlesub
+                    % convert back to subjects/conditions
+                    L=reshape(L',size(L,2),[],sizewf(2));
+                    % convert back to cells per subj/cond
+                    L=squeeze(num2cell(L,[1 2]));
+                end
+            elseif isnumeric(S.ana_singlesub)
+                L{w}=L{w};
+            end
 
             % save 
             S.wf.(fnames{1}).orth_wf = L;

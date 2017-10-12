@@ -30,7 +30,7 @@ S.fsuff = {'_orig_cleaned.mat';
 %% specific settings for this analysis
 % which codes to analyse in 'Include' columns in participant data file?
 S.include_codes = [1];
-S.grps = {1;2}; %inversion on each group separately: separate with colon. Otherwise separate with comma
+S.grps = {1,2}; %inversion on each group separately: separate with colon. Otherwise separate with comma
 % time and frequecy windows
 S.freqwin = []; % empty if not requiring freq analysis
 S.timewin = [-5500 -2500; -3000 0; -500 1500]; % Best to narrow this as much as possible to the range of interest. Empty will include whole epoch. 
@@ -44,7 +44,7 @@ S.baseest = 1; % 1 = baseline estimated in separate model
 % the S.timewin range.
 S.imout = []; % select which to produce on this run, or leave empty to run all
 S.images_out={};
-if 0
+%if 0
 S.images_out = {
         % from timewin 1
         {
@@ -76,7 +76,7 @@ S.images_out = {
         [416 478],[]; %Exp
         }; 
 };
-end
+%end
 %smooth output images (specify FWHM or 0 for no smoothing)
 S.smooth = 12;
 S.type = 'evoked';

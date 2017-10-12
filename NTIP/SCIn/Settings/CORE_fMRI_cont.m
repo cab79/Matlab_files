@@ -83,9 +83,9 @@ h.Settings.labjack=1;
 h.Settings.stimcontrol='PsychPortAudio';
 % if using PsychPortAudio with more than 2 channels:
     %7.1 soundcard channel numbers:
-    %front = 1,2
-    %C-sub = 3,4
-    %rear = 5,6
+    %front = 1,2 - can't use these for 7.1 without new connectors
+    %C-sub = 3,4 - connect to 1/2
+    %rear = 5,6 - connect to 3/4
     %side = 7,8
 % total number of channels, e.g. on sound card
 h.Settings.nrchannels = 2; % 8 
@@ -109,7 +109,7 @@ h.Settings.patternvalue = [1 0]; % one per stimdur
 % 'rand' or 'reg' spacing?
 h.Settings.stimdurtype = 'reg';
 % channels on stimulator to use
-h.Settings.stimchan = [1 2]; % [7 8 3 4]
+h.Settings.stimchan = [3 4]; % [7 8 3 4]
 % Pitch/freq
 h.Settings.f0 = 500; 
 % Intensity

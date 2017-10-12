@@ -42,7 +42,7 @@ for sp = 1:size(S.spm_paths,1)
         end
     else
         contrasts=S.contrasts;
-        tf=S.tf;
+        tf=repmat(S.tf,1,length(contrasts));
     end
 
     spm eeg
