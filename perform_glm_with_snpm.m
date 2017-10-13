@@ -133,32 +133,32 @@ for iCon = nContrasts:-1:1,
     
     niifile = {'lP+.img','lP-.img'};
     for ni = 1:length(niifile)
-        V=spm_vol(fullfile(pth,niifile{ni}));
-        Y=spm_read_vols(V);
+        V = load_nii(fullfile(pth,niifile{ni}));
+        Y=V.img;
         Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
         Y=10^(-Y); % for p values
         ptmp(:,iCon,ni) = Y;
     end
     niifile = {'lP_FWE+.img','lP_FWE-.img'};
     for ni = 1:length(niifile)
-        V=spm_vol(fullfile(pth,niifile{ni}));
-        Y=spm_read_vols(V);
+        V = load_nii(fullfile(pth,niifile{ni}));
+        Y=V.img;
         Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
         Y=10^(-Y); % for p values
         fweptmp(:,iCon,ni) = Y;
     end
     niifile = {'lP_FDR+.img','lP_FDR-.img'};
     for ni = 1:length(niifile)
-        V=spm_vol(fullfile(pth,niifile{ni}));
-        Y=spm_read_vols(V);
+        V = load_nii(fullfile(pth,niifile{ni}));
+        Y=V.img;
         Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
         Y=10^(-Y); % for p values
         fdrptmp(:,iCon,ni) = Y;
     end
     niifile = {'snpmT+.img','snpmT-.img'};
     for ni = 1:length(niifile)
-        V=spm_vol(fullfile(pth,niifile{ni}));
-        Y=spm_read_vols(V);
+        V = load_nii(fullfile(pth,niifile{ni}));
+        Y=V.img;
         Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
         Ttmp(:,iCon,ni) = Y;
     end
