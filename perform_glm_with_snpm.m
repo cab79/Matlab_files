@@ -1,4 +1,4 @@
-function [Ttmp, ptmp, corrptmp, COPE] = perform_glm_with_snpm(edges, designMatrix, contrasts, standardise,S)
+function [Ttmp, ptmp, fweptmp, fdrptmp,COPE] = perform_glm_with_snpm(edges, designMatrix, contrasts, standardise,S)
 %PERFORM_GLM_WITH_SNPM - CAB modification of ROI_NETS function for FSL:
 %
 % [T, P, CORRP] = PERFORM_GLM_WITH_RANDOMISE(DATA, X, CONTRASTS, STANDARDISE)
@@ -82,10 +82,21 @@ end
 %command = sprintf('randomise -i %s -o %s -d %s -t %s -x --norcmask', ...
 %                  inputNifti, outputNifti, designFile, contrastFile);
               
+%% Produce nice COPEs for each edge 
+% a cope is the difference in mean Z-converted correlations between each
+% group
+pinvxtx = pinv(designMatrix' * designMatrix);
+pinvx   = pinvxtx * designMatrix';
+
+for iEdge = rows(edges):-1:1,
+    COPE(iEdge,:) = contrasts * pinvx * edges(iEdge, :).';
+end%for
+
 %% submit to design_batch
 % specify parametric (1: spm) or non-parametric (2: SnPM) analysis. SnPM is
 % limited to two-way interactions, so if three factors are select for
 % interaction with SnPM it will output all 2-way interactions (actually, t-tests on subtracted data)
+
 S.para = 2;
 S.folder =0;
 % factors and statistical model
@@ -107,35 +118,50 @@ S.resid = 0;
 S.grpind = grpind;
 S.interactions = [0 0]; % one column per factor; one row per interaction
 % run design_batch function for each contrast
-for c = 1:size(contrasts,1)
-    if sum(contrasts(c,:))>0 % no group contrast
+for iCon = nContrasts:-1:1,
+    if sum(contrasts(iCon,:))>0 % no group contrast
         S.maineffects = [0 0]; % one column per factor 
+        S.anapref = 'OneSampleT'; % directory prefix
         S=design_batch(S);
-    elseif sum(contrasts(c,:))==0 % group contrast
+    elseif sum(contrasts(iCon,:))==0 % group contrast
         S.maineffects = [1 0]; % one column per factor 
+        S.anapref = 'TwoSampleT'; % directory prefix
         S=design_batch(S);
     end
-end
-
-%% Produce nice COPEs for each edge 
-% a cope is the difference in mean Z-converted correlations between each
-% group
-pinvxtx = pinv(designMatrix' * designMatrix);
-pinvx   = pinvxtx * designMatrix';
-
-for iEdge = rows(edges):-1:1,
-    COPE(iEdge,:) = contrasts * pinvx * edges(iEdge, :).';
+    %% Retrieve results
+    pth = S.spm_path;
+    
+    niifile = {'lP+.img','lP-.img'};
+    for ni = 1:length(niifile)
+        V=spm_vol(fullfile(pth,niifile{ni}));
+        Y=spm_read_vols(V);
+        Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
+        Y=10^(-Y); % for p values
+        ptmp(:,iCon,ni) = Y;
+    end
+    niifile = {'lP_FWE+.img','lP_FWE-.img'};
+    for ni = 1:length(niifile)
+        V=spm_vol(fullfile(pth,niifile{ni}));
+        Y=spm_read_vols(V);
+        Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
+        Y=10^(-Y); % for p values
+        fweptmp(:,iCon,ni) = Y;
+    end
+    niifile = {'lP_FDR+.img','lP_FDR-.img'};
+    for ni = 1:length(niifile)
+        V=spm_vol(fullfile(pth,niifile{ni}));
+        Y=spm_read_vols(V);
+        Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
+        Y=10^(-Y); % for p values
+        fdrptmp(:,iCon,ni) = Y;
+    end
+    niifile = {'snpmT+.img','snpmT-.img'};
+    for ni = 1:length(niifile)
+        V=spm_vol(fullfile(pth,niifile{ni}));
+        Y=spm_read_vols(V);
+        Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
+        Ttmp(:,iCon,ni) = Y;
+    end
 end%for
-
-%% Retrieve results
-for iCon = nContrasts:-1:1,
-   TstatFile{iCon}     = [outputNifti '_tstat' num2str(iCon) '.nii.gz'];
-   pFile{iCon}         = [outputNifti '_vox_p_tstat' num2str(iCon) '.nii.gz'];
-   corrpFile{iCon}     = [outputNifti '_vox_corrp_tstat' num2str(iCon) '.nii.gz'];
-   
-   Ttmp(:,iCon)     = read_avw (TstatFile{iCon});
-   ptmp(:,iCon)     = read_avw (pFile{iCon});
-   corrptmp(:,iCon) = read_avw (corrpFile{iCon});
-end%for
-end%perform_glm_with_randomise
+end%perform_glm_with_snpm
 % [EOF]
