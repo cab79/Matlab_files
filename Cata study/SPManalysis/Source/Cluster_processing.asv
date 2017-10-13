@@ -67,15 +67,13 @@ S.timelev = 1;
 
 %% for connectivity statistics only:
 %  template SnPM matlabbatch
-S.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
+D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % directory in which image masks are saved
-S.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
+D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % names of headers in the xls participant info file:
-S.subhead = 'Subject';
-S.grphead = 'Group';
-S.inchead = 'Include';
-% which codes to analyse in 'Include' columns in participant data file?
-S.include_codes = [1];
+D.subhead = 'Subject';
+D.grphead = 'Group';
+D.inchead = 'Include';
 
 %% contrast, factor and level information
 %-------------------------------------------------------------

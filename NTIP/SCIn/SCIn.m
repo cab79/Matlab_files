@@ -13,6 +13,20 @@ function varargout = SCIn(varargin)
 dbstop if error
 
 
+global d
+try
+    rootdir
+catch
+    %error('start SCIn from the SCIn directory')
+    error('update "rootdir.m" with the SCIn directory')
+end
+d.root = root;
+d.expts = 'Functions';
+d.settings = 'Settings';
+d.seq = 'Sequences';
+d.out = 'Outputs';
+% End initialization code - DO NOT EDIT
+%disp('loaded')
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -31,20 +45,6 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 
-global d
-try
-    rootdir
-catch
-    %error('start SCIn from the SCIn directory')
-    error('update "rootdir.m" with the SCIn directory')
-end
-d.root = root;
-d.expts = 'Functions';
-d.settings = 'Settings';
-d.seq = 'Sequences';
-d.out = 'Outputs';
-% End initialization code - DO NOT EDIT
-%disp('loaded')
 
 % --- Executes just before SCIn is made visible.
 function SCIn_OpeningFcn(hObject, eventdata, h, varargin)

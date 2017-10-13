@@ -47,9 +47,7 @@ end
 if ~isfield(D,'subdirpref')
     D.subdirpref='';
 end
-if ~isfield(D,'useIDfile')
-    D.useIDfile=1;
-end
+ 
 
 
 % select parametric or non-parametric analyses and the range of models
@@ -168,11 +166,7 @@ inc_idx = find(cell2mat(inc_idx));
 % find subject indices for each specific group
 for g = 1:Ngrp
     grp_idx = find(cellfun(@(x) x==g, grpdat, 'UniformOutput', 1));
-    if D.useIDfile==1
-        SubInd{g,1} = intersect(inc_idx,grp_idx);
-    else
-        SubInd{g,1} = grp_idx;
-    end
+    SubInd{g,1} = intersect(inc_idx,grp_idx);
     Nsub(g,1) = length(SubInd{g,1});
 end
 
@@ -235,30 +229,26 @@ subID={};
 for g = 1:Ngrp
     for s = 1:Nsub(g)
         gs = gs+1;
-        if D.useIDfile==1
-            subID{gs} = deblank(pdata{SubInd{g,1}(s)+1,sub_col});
-            if isnumeric(subID{gs}); subID{gs} = num2str(subID{gs}); end;
-            if D.folder
-                subdir = fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]);
-                if ~exist(subdir,'dir')
-                    subdir = dir(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
-                    if length(subdir)>1
-                        error('Subject directory name is not unique in this folder');
-                        display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
-                    elseif length(subdir)==0
-                        error('no directory found with this name');
-                        display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
-                    end
-                    subdir=fullfile(D.data_path, subdir.name);
+        if ~isfield(D,'')
+        subID{gs} = deblank(pdata{SubInd{g,1}(s)+1,sub_col});
+        if isnumeric(subID{gs}); subID{gs} = num2str(subID{gs}); end;
+        if D.folder
+            subdir = fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]);
+            if ~exist(subdir,'dir')
+                subdir = dir(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
+                if length(subdir)>1
+                    error('Subject directory name is not unique in this folder');
+                    display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
+                elseif length(subdir)==0
+                    error('no directory found with this name');
+                    display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
                 end
-                subfile = '';
-            else
-                subdir = D.data_path;
-                subfile = [D.anapref D.subdirpref subID{gs} D.subdirsuff];
+                subdir=fullfile(D.data_path, subdir.name);
             end
+            subfile = '';
         else
             subdir = D.data_path;
-            subfile = D.imglist{gs};
+            subfile = [D.anapref D.subdirpref subID{gs} D.subdirsuff];
         end
         
         subimg = cell(1,1);
@@ -280,23 +270,19 @@ for g = 1:Ngrp
                 subimg{i,1} = [fname ',1'];
             end
         elseif D.para==2
-            if D.useIDfile==1
-                % for SnPM, check averaged files exist; if not then create them.
-                fnames = dir(fullfile(subdir, ['*' scanname '*']));
-                if wnum==0
-                    condlist = ones(length(D.cond_list),1);
-                else
-                    condlist = D.cond_list(:,wnum);
-                end
-                if isempty(fnames)
-                    factor_img(subdir,D.imglist,condlist,scanname);
-                    fnames = dir(fullfile(subdir, ['*' scanname '*']));
-                end
-                for i=1:length(fnames)
-                    subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
-                end
+            % for SnPM, check averaged files exist; if not then create them.
+            fnames = dir(fullfile(subdir, ['*' scanname '*']));
+            if wnum==0
+                condlist = ones(length(D.cond_list),1);
             else
-                subimg = {subfile};
+                condlist = D.cond_list(:,wnum);
+            end
+            if isempty(fnames)
+                factor_img(subdir,D.imglist,condlist,scanname);
+                fnames = dir(fullfile(subdir, ['*' scanname '*']));
+            end
+            for i=1:length(fnames)
+                subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
             end
         end
         scans = subimg;
@@ -340,7 +326,7 @@ for g = 1:Ngrp
                     %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scindex = ;
                 end
             elseif strcmp(model,'one')
-                matlabbatch{1}.spm.tools.snpm.des.OneSampT.P(gs,1) = scans;
+                matlabbatch{1}.spm.tools.snpm.des.OneSampT.P(s,1) = scans;
             end
         end
         

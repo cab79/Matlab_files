@@ -111,7 +111,7 @@ for sp = 1:size(S.spm_paths,1)
                         ind=[];
                     end
                     if ~isempty(ind)
-                        S.wf.(cname).wf{ind(1)} = Sw(:,:,t);
+                        S.wf.(cname).wf{ind(S.timelev)} = Sw(:,:,t);
                     end
                 end
             end

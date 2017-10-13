@@ -1,3 +1,5 @@
+%% DRAFT - no longer used
+return
 %% take output from othogonisation and produce reduced nii image
 close all
 clear all
@@ -41,12 +43,12 @@ wf = S.wf.comb_clus.orth_wf;
 time = S.wf.comb_clus.time;
 subs = unique(S.Fm(:,1+S.subrow));
 
+for s = 1:length(subs)
 
+    % list index of subjects' image files (same index as S.wf)
+    ind = find(S.Fm(:,1+S.subrow)==subs(s) & S.Fm(:,1+S.timerow)==S.timelev);
     
-for w = 1:length(wf)
-
-    
-    %% low-pass filtering
+    % low-pass filtering
     if 1
     Settings.EnvelopeParams.useEnv = false; % envelope the data?
     Settings.EnvelopeParams.useFilter = true; % use a more sophisticated filter than a sliding window average
@@ -61,7 +63,7 @@ for w = 1:length(wf)
     end
 
 
-    %% correlation analysis
+    % correlation analysis
     addpath('C:\Data\Matlab\MEG-ROI-nets\ROInets')
     Regularize.do = 1;
     %Regularize.method = 'Bayesian';
@@ -86,7 +88,7 @@ for w = 1:length(wf)
                                                    transformSurrogates);
     CorrMats.H0Sigma = sigma;
 
-    %% conversion of correlations to z-stats
+    % conversion of correlations to z-stats
     fprintf(' Converting correlations to normal z-stats\n');
     CorrMats = convert_correlations_to_normal_variables(CorrMats, ...
                                                        sigma,      ...
