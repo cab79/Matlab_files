@@ -13,15 +13,15 @@ function [Ttmp, ptmp, fweptmp, fdrptmp,COPE] = perform_glm_with_snpm(edges, desi
 % Note: randomise automatically demeans, so this is not helpful for finding
 % mean effect over all subjects / sessions
 
-nSessions = col, checkMe] = size(contrasts);
-assert(ches(edges);
+nSessions = cols(edges);
 
 [checkMe, nEVs] = size(designMatrix);
 assert(checkMe == nSessions, ...
        [mfilename ':BadDesign'], ...
        'Design matrix must have as many rows as the data have columns. \n');
    
-[nContrastsckMe == nEVs, ...
+[nContrasts, checkMe] = size(contrasts);
+assert(checkMe == nEVs, ...
        [mfilename ':BadContrasts'], ...
        'Contrasts must have as many columns as EVs in the design matrix. \n');
 
@@ -99,7 +99,6 @@ end%for
 
 S.para = 2;
 S.folder =0;
-S.spmstats_path = S.data_path;
 % factors and statistical model
 S.factors = {'Grp', 'Subject'}; % must include a subject factor at the end
 S.factortype = {'g','s'}; % w = within, s = subject, g = subject group
@@ -122,11 +121,11 @@ S.interactions = [0 0]; % one column per factor; one row per interaction
 for iCon = nContrasts:-1:1,
     if sum(contrasts(iCon,:))>0 % no group contrast
         S.maineffects = [0 0]; % one column per factor 
-        S.anapref = 'TEMP-OneSampleT'; % directory prefix
+        S.anapref = 'OneSampleT'; % directory prefix
         S=design_batch(S);
     elseif sum(contrasts(iCon,:))==0 % group contrast
         S.maineffects = [1 0]; % one column per factor 
-        S.anapref = 'TEMP-TwoSampleT'; % directory prefix
+        S.anapref = 'TwoSampleT'; % directory prefix
         S=design_batch(S);
     end
     %% Retrieve results
@@ -145,7 +144,7 @@ for iCon = nContrasts:-1:1,
         V = load_nii(fullfile(pth,niifile{ni}));
         Y=V.img;
         Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
-        Y=10.^(-Y); % for p values
+        Y=10^(-Y); % for p values
         fweptmp(:,iCon,ni) = Y;
     end
     niifile = {'lP_FDR+.img','lP_FDR-.img'};
@@ -153,7 +152,7 @@ for iCon = nContrasts:-1:1,
         V = load_nii(fullfile(pth,niifile{ni}));
         Y=V.img;
         Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
-        Y=10.^(-Y); % for p values
+        Y=10^(-Y); % for p values
         fdrptmp(:,iCon,ni) = Y;
     end
     niifile = {'snpmT+.img','snpmT-.img'};

@@ -108,7 +108,7 @@ end
 path_name = [D.anapref maskpref factnames covs D.subdirsuff paraname identname];
 path_name = strrep(path_name,'*','');
 D.spm_path = fullfile(D.spmstats_path,path_name); 
-if exist(D.spm_path,'dir')
+if exist(D.spm_path,'dir') && D.askoverwrite
     button = questdlg('Create new directory for analysis? ''No'' to overwrite');
     if strcmp(button,'Yes')
         dt = datestr(datetime,30);
