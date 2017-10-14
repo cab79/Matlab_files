@@ -39,7 +39,7 @@ if strcmpi(Settings.paradigm, 'rest'),
     groupLevel.correlation.T    = T;
     groupLevel.correlation.p    = p;
     groupLevel.correlation.FWEp = fweptmp;
-    groupLevel.correlation.FDRh = fdrptmp;
+    groupLevel.correlation.FDRp = fdrptmp;
     groupLevel.correlation.COPE = COPEmat;
     
     [T, p, fweptmp, fdrptmp, COPEmat] = univariate_edge_test(correlationMats{iFreq}.envPartialCorrelation_z, ...
@@ -53,7 +53,7 @@ if strcmpi(Settings.paradigm, 'rest'),
     groupLevel.partialCorrelation.T    = T;
     groupLevel.partialCorrelation.p    = p;
     groupLevel.partialCorrelation.FWEp = fweptmp;
-    groupLevel.partialCorrelation.FDRh = fdrptmp;
+    groupLevel.partialCorrelation.FDRp = fdrptmp;
     groupLevel.partialCorrelation.COPE = COPEmat;
     
     [T, p, fweptmp, fdrptmp, COPEmat] = univariate_edge_test(correlationMats{iFreq}.envPartialCorrelationRegularized_z, ...
@@ -67,7 +67,7 @@ if strcmpi(Settings.paradigm, 'rest'),
     groupLevel.partialCorrelationRegularized.T    = T;
     groupLevel.partialCorrelationRegularized.p    = p;
     groupLevel.partialCorrelationRegularized.FWEp = fweptmp;
-    groupLevel.partialCorrelationRegularized.FDRh = fdrptmp;
+    groupLevel.partialCorrelationRegularized.FDRp = fdrptmp;
     groupLevel.partialCorrelationRegularized.COPE = COPEmat;
     
     % add in design for reference
@@ -105,7 +105,7 @@ elseif strcmpi(Settings.paradigm, 'task'),
         groupLevel(iContrast).correlation.T    = T;
         groupLevel(iContrast).correlation.p    = p;
         groupLevel(iContrast).correlation.FWEp = fweptmp;
-        groupLevel(iContrast).correlation.FDRh = fdrptmp;
+        groupLevel(iContrast).correlation.FDRp = fdrptmp;
         groupLevel(iContrast).correlation.COPE = COPEmat;
 
 		%-- partial correlation
@@ -120,7 +120,7 @@ elseif strcmpi(Settings.paradigm, 'task'),
         groupLevel(iContrast).partialCorrelation.T    = T;
         groupLevel(iContrast).partialCorrelation.p    = p;
         groupLevel(iContrast).partialCorrelation.FWEp = fweptmp;
-        groupLevel(iContrast).partialCorrelation.FDRh = fdrptmp;
+        groupLevel(iContrast).partialCorrelation.FDRp = fdrptmp;
         groupLevel(iContrast).partialCorrelation.COPE = COPEmat;
 
 		%-- regularised partial correlation
@@ -136,7 +136,7 @@ elseif strcmpi(Settings.paradigm, 'task'),
             groupLevel(iContrast).partialCorrelationRegularized.T    = T;
             groupLevel(iContrast).partialCorrelationRegularized.p    = p;
             groupLevel(iContrast).partialCorrelationRegularized.FWEp = fweptmp;
-            groupLevel(iContrast).partialCorrelationRegularized.FDRh = fdrptmp;
+            groupLevel(iContrast).partialCorrelationRegularized.FDRp = fdrptmp;
             groupLevel(iContrast).partialCorrelationRegularized.COPE = COPEmat;
         end%if
         % add in first levels for reference
