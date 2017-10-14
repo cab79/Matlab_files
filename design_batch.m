@@ -50,6 +50,9 @@ end
 if ~isfield(D,'useIDfile')
     D.useIDfile=1;
 end
+if ~isfield(D,'askoverwrite')
+    D.askoverwrite=1;
+end
 
 
 % select parametric or non-parametric analyses and the range of models

@@ -119,14 +119,14 @@ S.resid = 0;
 S.grpind = grpind;
 S.interactions = [0 0]; % one column per factor; one row per interaction
 % run design_batch function for each contrast
+S.askoverwrite=0;
+S.anapref = 'TEMP'; % directory prefix
 for iCon = nContrasts:-1:1,
     if sum(contrasts(iCon,:))>0 % no group contrast
         S.maineffects = [0 0]; % one column per factor 
-        S.anapref = 'TEMP-OneSampleT'; % directory prefix
         S=design_batch(S);
     elseif sum(contrasts(iCon,:))==0 % group contrast
         S.maineffects = [1 0]; % one column per factor 
-        S.anapref = 'TEMP-TwoSampleT'; % directory prefix
         S=design_batch(S);
     end
     %% Retrieve results
@@ -163,6 +163,9 @@ for iCon = nContrasts:-1:1,
         Y(~isfinite(Y))=[]; %delete NaN values from vector Y.
         Ttmp(:,iCon,ni) = Y;
     end
+    
+    %cleanup
+    rmdir(pth,'s');
 end%for
 end%perform_glm_with_snpm
 % [EOF]
