@@ -13,15 +13,16 @@ function [Ttmp, ptmp, fweptmp, fdrptmp,COPE] = perform_glm_with_snpm(edges, desi
 % Note: randomise automatically demeans, so this is not helpful for finding
 % mean effect over all subjects / sessions
 
-nSessions = col, checkMe] = size(contrasts);
-assert(ches(edges);
+
+nSessions = cols(edges);
 
 [checkMe, nEVs] = size(designMatrix);
 assert(checkMe == nSessions, ...
        [mfilename ':BadDesign'], ...
        'Design matrix must have as many rows as the data have columns. \n');
    
-[nContrastsckMe == nEVs, ...
+[nContrasts, checkMe] = size(contrasts);
+assert(checkMe == nEVs, ...
        [mfilename ':BadContrasts'], ...
        'Contrasts must have as many columns as EVs in the design matrix. \n');
 
@@ -165,7 +166,7 @@ for iCon = nContrasts:-1:1,
     end
     
     %cleanup
-    rmdir(pth,'s');
+    %rmdir(pth,'s');
 end%for
 end%perform_glm_with_snpm
 % [EOF]

@@ -293,7 +293,7 @@ for sp = 1:size(S.spm_paths,1)
 
         % Perform group-level GLM
         if ~isempty(S.GroupLevel),
-            correlationMats = do_group_level_glm(correlationMats, S);
+            correlationMats = do_group_level_glm_CAB(correlationMats, S);
         end%if
         
         % save 
