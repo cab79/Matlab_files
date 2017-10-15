@@ -130,9 +130,9 @@ S.frequencyBands           = {[0]};                           % a set of frequen
 S.paradigm = 'task';
 %S.timecourseCreationMethod = 'PCA';                          % 'PCA', 'mean', 'peakVoxel' or 'spatialBasis'
 %S.outputDirectory          = outDir;                         % Set a directory for the results output
-S.statspackage = 'snpm' % 'fsl' or 'snpm'
+S.statspackage = 'snpm'; % 'fsl' or 'snpm'
 S.groupStatisticsMethod    = 'fixed-effects';                % 'mixed-effects' or 'fixed-effects' - only latter is an option with SnPM
-S.FDRalpha                 = 0.05;                           % false determination rate significance threshold
+%S.FDRalpha                 = 0.05;                           % false determination rate significance threshold
 %S.sessionName              = {'sess1', 'sess2', 'sess3', 'sess4'}; 
 %S.SaveCorrected.timeCourse    = false;
 %S.SaveCorrected.envelopes      = false;
@@ -155,3 +155,4 @@ S.GroupLevel.contrasts          = [1  1;  % contrast 1
 %Combine_clusters_source(S)
 %Extract_cluster_waveforms_source(S);
 SW_connectivity(S)
+SW_connectivity_results(S)

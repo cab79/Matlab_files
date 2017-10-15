@@ -300,16 +300,6 @@ for sp = 1:size(S.spm_paths,1)
         S.wf.(fnames{1}).correlationMats = correlationMats;
         save(fullfile(S.clus_path{cldir},[cname '.mat']),'S');
 
-        if 0
-            %% hierarchical cluster analysis
-            swf_dist = pdist(swf_fil);
-            swf_dist = squareform(swf_dist)
-            swf_link = linkage(swf_dist);
-            dendrogram(swf_link)
-            c = cophenet(swf_link,swf_dist)
-            I = inconsistent(swf_link)
-        end
-           
     end
 end
 
