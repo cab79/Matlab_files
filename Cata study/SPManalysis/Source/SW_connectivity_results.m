@@ -27,6 +27,17 @@ else
     S.spm_paths = S.spm_dir;
 end
 
+roi1 = [];
+roi2 = [];
+posneg = [];
+tval = [];
+pval = [];
+fweval = [];
+fdrval = [];
+connval = [];
+firstlevel = [];
+grouplevel = [];
+
 % For each analysis (time window)
 last_tw=0;
 for sp = 1:size(S.spm_paths,1)
@@ -34,7 +45,8 @@ for sp = 1:size(S.spm_paths,1)
     
     % run analysis on combined clusters?
     if strcmp(S.gclusname,'comb_clus.nii')
-        anapath = fullfile(S.spmstats_path,['Timewin_' num2str(S.spm_paths{sp,2})]);
+        timewin = ['Timewin_' num2str(S.spm_paths{sp,2})];
+        anapath = fullfile(S.spmstats_path,timewin);
         S.contrasts = {'Combined'};
         % continue if this timewindow was just analysis
         if last_tw==S.spm_paths{sp,2}
@@ -87,38 +99,87 @@ for sp = 1:size(S.spm_paths,1)
             cmats = S.wf.(fnames{1}).correlationMats;
             
             % for each frequency
-            nFreq = length(cMats);
-            for ifreq = 1:nFreq
-                % for each connectivity type
-                nconn = length(contypes);
-                for ct = 1:nconn
-                    val = cmats{iFreq}.groupLevel.(contype{ct}).(ptype);
-                    tv = cmats{iFreq}.groupLevel.(contype{ct}).T;
-                    pu = cmats{iFreq}.groupLevel.(contype{ct}).p;
-                    fdr = cmats{iFreq}.groupLevel.(contype{ct}).FDRp;
-                    fwe = cmats{iFreq}.groupLevel.(contype{ct}).FWEp;
-                    
-                    % find significant p values
-                    % identify connected ROIs and direction of the effect
-                    % (i.e. for which condition it is stronger)
-                    [r1,r2,pn] = ind2sub(size(val),find(val<0.05));
-                    roi1 = [roi1 r1];
-                    roi2 = [roi2 r2];
-                    posneg = [posneg pn];
-                    tval = [tval tv(r1,r2,pn)];
-                    pval = [pval pu(r1,r2,pn)];
-                    fweval = [fweval fwe(r1,r2,pn)];
-                    fdrval = [fdrval fdr(r1,r2,pn)];
+            nFreq = length(cmats);
+            for iFreq = 1:nFreq
+                % for each first level contrast
+                ncont = length(cmats{iFreq}.groupLevel);
+                for ct = 1:ncont
+                    % for each connectivity type
+                    nconn = length(contypes);
+                    for cn = 1:nconn
+                        val = cmats{iFreq}.groupLevel(ct).(contypes{cn}).(ptype);
+                        tv = cmats{iFreq}.groupLevel(ct).(contypes{cn}).T;
+                        pu = cmats{iFreq}.groupLevel(ct).(contypes{cn}).p;
+                        fdr = cmats{iFreq}.groupLevel(ct).(contypes{cn}).FDRp;
+                        fwe = cmats{iFreq}.groupLevel(ct).(contypes{cn}).FWEp;
+                        ngrpcon=size(val,3);
+                        ndir=size(val,4);
+                        for con = 1:ngrpcon
+                            for pn = 1:ndir
+                                % find significant p values
+                                % identify connected ROIs and direction of the effect
+                                % (i.e. for which condition it is stronger)
+                                idx=find(val(:,:,con,pn)<0.05);
+                                if ~isempty(idx)
+                                    
+                                    [r1,r2] = ind2sub(size(val(:,:,con,pn)),idx);
+                                    roi1 = [roi1;r1];
+                                    roi2 = [roi2;r2];
+                                    tvi=tv(:,:,con,pn); tval = [tval;tvi(idx)];
+                                    pui=pu(:,:,con,pn); pval = [pval;pui(idx)];
+                                    fwei=fwe(:,:,con,pn); fweval = [fweval;fwei(idx)];
+                                    fdri=fdr(:,:,con,pn); fdrval = [fdrval;fdri(idx)];
+                                    
+                                    posneg = [posneg;repmat(pn,size(r1))];
+                                    connval = [connval;repmat(cn,size(r1))];
+                                    firstlevel = [firstlevel;repmat(ct,size(r1))];
+                                    grouplevel = [grouplevel;repmat(con,size(r1))];
+                                end
+                            end
+                        end
+                    end
                 end
             end
             
         end
-           
+        % save as excel
+        results = table(connval,roi1,roi2,posneg,tval,pval,fweval,fdrval,firstlevel,grouplevel);
+        next = datestr(now,30);
+        fname = fullfile(S.clus_path{cldir},['Connectivity_run_' timewin '_' next '.xlsx']);
+        writetable(results,fname,'Sheet',1)
+
+        % create connectivity table 
+        if S.use_aal
+            load(fullfile(S.clus_path{cldir},'aal_labels.mat'));
+            ROI = genvarname(lab(:,2));
+            Thead = table(ROI);
+            
+            % choose connectiity type
+            ana_connval=1;
+            ana_ind = find(connval==1);
+            
+            % identify all analyses
+            alllevel = [posneg,firstlevel,grouplevel];
+            [urows iA iB] = unique(alllevel(ana_ind),'rows');
+            nAna = size(urows,1);
+            
+            % for each analysis
+            for an = 1:nAna
+                ind = find(iB==an);
+                connmat{an,1} = zeros(size(lab,1));
+                for i = ana_ind(ind)
+                    connmat{an}(roi1(i),roi2(i)) = 1;
+                end
+                connmat{an}(logical(eye(size(connmat{an})))) = nan;
+                T = array2table(connmat{an},'VariableNames',genvarname(lab(:,2)));
+                T = [Thead T];
+                writetable(T,fname,'Sheet',1+an)
+            end
+            
+        end
+        
     end
 end
 
-% save as excel
-results = Table(roi1,roi2,posneg,tval,pval,fweval,fdrval);
-next = datestr(now,30);
-fname = fullfile(S.spmstats_path,['Connectivity_run_' next]);
-xlswrite(fname,results);
+
+

@@ -102,53 +102,41 @@ for sp = 1:size(S.spm_paths,1)
                 % concatenate over subjects and conditions
                 wfall = {cat(2,wf{:})};
             end
-
-            orth_wf=cell(size(wfall));
+            
             for w = 1:length(wfall)
-                
-                wf = wfall{w}';
-                
-                % get wf size to reshape later
-                sizewf = size(wf);
+                wfall{w} = wfall{w}';
                 
                 % remove means over time
-                wf = demean(wf, 1);
+                wfall{w} = demean(wfall{w}, 1);
+            end
 
-                start_tol=1e-10;
-                tol=start_tol;
-                while isempty(orth_wf{w})
-                    disp(['trying tolerance = ' num2str(tol) ' ...'])
-                    % get linearly dependent columns and their indices
-                    % ucol is the order of the magnitude of the columns
-                    % https://uk.mathworks.com/matlabcentral/answers/108835
-                    [ld_wf,ld_sub,ucol]=licols(wf,tol);
-                    %uni_ucol = unique(ucol);
-                    %for u = uni_ucol'
-                    %    mu = mean(wf(:,ucol==u));
-                    %    find(ucol==u,1,'first')
-                    %end
+            [orth_wf,ucol] = find_ortho_symm_v2(S,wfall);
+            
+            % get wf size to reshape later
+            %sizewf = size(wf);
 
-                    % orthogonalise (can also do this on a sample only to get the
-                    % weight matrix)
-                    %try
-                    switch S.leakageCorrectionMethod
-                        case 'symmetric'
-                            [orth_wf{w}, ~, ~, W,r,asize] = symmetric_orthogonalise_CAB(ld_wf, 1);
-                            disp(['wf' num2str(w) ': rank = ' num2str(r) ', size = ' num2str(asize)])
-                        case 'closest' 
-                            [L, d, rho, W] = closest_orthogonal_matrix(ld_wf);
-                    end
-                    %catch
-                    if (asize-r)/r > 0.05
-                        tol=tol*10;
-                    else
-                        tol=tol+start_tol;
-                    end
-                end
-
+            %start_tol=1e-10;
+            %start_rank = size(wfall{1},2);
+            %concat=1;
+            %[ld_wf,ld_sub,ucol,correct_rank] = find_rank(S,wfall,start_tol,start_rank);
+            %[wfall,rankall,minrank,ld_wf,ld_sub,ucol] = reduce_rank(wfall,start_tol,concat);
+            
+            %orth_wf=cell(size(wfall));
+            %for w = 1:length(wfall)
+            %    %ld_wf{w}=ld_wf{w}';
+            %    switch S.leakageCorrectionMethod
+            %        case 'symmetric'
+            %            [orth_wf{w}, ~, ~, W,r,asize] = symmetric_orthogonalise_CAB(wfall{w}, 1);
+            %            disp(['wf' num2str(w) ': rank = ' num2str(r) ', size = ' num2str(asize)])
+            %        case 'closest' 
+            %            [orth_wf{w}, d, rho] = closest_orthogonal_matrix(wf);
+            %    end
+            %end
+            
+            for w = 1:length(orth_wf)
                 % remove means over time
                 orth_wf{w} = demean(orth_wf{w}, 1);
-                
+
                 orth_wf{w} =  orth_wf{w}';
             end
 
@@ -168,34 +156,8 @@ for sp = 1:size(S.spm_paths,1)
             S.wf.(fnames{1}).ucol = ucol;
             save(fullfile(S.clus_path{cldir},[cname '.mat']),'S');
             
-            
-            if 0
-                Cnii = load_nii(fullfile(cdir,[fnames{1} '.nii']));
-
-                img = Cnii.img;
-                ucol = S.wf.(fnames{1}).ucol;
-
-                [uimg,iU,iI] = unique(img);
-                reduced_img = zeros(size(img));
-                new_clus_img = zeros(size(img));
-                for u = 1:length(uimg)
-                    if uimg(u)==0
-                        continue
-                    else
-                        reduced_img(iI==u) = ucol(uimg(u));
-                        % when does ucol have multiple repetitions of it's value?
-                        if sum(ucol==ucol(uimg(u)))>1
-                            new_clus_img(iI==u) = ucol(uimg(u));
-                        end
-                    end
-                end
-                RCnii = Cnii;
-                RCnii.img = reduced_img;
-                save_nii(fullfile(cdir,RCnii),'reduced.nii')
-
-                NCnii = Cnii;
-                NCnii.img = new_clus_img;
-                save_nii(fullfile(cdir,NCnii),'new_clus.nii')
+            if length(unique(ucol))~=length(ucol)
+                create_reduced_image(S,S.gclusname,S.clus_path{cldir})
             end
             
             %% select data
@@ -394,3 +356,64 @@ end%for
 
 end%run_first_level_glm
 
+function create_reduced_image(S,clusname,folder)
+
+Cnii = load_nii(fullfile(folder,clusname));
+
+img = Cnii.img;
+[~,clusfield,~] = fileparts(clusname);
+ucol = S.wf.(clusfield).ucol;
+
+[uimg,iU,iI] = unique(img);
+reduced_img = zeros(size(img));
+new_clus_img = zeros(size(img));
+for u = 1:length(uimg)
+    if uimg(u)==0
+        continue
+    else
+        reduced_img(iI==u) = ucol(uimg(u));
+        % when does ucol have multiple repetitions of it's value?
+        if sum(ucol==ucol(uimg(u)))>1
+            new_clus_img(iI==u) = ucol(uimg(u));
+        end
+    end
+end
+RCnii = Cnii;
+RCnii.img = reduced_img;
+save_nii(RCnii,fullfile(folder,'reduced.nii'))
+
+NCnii = Cnii;
+NCnii.img = new_clus_img;
+save_nii(NCnii,fullfile(folder,'new_clus.nii'))
+
+% name by AAL regions
+if S.use_aal
+    [pth,nme,ext] = fileparts(S.aal_path);
+    
+    % get labels and their indices
+    xml = xml2struct(fullfile(pth,[nme '.xml']));
+    aalstruct = vertcat(xml.atlas.data.label{:});
+    labels = vertcat(aalstruct(:).name);
+    index = vertcat(aalstruct(:).index);
+    index = cellfun(@str2double,{index(:).Text});
+    
+    aal = load_nii(S.aal_path);
+    [ui,IA,IB] = unique(RCnii.img(RCnii.img>0));
+    lab = cell(length(ui),1);
+    for i = 1:length(ui)
+        reg = reshape(RCnii.img==ui(i),size(RCnii.img));
+        regaal = reg.*double(aal.img);
+        lab{i,1} = unique(regaal(regaal>0));
+        temp = {};
+        for j = 1:length(lab{i,1})
+            temp{1,j} = labels(find(index==lab{i,1}(j))).Text;
+        end
+        lab{i,2}=strjoin(temp,', ');
+        if isempty(lab{i,2})
+            lab{i,2} = 'unknown';
+        end
+    end
+    save(fullfile(folder,'aal_labels.mat'),'lab');
+end
+
+end

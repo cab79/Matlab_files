@@ -1,4 +1,4 @@
-function [Xsub,idx,ucol]=licols(X,tol)
+function [Xsub,idx,ucol,r]=licols(X,tol)
 %Extract a linearly independent set of columns of a given matrix X
 %
 %    [Xsub,idx]=licols(X)

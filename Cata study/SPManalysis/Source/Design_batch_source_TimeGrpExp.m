@@ -1,5 +1,6 @@
 %% setup design batch function for factorial design and estimation
 clear all
+close all
 %for fm = [2 3 17]
 %files required: participant data file with columns headed 'Subject' (should be characters, e.g. S1),
 %'Group' (can be described by numbers or characters, but numbers recommended), 'Include' (must be numbers 
@@ -16,7 +17,7 @@ D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactoria
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -39,8 +40,8 @@ D.subdirsuff = '*'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
 D.folder =0; % Is the data in a subject-specific folder?
 % time identifer for source image files, to add to end of outputted SPM folder name
-D.identifier='_t-4660_-4278'; 
-D.baseline='_t-5500_-5000'; 
+D.identifier='_t-2162_-2002'; 
+D.baseline='_t-3000_-2500'; 
 
 %D.identifier = [D.identifier num2str(fm)];
 %D.data_path = [D.data_path num2str(fm)];
@@ -160,7 +161,7 @@ D.resid = 0;
 D=design_batch(D);
 
 %% load results
-load_results=1;
+load_results=0;
 if D.para==1 && load_results==1
     spm eeg
     load(fullfile(D.spm_path,'SPM.mat'));

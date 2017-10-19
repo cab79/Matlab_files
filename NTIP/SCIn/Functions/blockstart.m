@@ -55,6 +55,7 @@ switch opt
         h = buttonpress(h,opt);
         
     case 'audio'
+        disp('PLAYING AUDIO')
         h = audio(h);
 
 %pause(1);

@@ -17,13 +17,13 @@ S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source';
 % the original data file suffix,
 % and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
-    '_Time_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat'
+    %'_Time_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat'
     %'_Time_Grp_Exp_Subject_spm_t416_478',3, '_orig_cleaned_trialNmatch.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-1288_-1076',2, '_orig_cleaned.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-2162_-2002',2, '_orig_cleaned.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-2264_-2202',2, '_orig_cleaned.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-2514_-2448',2, '_orig_cleaned.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-2362_-2338',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-1288_-1076',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-2162_-2002',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-2264_-2202',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-2514_-2448',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-2362_-2338',2, '_orig_cleaned.mat'
     %'_Time_Grp_Exp_Subject_spm_t-2802_-2500',1, '_orig_cleaned.mat'
     %'_Time_Grp_Exp_Subject_spm_t-2922_-2900',1, '_orig_cleaned.mat'
     %'_Time_Grp_Exp_Subject_spm_t-3050_-2946',1, '_orig_cleaned.mat'
@@ -65,10 +65,6 @@ S.ana_singlesub = 1;
 % which level should be extracted?
 S.timelev = 1;
 
-%% for combining cluster data
-S.use_aal = 1;
-S.aal_path = 'C:\Data\Matlab\spm12\atlas\AAL2.nii';
-
 %% for connectivity statistics only:
 %  template SnPM matlabbatch
 S.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
@@ -84,8 +80,8 @@ S.include_codes = [1];
 %% contrast, factor and level information
 %-------------------------------------------------------------
 %contrast name to process - must match that in Matlabbatch (i.e. from design-batch script)
-S.contrasts={'Exp B Med'}; % leave empty to proccess ALL contrasts in Matlabbatch
-%S.contrasts={'T1 Grp * Exp','T1 Grp','T1 Exp','Time'}; % leave empty to proccess ALL contrasts in Matlabbatch
+%S.contrasts={'Int','Exp'}; % leave empty to proccess ALL contrasts in Matlabbatch
+S.contrasts={'T1 Grp * Exp','T1 Grp','T1 Exp','Time'}; % leave empty to proccess ALL contrasts in Matlabbatch
 S.tf =1; % 1 if F-contrast, 2 or T-contrast, blank if not using S.contrasts
 % contrasts={'Exp'}; % example to enter one contrast only
 
@@ -103,9 +99,9 @@ S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','','';
 % design, but characters don't need to match anything.
 S.factlev = {
         {'Time'},{'LOI vs Baseline'},{'LOI','Baseline'};
-        %{'Grp'},{'Group'},{'High','Low'};
+        {'Grp'},{'Group'},{'High','Low'};
         {'Exp'},{'Expectation Cues'},{'Low, Low','High, Low'};
-        {'Int'},{'Stimulus Intensity'},{'Low','Medium'};
+        %{'Int'},{'Stimulus Intensity'},{'Low','Medium'};
         {'Subject'},{'Subject'},{}; % can leave Subject levels empty as these will be populated by sub_info file.
     };
 S.subrow = 4; % row of above factlev containing the subject factor
@@ -117,8 +113,7 @@ S.imgmask = '';
 S.thresDesc = 'none'; % 'FWE' or 'none'
 S.clusformthresh = 0.001;
 
-%% setup the ROI network connectivity statistics
-S.outputrank = 20; % set to 1000 to use highest possible rank / number of unique ROIs
+%% setup the ROI network connectivity analysis
 S.Regularize.do            = true;                           % use regularization on partial correlation matrices using the graphical lasso. 
 S.Regularize.path          = 0.001;                          % This specifies a single, or vector, of possible rho-parameters controlling the strength of regularization. 
 S.Regularize.method        = 'Friedman';                     % Regularization approach to take. {'Friedman' or 'Bayesian'}
@@ -143,7 +138,8 @@ S.groupStatisticsMethod    = 'fixed-effects';                % 'mixed-effects' o
 %S.SaveCorrected.envelopes      = false;
 %S.SaveCorrected.variances     = false;
 %S.SaveCorrected.ROIweightings = false;
-S.SubjectLevel.conditionLabel   = {'Att1_Int1_Exp1', 'Att1_Int2_Exp1', 'Att1_Int1_Exp2', 'Att1_Int2_Exp2','Att2_Int1_Exp1', 'Att2_Int2_Exp1', 'Att2_Int1_Exp2', 'Att2_Int2_Exp2'};
+% CONDITIONS MUST BE IN SAME ORDER AS IN THE SPM FACTOR MATRIX (S.Fm):
+S.SubjectLevel.conditionLabel   = {'Att1_Int1_Exp1', 'Att1_Int2_Exp1','Att2_Int1_Exp1', 'Att2_Int2_Exp1','Att1_Int1_Exp2', 'Att1_Int2_Exp2', 'Att2_Int1_Exp2', 'Att2_Int2_Exp2'};
 S.SubjectLevel.designSummary    = {[1 0 0 0 0 0 0 0]', [0 1 0 0 0 0 0 0]', [0 0 1 0 0 0 0 0]', [0 0 0 1 0 0 0 0]',[0 0 0 0 1 0 0 0]', [0 0 0 0 0 1 0 0]', [0 0 0 0 0 0 1 0]', [0 0 0 0 0 0 0 1]'}; % summarise the design matrix by condition label
 S.SubjectLevel.contrasts        = {[1 1 1 1 1 1 1 1]; [1 1 1 1 -1 -1 -1 -1]; [1 -1 1 -1 1 -1 1 -1];  [1 1 -1 -1 1 1 -1 -1]};  % each contrast is a new cell
 S.GroupLevel.designMatrix       = [ones(1,16), zeros(1,18); 
@@ -159,5 +155,5 @@ S.GroupLevel.contrasts          = [1  1;  % contrast 1
 %Normality_test_residuals(S)
 %Combine_clusters_source(S)
 %Extract_cluster_waveforms_source(S);
-%SW_connectivity(S)
+SW_connectivity(S)
 SW_connectivity_results(S)

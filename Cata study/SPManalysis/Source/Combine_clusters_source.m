@@ -29,7 +29,9 @@ niicell = {};
 n=0;
 sname_sp = 'Timewin';
 for sp = 1:size(S.spm_paths,1)
-    sname_sp = [sname_sp '_' num2str(S.spm_paths{sp,2})];
+    if sp==1
+        sname_sp = [sname_sp '_' num2str(S.spm_paths{sp,2})];
+    end
     S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
 
     
@@ -77,6 +79,14 @@ for n = 1:length(niicell)
     maxval = max(comimg(:));
     % adds new values that are unique to comnii
     comimg = comimg+(maxval+1)*reshape((niicell{n}>1),size(comimg));
+end
+
+% split regions by AAL regions
+if S.use_aal
+    aal = load_nii(S.aal_path);
+    %[uaal,IA,IB] = unique(aal.img);
+    addimg = reshape(comimg>0,size(comimg)).*double(aal.img);
+    comimg = comimg+addimg; 
 end
 
 % remove regions of less than size S.clus_size_min
