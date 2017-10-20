@@ -1,4 +1,4 @@
-function Extract_clusters(S)
+function Extract_clusters_source(S)
 
 %% Requires input structure S containing fields as follows. See Cluster_processing script for examples.
 %-------------------------------------------------------------
@@ -17,35 +17,38 @@ function Extract_clusters(S)
 if isempty(S.spm_dir)
     S.spm_paths = dir(fullfile(S.spmstats_path,'*spm*'));
     S.spm_paths = {S.spm_paths(:).name};
-else
+elseif ~iscell(S.spm_dir)
     S.spm_paths = {S.spm_dir};
+else
+    S.spm_paths = S.spm_dir;
 end
 
-for sp = 1:length(S.spm_paths)
-    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp});
+for sp = 1:size(S.spm_paths,1)
+    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
 
     if isempty(S.contrasts)
         % load SPM design and list contrasts
         load(fullfile(S.spm_path,S.batch));
-        S.contrasts = {};
+        contrasts = {};
         tf=[];
         for fc = 1:length(matlabbatch{3}.spm.stats.con.consess)
             try
-                S.contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.fcon.name;
+                contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.fcon.name;
                 tf=[tf 1];
             catch
-                S.contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.tcon.name;
+                contrasts{fc} = matlabbatch{3}.spm.stats.con.consess{1,fc}.tcon.name;
                 tf=[tf 2];
             end
         end
     else
-        tf=S.tf;
+        contrasts=S.contrasts;
+        tf=repmat(S.tf,1,length(contrasts));
     end
 
     spm eeg
     S.clus_path = {};
-    for cont = 1:length(S.contrasts)
-        contrast = S.contrasts{cont};
+    for cont = 1:length(contrasts)
+        contrast = contrasts{cont};
         Nhead = size(S.clustab{tf(cont)},1);
         Nrhead=1;
 

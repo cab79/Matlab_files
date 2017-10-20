@@ -1,5 +1,6 @@
 %% setup design batch function for factorial design and estimation
 clear all
+close all
 %for fm = [2 3 17]
 %files required: participant data file with columns headed 'Subject' (should be characters, e.g. S1),
 %'Group' (can be described by numbers or characters, but numbers recommended), 'Include' (must be numbers 
@@ -10,13 +11,13 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Design_batch_source_TimeGrpExp.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Source\Design_batch_source_TimeGrpExp.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -39,7 +40,8 @@ D.subdirsuff = '*'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
 D.folder =0; % Is the data in a subject-specific folder?
 % time identifer for source image files, to add to end of outputted SPM folder name
-D.identifier='_t-2252_-2202'; 
+D.identifier='_t-2162_-2002'; 
+D.baseline='_t-3000_-2500'; 
 
 %D.identifier = [D.identifier num2str(fm)];
 %D.data_path = [D.data_path num2str(fm)];
@@ -49,22 +51,22 @@ D.include_codes = [1];
 % list of image names within each subject folder, or if not in a specific
 % folder then with a _ at the beginning
 D.imglist = {
-            '_8_t-2252_-2202_f_c1.nii'
-            '_8_t-2252_-2202_f_c2.nii'
-            '_8_t-2252_-2202_f_c3.nii'
-            '_8_t-2252_-2202_f_c4.nii'
-            '_8_t-2252_-2202_f_c5.nii'
-            '_8_t-2252_-2202_f_c6.nii'
-            '_8_t-2252_-2202_f_c7.nii'
-            '_8_t-2252_-2202_f_c8.nii'
-            '_1_t-3000_-2500_f_c1.nii'
-            '_1_t-3000_-2500_f_c2.nii'
-            '_1_t-3000_-2500_f_c3.nii'
-            '_1_t-3000_-2500_f_c4.nii'
-            '_1_t-3000_-2500_f_c5.nii'
-            '_1_t-3000_-2500_f_c6.nii'
-            '_1_t-3000_-2500_f_c7.nii'
-            '_1_t-3000_-2500_f_c8.nii'
+            ['_*' D.identifier '_f_c1.nii']
+            ['_*' D.identifier '_f_c2.nii']
+            ['_*' D.identifier '_f_c3.nii']
+            ['_*' D.identifier '_f_c4.nii']
+            ['_*' D.identifier '_f_c5.nii']
+            ['_*' D.identifier '_f_c6.nii']
+            ['_*' D.identifier '_f_c7.nii']
+            ['_*' D.identifier '_f_c8.nii']
+            ['_*' D.baseline '_f_c1.nii']
+            ['_*' D.baseline '_f_c2.nii']
+            ['_*' D.baseline '_f_c3.nii']
+            ['_*' D.baseline '_f_c4.nii']
+            ['_*' D.baseline '_f_c5.nii']
+            ['_*' D.baseline '_f_c6.nii']
+            ['_*' D.baseline '_f_c7.nii']
+            ['_*' D.baseline '_f_c8.nii']
             };
         
 %% analysis design and parameters
@@ -159,7 +161,7 @@ D.resid = 0;
 D=design_batch(D);
 
 %% load results
-load_results=1;
+load_results=0;
 if D.para==1 && load_results==1
     spm eeg
     load(fullfile(D.spm_path,'SPM.mat'));

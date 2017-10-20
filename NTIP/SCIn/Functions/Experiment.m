@@ -525,9 +525,9 @@ while (h.ct-h.st)<h.trialdur
     % update current time and exit if needed
     if strcmp(h.Settings.design,'trials')
         h.ct=GetSecs;
-        if (h.ct-h.st)>h.trialdur; 
+        if (h.ct-h.st)>h.trialdur
             break; 
-        end;
+        end
     end
 end
 
@@ -616,7 +616,12 @@ if newtrial
     
     %update h.i
     %try
-        h.i = h.i+1;
+        %h.i = h.i+1;
+    try
+        h.i = trials(1);
+    catch
+        h.i = h.i +1;
+    end
     %catch
     %    h.i = 1;
     %end
@@ -677,8 +682,12 @@ if newtrial
     %    tot = h.totalsamples/h.Settings.fs/60;
     %    disp(['Trial ' num2str(h.i) '. Elapsed time is ' num2str(t) '/' num2str(tot) ' mins. ISI is ' num2str(isi) ' s. Onset discrepency: ' num2str(h.out.discrep{h.i})]);
     %catch
-        disp(['Trial ' num2str(h.i) '/' num2str(length(h.Seq.signal)) '. Last ISI was ' num2str(h.out.isi{h.i-1}) ' s. ISI discrepency was ' num2str(h.out.discrep{h.i-1}) ' s. ']);
+        disp(['Trial ' num2str(h.i) '/' num2str(length(h.Seq.signal)) '. Channel ' num2str(h.Seq.signal(h.i)) '. Last ISI was ' num2str(h.out.isi{h.i-1}) ' s. ']);
     end
+    
+    %if num2str(h.out.isi{h.i-1})<0.9
+    %    dbstop in Experiment.m at 686
+    %end
     
     if h.Settings.plottrials
         h = plot_wave(h,h.Settings.plottrials);

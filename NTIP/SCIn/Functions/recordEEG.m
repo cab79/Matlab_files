@@ -31,10 +31,8 @@ switch opt
                 h.BV.status = 0;
                 
             elseif strcmp(h.Settings.record_EEG,'serial')
-                PortNum=h.Settings.EEGport; % PortNum variable is a string use eg: 'LPT1'
-                global spt1
-                spt1 = serial(PortNum); 
-                fopen(spt1)
+                opt = 'EEG';
+                open_serial(h,opt);
             end
             
             choice = questdlg('Using EEG: Disable GUI buttons? (more accurate EEG markers)', ...

@@ -17,8 +17,10 @@ dbstop if error
 if isempty(S.spm_dir)
     S.spm_paths = dir(fullfile(S.spmstats_path,'*spm*'));
     S.spm_paths = {S.spm_paths(:).name};
-else
+elseif ~iscell(S.spm_dir)
     S.spm_paths = {S.spm_dir};
+else
+    S.spm_paths = S.spm_dir;
 end
 
 for sp = 1:length(S.spm_paths)

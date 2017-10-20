@@ -19,14 +19,16 @@ voi_pref = 'VOI_'; %VOI filename(s) prefix
 %% run
 
 if isempty(S.spm_dir)
-    S.spm_paths = dir(fullfile(S.spmstats_path,'*spm'));
+    S.spm_paths = dir(fullfile(S.spmstats_path,'*spm*'));
     S.spm_paths = {S.spm_paths(:).name};
-else
+elseif ~iscell(S.spm_dir)
     S.spm_paths = {S.spm_dir};
+else
+    S.spm_paths = S.spm_dir;
 end
 
-for sp = 1:length(S.spm_paths)
-    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp});
+for sp = 1:size(S.spm_paths,1)
+    S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
 
     load(fullfile(S.spm_path,'SPM.mat'));
     S.Fm = SPM.xX.I; % factor matrix

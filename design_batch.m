@@ -28,6 +28,33 @@
 %-----------------------------------------------------------------------  
 function D=design_batch(D)
 dbstop if error
+
+if ~isfield(D,'time_ana')
+    D.time_ana=[];
+end
+if ~isfield(D,'identifier')
+    D.identifier='';
+end
+if ~isfield(D,'baseline')
+    D.baseline=[];
+end
+if ~isfield(D,'anapref')
+    D.anapref='';
+end
+if ~isfield(D,'subdirsuff')
+    D.subdirsuff='';
+end
+if ~isfield(D,'subdirpref')
+    D.subdirpref='';
+end
+if ~isfield(D,'useIDfile')
+    D.useIDfile=1;
+end
+if ~isfield(D,'askoverwrite')
+    D.askoverwrite=1;
+end
+
+
 % select parametric or non-parametric analyses and the range of models
 if D.para==1
     load(D.ffbatch);
@@ -54,6 +81,9 @@ elseif D.para==2
             matlabbatch = matlabbatch(3); % unpaired test after subtraction of w factor
             model = 'gw';
         end
+    else % assume one-sample t-test
+        matlabbatch = matlabbatch(4);
+        model = 'one';
     end
 end
 
@@ -81,7 +111,7 @@ end
 path_name = [D.anapref maskpref factnames covs D.subdirsuff paraname identname];
 path_name = strrep(path_name,'*','');
 D.spm_path = fullfile(D.spmstats_path,path_name); 
-if exist(D.spm_path,'dir')
+if exist(D.spm_path,'dir') && D.askoverwrite
     button = questdlg('Create new directory for analysis? ''No'' to overwrite');
     if strcmp(button,'Yes')
         dt = datestr(datetime,30);
@@ -91,14 +121,16 @@ end
 if ~exist(D.spm_path,'dir')
     mkdir(D.spm_path);
 end
-copyfile(D.batch_path,D.spm_path);
+if isfield(D,'batch_path')
+    copyfile(D.batch_path,D.spm_path);
+end
 
 [~,~,pdata] = xlsread(D.pdatfile);
 grp_col = find(strcmp(pdata(1,:),D.grphead));
 sub_col = find(strcmp(pdata(1,:),D.subhead));
 inc_col = find(strcmp(pdata(1,:),D.inchead));
 
-if isempty(grp_col)
+if isempty(grp_col) && ~isfield(D,'grpind')
     error(['no header in xls file called ' D.grphead]);
 elseif isempty(sub_col)
     error(['no header in xls file called ' D.subhead]);
@@ -106,20 +138,27 @@ elseif isempty(inc_col)
     error(['no header in xls file called ' D.inchead]);
 end
 
-%Change char Grp inputs to numbers
-grpdat = pdata(2:end,grp_col);
-if isnumeric(grpdat{2,1})
+if isfield(D,'grpind')
+    % grp indices already supplied
+    grpdat = num2cell(D.grpind);
     grptype = unique([grpdat{:}]);
-    grptype = grptype(~isnan(grptype));
-    grptype(grptype==0)=[];
     Ngrp = length(grptype);
 else
-    grptype = unique(grpdat);
-    grptype(isempty(grptype))=[];
-    Ngrp = length(grptype);
-    for g = 1:Ngrp
-        grp_idx = cellfun(@(x) any(strcmp(grptype(g),x)), grpdat, 'UniformOutput', 0);
-        grpdat(cell2mat(grp_idx)) = {[g]};
+    %Change char Grp inputs to numbers
+    grpdat = pdata(2:end,grp_col);
+    if isnumeric(grpdat{2,1})
+        grptype = unique([grpdat{:}]);
+        grptype = grptype(~isnan(grptype));
+        grptype(grptype==0)=[];
+        Ngrp = length(grptype);
+    else
+        grptype = unique(grpdat);
+        grptype(isempty(grptype))=[];
+        Ngrp = length(grptype);
+        for g = 1:Ngrp
+            grp_idx = cellfun(@(x) any(strcmp(grptype(g),x)), grpdat, 'UniformOutput', 0);
+            grpdat(cell2mat(grp_idx)) = {[g]};
+        end
     end
 end
 
@@ -132,7 +171,11 @@ inc_idx = find(cell2mat(inc_idx));
 % find subject indices for each specific group
 for g = 1:Ngrp
     grp_idx = find(cellfun(@(x) x==g, grpdat, 'UniformOutput', 1));
-    SubInd{g,1} = intersect(inc_idx,grp_idx);
+    if D.useIDfile==1
+        SubInd{g,1} = intersect(inc_idx,grp_idx);
+    else
+        SubInd{g,1} = grp_idx;
+    end
     Nsub(g,1) = length(SubInd{g,1});
 end
 
@@ -183,6 +226,10 @@ elseif D.para==2
         scanname=horzcat(D.factors(find(wfactor)));
         scanname=scanname{:};
         wnum = find(wfactind .* D.interactions);
+    elseif strcmp(model,'one')
+        matlabbatch{1}.spm.tools.snpm.des.OneSampT = generic;
+        scanname='allavg';
+        wnum = 0;
     end
 end
 
@@ -191,25 +238,30 @@ subID={};
 for g = 1:Ngrp
     for s = 1:Nsub(g)
         gs = gs+1;
-        subID{gs} = deblank(pdata{SubInd{g,1}(s)+1,sub_col});
-        if isnumeric(subID{gs}); subID{gs} = num2str(subID{gs}); end;
-        if D.folder
-            subdir = fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]);
-            if ~exist(subdir,'dir')
-                subdir = dir(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
-                if length(subdir)>1
-                    error('Subject directory name is not unique in this folder');
-                    display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
-                elseif length(subdir)==0
-                    error('no directory found with this name');
-                    display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
+        if D.useIDfile==1
+            subID{gs} = deblank(pdata{SubInd{g,1}(s)+1,sub_col});
+            if isnumeric(subID{gs}); subID{gs} = num2str(subID{gs}); end;
+            if D.folder
+                subdir = fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]);
+                if ~exist(subdir,'dir')
+                    subdir = dir(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
+                    if length(subdir)>1
+                        error('Subject directory name is not unique in this folder');
+                        display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
+                    elseif length(subdir)==0
+                        error('no directory found with this name');
+                        display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
+                    end
+                    subdir=fullfile(D.data_path, subdir.name);
                 end
-                subdir=fullfile(D.data_path, subdir.name);
+                subfile = '';
+            else
+                subdir = D.data_path;
+                subfile = [D.anapref D.subdirpref subID{gs} D.subdirsuff];
             end
-            subfile = '';
         else
             subdir = D.data_path;
-            subfile = [D.anapref D.subdirpref subID{gs} D.subdirsuff];
+            subfile = D.imglist{gs};
         end
         
         subimg = cell(1,1);
@@ -231,19 +283,23 @@ for g = 1:Ngrp
                 subimg{i,1} = [fname ',1'];
             end
         elseif D.para==2
-            % for SnPM, check averaged files exist; if not then create them.
-            fnames = dir(fullfile(subdir, ['*' scanname '*']));
-            if wnum==0
-                condlist = ones(length(D.cond_list),1);
-            else
-                condlist = D.cond_list(:,wnum);
-            end
-            if isempty(fnames)
-                factor_img(subdir,D.imglist,condlist,scanname);
+            if D.useIDfile==1
+                % for SnPM, check averaged files exist; if not then create them.
                 fnames = dir(fullfile(subdir, ['*' scanname '*']));
-            end
-            for i=1:length(fnames)
-                subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
+                if wnum==0
+                    condlist = ones(length(D.cond_list),1);
+                else
+                    condlist = D.cond_list(:,wnum);
+                end
+                if isempty(fnames)
+                    factor_img(subdir,D.imglist,condlist,scanname);
+                    fnames = dir(fullfile(subdir, ['*' scanname '*']));
+                end
+                for i=1:length(fnames)
+                    subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
+                end
+            else
+                subimg = {subfile};
             end
         end
         scans = subimg;
@@ -286,6 +342,8 @@ for g = 1:Ngrp
                     %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scans = ;
                     %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scindex = ;
                 end
+            elseif strcmp(model,'one')
+                matlabbatch{1}.spm.tools.snpm.des.OneSampT.P(gs,1) = scans;
             end
         end
         
@@ -339,6 +397,9 @@ if ~isempty(D.cov_names)
                 elseif strcmp(model,'gw')
                     matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.cov(c).c = covdat; % vector
                     matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.cov(c).cname = D.cov_names{c}; % name
+                elseif strcmp(model,'one')
+                    matlabbatch{1}.spm.tools.snpm.des.OneSampT.cov(c).c = covdat; % vector
+                    matlabbatch{1}.spm.tools.snpm.des.OneSampT.cov(c).cname = D.cov_names{c}; % name
                 end
             end
         end
@@ -392,6 +453,10 @@ elseif D.para==2
         matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.masking = masking;
         matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalc.g_omit = 1;
         %globalm=matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalm;
+    elseif strcmp(model,'one')
+        matlabbatch{1}.spm.tools.snpm.des.OneSampPairT.masking = masking;
+        matlabbatch{1}.spm.tools.snpm.des.OneSampPairT.globalc.g_omit = 1;
+        %globalm=matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalm;
     end
 end
 
@@ -440,6 +505,8 @@ elseif D.para==2
         matlabbatch{1}.spm.tools.snpm.des.TwoSampT.globalm = globalm;
     elseif strcmp(model,'gw')
         matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalm = globalm;
+    elseif strcmp(model,'one')
+        matlabbatch{1}.spm.tools.snpm.des.OneSampT.globalm = globalm;
     end
 
     matlabbatch{2}.spm.tools.snpm.cp.snpmcfg = {fullfile(D.spm_path,'SnPMcfg.mat')};

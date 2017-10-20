@@ -2,8 +2,8 @@ clear all
 close all
 
 %---settings---%
-grplist = [33 34 31 32]; sublist_side = {'A','U','A','U'}; sublist_grp = {'H','H','P','P'}; filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception\';typehand = '_AU';%Exp2
-%grplist = [39:42]; sublist_side = {'A','U','A','U'}; sublist_grp = {'H','H','P','P'}; filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception_exp1\correcttrials\'; typehand = '_AU';%Exp1 left v right
+%grplist = [33 34 31 32]; sublist_side = {'A','U','A','U'}; sublist_grp = {'H','H','P','P'}; filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception\';typehand = '_AU';%Exp2
+grplist = [39:42]; sublist_side = {'A','U','A','U'}; sublist_grp = {'H','H','P','P'}; filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception_exp1\correcttrials\'; typehand = '_AU';%Exp1 left v right
 %grplist = [51 52 53 54]; sublist_side = {'L','R','L','R'}; sublist_grp = {'H','H','P','P'}; filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception_exp1\alltrials\'; typehand = '_LR'; %Exp1 left v righ
 %grplist = [43:46]; sublist_side = {'A','U','A','U'}; sublist_grp = {'H','H','P','P'}; filepath = 'C:\Data\CRPS-DP\CRPS_Digit_Perception_exp1\alltrials\'; typehand = '_AU'; %Exp1 left v righ
 

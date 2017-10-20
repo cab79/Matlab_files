@@ -6,24 +6,94 @@ function h = stimtrain(h,opt)
 switch h.Settings.stimcontrol
 
     case 'labjack'
-        % pulse train instruction
-        for pr = 1:h.Settings.npulses_train % train
-            Error = ljud_AddRequest(ljHandle,LJ_ioPUT_DIGITAL_BIT,4,1,0,0);
-            Error_Message(Error)
-
-            Error = ljud_AddRequest(ljHandle,LJ_ioPUT_WAIT,4,round((1000000/h.Settings.p_freq)/2),0,0);
-            Error_Message(Error)
-
-            Error = ljud_AddRequest(ljHandle,LJ_ioPUT_DIGITAL_BIT,4,0,0,0);
-            Error_Message(Error)
-
-            Error = ljud_AddRequest(ljHandle,LJ_ioPUT_WAIT,4,round((1000000/h.Settings.p_freq)/2),0,0);
-            Error_Message(Error)
+        
+        if ~isfield(h,'ljHandle')
+            try
+                h.ljHandle = get(h.ljhandle, 'Value');
+            end
         end
-        %Execute the stimulus train
-        Error = ljud_GoOne(ljHandle);
-        Error_Message(Error)
-        %ljud_GetResult(ljHandle, LJ_ioGET_DIGITAL_BIT, 7, @Value)
+        
+        ljud_LoadDriver; % Loads LabJack UD Function Library
+        ljud_Constants; % Loads LabJack UD constant file
+        if h.Settings.stimchanforLJ
+            port = h.Settings.stimchan;
+        else
+            port=4;
+        end
+        
+        switch opt
+            case 'start'
+
+                if h.Settings.labjack_timer
+                    %Set the timer/counter pin offset to 4, which will put the first timer/counter on FIO4. 
+                    Error = ljud_AddRequest (h.ljHandle,  LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, port, 0, 0);
+                    Error_Message(Error)
+
+                    %use 48MHz clock base with divisor = 48 to get 1 MHz timer clock: 
+                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_BASE, LJ_tc1MHZ_DIV, 0, 0);
+                    Error_Message(Error)
+                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_CONFIG, LJ_chTIMER_CLOCK_DIVISOR, 200, 0, 0); 
+                    Error_Message(Error)
+
+                    %Enable 2 timers.
+                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_CONFIG, LJ_chNUMBER_TIMERS_ENABLED, 2, 0, 0); 
+                    Error_Message(Error)
+
+                    %Configure Timer0 as Frequency out.
+                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_TIMER_MODE, 0, LJ_tmFREQOUT, 0, 0); 
+                    Error_Message(Error)
+
+                    %Set the second divisor to N (x2), yielding a frequency of 1000000/(N*2) Hz
+                    N = 1000000 / (h.Settings.p_freq*2);
+                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_TIMER_VALUE, 0, 250, 0, 0); 
+                    Error_Message(Error)
+                    
+                    %Configure Timer1 as timer stop:
+                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_TIMER_MODE, 1, LJ_tmTIMERSTOP, 0, 0);
+                    Error_Message(Error)
+
+                    %set number of pulses: 
+                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_TIMER_VALUE, 1, 10, 0, 0);
+                    Error_Message(Error)
+
+                    %Execute the requests. 
+                    Error = ljud_GoOne(h.ljHandle);
+                    Error_Message(Error)
+                    disp('running')
+                else
+                    % pulse train instruction
+                    for pr = 1:h.Settings.npulses_train % train
+                        Error = ljud_AddRequest(h.ljHandle,LJ_ioPUT_DIGITAL_BIT,port,1,0,0); % 
+                        Error_Message(Error)
+
+                        Error = ljud_AddRequest(h.ljHandle,LJ_ioPUT_WAIT,port,round((1000000/h.Settings.p_freq)/2),0,0); % Actual resolution is 64 microseconds.
+                        Error_Message(Error)
+
+                        Error = ljud_AddRequest(h.ljHandle,LJ_ioPUT_DIGITAL_BIT,port,0,0,0);
+                        Error_Message(Error)
+
+                        Error = ljud_AddRequest(h.ljHandle,LJ_ioPUT_WAIT,port,round((1000000/h.Settings.p_freq)/2),0,0); % Actual resolution is 64 microseconds.
+                        Error_Message(Error)
+                    end
+                    %Execute the stimulus train
+                    t1=GetSecs;
+                    Error = ljud_GoOne(h.ljHandle);
+                    Error_Message(Error)
+                    %ljud_GetResult(ljHandle, LJ_ioGET_DIGITAL_BIT, 7, @Value)
+                    t2=GetSecs;
+                    disp(['pr: ' num2str(pr) '; train ISI: ' num2str(h.Settings.p_freq) 's;  labjack stimulus: ' num2str(t2-t1)]);
+                end
+                
+            case 'stop'
+                
+                if h.Settings.labjack_timer
+                    Error = ljud_AddRequest (h.ljHandle,  LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, port, 0, 0);
+                    Error_Message(Error)
+                    %Execute the requests. 
+                    Error = ljud_GoOne(h.ljHandle);
+                    Error_Message(Error)
+                end
+         end
         
     case 'audioplayer'
         if ~exist('opt','var')

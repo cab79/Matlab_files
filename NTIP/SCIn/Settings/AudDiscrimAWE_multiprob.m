@@ -31,7 +31,7 @@ switch opt
         
     %% TRIALS or CONTINUOUS?
     h.Settings.design = 'continuous';
-    % if trials, how many trials ahead should be in the player schedule?
+    % if continuous, how many trials ahead should be in the player schedule?
     % (applied to stimulation via soundcard only)
     h.Settings.ntrialsahead = 2;  %0 = all trials
     
@@ -67,7 +67,7 @@ switch opt
     % cell array
     h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
     % names of any audiofiles
-    h.Settings.audiofile = {'instruct.wav'}; % labjack
+    h.Settings.audiofile = {'instruct.wav'}; 
     
     %% Condition-independent stimulus parameters - can be superceded by condition-dependent parameters
     % duration of stimulus sequence in seconds

@@ -17,7 +17,7 @@ D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactoria
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', 'Include' and covariates
@@ -37,51 +37,35 @@ D.anapref = ''; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = 'mspm12_C'; % generic prefix for the SPM file type
 D.subdirsuff = '*'; % generic suffix for the EEGLAB analysis file
-%D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
 D.folder =0; % Is the data in a subject-specific folder?
-D.identifier='_t416_478'; % optional identifer to add to end of outputted SPM folder name
+%D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
+D.identifier='_t416_478'; 
+D.baseline='_t-500_0'; 
 
 %D.identifier = [D.identifier num2str(fm)];
 %D.data_path = [D.data_path num2str(fm)];
-
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % list of image names within each subject folder, or if not in a specific
 % folder then with a _ at the beginning
 D.imglist = {
-            '_2_t416_478_f_c1.nii'
-            '_2_t416_478_f_c2.nii'
-            '_2_t416_478_f_c3.nii'
-            '_2_t416_478_f_c4.nii'
-            '_2_t416_478_f_c5.nii'
-            '_2_t416_478_f_c6.nii'
-            '_2_t416_478_f_c7.nii'
-            '_2_t416_478_f_c8.nii'
-            '_1_t-500_0_f_c1.nii'
-            '_1_t-500_0_f_c2.nii'
-            '_1_t-500_0_f_c3.nii'
-            '_1_t-500_0_f_c4.nii'
-            '_1_t-500_0_f_c5.nii'
-            '_1_t-500_0_f_c6.nii'
-            '_1_t-500_0_f_c7.nii'
-            '_1_t-500_0_f_c8.nii'
-            %'_3_t-4564_-4506_f_c1.nii'
-            %'_3_t-4564_-4506_f_c2.nii'
-            %'_3_t-4564_-4506_f_c3.nii'
-            %'_3_t-4564_-4506_f_c4.nii'
-            %'_3_t-4564_-4506_f_c5.nii'
-            %'_3_t-4564_-4506_f_c6.nii'
-            %'_3_t-4564_-4506_f_c7.nii'
-            %'_3_t-4564_-4506_f_c8.nii'
-            %'_1_t-5500_-5000_f_c1.nii'
-            %'_1_t-5500_-5000_f_c2.nii'
-            %'_1_t-5500_-5000_f_c3.nii'
-            %'_1_t-5500_-5000_f_c4.nii'
-            %'_1_t-5500_-5000_f_c5.nii'
-            %'_1_t-5500_-5000_f_c6.nii'
-            %'_1_t-5500_-5000_f_c7.nii'
-            %'_1_t-5500_-5000_f_c8.nii'
+            ['_*' D.identifier '_f_c1.nii']
+            ['_*' D.identifier '_f_c2.nii']
+            ['_*' D.identifier '_f_c3.nii']
+            ['_*' D.identifier '_f_c4.nii']
+            ['_*' D.identifier '_f_c5.nii']
+            ['_*' D.identifier '_f_c6.nii']
+            ['_*' D.identifier '_f_c7.nii']
+            ['_*' D.identifier '_f_c8.nii']
+            ['_*' D.baseline '_f_c1.nii']
+            ['_*' D.baseline '_f_c2.nii']
+            ['_*' D.baseline '_f_c3.nii']
+            ['_*' D.baseline '_f_c4.nii']
+            ['_*' D.baseline '_f_c5.nii']
+            ['_*' D.baseline '_f_c6.nii']
+            ['_*' D.baseline '_f_c7.nii']
+            ['_*' D.baseline '_f_c8.nii']
             };
         
 %% analysis design and parameters

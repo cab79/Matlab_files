@@ -13,6 +13,20 @@ function varargout = SCIn(varargin)
 dbstop if error
 
 
+global d
+try
+    rootdir
+catch
+    %error('start SCIn from the SCIn directory')
+    error('update "rootdir.m" with the SCIn directory')
+end
+d.root = root;
+d.expts = 'Functions';
+d.settings = 'Settings';
+d.seq = 'Sequences';
+d.out = 'Outputs';
+% End initialization code - DO NOT EDIT
+%disp('loaded')
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -31,20 +45,6 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 
-global d
-try
-    rootdir
-catch
-    %error('start SCIn from the SCIn directory')
-    error('update "rootdir.m" with the SCIn directory')
-end
-d.root = root;
-d.expts = 'Functions';
-d.settings = 'Settings';
-d.seq = 'Sequences';
-d.out = 'Outputs';
-% End initialization code - DO NOT EDIT
-%disp('loaded')
 
 % --- Executes just before SCIn is made visible.
 function SCIn_OpeningFcn(hObject, eventdata, h, varargin)
@@ -71,9 +71,14 @@ disp('*** SCIn VERSION 0.1 ***');
 
 % set global variable d: list of directories
 global d
-rootdir
-d.root = root;
-cd(root)
+try
+    rootdir
+    d.root = root;
+    cd(root)
+catch
+    d.root = pwd;
+end
+    
 addpath(genpath(d.root))
 
 % --- Outputs from this function are returned to the command line.
@@ -271,39 +276,41 @@ GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
 h = guihandles(GUIhname);
 
 h.d=d;
-guidata(hObject, h)
+
+% load functions if not already loaded
+set(h.info, 'String', 'Loading sequence...');
+%if ~isfield(h,'exptFun')
+%    expts = get(h.ExptOpt,'String');
+%    opt = get(h.ExptOpt,'Value');
+%    [~,h.exptFun,] = fileparts(expts{opt});
+%end
+h.exptFun = 'Experiment';
+if ~isfield(h,'SeqName')
+    seq = get(h.SeqOpt,'String');
+    opt = get(h.SeqOpt,'Value');
+    h.SeqName = seq{opt};
+end
+if ~isfield(h,'Seq') || ~isfield(h,'Settings')
+    % load sequence
+    A=load(fullfile(d.root,d.seq,h.SeqName));
+    h.Seq = A.seq;
+    h.Settings = A.settings;
+end
+if ~isfield(h,'startblock')
+    h.startblock = '1';
+end
 
 % check if the button is pressed
 if get(hObject, 'Value') == get(hObject, 'Max')
 
-    % load functions if not already loaded
-    set(h.info, 'String', 'Loading sequence...');
-    %if ~isfield(h,'exptFun')
-    %    expts = get(h.ExptOpt,'String');
-    %    opt = get(h.ExptOpt,'Value');
-    %    [~,h.exptFun,] = fileparts(expts{opt});
-    %end
-    h.exptFun = 'Experiment';
-    if ~isfield(h,'SeqName')
-        seq = get(h.SeqOpt,'String');
-        opt = get(h.SeqOpt,'Value');
-        h.SeqName = seq{opt};
-    end
-    if ~isfield(h,'Seq') || ~isfield(h,'Settings')
-        % load sequence
-        A=load(fullfile(d.root,d.seq,h.SeqName));
-        h.Seq = A.seq;
-        h.Settings = A.settings;
-    end
-    if ~isfield(h,'startblock')
-        h.startblock = '1';
-    end
-    guidata(hObject, h)
-    
     % setup
     set(h.info, 'String', 'Setting up...');
     opt = 'setup';
     eval(['h = ' h.exptFun '(h,opt);']);
+    if h.Settings.labjack
+        set(h.ljhandle, 'Value', h.ljHandle);
+    end
+ 
     
     % select blocks to run
     set(h.info, 'String', 'Setting blocks...');
