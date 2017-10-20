@@ -160,7 +160,7 @@ switch opt
     h.Settings.n_set = 1; % 1 = use min set size
     
     % min number of oddballs within each CP condition
-    h.Settings.n_odd = [10]; % overrides h.Settings.totdur
+    h.Settings.n_odd = [1]; % overrides h.Settings.totdur
     % min number of oddballs per randomised set, per CP
     h.Settings.n_odd_set = [1]; % overrides h.Settings.totdur
     
