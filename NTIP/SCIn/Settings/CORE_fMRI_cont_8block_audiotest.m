@@ -78,7 +78,7 @@ h.Settings.savesinwave = 0;
     
 %% EQUIPMENT CONTROL
 %Use labjack for controlling any equipment?
-h.Settings.labjack=1;
+h.Settings.labjack=0;
 % How to control stimulator? Options: audioplayer, PsychPortAudio, labjack, spt
 h.Settings.stimcontrol='PsychPortAudio';
 % if using PsychPortAudio with more than 2 channels:
@@ -88,7 +88,7 @@ h.Settings.stimcontrol='PsychPortAudio';
     %rear = 5,6 - connect to 3/4
     %side = 7,8
 % total number of channels, e.g. on sound card
-h.Settings.nrchannels = 8; % 8 
+h.Settings.nrchannels = 2; % 8 
 % Use D188
 %h.Settings.D188 = 1;
 % message box with OK press to start experiment?
@@ -130,10 +130,10 @@ h.Settings.atten = 0; % attenuation level in decibels
 % h.Settings.stimtypeouts_init (oddball method) differ by any other
 % characteristic? E.g. different modalities may requrie different pitches
 h.Settings.conditionmethod = {'pitch','intensity'};
-h.Settings.conditionvalue = [23 23 500 500; 1 1 1 1];% for each number in h.Settings.stimtypeouts_init,
+h.Settings.conditionvalue = [200 200 500 500; 1 1 1 1];% for each number in h.Settings.stimtypeouts_init,
 % Oddball method: intensity, pitch, channel
 h.Settings.oddballmethod = 'channel'; % can use same type for pattern only if oddball intensity is adaptive
-h.Settings.oddballvalue = [3 4, 5 6]; % [7 8 3 4]
+h.Settings.oddballvalue = [1 2, 1 2]; % [7 8 3 4]
 
 %% SEQUENCE: For future adoption of CreateSequence
 h.Settings.oddballtype = 'roving'; % options: 'roving', 'classical'

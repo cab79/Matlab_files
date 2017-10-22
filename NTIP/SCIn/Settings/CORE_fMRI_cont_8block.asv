@@ -103,15 +103,13 @@ h.Settings.nrchannels = 8; % 8
 h.Settings.trialdur = 0;
 % duration of stimulus in seconds
 %h.Settings.stimdur = [0.5 0.5];
-h.Settings.stimdur = [0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.5];
+h.Settings.stimdur = [0.1 0.1 0.1 0.1 0.5];
 % Pattern type method: intensity, pitch. Not supported: channel, duration
 h.Settings.patternmethod = 'intensity';
 %h.Settings.patternvalue = [1 0]; % one per stimdur
-h.Settings.patternvalue = [1 0 1 0 1 0 1 0 1 0 0]; % one per stimdur
+h.Settings.patternvalue = [1 0]; % one per stimdur
 % 'rand' or 'reg' spacing?
-h.Settings.stimdurtype = 'rand';
-% index of stimdur to randomise
-h.Settings.stimrandind = [1:10];
+h.Settings.stimdurtype = 'reg';
 % channels on stimulator to use
 h.Settings.stimchan = [3 4 5 6]; 
 % Pitch/freq
