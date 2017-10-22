@@ -151,7 +151,7 @@ h.Settings.n_set = 1; % 1 = use min set size
 % buttonpress options: key: keyboard inputs. Blank for no button press
 h.Settings.buttontype='key';
 % range of keyboard presses indicating a recordable response
-h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
+h.Settings.buttonopt = {};%'LeftArrow','RightArrow'}; 
 %display RT, 1=yes, 0=no
 h.Settings.displayRT=0;
 % response probe
