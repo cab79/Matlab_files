@@ -53,9 +53,9 @@ switch opt
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
         % cell array
-        h.Settings.blockstart = {'audio','labjack','audio'}; % audio,labjack,audio,
+        h.Settings.blockstart = {'audio','labjack'}; % audio,labjack,audio,
         % names of any audiofiles
-        h.Settings.audiofile = {'instruct.wav','start.wav'}; % labjack
+        h.Settings.audiofile = {'instruct.wav'}; % labjack
         % number of scanner triggers to wait for before starting the
         % sequence
         h.Settings.num_scanner_trig = 4;
