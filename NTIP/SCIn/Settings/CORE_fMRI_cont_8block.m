@@ -152,6 +152,8 @@ h.Settings.n_set = 1; % 1 = use min set size
 h.Settings.buttontype='key';
 % range of keyboard presses indicating a recordable response
 h.Settings.buttonopt = {};%'LeftArrow','RightArrow'}; 
+% key corresponding to scanner trigger
+h.Settings.triggeropt = '7&';
 %display RT, 1=yes, 0=no
 h.Settings.displayRT=0;
 % response probe

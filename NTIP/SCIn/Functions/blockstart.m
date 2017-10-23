@@ -56,6 +56,11 @@ switch opt
         opt = 'start';
         h = buttonpress(h,opt);
         
+    
+    case 'scannertrig'
+        opt = 'scannertrig';
+        h = buttonpress(h,opt);
+        
     case 'audio'
         disp('PLAYING AUDIO')
         h = audio(h);

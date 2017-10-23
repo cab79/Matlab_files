@@ -53,7 +53,7 @@ switch opt
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
         % cell array
-        h.Settings.blockstart = {'audio','labjack'}; % audio,labjack,audio,
+        h.Settings.blockstart = {'audio','scannertrig'}; % audio,labjack,audio,
         % names of any audiofiles
         h.Settings.audiofile = {'instruct.wav'}; % labjack
         % number of scanner triggers to wait for before starting the
@@ -152,6 +152,8 @@ h.Settings.n_set = 1; % 1 = use min set size
 h.Settings.buttontype='key';
 % range of keyboard presses indicating a recordable response
 h.Settings.buttonopt = {};%'LeftArrow','RightArrow'}; 
+% key corresponding to scanner trigger
+h.Settings.triggeropt = '7&';
 %display RT, 1=yes, 0=no
 h.Settings.displayRT=0;
 % response probe
