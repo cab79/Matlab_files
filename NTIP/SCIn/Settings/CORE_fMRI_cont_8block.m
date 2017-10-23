@@ -53,9 +53,9 @@ switch opt
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
         % cell array
-        h.Settings.blockstart = {'audio','labjack','audio'}; % audio,labjack,audio,
+        h.Settings.blockstart = {'audio','labjack'}; % audio,labjack,audio,
         % names of any audiofiles
-        h.Settings.audiofile = {'instruct.wav','start.wav'}; % labjack
+        h.Settings.audiofile = {'instruct.wav'}; % labjack
         % number of scanner triggers to wait for before starting the
         % sequence
         h.Settings.num_scanner_trig = 4;
@@ -102,12 +102,16 @@ h.Settings.nrchannels = 8; % 8
 % duration of trial in seconds
 h.Settings.trialdur = 0;
 % duration of stimulus in seconds
-h.Settings.stimdur = [0.5 0.5];
+%h.Settings.stimdur = [0.5 0.5];
+h.Settings.stimdur = [0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.5];
 % Pattern type method: intensity, pitch. Not supported: channel, duration
 h.Settings.patternmethod = 'intensity';
-h.Settings.patternvalue = [1 0]; % one per stimdur
+%h.Settings.patternvalue = [1 0]; % one per stimdur
+h.Settings.patternvalue = [1 0 1 0 1 0 1 0 1 0 0]; % one per stimdur
 % 'rand' or 'reg' spacing?
-h.Settings.stimdurtype = 'reg';
+h.Settings.stimdurtype = 'rand';
+% index of stimdur to randomise
+h.Settings.stimrandind = [1:10];
 % channels on stimulator to use
 h.Settings.stimchan = [3 4 5 6]; 
 % Pitch/freq
@@ -147,7 +151,9 @@ h.Settings.n_set = 1; % 1 = use min set size
 % buttonpress options: key: keyboard inputs. Blank for no button press
 h.Settings.buttontype='key';
 % range of keyboard presses indicating a recordable response
-h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
+h.Settings.buttonopt = {};%'LeftArrow','RightArrow'}; 
+% key corresponding to scanner trigger
+h.Settings.triggeropt = '7&';
 %display RT, 1=yes, 0=no
 h.Settings.displayRT=0;
 % response probe

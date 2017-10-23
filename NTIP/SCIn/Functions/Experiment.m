@@ -85,6 +85,11 @@ switch opt
         allout = cell(1,length(h.Seq.signal));
         h.out.stimtime = allout;
         
+        % record scanner triggers
+        if isfield(h,'trigtime')
+            h.out.trigtime = h.trigtime;
+        end
+        
         if isfield(h.Settings,'buttontype')
             if ~isempty(h.Settings.buttontype)
                 if h.Settings.record_response
@@ -203,7 +208,7 @@ while h.i<length(h.Seq.signal);
     end
     
     % record first and last responses on previous trial
-    h = record_response(h,'previous_trial');
+    h = record_response(h,'prev_trial');
 end
 
 % for continuous sequences
@@ -612,7 +617,7 @@ if newtrial
     %disp(['Current time error: ' num2str(nowtime - proj_end)])
     
     % record first and last responses on previous trial
-    h = record_response(h,'previous_trial');
+    h = record_response(h,'prev_trial');
     
     %update h.i
     %try

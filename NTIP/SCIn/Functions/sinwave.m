@@ -144,10 +144,11 @@ for tr = trials
         end
     end
     % apply response probe?
+    resp_probe=0;
     if isfield(h.Settings,'RPmethod')
         if strcmp(h.Settings.RPmethod,'intensity')
             if h.Seq.RP(tr)==1
-                intenpattern=1;
+                resp_probe=1;
                 h.inten = h.Settings.RPvalue;
                 h.dur = h.Settings.RPdur;
             end
@@ -164,10 +165,15 @@ for tr = trials
     
     % randomise order?
     rs = 1:length(h.dur);
-    if isfield(h.Settings,'stimdurtype')
+    if isfield(h.Settings,'stimdurtype') && ~resp_probe
         if strcmp(h.Settings.stimdurtype,'rand')
-            rs = randperm(length(h.dur));
-            h.dur = h.dur(rs);
+            rs = randperm(length(h.Settings.stimrandind));
+            h.dur(h.Settings.stimrandind) = h.dur(h.Settings.stimrandind(rs));
+            if strcmp(h.Settings.patternmethod,'intensity')
+                h.inten(h.Settings.stimrandind) = h.inten(h.Settings.stimrandind(rs));
+            elseif strcmp(h.Settings.patternmethod,'pitch')
+                h.pitch(h.Settings.stimrandind) = h.pitch(h.Settings.stimrandind(rs));
+            end
         end
     end
     
@@ -196,14 +202,14 @@ for tr = trials
         
         % pitch/inten-specific construction of mwav{i}
         if pitchpattern
-            h.pitch = h.pitch(rs); % randomise?
+            %h.pitch = h.pitch(rs); % randomise?
             if length(h.dur)~=length(h.pitch)
                 error('num column of stimdur must equate to number of pitches');
             end
             mwav{i}(chan(1),:) = h.inten(1) *sin(2*pi*(h.pitch(i))*t{i} + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
             if df; mwav{i}(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
         elseif intenpattern
-            h.inten = h.inten(rs); % randomise?
+            %h.inten = h.inten(rs); % randomise?
             if length(h.dur)~=length(h.inten)
                 error('num column of stimdur must equate to number of intensities');
             end
