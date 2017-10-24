@@ -77,7 +77,7 @@ end
 %% CAB added:
 
 if inv.source.cluster == 1 % Treat XYZ as cluster rather than separate sources
-    svert      = {spm_vec(svert)};
+    Y = mean(Y,1);
     Ns=1;
     label = label(Ns);
 end

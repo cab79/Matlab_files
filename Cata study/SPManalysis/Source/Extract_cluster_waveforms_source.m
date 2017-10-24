@@ -71,7 +71,9 @@ for sp = 1:size(S.spm_paths,1)
         end
     else
         for c = 1:length(S.contrasts)
-            S.clus_path{c} = fullfile(anapath,[S.contrasts{c} '_clusters']);
+            cona = strrep(S.contrasts{c},' ','');
+            cona = strrep(cona,'*','_');
+            S.clus_path{c} = fullfile(anapath,[cona '_clusters']);
         end
     end
 
@@ -121,9 +123,9 @@ for sp = 1:size(S.spm_paths,1)
             rm_ind = cellfun(@isempty,S.wf.(cname).wf);
             S.wf.(cname).wf(rm_ind)=[];
         end
+        % save 
+        save(fullfile(S.clus_path{cldir},['cluster_data' num2str(sp) '.mat']),'S');
 
     end
     
-    % save 
-    save(fullfile(S.clus_path{cldir},['cluster_data' num2str(sp) '.mat']),'S');
 end

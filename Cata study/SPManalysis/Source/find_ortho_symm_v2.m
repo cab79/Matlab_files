@@ -23,7 +23,7 @@ while tryagain
         if isempty(orth_wf{w}) || r>S.outputrank
             % if any are rank deficient, start again with higher tol
             tryagain=1;
-            tol=tol*1.2;
+            tol=tol*S.ranktolfactor;
             disp(['try again on wf ' num2str(w) '/' num2str(length(ld_wf))])
             break
         elseif w == length(ld_wf)

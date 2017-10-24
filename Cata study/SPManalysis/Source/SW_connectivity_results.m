@@ -167,7 +167,7 @@ for sp = 1:size(S.spm_paths,1)
             for an = 1:nAna
                 ind = find(iB==an);
                 connmat{an,1} = zeros(size(lab,1));
-                for i = ana_ind(ind)
+                for i = ana_ind(ind)'
                     connmat{an}(roi1(i),roi2(i)) = 1;
                 end
                 connmat{an}(logical(eye(size(connmat{an})))) = nan;

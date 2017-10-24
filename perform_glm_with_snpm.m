@@ -14,7 +14,8 @@ function [Ttmp, ptmp, fweptmp, fdrptmp,COPE] = perform_glm_with_snpm(edges, desi
 % mean effect over all subjects / sessions
 
 
-nSessions = cols(edges);
+nSessions = size(edges,2);
+inter = size(edges,3)-1;
 
 [checkMe, nEVs] = size(designMatrix);
 assert(checkMe == nSessions, ...
@@ -42,14 +43,16 @@ end%if
 % Instead, let's remove them outright. 
 badSubjects = any(isnan(edges),1);
 cleanEdges  = edges;
-cleanEdges(:,badSubjects) = [];
+cleanEdges(:,badSubjects,:) = [];
 
 %% Save out edges into nifti
 S.data_path = S.clus_path{S.cldir};
-for iS = cols(cleanEdges):-1:1,
-    inputNifti{iS,1} = fullfile(S.data_path, ['S' num2str(iS) '_allavg.nii']);
-    nii = make_nii(cleanEdges(:,iS)', [1 1 1], [0 0 0]); 
-    save_nii(nii, inputNifti{iS,1});
+for iS = size(cleanEdges,2):-1:1,
+    for iI = size(cleanEdges,3):-1:1,
+        inputNifti{iS,iI} = fullfile(S.data_path, ['S' num2str(iS) '_Con' num2str(iI) '_allavg.nii']);
+        nii = make_nii(cleanEdges(:,iS,iI)', [1 1 1], [0 0 0]); 
+        save_nii(nii, inputNifti{iS,iI});
+    end
 end
 Ci = onCleanup(@() delete(inputNifti));
 
@@ -90,7 +93,9 @@ pinvxtx = pinv(designMatrix' * designMatrix);
 pinvx   = pinvxtx * designMatrix';
 
 for iEdge = rows(edges):-1:1,
-    COPE(iEdge,:) = contrasts * pinvx * edges(iEdge, :).';
+    for iI = 1:size(edges,3)
+        COPE(iEdge,:,iI) = contrasts * pinvx * edges(iEdge, :,iI).';
+    end
 end%for
 
 %% submit to design_batch
@@ -101,9 +106,6 @@ end%for
 S.para = 2;
 S.folder =0;
 S.spmstats_path = S.data_path;
-% factors and statistical model
-S.factors = {'Grp', 'Subject'}; % must include a subject factor at the end
-S.factortype = {'g','s'}; % w = within, s = subject, g = subject group
 S.useIDfile = 0; % use data from Participant ID data file (excel)?
 S.imglist = inputNifti;
 S.cond_list = 1;
@@ -111,10 +113,10 @@ S.cov_names = {};
 S.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
 S.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA
 % the following are for SnPM, not SPM
-S.nPerm = 5000; % permutations
 S.vFWHM = [20 20 20]; % variance smoothing (should be same as data smoothing used)
 S.bVolm = 1; % 1=high memory usage, but faster
 S.ST_U = 0.05; % cluster forming threshold
+S.nPerm = 5000; % permutations
 % Write residuals? For normality tests
 S.resid = 0;
 S.grpind = grpind;
@@ -123,11 +125,29 @@ S.interactions = [0 0]; % one column per factor; one row per interaction
 S.askoverwrite=0;
 S.anapref = 'TEMP'; % directory prefix
 for iCon = nContrasts:-1:1,
-    if sum(contrasts(iCon,:))>0 % no group contrast
-        S.maineffects = [0 0]; % one column per factor 
-        S=design_batch(S);
-    elseif sum(contrasts(iCon,:))==0 % group contrast
+    if S.GroupLevel.iInter==0
+        if sum(contrasts(iCon,:))>0 % no group contrast
+            % factors and statistical model
+            S.factors = {'Grp', 'Subject'}; % must include a subject factor at the end
+            S.factortype = {'g','s'}; % w = within, s = subject, g = subject group
+            S.maineffects = [0 0]; % one column per factor 
+            S=design_batch(S);
+        elseif sum(contrasts(iCon,:))==0 % group contrast
+            % factors and statistical model
+            S.factors = {'Grp', 'Subject'}; % must include a subject factor at the end
+            S.factortype = {'g','s'}; % w = within, s = subject, g = subject group
+            S.maineffects = [1 0]; % one column per factor 
+            S=design_batch(S);
+        end
+    else
+        if sum(contrasts(iCon,:))==0 % group contrast
+            continue
+        end
+        % factors and statistical model
+        S.factors = {'Grp', 'Subject'}; % must include a subject factor at the end. Keep as GRP even though no group contrast will be done.
+        S.factortype = {'w','s'}; % w = within, s = subject, g = subject group
         S.maineffects = [1 0]; % one column per factor 
+        S.cond_list = [1;2];
         S=design_batch(S);
     end
     %% Retrieve results

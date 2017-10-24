@@ -10,7 +10,7 @@ dbstop if error
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS'; 
+S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_new'; 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 %fiducials directory
@@ -135,7 +135,7 @@ Ngrp_ana = length(SubInd_ana);
 Nsub_ana=[];
 
 % cycle though S.timewin
-for tw = 1:size(S.timewin,1)
+for tw = 2:3%1:size(S.timewin,1)
     timewin = S.timewin(tw,:);
     basewin = S.basewin(tw,:);
     basecon=0;

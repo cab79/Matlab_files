@@ -219,7 +219,7 @@ for sp = 1:size(S.spm_paths,1)
                 % per contrast (COPE) (e.g. summing/averaging over levels of the design matrix))
                 CorrMats.firstLevel = run_first_level_glm(CorrMats,    ...
                                                          designMat,          ...
-                                                         S.SubjectLevel.contrasts);
+                                                         S.SubjectLevel.contrasts, S.SubjectLevel.interaction);
                                                              
                 % visualise correlations
                 %A=mean(CorrMats.envPartialCorrelation,3);
@@ -269,12 +269,12 @@ end
 
 
 %--------------------------------------------------------------------------
-function FirstLevel = run_first_level_glm(CorrMats, designMat, contrasts)
+function FirstLevel = run_first_level_glm(CorrMats, designMat, contrasts,interaction)
 %RUN_FIRST_LEVEL_GLM
 
 % input checking
 [nTrials, nRegressors] = size(designMat);
-nContrasts             = length(contrasts);
+nContrasts             = length(contrasts); nInter = size(interaction,1);
 [~, nModes, checkMe]   = size(CorrMats.envCorrelation_z);
 assert(checkMe == nTrials,         ...
       [mfilename ':LostTrials'],   ...
@@ -291,6 +291,19 @@ assert(all(cellfun(@length, contrasts) == nRegressors), ...
 useContrasts = cell(1,nContrasts);
 for iContrast = 1:nContrasts,
     useContrasts{iContrast} = contrasts{iContrast}(:);
+end%for
+
+% create interactions
+useInter = cell(1,nInter);
+for iInter = 1:nInter,
+    highlevel = contrasts{interaction(iInter,1)}(:);
+    uhl = unique(highlevel);
+    for hl = 1:length(uhl)
+        hl_ind = find(highlevel==uhl(hl));
+        lowlevel = zeros(length(contrasts{interaction(iInter,2)}),1);
+        lowlevel(hl_ind) = contrasts{interaction(iInter,2)}(hl_ind);
+        useInter{iInter,hl} = lowlevel;
+    end
 end%for
    
 % Precompute some helpful things
@@ -322,15 +335,21 @@ else
 end%if
 
 % declare memory
-[rho, prho, prhoReg] = deal(zeros(nModes, nModes, nContrasts));
+[rho, prho, prhoReg] = deal(zeros(nModes, nModes, nContrasts+length(useInter)));
 
 % run GLM on each edge
 for i = 1:nModes,
     for j = i+1:nModes,
-        rho(i,j,:) = glm_fast_for_meg(squeeze(CorrMats.envCorrelation_z(i,j,:)), ...
+        rho(i,j,1:nContrasts) = glm_fast_for_meg(squeeze(CorrMats.envCorrelation_z(i,j,:)), ...
                                       designMat, invXtX, pinvX, useContrasts, 0);
-        prho(i,j,:) = glm_fast_for_meg(squeeze(CorrMats.envPartialCorrelation_z(i,j,:)), ...
+        prho(i,j,1:nContrasts) = glm_fast_for_meg(squeeze(CorrMats.envPartialCorrelation_z(i,j,:)), ...
                                       designMat, invXtX, pinvX, useContrasts, 0);
+                                  
+        rho(i,j,nContrasts+1:nContrasts+length(useInter)) = glm_fast_for_meg(squeeze(CorrMats.envCorrelation_z(i,j,:)), ...
+                                      designMat, invXtX, pinvX, useInter, 0);
+        prho(i,j,nContrasts+1:nContrasts+length(useInter)) = glm_fast_for_meg(squeeze(CorrMats.envPartialCorrelation_z(i,j,:)), ...
+                                      designMat, invXtX, pinvX, useInter, 0);
+                                  
 								  
 	    % fill in uninformative values with NaN.
 		if hasBadEVs,
@@ -340,6 +359,8 @@ for i = 1:nModes,
         if isfield(CorrMats, 'envPartialCorrelationRegularized_z'),
         prhoReg(i,j,1:nContrasts) = glm_fast_for_meg(squeeze(CorrMats.envPartialCorrelationRegularized_z(i,j,:)), ...
                                       designMat, invXtX, pinvX, useContrasts, 0); 
+        prhoReg(i,j,nContrasts+1:nContrasts+length(useInter)) = glm_fast_for_meg(squeeze(CorrMats.envPartialCorrelationRegularized_z(i,j,:)), ...
+                                      designMat, invXtX, pinvX, useInter, 0); 
         prhoReg(i,j,badContrasts) = NaN;
         else
             prhoReg(i,j) = 0;
@@ -348,7 +369,7 @@ for i = 1:nModes,
 end%for
 
 % symmetrise and reformat
-for iContrast = nContrasts:-1:1,
+for iContrast = nContrasts+length(useInter):-1:1,
     FirstLevel(iContrast).cope.correlation                   = rho(:,:,iContrast) + rho(:,:,iContrast)';
     FirstLevel(iContrast).cope.partialCorrelation            = prho(:,:,iContrast) + prho(:,:,iContrast)';
     FirstLevel(iContrast).cope.partialCorrelationRegularized = prhoReg(:,:,iContrast) + prhoReg(:,:,iContrast)';
