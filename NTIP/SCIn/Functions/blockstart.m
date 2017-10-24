@@ -20,6 +20,7 @@ switch opt
 
                 i=0;
                 num_trig=0;
+                h.trigtime=[];
                 while num_trig<h.Settings.num_scanner_trig
                     [ljError] = ljud_ePut(h.ljHandle,LJ_ioPUT_DIGITAL_BIT,lj_chan,0,0);
                     scantrig=0;
@@ -41,6 +42,7 @@ switch opt
                     %[ljError] = ljud_ePut(h.ljHandle,LJ_ioPUT_DIGITAL_BIT,5,0,0);
                     %Error_Message(ljError)
                     %%
+                    h.trigtime(i) = GetSecs;
                     num_trig = num_trig+1;
                     disp(['Triggered ' num2str(num_trig)]);
                     pause(h.Settings.waittime_scanner_trig);
@@ -52,6 +54,11 @@ switch opt
         
     case 'buttonpress'
         opt = 'start';
+        h = buttonpress(h,opt);
+        
+    
+    case 'scannertrig'
+        opt = 'scannertrig';
         h = buttonpress(h,opt);
         
     case 'audio'
