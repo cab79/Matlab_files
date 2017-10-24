@@ -258,15 +258,16 @@ h.Seq.blocks = design(4,:);
 
 % response probe sequence
 %augment conditions
-aug_factor = (numel(cond_num_init)/numel(h.Settings.cond_num_init)-1) * max(h.Settings.cond_num_init(:));
-RPconds = [h.Settings.RPconds h.Settings.RPconds+aug_factor];
-RPi = find(ismember(h.Seq.condnum,RPconds)); % indices of all possible stims to use
-nSelect = round(h.Settings.RPprob*length(RPi));
-RPrand = RPi(randperm(length(RPi)));
-RPselect = RPrand(1:nSelect);
-h.Seq.RP = zeros(1,length(h.Seq.condnum));
-h.Seq.RP(RPselect) = 1;
-
+if isfield(h.Settings,'RPconds')
+    aug_factor = (numel(cond_num_init)/numel(h.Settings.cond_num_init)-1) * max(h.Settings.cond_num_init(:));
+    RPconds = [h.Settings.RPconds h.Settings.RPconds+aug_factor];
+    RPi = find(ismember(h.Seq.condnum,RPconds)); % indices of all possible stims to use
+    nSelect = round(h.Settings.RPprob*length(RPi));
+    RPrand = RPi(randperm(length(RPi)));
+    RPselect = RPrand(1:nSelect);
+    h.Seq.RP = zeros(1,length(h.Seq.condnum));
+    h.Seq.RP(RPselect) = 1;
+end
 % create all trials if design is continuous
 if isfield(h.Settings,'stimcontrol') && strcmp(h.Settings.design,'continuous') && h.Settings.savesinwave
     if ~isempty(h.Settings.stimcontrol)

@@ -25,9 +25,18 @@ switch opt
         %end
         
         %% to do the same thing using Psychotoolbox rather than GUI:
-        keyIsDown=0;
-        while keyIsDown==0
-            keyIsDown = KbCheck;
+        %keyIsDown=0;
+        %while keyIsDown==0
+        %    keyIsDown = KbCheck;
+        %end
+        try % if there is already a queue
+            KbQueueWait; 
+            KbQueueFlush;
+        catch
+            KbQueueCreate;	
+            KbQueueStart;
+            KbQueueWait; 
+            KbQueueRelease;
         end
         disp('Button pressed: Starting experiment');
         set(GUIh.info, 'String', 'Running sequence...');
@@ -67,7 +76,14 @@ switch opt
             %[ljError] = ljud_ePut(h.ljHandle,LJ_ioPUT_DIGITAL_BIT,5,0,0);
             %Error_Message(ljError)
             %%
-            h.trigtime(i) = presstime;
+            %h.trigtime(i) = presstime;
+            
+            h.out.presstrial = [h.out.presstrial 0];
+            h.out.pressbutton = [h.out.pressbutton {btnstr}];
+            h.out.presstime = [h.out.presstime presstime];
+            h.out.presstimedelta = [h.out.presstimedelta deltaSecs];
+            h.out.RT = [h.out.RT 0];
+            
             num_trig = num_trig+1;
             disp(['Triggered ' num2str(num_trig)]);
             pause(h.Settings.waittime_scanner_trig);

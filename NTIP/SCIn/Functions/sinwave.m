@@ -91,7 +91,11 @@ for tr = trials
     if oddball
         if ~adaptive
             if strcmp(h.Settings.oddballmethod,'channel')
-                chan = h.Settings.oddballvalue(h.Seq.signal(tr));
+                if iscell(h.Settings.oddballvalue)
+                    chan = h.Settings.oddballvalue{h.Seq.signal(tr)};
+                else
+                    chan = h.Settings.oddballvalue(h.Seq.signal(tr));
+                end
             elseif strcmp(h.Settings.oddballmethod,'intensity')
                 h.inten = h.Settings.oddballvalue(h.Seq.signal(tr));
             elseif strcmp(h.Settings.oddballmethod,'pitch')
@@ -275,9 +279,15 @@ for tr = trials
    %     % construct the player object: right
    %     if df; h.mwav(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
    % end
+   mono=0;
+    if isfield(h.Settings,'monostereo')
+        if strcmp(h.Settings.monostereo,'mono')
+            mono=1;
+        end
+    end
     
     % if only one channel has so far been defined:
-    if df==0
+    if df==0 || mono
         h.mwav(chan,:,:) = repmat(h.mwav(chan(1),:,:),length(chan),1); 
     end
     % monaural beats
@@ -320,15 +330,28 @@ for tr = trials
     % DIGITAL SOUNDS HAVE A MAXIMUM DYNAMIC RANGE OF 96 dB FOR AT 16 BITS
     % RESOLUTION:
     %       20*log10(2^16)=96.33
-    if ~adaptive 
-        h.inten_atten = h.Settings.atten; 
-    elseif adaptive && oddball
-        if strcmp(h.Settings.oddballmethod,'intensity')
-            h.inten_atten = [h.Settings.atten, (h.Settings.atten+varlevel)];
-            h.inten_atten = h.inten_atten(h.Seq.signal(tr));
+    if isfield(h.Settings,'attenchan')
+        if ismember(chan,h.Settings.attenchan)
+            if isfield(h,'vol_atten')
+                inten_atten = str2double(get(h.vol_atten,'string'));
+            else
+                inten_atten = h.Settings.atten; 
+            end
+            if ~adaptive 
+                h.inten_atten = inten_atten;
+            elseif adaptive && oddball
+                if strcmp(h.Settings.oddballmethod,'intensity')
+                    h.inten_atten = [inten_atten, (inten_atten+varlevel)];
+                    h.inten_atten = h.inten_atten(h.Seq.signal(tr));
+                else
+                    h.inten_atten = inten_atten; 
+                end
+            end
         else
-            h.inten_atten = h.Settings.atten; 
+            h.inten_atten = 0; 
         end
+    else
+        h.inten_atten = 0; 
     end
     % find max rms_sound_dB
     %h.mwav_orig = h.mwav; % non-attenuated version
