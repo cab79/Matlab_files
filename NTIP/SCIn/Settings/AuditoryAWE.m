@@ -33,22 +33,22 @@ switch opt
     
     case '10Hz'
         h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h.Settings.patternvalue = [200 200]; % one per stimdur
+        h.Settings.patternvalue = [500 500]; % one per stimdur
         h = AuditoryAWE(h,'commonsettings');
         
     case '1Hz'
         h.Settings.df = 1; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h.Settings.patternvalue = [200 200]; % one per stimdur
+        h.Settings.patternvalue = [500 500]; % one per stimdur
         h = AuditoryAWE(h,'commonsettings');
     
     case '10Hz_oddball'
         h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h.Settings.patternvalue = [200 240]; % one per stimdur
+        h.Settings.patternvalue = [500 540]; % one per stimdur
         h = AuditoryAWE(h,'commonsettings');
         
     case '1Hz_oddball'
         h.Settings.df = 1; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h.Settings.patternvalue = [200 240]; % one per stimdur
+        h.Settings.patternvalue = [500 540]; % one per stimdur
         h = AuditoryAWE(h,'commonsettings');
         
     case 'commonsettings'    

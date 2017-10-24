@@ -1,4 +1,4 @@
-open_serial(h,opt)
+function open_serial(h,opt)
 
 switch opt
     case 'EEG'
@@ -20,3 +20,4 @@ switch opt
         set(spt,'Parity','none');
         set(spt,'StopBits',1);
         set(spt,'Terminator','');
+end
