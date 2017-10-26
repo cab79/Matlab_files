@@ -31,6 +31,11 @@ for sp = 1:size(S.spm_paths,1)
     
     S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
     
+    % extract time window of analysis
+    Css = strsplit(S.spm_paths{sp,1},'_t')
+    TWss = strsplit(Css{2},'_');
+    TW = cellfun(@str2double,TWss);
+    
     % run analysis on combined clusters?
     if strcmp(S.gclusname,'comb_clus.nii')
         anapath = fullfile(S.spmstats_path,['Timewin_' num2str(S.spm_paths{sp,2})]);
@@ -47,6 +52,13 @@ for sp = 1:size(S.spm_paths,1)
     load(fullfile(S.spm_path,'SPM.mat'));
     S.Fm = SPM.xX.I; % factor matrix
     S.imglist = SPM.xY.P; % Subject-condition image list
+    
+    % select Time level
+    if S.timelev && strcmp(S.factlev{S.timelev,1},'Time')
+        selt = find(S.Fm(:,1+S.timerow)==S.timelev);
+        S.Fm = S.Fm(selt);
+        S.imglist = S.imglist(selt);
+    end
     
     % create list of unique spm data file names (usfname)
     % not in same order as in S.imglist
@@ -95,13 +107,20 @@ for sp = 1:size(S.spm_paths,1)
             %Cnii = load_nii(fullfile(S.clus_path{cldir},cimages(c).name));
             Cnii=spm_vol(fullfile(S.clus_path{cldir},cimages(c).name));
             
+            % load VOI
+            if S.use_VOI
+                voi = load(fullfile(S.clus_path{cldir},['VOI_' cimages(c).name(1:2) '.mat']));
+            else
+                voi=[];
+            end
+            
             % for each subjects' source results
             for i = 1:length(usfname)
                 disp(['contrast ' num2str(cldir) '/' num2str(length(S.clus_path)) ', cluster ' num2str(c) '/' num2str(length(cimages)) ', image ' num2str(i) '/' num2str(length(usfname))]); % display progress
                 sname = fullfile(S.datafile_path,usfname{i});
                 
                 % extract waveforms
-                [Ds,Sw] = SPM_sourcewave_extract(sname, S.spm_paths{sp,2}, Cnii, S.sep_clus);
+                [Ds,Sw] = SPM_sourcewave_extract(sname, S.spm_paths{sp,2}, Cnii, S.sep_clus,voi,S.use_VOI);
                 
                 Sw = vertcat(Sw{:}); 
                 
@@ -113,15 +132,33 @@ for sp = 1:size(S.spm_paths,1)
                         ind=[];
                     end
                     if ~isempty(ind)
-                        S.wf.(cname).wf{ind(S.timelev)} = Sw(:,:,t);
+                        S.wf.(cname).wf{ind} = Sw(:,:,t);
                     end
                 end
+                
             end
             S.wf.(cname).time = Ds.time;
+            
+            % perform scaling (to provide equivalent results to SPM source images)
+            %if scale_to_VOI
+            %    % get time window indices
+            %    tw_ind = dsearchn(Ds.time',TW'/1000);
+            %    % calculate mean with time window
+            %    for i = 1:length(S.wf.(cname).wf)
+            %        avwin(i,1) = mean(S.wf.(cname).wf{i}(tw_ind)); 
+            %    end
+            %    % scaling
+            %    sc = voi.Y(selt)./avwin;
+            %    % re-scale
+            %    for i = 1:length(S.wf.(cname).wf)
+            %        S.wf.(cname).wf{i} = S.wf.(cname).wf{i}*sc(i); 
+            %    end
+            %end
             
             % remove empty cells
             rm_ind = cellfun(@isempty,S.wf.(cname).wf);
             S.wf.(cname).wf(rm_ind)=[];
+            
         end
         % save 
         save(fullfile(S.clus_path{cldir},['cluster_data' num2str(sp) '.mat']),'S');

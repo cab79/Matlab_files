@@ -124,9 +124,9 @@ end
 imgpath = fullfile(S.spmstats_path,sname_sp,'Combined_clusters');
 if ~isdir(imgpath)
     mkdir(imgpath)
-else
-    imgpath = [imgpath '_new'];
-    mkdir(imgpath)
+%else
+%    imgpath = [imgpath '_new'];
+%    mkdir(imgpath)
 end
 
 comnii = make_nii(comimg, nii.hdr.dime.pixdim(2:4),[0 0 0],16);

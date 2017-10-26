@@ -1,27 +1,31 @@
-function [Ds Sw] = SPM_sourcewave_extract(fname, val, Cnii, sep)
+function [Ds Sw] = SPM_sourcewave_extract(fname, val, Cnii, sep, voi, use_VOI)
 
 D = spm_eeg_load(fname);
 
 % get MNI corrdinates of Cnii cluster
-img=spm_read_vols(Cnii);
-ind3={};
+
 if sep
+    img=spm_read_vols(Cnii);
+    ind3={};
     uimg = unique(img)';
     uimg(uimg==0) = [];
     for u = uimg
         c = find(img==u);
         [x y z] = ind2sub(size(img),c);
         ind3{u} = [x y z];
+        mni{u} = cor2mni(ind3{u}, Cnii.mat); % convert to MNI
     end
+elseif use_VOI
+    mni = {voi.xY.XYZmm'};
 else
     c = find(img>0);
     [x y z] = ind2sub(size(img),c);
     ind3{1} = [x y z];
+    mni{1} = cor2mni(ind3{1}, Cnii.mat); % convert to MNI
 end
 
-for i = 1:length(ind3)
-    disp(['sub-cluster ' num2str(i) '/' num2str(length(ind3))])
-    mni{i} = cor2mni(ind3{i}, Cnii.mat); % convert to MNI
+for i = 1:length(mni)
+    disp(['sub-cluster ' num2str(i) '/' num2str(length(mni))])
     D.val=val;
     D.inv{val}.source.XYZ  = mni{i}; %- (n x 3) matrix of MNI coordinates
     D.inv{val}.source.cluster = 1; % combine all coords into a single source cluster

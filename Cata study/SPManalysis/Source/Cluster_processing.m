@@ -17,14 +17,14 @@ S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp';
 % the original data file suffix,
 % and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
-    '_Time_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat'
+    %'_Time_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat'
     %'_Time_Grp_Exp_Subject_spm_t416_478',3, '_orig_cleaned_trialNmatch.mat'
     %'_Grp_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-1288_-1076',2, '_orig_cleaned.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-2162_-2002',2, '_orig_cleaned.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-2264_-2202',2, '_orig_cleaned.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-2514_-2448',2, '_orig_cleaned.mat'
-    %'_Time_Grp_Exp_Subject_spm_t-2362_-2338',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-1288_-1076',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-2162_-2002',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-2264_-2202',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-2514_-2448',2, '_orig_cleaned.mat'
+    '_Time_Grp_Exp_Subject_spm_t-2362_-2338',2, '_orig_cleaned.mat'
     %'_Time_Grp_Exp_Subject_spm_t-2802_-2500',1, '_orig_cleaned.mat'
     %'_Time_Grp_Exp_Subject_spm_t-2922_-2900',1, '_orig_cleaned.mat'
     %'_Time_Grp_Exp_Subject_spm_t-3050_-2946',1, '_orig_cleaned.mat'
@@ -47,9 +47,9 @@ S.subinfo = 'sub_info.mat';
 
 %% for sourcewave extraction only:
 %generic cluster image name for this run
-%S.gclusname = 'comb_clus.nii';
+S.gclusname = 'comb_clus.nii';
 %S.gclusname = 'VOI_c*.nii'; % Sensor
-S.gclusname = 'c*_spm.nii'; % Source
+%S.gclusname = 'c*_spm.nii'; % Source
 % spm data file prefix for all analyses/images
 S.prefix = 'mspm12_';
 % using strsplit on the image filename, index of file part for subject
@@ -57,7 +57,11 @@ S.subname_index = 2;
 % using strsplit on the image filename, index of file part for subject
 %S.conname_index= 'end';
 % Separate clusters for each unique value in each cluster image?
-S.sep_clus =0;
+S.sep_clus =1;
+% Use VOI data for MNI coordinates?
+S.use_VOI = 0;
+% scale outputs to VOI?
+%s.scale_to_VOI = 1;
 % min num of voxels required to constitutue a unique cluster region
 S.clus_size_min = 100;
 % max number of non-continguous regions
@@ -87,9 +91,9 @@ S.include_codes = [1];
 %% contrast, factor and level information
 %-------------------------------------------------------------
 %contrast name to process - must match that in Matlabbatch (i.e. from design-batch script)
-S.contrasts={'Exp B Med'}; % leave empty to proccess ALL contrasts in Matlabbatch
-%S.contrasts={'Exp * Int', 'Int A', 'Exp B Med'}; % Post-stim
-%S.contrasts={'T1 Grp * Exp','T1 Grp','T1 Exp'}; % Anticipation
+%S.contrasts={'Exp B Med'}; % leave empty to proccess ALL contrasts in Matlabbatch
+%S.contrasts={'Exp * Int', 'Int A', 'Exp B Med', 'Grp'}; % Post-stim
+S.contrasts={'T1 Grp * Exp','T1 Grp','T1 Exp'}; % Anticipation
 S.tf =1; % 1 if F-contrast, 2 or T-contrast, blank if not using S.contrasts
 % contrasts={'Exp'}; % example to enter one contrast only
 
@@ -107,8 +111,8 @@ S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','','';
 % design, but characters don't need to match anything.
 S.factlev = {
         {'Time'},{'LOI vs Baseline'},{'LOI','Baseline'};
-        %{'Grp'},{'Group'},{'High','Low'};
-        {'Int'},{'Stimulus Intensity'},{'Low','Medium'};
+        {'Grp'},{'Group'},{'High','Low'};
+        %{'Int'},{'Stimulus Intensity'},{'Low','Medium'};
         {'Exp'},{'Expectation Cues'},{'Low, Low','High, Low'};
         {'Subject'},{'Subject'},{}; % can leave Subject levels empty as these will be populated by sub_info file.
     };
@@ -163,8 +167,8 @@ S.GroupLevel.contrasts          = [1  1;  % contrast 1
 %Extract_clusters_source(S);
 %Convert_VOImat_to_excel(S);
 %Extract_cluster_residuals(S);
-%Normality_test_residuals(S)
-%Combine_clusters_source(S)
+%Normality_test_residuals(S);
+Combine_clusters_source(S);
 Extract_cluster_waveforms_source(S);
-%SW_connectivity(S)
-%SW_connectivity_results(S)
+SW_connectivity(S);
+SW_connectivity_results(S);
