@@ -130,11 +130,9 @@ if ~isdir(imgpath)
 %    mkdir(imgpath)
 end
 
-V=nii;
-V.fname=fullfile(imgpath,'comb_clus.nii');
-spm_write_vol(V,comimg);
-%comnii = make_nii(comimg, nii.hdr.dime.pixdim(2:4),[0 0 0],16);
-%save_nii(comnii,fullfile(imgpath,'comb_clus.nii'));
+V = spm_write_vol(V,Y);
+comnii = make_nii(comimg, nii.hdr.dime.pixdim(2:4),[0 0 0],16);
+save_nii(comnii,fullfile(imgpath,'comb_clus.nii'));
 save(fullfile(imgpath,'comb_clus.mat'),'clus_size');
 
 % copy across an example SPM
