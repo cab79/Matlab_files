@@ -34,6 +34,9 @@ for sp = 1:size(S.spm_paths,1)
     end
     S.spm_path = fullfile(S.spmstats_path,S.spm_paths{sp,1});
 
+    if ~isempty(S.spm_paths{sp,4})
+        S.contrasts = S.spm_paths{sp,4};
+    end
     
     if isempty(S.contrasts)
         % load SPM design and list contrasts
@@ -90,6 +93,7 @@ if S.use_aal
     comimg = comimg+addimg; 
 end
 
+
 % remove regions of less than size S.clus_size_min
 [ucom,IA,IB] = unique(comimg);
 for u = 1:length(ucom)
@@ -108,10 +112,79 @@ for u = 1:length(ucom)
     for k = 1:length(voxkeep)
         comimg(voxkeep{k}) = max(comimg(:))+1;
     end
+    
 end
 
+
+% which other areas is it connected to?
+[ucom,IA,IB] = unique(comimg);
+conn = cell(length(ucom),2);
+for u = 1:length(ucom)
+    disp(['connections of region ' num2str(u) '/' num2str(length(ucom))]);
+    ind = find(IB==u);
+    nvox=length(ind);
+    conn{u,2}=0;
+    if ucom(u)==0 || nvox>S.clus_size_min_join
+        continue
+    end
+    
+    nu = 1:length(ucom);
+    nu(u)=[];
+    conn{u,1}=[];
+    for n = nu
+        if ucom(n)==0
+            continue
+        end
+        % how many connected areas?
+        binimg = zeros(size(comimg));
+        binimg(IB==u | IB==n) = 1;
+        CC = bwconncomp(binimg,6);
+        if length(CC.PixelIdxList)==1
+            conn{u,1} = [conn{u,1} n];
+        end
+        % 
+    end
+    
+    % how many voxels are connected to each region?
+    for n = 1:length(conn{u,1})
+        conn{u,2}(n)=0;
+        for v = 1:nvox
+            % how many connected areas?
+            binimg = zeros(size(comimg));
+            binimg(IB==conn{u,1}(n)) = 1;
+            binimg(ind(v)) = 1;
+            CC = bwconncomp(binimg,6);
+            if length(CC.PixelIdxList)==1
+                conn{u,2}(n) = conn{u,2}(n)+1;
+            end
+        end
+    end
+end
+
+%for u = 1:size(conn,1)
+%    if isempty(conn{u,2})
+%        conn{u,2}=0;
+%    end
+%end
+
+% join together
+for u = 1:size(conn,1)
+    maxrow = cellfun(@max,conn(:,2),'uniform',0);
+    [~,maxrow] = sort(cat(1,maxrow{:}),'descend');
+    for n = 1:length(maxrow)
+        if ucom(maxrow(n))==0 || isempty(conn{maxrow(n),1})
+            continue
+        end
+        [~,maxcol] = max(conn{maxrow(n),2});
+        comimg(IB==maxrow(n)) = unique(comimg(IB==conn{maxrow(n),1}(maxcol)));
+    end
+end
+
+
+        
 % make values consecutive
 [ucom,IA,IB] = unique(comimg);
+disp(['number of regions = ' num2str(length(ucom))]);
 newu = 0:length(ucom)-1;
 comimg = reshape(newu(IB),size(comimg));
 
@@ -131,7 +204,7 @@ if ~isdir(imgpath)
 end
 
 V=nii;
-V.fname=fullfile(imgpath,'comb_clus.nii');
+V.fname=fullfile(imgpath,S.gclusname);
 spm_write_vol(V,comimg);
 %comnii = make_nii(comimg, nii.hdr.dime.pixdim(2:4),[0 0 0],16);
 %save_nii(comnii,fullfile(imgpath,'comb_clus.nii'));

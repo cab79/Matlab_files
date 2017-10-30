@@ -10,7 +10,7 @@ dbstop if error
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp'; 
+S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan'; 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 %fiducials directory
@@ -82,7 +82,7 @@ S.smooth = 12;
 S.type = 'evoked';
 S.sourceprior = 'GS'; % Priors on sources, e.g. MSP, GS, LOR or IID
 S.Npriors = 256; % Number of sparse priors (x 1/2 brain)
-S.Han = 1; % apply Hanning window
+S.Han = 0; % apply Hanning window
 S.run_forward = 0;
 
 %% RUN

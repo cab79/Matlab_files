@@ -15,12 +15,12 @@ P.wavetype = 'source'; % source or sensor?
 
 %cluster directory name, which also specifies the constrast that will be
 %plotted (i.e. the characters before the underscore)
-P.clusdir='ExpBMed_clusters';
+P.clusdir='Int_clusters';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
 %generic cluster waveform file name
-P.wfname = 'cluster_data1.mat';
+P.wfname = 'cluster_data.mat';
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
 P.batch = 'matlabbatch.mat';

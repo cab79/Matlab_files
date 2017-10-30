@@ -33,7 +33,7 @@ for i = 1:length(mni)
     %D.inv{val}.source.label %- label(s) for sources (cell array)
     D.inv{val}.source.type = 'evoked';  %- output type ('evoked'/'trials')
     D.inv{val}.source.save = 0;
-    D.inv{val}.source.fname = ''; %- output file name
+    D.inv{val}.source.fname = ['temp' num2str(val)]; %- output file name
 
     Ds = spm_eeg_inv_extract_CAB(D);
     Sw{i} = Ds(:,:,:);

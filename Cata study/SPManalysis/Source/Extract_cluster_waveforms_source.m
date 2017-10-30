@@ -56,7 +56,7 @@ for sp = 1:size(S.spm_paths,1)
     % select Time level
     if S.timelev && strcmp(S.factlev{S.timelev,1},'Time')
         selt = find(S.Fm(:,1+S.timerow)==S.timelev);
-        S.Fm = S.Fm(selt);
+        S.Fm = S.Fm(selt,:);
         S.imglist = S.imglist(selt);
     end
     
@@ -93,6 +93,8 @@ for sp = 1:size(S.spm_paths,1)
     for cldir = 1:length(S.clus_path)
 
         cimages = dir(fullfile(S.clus_path{cldir},S.gclusname));
+        
+        if isempty(cimages); continue; end
 
         % For each cluster
         S.wf=struct; % clears this variable for the next iteration
@@ -161,7 +163,7 @@ for sp = 1:size(S.spm_paths,1)
             
         end
         % save 
-        save(fullfile(S.clus_path{cldir},['cluster_data' num2str(sp) '.mat']),'S');
+        save(fullfile(S.clus_path{cldir},['cluster_data.mat']),'S');
 
     end
     

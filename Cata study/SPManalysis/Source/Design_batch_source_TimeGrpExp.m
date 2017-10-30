@@ -17,7 +17,7 @@ D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactoria
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_earlybaseline';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -27,7 +27,7 @@ D.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes
     D.grphead = 'Group';
     D.inchead = 'Include';
 % directory in which SPM analyses will be saved (new folder created)
-D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source';
+D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -43,7 +43,9 @@ D.folder =0; % Is the data in a subject-specific folder?
 D.include_codes = [1];
 % time identifer for source image files, to add to end of outputted SPM folder name
 identifier={'_t-2514_-2448','_t-2362_-2338','_t-2264_-2202','_t-2162_-2002','_t-1288_-1076'}; 
-D.baseline='_t-5500_-5000'; 
+D.baseline='_t-3000_-2500'; 
+%identifier={'_t-4660_-4278','_t-4564_-4468','_t-4454_-4362','_t-4330_-4222','_t-3364_-3292','_t-3264_-3210','_t-3050_-2946','_t-2922_-2900','_t-2802_-2500'}; 
+%D.baseline='_t-5500_-5000'; 
 
 for di = 1:length(identifier)
     D.identifier = identifier{di}

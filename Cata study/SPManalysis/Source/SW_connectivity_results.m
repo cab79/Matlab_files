@@ -14,7 +14,7 @@ function SW_connectivity_results(S)
 %generic cluster data name
 gdataname = 'cluster_data*.mat';
 contypes = {'partialCorrelationRegularized','partialCorrelation','correlation'};
-ptype = 'FDRp';
+ptype = 'p'; % p, FDRp, FWEp
 
 %% run
 
@@ -101,7 +101,7 @@ for sp = 1:size(S.spm_paths,1)
             % for each frequency
             nFreq = length(cmats);
             for iFreq = 1:nFreq
-                % for each first level contrast
+                % for each group level contrast
                 ncont = length(cmats{iFreq}.groupLevel);
                 for ct = 1:ncont
                     % for each connectivity type
@@ -142,10 +142,20 @@ for sp = 1:size(S.spm_paths,1)
             end
             
         end
+        
+        
+        % state if FDR significant for test only on each roi2
+        eachFDR = zeros(length(roi2),1);
+        for r = unique(roi2)'
+            ind = find(roi2==r);
+            [pID,pN] = FDR(pval(ind),0.05);
+            eachFDR(ind(find(pval(ind)<pN))) = 1;
+        end
+        
         % save as excel
-        results = table(connval,roi1,roi2,posneg,tval,pval,fweval,fdrval,firstlevel,grouplevel);
+        results = table(connval,roi1,roi2,posneg,tval,pval,fweval,fdrval,eachFDR,firstlevel,grouplevel);
         next = datestr(now,30);
-        fname = fullfile(S.clus_path{cldir},['Connectivity_run_' timewin '_' next '.xlsx']);
+        fname = fullfile(S.clus_path{cldir},['Connectivity_run_' timewin '_ptype-' ptype '_' next '.xlsx']);
         writetable(results,fname,'Sheet',1)
 
         % create connectivity table 
@@ -180,6 +190,4 @@ for sp = 1:size(S.spm_paths,1)
         
     end
 end
-
-
 

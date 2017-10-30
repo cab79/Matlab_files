@@ -17,7 +17,7 @@ D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactoria
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_new';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', 'Include' and covariates
@@ -27,7 +27,7 @@ D.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes
     D.grphead = 'Group';
     D.inchead = 'Include';
 % directory in which SPM analyses will be saved (new folder created)
-D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source';
+D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -157,7 +157,7 @@ D.resid = 0;
 D=design_batch(D);
 
 %% load results
-load_results=1;
+load_results=0;
 if D.para==1 && load_results==1
     spm eeg
     load(fullfile(D.spm_path,'SPM.mat'));
