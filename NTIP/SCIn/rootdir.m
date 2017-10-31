@@ -1,1 +1,1 @@
-root = 'C:\Users\CamPain\Desktop\SCIn';
+root = 'C:\Matlab_files\NTIP\SCIn';

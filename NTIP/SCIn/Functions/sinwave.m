@@ -226,8 +226,19 @@ for tr = trials
         
         % instantaneous phase and direction at end of stim
         h.iphase(:,tr,:,i) = [asin(mwav{i}(:,end-1)), mwav{i}(:,end)-mwav{i}(:,end-1)];% mwav_orig(:,end-1)-mwav_orig(:,end)];
+        
+        %optional plots
         %disp_phase=h.iphase(:,tr,:,i)
-        %figure;subplot(1,2,1);plot(mwav{i}(2,1:500));subplot(1,2,2);plot(mwav{i}(2,end-500:end));
+        %if i>1
+        %    close all
+        %    figure;
+        %    subplot(1,3,1);
+        %    plot([mwav{i-1}(1,end-500:end),mwav{i}(1,1:500)]);
+        %    subplot(1,3,2);
+        %    plot([mwav{i-1}(2,end-500:end),mwav{i}(2,1:500)]);
+        %    subplot(1,3,3);
+        %    plot([mwav{i-1}(2,end-500:end)-mwav{i-1}(1,end-500:end),mwav{i}(2,1:500)-mwav{i}(1,1:500)]);
+        %end
         
         % apply tapering on each part of the stim pattern?
         if isfield(h.Settings,'Tukey')
