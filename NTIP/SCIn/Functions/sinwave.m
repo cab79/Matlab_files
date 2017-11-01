@@ -192,7 +192,7 @@ for tr = trials
         df=1;
         if isfield(h,'entrainfreq')
             df_freq = str2double(h.entrainfreq);
-            if df_freq==0
+            if df_freq==0 || isnan(df_freq)
                 df_freq=h.Settings.df;
             end
         else
