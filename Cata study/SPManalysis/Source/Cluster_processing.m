@@ -10,14 +10,15 @@ S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes
 % root directory in which source DATAFILES are located
 S.datafile_path = 'C:\Data\Catastrophising study\SPMdata';
 % root directory in which source IMAGES are located
-S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_NoHan';
+S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_NoHan_Narrow';
 % directory in which SPM analysis is saved 
-S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning';
+S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning_Narrow';
 % specific folder(s) containing the SPM stats for this analysis, 
 % the original data file suffix,
 % and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
     '_Time_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat',{'Int', 'Exp'}
+    %'_Time_Int_Exp_Subject_spm_t116_878',3,'_orig_cleaned_trialNmatch.mat',{'Int', 'Exp'}
     %'_Time_Grp_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat',{}
     %'_Grp_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat',{}
     %'_Time_Grp_Exp_Subject_spm_t-1288_-1076',2, '_orig_cleaned.mat',{'T1Exp',}
@@ -64,10 +65,10 @@ S.use_VOI = 0;
 %s.scale_to_VOI = 1;
 % min num of voxels required to constitutue a unique cluster region:
 % smaller vallues to be deleted
-S.clus_size_min = 10;
+S.clus_size_min = 100;
 % min num of voxels required to constitutue a unique cluster region:
 % smaller vallues to be joined to neighbouring regions
-S.clus_size_min_join = 500;
+S.clus_size_min_join = 300;
 % max number of non-continguous regions
 %S.clus_obj_max = 1;
 % analyse per subject/trial? (1: analyse all; 0: concatenate all)

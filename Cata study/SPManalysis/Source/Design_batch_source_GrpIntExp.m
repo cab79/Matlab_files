@@ -137,7 +137,8 @@ for di = 1:length(identifier)
 end
 
 %% load results
-if D.para==1
+load_results=0;
+if D.para==1 && load_results==1
     spm eeg
     load(fullfile(D.spm_path,'SPM.mat'));
     SPM.Im=[]; % no masking
