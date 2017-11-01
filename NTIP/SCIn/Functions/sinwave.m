@@ -101,7 +101,11 @@ for tr = trials
     if oddball
         if ~adaptive
             if iscell(h.Settings.oddballvalue)
-                oddval = h.Settings.oddballvalue{h.Seq.signal(tr),:};
+                if size(h.Settings.oddballvalue,1)==1
+                    oddval = h.Settings.oddballvalue{h.Seq.signal(tr)};
+                else
+                    oddval = h.Settings.oddballvalue{h.Seq.signal(tr),:};
+                end
             else
                 oddval = h.Settings.oddballvalue(h.Seq.signal(tr),:);
             end
