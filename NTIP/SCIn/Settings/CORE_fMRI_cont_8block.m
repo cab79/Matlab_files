@@ -218,8 +218,8 @@ h.Settings.attenchan = [5 6]; % [7 8 3 4]
 % Condition method: do the stimtypes indexed by
 % h.Settings.stimtypeouts_init (oddball method) differ by any other
 % characteristic? E.g. different modalities may requrie different pitches
-h.Settings.conditionmethod = {'pitch','intensity'};
-h.Settings.conditionvalue = [23 23 300 500; 1 1 1 1];% for each number in h.Settings.stimtypeouts_init,
+h.Settings.conditionmethod = {'pitch'};
+h.Settings.conditionvalue = [23 23 300 500];% for each number in h.Settings.stimtypeouts_init,
 % Oddball method: intensity, pitch, channel
 h.Settings.oddballmethod = 'channel'; % can use same type for pattern only if oddball intensity is adaptive
 h.Settings.oddballvalue = {3,4,[5 6],[5 6]}; % [7 8 3 4]

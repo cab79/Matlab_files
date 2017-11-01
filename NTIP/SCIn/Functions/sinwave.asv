@@ -12,8 +12,6 @@ function h=sinwave(h)%(A,freq,phase,samplerate,active,figureon)
 % allows puase and resume - maybe faster, but timing less important for
 % fMRI.
 
-dbstop if error
-
 % select channels
 if isfield(h.Settings,'stimchan')
     chan = h.Settings.stimchan;
@@ -84,11 +82,7 @@ for tr = trials
                         end
                     end
                     if strcmp(conditionmethod,'intensity')
-                        if iscell(h.Settings.conditionvalue)
-                            h.inten = h.Settings.conditionvalue{h.Seq.signal(tr),i};
-                        else
-                            h.inten = h.Settings.conditionvalue(i,h.Seq.signal(tr));
-                        end
+                        h.inten = h.Settings.conditionvalue(i,h.Seq.signal(tr));
                     end
                 end
             else
@@ -137,9 +131,9 @@ for tr = trials
     %apply pitch pattern?
     pitchpattern=0;
     if isfield(h.Settings,'patternmethod')
-        if strcmp(h.Settings.patternmethod,'pitch') % pitch changes
+        if strcmp(h.Settings.patternmethod,'pitch') && ~strcmp(conditionmethod,'pitch') % pitch changes
             pitchpattern=1;
-            if ~(adaptive && strcmp(h.Settings.oddballmethod,'pitch')) && ~strcmp(conditionmethod,'pitch') % pitch already defined above in this case
+            if ~(adaptive && strcmp(h.Settings.oddballmethod,'pitch')) % pitch already defined above in this case
                 if isnumeric(h.Settings.patternvalue)
                     h.pitch = h.Settings.patternvalue;
                 elseif iscell(h.Settings.patternvalue)
@@ -163,11 +157,9 @@ for tr = trials
     %apply intensity pattern?
     intenpattern=0;
     if isfield(h.Settings,'patternmethod')
-        if strcmp(h.Settings.patternmethod,'intensity') % intensity changes
+        if strcmp(h.Settings.patternmethod,'intensity')  && ~strcmp(conditionmethod,'intensity') % intensity changes
             intenpattern=1;
-            if ~strcmp(conditionmethod,'intensity') % then already defined
-                h.inten = h.Settings.patternvalue;
-            end
+            h.inten = h.Settings.patternvalue;
         end
     end
     % apply response probe?
