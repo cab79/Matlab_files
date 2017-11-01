@@ -10,7 +10,7 @@ function varargout = SCIn(varargin)
 %      instance to run (singleton)".
 %
 % Begin initialization code - DO NOT EDIT
-dbstop if error
+%dbstop if error
 
 
 global d
@@ -90,6 +90,7 @@ function varargout = SCIn_OutputFcn(hObject, eventdata, h)
 
 % Get default command line output from h structure
 varargout{1} = h.output;
+movegui('northeast')
 
 
 % --- Executes on selection change in ExptOpt.
@@ -272,8 +273,8 @@ function StartStop_Callback(hObject, eventdata, h)
 global d
 % get GUI handle name: necessary if 'h' is empty because not called from
 % the base workspace
-GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
-h = guihandles(GUIhname);
+%GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
+%h = guihandles(GUIhname);
 
 h.d=d;
 
@@ -501,3 +502,49 @@ end
 %set(h.buttontime, 'String', GetSecs);
 %guidata(hObject, h)
 %disp(['button press: ' eventdata.Key])
+
+
+
+function vol_atten_Callback(hObject, eventdata, h)
+% hObject    handle to vol_atten (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of vol_atten as text
+%        str2double(get(hObject,'String')) returns contents of vol_atten as a double
+h.volatten = get(hObject,'String');
+guidata(hObject, h)
+
+% --- Executes during object creation, after setting all properties.
+function vol_atten_CreateFcn(hObject, eventdata, h)
+% hObject    handle to vol_atten (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function entrainfreq_Callback(hObject, eventdata, h)
+% hObject    handle to entrainfreq (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of entrainfreq as text
+%        str2double(get(hObject,'String')) returns contents of entrainfreq as a double
+h.entrainfreq = get(hObject,'String');
+guidata(hObject, h)
+
+% --- Executes during object creation, after setting all properties.
+function entrainfreq_CreateFcn(hObject, eventdata, h)
+% hObject    handle to entrainfreq (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

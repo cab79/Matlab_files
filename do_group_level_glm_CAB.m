@@ -24,6 +24,7 @@ function correlationMats = do_group_level_glm_CAB(correlationMats, Settings)
 %	Contact: giles.colclough@eng.ox.ac.uk
 %	Originally written on: MACI64 by Giles Colclough, 10-Apr-2014 13:33:21
 
+groupLevel = struct;
 for iFreq = Settings.nFreqBands:-1:1,
 if strcmpi(Settings.paradigm, 'rest'),
     % univariate edge testing in turn for correlation, partial correlation
@@ -79,10 +80,11 @@ elseif strcmpi(Settings.paradigm, 'task'),
     % we need to run a separate GLM for each first level contrast. 
     % And for each group-level contrast.
     % What a mare.
-    for iContrast = length(correlationMats{iFreq}.firstLevel):-1:1,
+    for iContrast = length(Settings.SubjectLevel.contrasts):-1:1,
 		% we use parameter estimates from the level below for each of
 		% correlation, partial correlation and regularised partial
 		% correlation
+        Settings.GroupLevel.iInter=0; % NOT interaction on within-subject factors
 		if isfield(correlationMats{iFreq}, 'subjectLevel'),
 			COPE = correlationMats{iFreq}.subjectLevel(iContrast).cope;
 		elseif isfield(correlationMats{iFreq}, 'firstLevel'),
@@ -91,61 +93,32 @@ elseif strcmpi(Settings.paradigm, 'task'),
 			error([mfilename ':WhereIsTheData'], ...
 				  'Expected input to have either first level or subject level results. \n');
 		end%if
-		
-		
-		%-- correlation
-        [T, p, fweptmp, fdrptmp, COPEmat] = univariate_edge_test(COPE.correlation,                 ...
-                                                           Settings.GroupLevel.designMatrix, ...
-													       Settings.GroupLevel.contrasts,[],Settings);
-        %for iConG = size(p,3):-1:1,
-        %    h(:,:,iConG) = false_discovery_rate(p_to_z_two_tailed(p(:,:,iConG)), ...
-        %                                                Settings.FDRalpha);
-        %end%for
-
-        groupLevel(iContrast).correlation.T    = T;
-        groupLevel(iContrast).correlation.p    = p;
-        groupLevel(iContrast).correlation.FWEp = fweptmp;
-        groupLevel(iContrast).correlation.FDRp = fdrptmp;
-        groupLevel(iContrast).correlation.COPE = COPEmat;
-
-		%-- partial correlation
-        [T, p, fweptmp, fdrptmp, COPEmat] = univariate_edge_test(COPE.partialCorrelation,          ...
-                                                           Settings.GroupLevel.designMatrix, ...
-                                                           Settings.GroupLevel.contrasts,[],Settings);
-        %for iConG = size(p,3):-1:1,
-        %    h(:,:,iConG) = false_discovery_rate(p_to_z_two_tailed(p(:,:,iConG)), ...
-        %                                                Settings.FDRalpha);
-        %end%for
-
-        groupLevel(iContrast).partialCorrelation.T    = T;
-        groupLevel(iContrast).partialCorrelation.p    = p;
-        groupLevel(iContrast).partialCorrelation.FWEp = fweptmp;
-        groupLevel(iContrast).partialCorrelation.FDRp = fdrptmp;
-        groupLevel(iContrast).partialCorrelation.COPE = COPEmat;
-
-		%-- regularised partial correlation
-        if Settings.Regularize.do,
-            [T, p, fweptmp, fdrptmp, COPEmat] = univariate_edge_test(COPE.partialCorrelationRegularized, ...
-                                                               Settings.GroupLevel.designMatrix,   ...
-                                                               Settings.GroupLevel.contrasts,[],Settings);
-            %for iConG = size(p,3):-1:1,
-            %    h(:,:,iConG) = false_discovery_rate(p_to_z_two_tailed(p(:,:,iConG)), ...
-            %                                                Settings.FDRalpha);
-            %end%for
-
-            groupLevel(iContrast).partialCorrelationRegularized.T    = T;
-            groupLevel(iContrast).partialCorrelationRegularized.p    = p;
-            groupLevel(iContrast).partialCorrelationRegularized.FWEp = fweptmp;
-            groupLevel(iContrast).partialCorrelationRegularized.FDRp = fdrptmp;
-            groupLevel(iContrast).partialCorrelationRegularized.COPE = COPEmat;
-        end%if
-        % add in first levels for reference
-        groupLevel(iContrast).firstLevelContrast        = Settings.SubjectLevel.contrasts{iContrast};
-        groupLevel(iContrast).firstLevelConditionLabels = Settings.SubjectLevel.conditionLabel;
         
-        % add in design for reference
-        groupLevel(iContrast).groupDesignMatrix = Settings.GroupLevel.designMatrix;
-        groupLevel(iContrast).groupContrasts    = Settings.GroupLevel.contrasts;
+        groupLevel = correlation_stats(groupLevel, Settings, COPE, iContrast);
+		
+    end%for
+    
+    % within-subject interactions
+    for iInter = size(Settings.SubjectLevel.interaction,1):-1:1,
+        Settings.GroupLevel.iInter=iInter; % interaction on within-subject factors
+        iContrast = length(Settings.SubjectLevel.contrasts)+iInter:length(Settings.SubjectLevel.contrasts)+iInter+1;
+		% we use parameter estimates from the level below for each of
+		% correlation, partial correlation and regularised partial
+		% correlation
+        COPE = cell(2,1);
+        for ic = 1:length(iContrast)
+            if isfield(correlationMats{iFreq}, 'subjectLevel'),
+                COPE{ic} = correlationMats{iFreq}.subjectLevel(iContrast(ic)).cope;
+            elseif isfield(correlationMats{iFreq}, 'firstLevel'),
+                COPE{ic} = correlationMats{iFreq}.firstLevel(iContrast(ic)).cope;
+            else
+                error([mfilename ':WhereIsTheData'], ...
+                      'Expected input to have either first level or subject level results. \n');
+            end%if
+        end
+        
+        groupLevel = correlation_stats(groupLevel, Settings, COPE, iContrast);
+		
     end%for
     
 else
@@ -155,3 +128,74 @@ end%if
 
 correlationMats{iFreq}.groupLevel = groupLevel;
 end%for loop over frequencies
+
+end % for function
+
+function groupLevel = correlation_stats(groupLevel, Settings, COPE, iContrast)
+
+if iscell(COPE) && length(iContrast)>1 % interaction
+    COPEcell = COPE;
+    COPE=struct;
+    for i = 1:length(COPEcell)
+        COPE.correlation(:,:,:,i) = COPEcell{i}.correlation;
+        COPE.partialCorrelation(:,:,:,i) = COPEcell{i}.partialCorrelation;
+        COPE.partialCorrelationRegularized(:,:,:,i) = COPEcell{i}.partialCorrelationRegularized;
+    end
+    iContrast=iContrast(1);
+end
+%-- correlation
+[T, p, fweptmp, fdrptmp, COPEmat] = univariate_edge_test(COPE.correlation,                 ...
+                                                   Settings.GroupLevel.designMatrix, ...
+                                                   Settings.GroupLevel.contrasts,[],Settings);
+%for iConG = size(p,3):-1:1,
+%    h(:,:,iConG) = false_discovery_rate(p_to_z_two_tailed(p(:,:,iConG)), ...
+%                                                Settings.FDRalpha);
+%end%for
+
+groupLevel(iContrast).correlation.T    = T;
+groupLevel(iContrast).correlation.p    = p;
+groupLevel(iContrast).correlation.FWEp = fweptmp;
+groupLevel(iContrast).correlation.FDRp = fdrptmp;
+groupLevel(iContrast).correlation.COPE = COPEmat;
+
+%-- partial correlation
+[T, p, fweptmp, fdrptmp, COPEmat] = univariate_edge_test(COPE.partialCorrelation,          ...
+                                                   Settings.GroupLevel.designMatrix, ...
+                                                   Settings.GroupLevel.contrasts,[],Settings);
+%for iConG = size(p,3):-1:1,
+%    h(:,:,iConG) = false_discovery_rate(p_to_z_two_tailed(p(:,:,iConG)), ...
+%                                                Settings.FDRalpha);
+%end%for
+
+groupLevel(iContrast).partialCorrelation.T    = T;
+groupLevel(iContrast).partialCorrelation.p    = p;
+groupLevel(iContrast).partialCorrelation.FWEp = fweptmp;
+groupLevel(iContrast).partialCorrelation.FDRp = fdrptmp;
+groupLevel(iContrast).partialCorrelation.COPE = COPEmat;
+
+%-- regularised partial correlation
+if Settings.Regularize.do,
+    [T, p, fweptmp, fdrptmp, COPEmat] = univariate_edge_test(COPE.partialCorrelationRegularized, ...
+                                                       Settings.GroupLevel.designMatrix,   ...
+                                                       Settings.GroupLevel.contrasts,[],Settings);
+    %for iConG = size(p,3):-1:1,
+    %    h(:,:,iConG) = false_discovery_rate(p_to_z_two_tailed(p(:,:,iConG)), ...
+    %                                                Settings.FDRalpha);
+    %end%for
+
+    groupLevel(iContrast).partialCorrelationRegularized.T    = T;
+    groupLevel(iContrast).partialCorrelationRegularized.p    = p;
+    groupLevel(iContrast).partialCorrelationRegularized.FWEp = fweptmp;
+    groupLevel(iContrast).partialCorrelationRegularized.FDRp = fdrptmp;
+    groupLevel(iContrast).partialCorrelationRegularized.COPE = COPEmat;
+end%if
+% add in first levels for reference
+if iContrast<=length(Settings.SubjectLevel.contrasts)
+groupLevel(iContrast).firstLevelContrast        = Settings.SubjectLevel.contrasts{iContrast};
+groupLevel(iContrast).firstLevelConditionLabels = Settings.SubjectLevel.conditionLabel;
+end
+
+% add in design for reference
+groupLevel(iContrast).groupDesignMatrix = Settings.GroupLevel.designMatrix;
+groupLevel(iContrast).groupContrasts    = Settings.GroupLevel.contrasts;
+end

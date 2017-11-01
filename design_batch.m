@@ -261,7 +261,7 @@ for g = 1:Ngrp
             end
         else
             subdir = D.data_path;
-            subfile = D.imglist{gs};
+            subfile = D.imglist(gs,:)';
         end
         
         subimg = cell(1,1);
@@ -299,7 +299,7 @@ for g = 1:Ngrp
                     subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
                 end
             else
-                subimg = {subfile};
+                subimg = subfile;
             end
         end
         scans = subimg;
@@ -523,4 +523,12 @@ end
 save(fullfile(D.spm_path,'matlabbatch'),'matlabbatch');
 save(fullfile(D.spm_path,'sub_info'),'subID','SubInd');
 spm_jobman('initcfg')
-spm_jobman('run',matlabbatch);
+try
+    spm_jobman('run',matlabbatch);
+catch
+    % reduced number of subjects if fails
+    subind = randperm(length(matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject));
+    matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject = matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject(subind(1:D.nSubs));
+    spm_jobman('initcfg');
+    spm_jobman('run',matlabbatch);
+end

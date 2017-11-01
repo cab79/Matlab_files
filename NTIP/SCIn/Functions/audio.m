@@ -18,6 +18,11 @@ end
 h.audiofileindex = h.audiofileindex + 1;
 filename = fullfile(h.d.root,'audio_files',h.Settings.audiofile{h.audiofileindex});
 [y,Fs] = audioread(filename);
+if isfield(h.Settings,'audiochan')
+    ytemp = zeros(size(y,1),h.Settings.nrchannels);
+    ytemp(:,h.Settings.audiochan) = y;
+    y=ytemp;
+end
 
 switch opt
     

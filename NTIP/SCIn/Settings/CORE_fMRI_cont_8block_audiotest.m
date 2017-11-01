@@ -53,14 +53,19 @@ switch opt
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
         % cell array
-        h.Settings.blockstart = {'audio','scannertrig'}; % audio,labjack,audio,
+        h.Settings.blockstart = {}; % audio,labjack,audio,
         % names of any audiofiles
         h.Settings.audiofile = {'instruct.wav'}; % labjack
+        h.Settings.audiochan = [5 6]; % labjack
         % number of scanner triggers to wait for before starting the
         % sequence
+        
         h.Settings.num_scanner_trig = 4;
         % wait time between scanner triggers (s)
         h.Settings.waittime_scanner_trig = 1;
+        
+        % key corresponding to scanner trigger
+        h.Settings.triggeropt = '7&';
         
 end
 
@@ -88,7 +93,7 @@ h.Settings.stimcontrol='PsychPortAudio';
     %rear = 5,6 - connect to 3/4
     %side = 7,8
 % total number of channels, e.g. on sound card
-h.Settings.nrchannels = 2; % 8 
+h.Settings.nrchannels = 8; % 8 
 % Use D188
 %h.Settings.D188 = 1;
 % message box with OK press to start experiment?
@@ -102,12 +107,13 @@ h.Settings.nrchannels = 2; % 8
 % duration of trial in seconds
 h.Settings.trialdur = 0;
 % duration of stimulus in seconds
-%h.Settings.stimdur = [0.5 0.5];
 h.Settings.stimdur = [0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.5];
+%h.Settings.stimdur = [0.5 0.5];
 % Pattern type method: intensity, pitch. Not supported: channel, duration
 h.Settings.patternmethod = 'intensity';
 %h.Settings.patternvalue = [1 0]; % one per stimdur
 h.Settings.patternvalue = [1 0 1 0 1 0 1 0 1 0 0]; % one per stimdur
+%h.Settings.patternvalue = [1 0]; % one per stimdur
 % 'rand' or 'reg' spacing?
 h.Settings.stimdurtype = 'rand';
 % index of stimdur to randomise
@@ -124,16 +130,17 @@ h.Settings.Tukeytype = 1; % 1 = apply to each tone within pattern; 2 = apply to 
 % sampling rate
 h.Settings.fs = 96000; % don't change this, unless sure soundcard supports higher rates
 h.Settings.atten = 0; % attenuation level in decibels
+h.Settings.attenchan = [5 6]; % [7 8 3 4]
 
 %% Condition-dependent stimulus parameters
 % Condition method: do the stimtypes indexed by
 % h.Settings.stimtypeouts_init (oddball method) differ by any other
 % characteristic? E.g. different modalities may requrie different pitches
 h.Settings.conditionmethod = {'pitch','intensity'};
-h.Settings.conditionvalue = [200 200 500 500; 1 1 1 1];% for each number in h.Settings.stimtypeouts_init,
+h.Settings.conditionvalue = [23 23 500 500; 1 1 1 1];% for each number in h.Settings.stimtypeouts_init,
 % Oddball method: intensity, pitch, channel
 h.Settings.oddballmethod = 'channel'; % can use same type for pattern only if oddball intensity is adaptive
-h.Settings.oddballvalue = [1 2, 1 2]; % [7 8 3 4]
+h.Settings.oddballvalue = [3 4, 5 6]; % [7 8 3 4]
 
 %% SEQUENCE: For future adoption of CreateSequence
 h.Settings.oddballtype = 'roving'; % options: 'roving', 'classical'
@@ -152,8 +159,6 @@ h.Settings.n_set = 1; % 1 = use min set size
 h.Settings.buttontype='key';
 % range of keyboard presses indicating a recordable response
 h.Settings.buttonopt = {};%'LeftArrow','RightArrow'}; 
-% key corresponding to scanner trigger
-h.Settings.triggeropt = '7&';
 %display RT, 1=yes, 0=no
 h.Settings.displayRT=0;
 % response probe

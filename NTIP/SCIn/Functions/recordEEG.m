@@ -42,7 +42,7 @@ switch opt
                 case 'Yes'
                     h.disableGUI=1;
             end
-        catch
+        catch MExc
             choice = questdlg('EEG not connected. Stop or continue?', ...
                     'Choice', ...
                     'Stop','Continue','Continue');

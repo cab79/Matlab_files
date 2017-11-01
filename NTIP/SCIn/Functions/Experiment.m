@@ -59,6 +59,46 @@ switch opt
     
     case 'start'
         
+        % create output structure
+        allout = cell(1,length(h.Seq.signal));
+        h.out.stimtime = allout;
+        
+        % note time that experiment started
+        h.t_start = datestr(now,30);
+        
+        % record stim sequence
+        if isfield(h,'Seq')
+            global d
+            [~,seqname,~] = fileparts(h.SeqName);
+            fname = ['Sequence_' h.subID '_' seqname '_startblock' num2str(h.startblock) '_' h.t_start '.mat'];
+            seq = h.Seq;
+            save(fullfile(d.root,d.out,fname),'seq');
+        end
+          
+        % KBCheck or KBQueueCheck results
+        KbName('UnifyKeyNames'); %used for cross-platform compatibility of keynaming
+        h.out.presstrial = [];
+        h.out.pressbutton = [];
+        h.out.presstime = [];
+        h.out.RT = [];
+        h.out.presstimedelta = [];
+
+        % KBQueueCheck results
+        h.out.firstpressbutton = allout;
+        h.out.firstpress = allout;
+        h.out.firstrelease = allout;
+        h.out.lastpress = allout;
+        h.out.lastrelease = allout;
+        
+        if isfield(h.Settings,'buttontype')
+            if ~isempty(h.Settings.buttontype)
+                if h.Settings.record_response
+                    KbQueueCreate; %creates cue using defaults
+                    KbQueueStart;  %starts the cue
+                end
+            end
+        end
+        
         % require input to start, e.g. scanner trigger, msgbox
         if isfield(h.Settings,'blockstart')
             if ~isempty(h.Settings.blockstart)
@@ -81,41 +121,14 @@ switch opt
             end
         end
         
-        % create output structure
-        allout = cell(1,length(h.Seq.signal));
-        h.out.stimtime = allout;
-        
         % record scanner triggers
-        if isfield(h,'trigtime')
-            h.out.trigtime = h.trigtime;
-        end
+        %if isfield(h,'trigtime')
+        %    h.out.trigtime = h.trigtime;
+        %end
         
-        if isfield(h.Settings,'buttontype')
-            if ~isempty(h.Settings.buttontype)
-                if h.Settings.record_response
-                    KbName('UnifyKeyNames'); %used for cross-platform compatibility of keynaming
-                    KbQueueCreate; %creates cue using defaults
-                    KbQueueStart;  %starts the cue
-                    
-                    % KBCheck results
-                    h.out.presstrial = [];
-                    h.out.pressbutton = [];
-                    h.out.presstime = [];
-                    h.out.RT = [];
-                    h.out.presstimedelta = [];
-                    
-                    % KBQueueCheck results
-                    h.out.firstpressbutton = allout;
-                    h.out.firstpress = allout;
-                    h.out.firstrelease = allout;
-                    h.out.lastpress = allout;
-                    h.out.lastrelease = allout;
-                end
-            end
-        end
         
-        % note time that experiment started
-        h.t_start = datestr(now,30);
+        % Flush Buffer so only responses after stim onset are recorded (not recording accidental buton presses)
+        KbQueueFlush; 
         
         switch h.Settings.design
             case 'trials'
@@ -139,19 +152,19 @@ tic
 
 h.i=0;
 
-while h.i<length(h.Seq.signal);
+while h.i<length(h.Seq.signal)
     
     % record previous start time to calculate ISI
-    if isfield(h,'st'); 
+    if isfield(h,'st')
         h.st_prev = h.st; 
-    end;
+    end
     
     % start time of trial
     h.st = GetSecs;
     h.ct=h.st;
     
     % calculate ISI
-    if isfield(h,'st_prev');
+    if isfield(h,'st_prev')
         isi = h.st-h.st_prev;
     else
         isi = 0;
@@ -191,8 +204,6 @@ while h.i<length(h.Seq.signal);
         end
     end
     
-    % Flush Buffer so only responses after stim onset are recorded
-    KbQueueFlush; 
     
     % define the duration of this trial
     h.trialdur = h.Settings.trialdur; % if stimdur is zero, will start next trial immediately after stimulus ends
@@ -273,9 +284,9 @@ while (h.ct-h.st)<h.trialdur
     % update current time and exit if needed
     if strcmp(h.Settings.design,'trials')
         h.ct=GetSecs;
-        if (h.ct-h.st)>h.trialdur; 
+        if (h.ct-h.st)>h.trialdur
             break; 
-        end;
+        end
     end
     
 %t2=GetSecs;
@@ -287,7 +298,7 @@ while (h.ct-h.st)<h.trialdur
     if strcmp(h.Settings.design,'continuous')
         h = ContFun(h);
     end
-    h = record_response(h,'current_trial');
+    h = record_response(h,'all');
 
     %only continue loop (which can be slow) if not too close to end of
     %trial. Increases accuracy of EEG markers.
@@ -623,7 +634,7 @@ if newtrial
     %try
         %h.i = h.i+1;
     try
-        h.i = trials(1);
+        h.i = max(h.i+1,trials(1));
     catch
         h.i = h.i +1;
     end
@@ -665,9 +676,6 @@ if newtrial
             h = recordEEG(h,opt);
         end
     end
-    
-    % Flush Buffer so only responses after stim onset are recorded
-    KbQueueFlush; 
     
     % add next n trials to the buffer (unless buffer full)
     % send stimulus
@@ -720,6 +728,7 @@ switch opt
                         h.out.firstpressbutton{h.i} = KbName(firstPress);
                         h.out.firstpress{h.i} = firstPress(firstPress>0);
                         h.out.firstrelease{h.i} = firstRelease(firstRelease>0);
+                        h.out.lastpressbutton{h.i} = KbName(lastPress);
                         h.out.lastpress{h.i} = lastPress(lastPress>0);
                         h.out.lastrelease{h.i} = lastRelease(lastRelease>0);
                     else
@@ -778,6 +787,60 @@ switch opt
                         %    end
                         %end
                     end
+                end
+            end
+        end
+        
+     case 'all'
+        if isfield(h.Settings,'buttontype')
+            if ~isempty(h.Settings.buttontype)
+                if h.Settings.record_response
+                    [h.pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck;
+                    if h.pressed
+                        recordresp=1;
+                        fpress = KbName(firstPress);
+                        lpress = KbName(lastPress);
+                        firstPress = firstPress(firstPress>0);
+                        lastPress = lastPress(lastPress>0);
+                        % if button options are specified
+                        if isfield(h.Settings,'buttonopt')
+                            if ~isempty(h.Settings.buttonopt)
+                                if ~ismember(fpress,h.Settings.buttonopt) || ~ismember(lpress,h.Settings.buttonopt)
+                                    recordresp=0;
+                                end
+                            end
+                        end
+                        if recordresp
+                            if firstPress~=lastPress
+                                h.out.presstrial = [h.out.presstrial h.i*ones(1, length(firstPress)) h.i*ones(1, length(lastPress))];
+                                h.out.pressbutton = [h.out.pressbutton fpress lpress];
+                                h.out.presstime = [h.out.presstime firstPress lastPress];
+                                h.out.presstimedelta = [h.out.presstimedelta zeros(1, length(firstPress)) zeros(1, length(lastPress))];
+                                if strcmp(h.Settings.design,'trials')
+                                    h.out.RT = [h.out.RT firstPress-h.st lastPress-h.st];
+                                elseif strcmp(h.Settings.design,'continuous')
+                                    h.out.RT = [h.out.RT firstPress-h.out.stimtime{h.i} lastPress-h.out.stimtime{h.i}];
+                                end
+                                disp(['RESPONSE: ' fpress ' ' lpress])
+                            else
+                                h.out.presstrial = [h.out.presstrial h.i*ones(1, length(firstPress))];
+                                h.out.pressbutton = [h.out.pressbutton fpress];
+                                h.out.presstime = [h.out.presstime firstPress];
+                                h.out.presstimedelta = [h.out.presstimedelta zeros(1, length(firstPress))];
+                                if strcmp(h.Settings.design,'trials')
+                                    h.out.RT = [h.out.RT firstPress-h.st];
+                                elseif strcmp(h.Settings.design,'continuous')
+                                    h.out.RT = [h.out.RT firstPress-h.out.stimtime{h.i}];
+                                end
+                                disp(['RESPONSE: ' fpress])
+                            end
+                            % Flush Buffer so only new responses are recorded next
+                            % time
+                            KbQueueFlush; 
+                        end
+                           
+                    end
+                    
                 end
             end
         end

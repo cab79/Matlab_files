@@ -3,7 +3,7 @@
 % PREREQUISITES: 
 % - VOI data file(s) in excel LONG format (e.g. output from Convert_VOImat_to_excel.m)
 close all
-P.pth = 'C:\Data\Catastrophising study\SPMstats\t-5500_-2500_b-5500_-5000_Grp_Att_Exp_Subject_orig_cleaned_spm\Grp_Exp_clusters';
+P.pth = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\_Time_Int_Exp_Subject_spm_t416_478\ExpBMed_clusters';
 % xlsx files must be LONG format. Values in each factor columns should be
 % text labels (not numerical) as these will be used to label the charts.
 P.filenames = {'VOI*.xlsx'}; % use * to load multiple files, each with separate plots. Filename must have extension
@@ -13,10 +13,10 @@ P.datnames = {'Data'};
 P.yaxisnames = {'mean cluster activity (µV)'};
 %factor names:
 %P.xaxisnames = {'Stimulus Intensity'}; % header of factor represented on x axis
-P.xaxisnames = {'Expectation Cues'}; % header of factor represented on x axis
-P.subplotnames = {'Attention Task'}; % OPTIONAL factor that splits x axis into subplots
+P.xaxisnames = {'Stimulus Intensity'}; % header of factor represented on x axis
+P.subplotnames = {'LOI vs Baseline'}; % OPTIONAL factor that splits x axis into subplots
 %P.groupingnames = {'Expectation Cues'}; % factor of main interest for comparison - plots as different colours
-P.groupingnames = {'Group'}; % factor of main interest for comparison - plots as different colours
+P.groupingnames = {'Expectation Cues'}; % factor of main interest for comparison - plots as different colours
 % other options:
 P.groupcolours = [1 0 0; 0 0 1]; % colours of each group on each plot: if two groups, two colours are needed.
 P.textsize = 12; % size of text
@@ -28,10 +28,10 @@ P.plot_sep_fg=0;
 
 % 1 = plot, 0 = no plot. Will align plots horizonally in figure, so a small number should be slected (2-3).
 P.plottypes = {
-    'jitter', 1;
+    'jitter', 0;
     'boxplot', 1;
     'violin', 0;
-    'confidence',0;
+    'confidence',1;
     };
     
 P.save_figure=1;

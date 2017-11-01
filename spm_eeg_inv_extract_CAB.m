@@ -73,6 +73,14 @@ for i = 1:Ns
         XYZ(i, :) = vert(svert{i}, :);
     end
 end
+
+%% CAB added:
+
+if inv.source.cluster == 1 % Treat XYZ as cluster rather than separate sources
+    svert      = {spm_vec(svert)};
+    Ns=1;
+    label = label(Ns);
+end
  
 
 % report
@@ -208,13 +216,7 @@ end
 spm_progress_bar('Clear')
 
 
-%% CAB added:
 
-if inv.source.cluster == 1 % Treat XYZ as cluster rather than separate sources
-    Y = mean(Y,1);
-    Ns=1;
-    label = label(Ns);
-end
  
 %%
 % create source dataset

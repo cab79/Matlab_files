@@ -1,4 +1,4 @@
-function [orth_wf,ucol] = find_ortho_symm_v2(S,wfall)
+function [orth_wf,ucol] = find_ortho_symm_v2(S,wfall,inputclus,clusdir)
 
 orth_wf = cell(size(wfall));
 % METHOD:
@@ -23,10 +23,12 @@ while tryagain
         if isempty(orth_wf{w}) || r>S.outputrank
             % if any are rank deficient, start again with higher tol
             tryagain=1;
-            tol=tol*1.2;
+            tol=tol*S.ranktolfactor;
             disp(['try again on wf ' num2str(w) '/' num2str(length(ld_wf))])
             break
         elseif w == length(ld_wf)
+            %new_clus_img = create_reduced_image(S,inputclus,clusdir,0)
+            %score = nReg*av_nClus +1;
             tryagain=0;
         end
     end
