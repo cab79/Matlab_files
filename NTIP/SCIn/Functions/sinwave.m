@@ -190,6 +190,14 @@ for tr = trials
     
     if isfield(h.Settings,'df') && length(chan)==2 % if pitch is different in two channels
         df=1;
+        if isfield(h,'entrainfreq')
+            df_freq = str2double(h.entrainfreq);
+            if df_freq==0
+                df_freq=h.Settings.df;
+            end
+        else
+            df_freq=h.Settings.df;
+        end
     else
         df=0;
     end
@@ -238,17 +246,17 @@ for tr = trials
                 error('num column of stimdur must equate to number of pitches');
             end
             mwav{i}(chan(1),:) = h.inten(1) *sin(2*pi*(h.pitch(i))*t{i} + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
-            if df; mwav{i}(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
+            if df; mwav{i}(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(i)+df_freq)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+df_freq)/h.Settings.fs);end
         elseif intenpattern
             %h.inten = h.inten(rs); % randomise?
             if length(h.dur)~=length(h.inten)
                 error('num column of stimdur must equate to number of intensities');
             end
             mwav{i}(chan(1),:) = h.inten(i) *sin(2*pi*(h.pitch(1))*t{i} + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs);
-            if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t{i} + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
+            if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(1)+df_freq)*t{i} + phadd(2) + 2*pi*(h.pitch(1)+df_freq)/h.Settings.fs);end
         else % no pattern
             mwav{i}(chan(1),:) = h.inten(i) *sin(2*pi*(h.pitch(i))*t{i} + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
-            if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
+            if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(i)+df_freq)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+df_freq)/h.Settings.fs);end
         end
         
         % instantaneous phase and direction at end of stim
@@ -297,7 +305,7 @@ for tr = trials
    %     end
    %     for i = 1:length(h.pitch)
    %         h.mwav(chan(1),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i))*t + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
-   %         if df; h.mwav(chan(2),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
+   %         if df; h.mwav(chan(2),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i)+df_freq)*t + phadd(2) + 2*pi*(h.pitch(i)+df_freq)/h.Settings.fs);end
    %     end
    % elseif intenpattern
    %     if length(h.dur)~=length(h.inten)
@@ -305,7 +313,7 @@ for tr = trials
    %     end
    %     for i = 1:length(h.inten)
    %         h.mwav(chan(1),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1))*t + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs);
-   %         if df; h.mwav(chan(2),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
+   %         if df; h.mwav(chan(2),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1)+df_freq)*t + phadd(2) + 2*pi*(h.pitch(1)+df_freq)/h.Settings.fs);end
    %     end
    % end
     
@@ -315,7 +323,7 @@ for tr = trials
    %     % construct the player object: left
    %     h.mwav(chan(1),:) = h.inten(1) *sin(2*pi*h.pitch(1)*t + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs); % plus phaseshift plus increment
    %     % construct the player object: right
-   %     if df; h.mwav(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
+   %     if df; h.mwav(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(1)+df_freq)*t + phadd(2) + 2*pi*(h.pitch(1)+df_freq)/h.Settings.fs);end
    % end
    mono=0;
     if isfield(h.Settings,'monostereo')
