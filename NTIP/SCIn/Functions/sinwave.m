@@ -12,6 +12,8 @@ function h=sinwave(h)%(A,freq,phase,samplerate,active,figureon)
 % allows puase and resume - maybe faster, but timing less important for
 % fMRI.
 
+dbstop if error
+
 % select channels
 if isfield(h.Settings,'stimchan')
     chan = h.Settings.stimchan;
@@ -75,10 +77,18 @@ for tr = trials
                 for i = 1:length(h.Settings.conditionmethod)
                     conditionmethod = h.Settings.conditionmethod{i};
                     if strcmp(conditionmethod,'pitch')
-                        h.pitch = h.Settings.conditionvalue(i,h.Seq.signal(tr));
+                        if iscell(h.Settings.conditionvalue)
+                            h.pitch = h.Settings.conditionvalue{h.Seq.signal(tr),i};
+                        else
+                            h.pitch = h.Settings.conditionvalue(i,h.Seq.signal(tr));
+                        end
                     end
                     if strcmp(conditionmethod,'intensity')
-                        h.inten = h.Settings.conditionvalue(i,h.Seq.signal(tr));
+                        if iscell(h.Settings.conditionvalue)
+                            h.inten = h.Settings.conditionvalue{h.Seq.signal(tr),i};
+                        else
+                            h.inten = h.Settings.conditionvalue(i,h.Seq.signal(tr));
+                        end
                     end
                 end
             else
@@ -90,18 +100,23 @@ for tr = trials
     % oddball method
     if oddball
         if ~adaptive
-            if strcmp(h.Settings.oddballmethod,'channel')
-                if iscell(h.Settings.oddballvalue)
-                    chan = h.Settings.oddballvalue{h.Seq.signal(tr)};
+            if iscell(h.Settings.oddballvalue)
+                if size(h.Settings.oddballvalue,1)==1
+                    oddval = h.Settings.oddballvalue{h.Seq.signal(tr)};
                 else
-                    chan = h.Settings.oddballvalue(h.Seq.signal(tr));
+                    oddval = h.Settings.oddballvalue{h.Seq.signal(tr),:};
                 end
+            else
+                oddval = h.Settings.oddballvalue(h.Seq.signal(tr),:);
+            end
+            if strcmp(h.Settings.oddballmethod,'channel')
+                chan=oddval;
             elseif strcmp(h.Settings.oddballmethod,'intensity')
-                h.inten = h.Settings.oddballvalue(h.Seq.signal(tr));
+                h.inten = oddval;
             elseif strcmp(h.Settings.oddballmethod,'pitch')
-                h.pitch = h.Settings.oddballvalue(h.Seq.signal(tr));
+                h.pitch = oddval;
             elseif strcmp(h.Settings.oddballmethod,'duration')
-                h.dur = h.Settings.oddballvalue(h.Seq.signal(tr),:);
+                h.dur = oddval;
             end
         elseif adaptive
             if isfield(h,'s')
@@ -113,8 +128,12 @@ for tr = trials
                 h.pitch = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+varlevel)]; % create new pitch pair
                 h.pitch = h.pitch(h.Seq.signal(tr));
             elseif strcmp(h.Settings.oddballmethod,'duration') && strcmp(h.Settings.patternmethod,'pitch')
+                if iscell(h.Settings.oddballvalue)
+                    h.dur = h.Settings.oddballvalue{h.Seq.signal(tr),:};
+                else
+                    h.dur = h.Settings.oddballvalue(h.Seq.signal(tr),:);
+                end
                 h.pitch = [h.Settings.patternvalue(1), (h.Settings.patternvalue(1)+varlevel)]; % create new pitch pair
-                h.dur = h.Settings.oddballvalue(h.Seq.signal(tr),:);
             end
         end
     end
@@ -124,8 +143,14 @@ for tr = trials
     if isfield(h.Settings,'patternmethod')
         if strcmp(h.Settings.patternmethod,'pitch') % pitch changes
             pitchpattern=1;
-            if ~(adaptive && strcmp(h.Settings.oddballmethod,'pitch')) % pitch already defined above in this case
-                h.pitch = h.Settings.patternvalue;
+            if ~(adaptive && strcmp(h.Settings.oddballmethod,'pitch')) && ~strcmp(conditionmethod,'pitch') % pitch already defined above in this case
+                if isnumeric(h.Settings.patternvalue)
+                    h.pitch = h.Settings.patternvalue;
+                elseif iscell(h.Settings.patternvalue)
+                    nDur = length(h.dur);
+                    nPit = cellfun(@length,h.Settings.patternvalue);
+                    h.pitch = h.Settings.patternvalue{nPit==nDur};
+                end
             end
         end
     end
@@ -144,7 +169,9 @@ for tr = trials
     if isfield(h.Settings,'patternmethod')
         if strcmp(h.Settings.patternmethod,'intensity') % intensity changes
             intenpattern=1;
-            h.inten = h.Settings.patternvalue;
+            if ~strcmp(conditionmethod,'intensity') % then already defined
+                h.inten = h.Settings.patternvalue;
+            end
         end
     end
     % apply response probe?
@@ -163,6 +190,14 @@ for tr = trials
     
     if isfield(h.Settings,'df') && length(chan)==2 % if pitch is different in two channels
         df=1;
+        if isfield(h,'entrainfreq')
+            df_freq = str2double(h.entrainfreq);
+            if df_freq==0
+                df_freq=h.Settings.df;
+            end
+        else
+            df_freq=h.Settings.df;
+        end
     else
         df=0;
     end
@@ -211,17 +246,17 @@ for tr = trials
                 error('num column of stimdur must equate to number of pitches');
             end
             mwav{i}(chan(1),:) = h.inten(1) *sin(2*pi*(h.pitch(i))*t{i} + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
-            if df; mwav{i}(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
+            if df; mwav{i}(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(i)+df_freq)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+df_freq)/h.Settings.fs);end
         elseif intenpattern
             %h.inten = h.inten(rs); % randomise?
             if length(h.dur)~=length(h.inten)
                 error('num column of stimdur must equate to number of intensities');
             end
             mwav{i}(chan(1),:) = h.inten(i) *sin(2*pi*(h.pitch(1))*t{i} + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs);
-            if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t{i} + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
+            if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(1)+df_freq)*t{i} + phadd(2) + 2*pi*(h.pitch(1)+df_freq)/h.Settings.fs);end
         else % no pattern
             mwav{i}(chan(1),:) = h.inten(i) *sin(2*pi*(h.pitch(i))*t{i} + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
-            if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
+            if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.pitch(i)+df_freq)*t{i} + phadd(2) + 2*pi*(h.pitch(i)+df_freq)/h.Settings.fs);end
         end
         
         % instantaneous phase and direction at end of stim
@@ -270,7 +305,7 @@ for tr = trials
    %     end
    %     for i = 1:length(h.pitch)
    %         h.mwav(chan(1),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i))*t + phadd(1) + 2*pi*h.pitch(i)/h.Settings.fs);
-   %         if df; h.mwav(chan(2),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(i)+h.Settings.df)/h.Settings.fs);end
+   %         if df; h.mwav(chan(2),:,i) = h.inten(1) *sin(2*pi*(h.pitch(i)+df_freq)*t + phadd(2) + 2*pi*(h.pitch(i)+df_freq)/h.Settings.fs);end
    %     end
    % elseif intenpattern
    %     if length(h.dur)~=length(h.inten)
@@ -278,7 +313,7 @@ for tr = trials
    %     end
    %     for i = 1:length(h.inten)
    %         h.mwav(chan(1),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1))*t + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs);
-   %         if df; h.mwav(chan(2),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
+   %         if df; h.mwav(chan(2),:,i) = h.inten(i) *sin(2*pi*(h.pitch(1)+df_freq)*t + phadd(2) + 2*pi*(h.pitch(1)+df_freq)/h.Settings.fs);end
    %     end
    % end
     
@@ -288,7 +323,7 @@ for tr = trials
    %     % construct the player object: left
    %     h.mwav(chan(1),:) = h.inten(1) *sin(2*pi*h.pitch(1)*t + phadd(1) + 2*pi*h.pitch(1)/h.Settings.fs); % plus phaseshift plus increment
    %     % construct the player object: right
-   %     if df; h.mwav(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(1)+h.Settings.df)*t + phadd(2) + 2*pi*(h.pitch(1)+h.Settings.df)/h.Settings.fs);end
+   %     if df; h.mwav(chan(2),:) = h.inten(1) *sin(2*pi*(h.pitch(1)+df_freq)*t + phadd(2) + 2*pi*(h.pitch(1)+df_freq)/h.Settings.fs);end
    % end
    mono=0;
     if isfield(h.Settings,'monostereo')

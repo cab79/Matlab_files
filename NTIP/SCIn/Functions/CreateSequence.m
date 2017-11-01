@@ -57,7 +57,12 @@ if strcmp(h.Settings.oddballmethod,'duration')
 else
     stimdur = h.Settings.stimdur;
 end
-totdur = sum(max(sum(stimdur,2),h.Settings.trialdur) .* mult(:));% total duration of one set of all stim types
+if iscell(stimdur)
+    dursum = cellfun(@sum,stimdur);
+else
+    dursum = sum(stimdur,2);
+end
+totdur = sum(max(dursum,h.Settings.trialdur) .* mult(:));% total duration of one set of all stim types
 
 % calculate number of sets that can provide at least h.Settings.totdur of stimulation AND n_odd oddballs per CP
 num_sets=0;
@@ -84,6 +89,7 @@ for cp = 1:nCP
 
         % find sequence in which oddball trials are apart by at least nX standards
         nX = h.Settings.sep_odd(cp);
+        nXi = h.Settings.sep_odd_ind;
 
         % remove first nR standards - not to be randomised, but added to the
         % start of each set later
@@ -94,25 +100,37 @@ for cp = 1:nCP
         while ~sequence_found
 
             candidate = setindnX(randperm(length(setindnX)));
+            
+            no_conseq=1;min_stan=1;
 
-            w = [false candidate==h.Settings.standardind false]; %// "close" w with zeros, and transform to logical
-            starts = find(w(2:end) & ~w(1:end-1)); %// find starts of runs of non-zeros
-            ends = find(~w(2:end) & w(1:end-1))-1; %// find ends of runs of non-zeros
-            result = cell2mat(arrayfun(@(s,e) length(candidate(s:e)), starts, ends, 'uniformout', false)); %// build result
-
-            % must also be no consequtive oddballs
-            if nX>0
-                no_conseq=0;
-                cand_odd = candidate>1;
-                diffcand = [diff(cand_odd) 0];
-                if all(diffcand(cand_odd) ~= 0) %// check if no repeated values
-                    no_conseq=1;
+            for ii = 1:length(nXi)
+                % find indices of oddball types NOT to consider and
+                % make them 1 (as if standards)
+                sub_cand = candidate;
+                oi = nXi{ii};
+                oi_ind = ~ismember(candidate,oi);
+                sub_cand(oi_ind) = 1;
+                    
+                % How long is each sequence of standards?
+                w = [false sub_cand==h.Settings.standardind false]; %// "close" w with zeros, and transform to logical
+                starts = find(w(2:end) & ~w(1:end-1)); %// find starts of runs of non-zeros
+                ends = find(~w(2:end) & w(1:end-1))-1; %// find ends of runs of non-zeros
+                result = cell2mat(arrayfun(@(s,e) length(sub_cand(s:e)), starts, ends, 'uniformout', false)); %// build result
+                if ~all(result>=nX)
+                    min_stan=0;
                 end
-            else
-                no_conseq=1;
+
+                % must also be no consecutive oddballs
+                if nX>0
+                    cand_odd = sub_cand>1;
+                    diffcand = [diff(cand_odd) 0];
+                    if ~all(diffcand(cand_odd) ~= 0) %// check if no repeated values
+                        no_conseq=0;
+                    end
+                end
             end
 
-            if all(result>=nX) && no_conseq 
+            if min_stan && no_conseq 
                 sequence_found = true;
             end
         end
