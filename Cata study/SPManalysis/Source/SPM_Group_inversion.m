@@ -10,7 +10,7 @@ dbstop if error
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_Narrow'; 
+S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan'; 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 %fiducials directory
@@ -25,6 +25,7 @@ S.fmid = '';
 %S.fsuff = ;
 S.fsuff = {'_orig_cleaned.mat';
     '_orig_cleaned.mat';
+    '_orig_cleaned_trialNmatch.mat'; 
     '_orig_cleaned_trialNmatch.mat'; };
 
 %% specific settings for this analysis
@@ -33,8 +34,8 @@ S.include_codes = [1];
 S.grps = {1,2}; %inversion on each group separately: separate with colon. Otherwise separate with comma
 % time and frequecy windows
 S.freqwin = []; % empty if not requiring freq analysis
-S.timewin = [-5500 -2500; -3000 0; 116 878]; % Best to narrow this as much as possible to the range of interest. Empty will include whole epoch. 
-S.basewin = [-5500 -5000; -3000 -2500; -500 0]; % empty will not baseline correct and will not produce a baseline image.
+S.timewin = [-5500 -2500; -3000 0; -500 1500; -5500 1500]; % Best to narrow this as much as possible to the range of interest. Empty will include whole epoch. 
+S.basewin = [-5500 -5000; -3000 -2500; -500 0; -5500 -5000]; % empty will not baseline correct and will not produce a baseline image.
 %S.timewin = [-3000 0]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest.
 %S.basewin = [-3000 -2500]; % empty will not baseline correct and will not produce a baseline image.
 %S.timewin = [-500 1500]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest.
@@ -75,6 +76,10 @@ S.images_out = {
         'base',[];
         [416 478],[]; %Exp
         [116 878],[]; %Exp
+        }; 
+        
+        % from timewin 4
+        {
         }; 
 };
 %end

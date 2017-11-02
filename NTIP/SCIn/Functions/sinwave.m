@@ -191,7 +191,11 @@ for tr = trials
     if isfield(h.Settings,'df') && length(chan)==2 % if pitch is different in two channels
         df=1;
         if isfield(h,'entrainfreq')
-            df_freq = str2double(h.entrainfreq);
+            try
+                df_freq = str2double(get(h.entrainfreq,'string'));
+            catch
+                df_freq = str2double(h.entrainfreq);
+            end
             if df_freq==0 || isnan(df_freq)
                 df_freq=h.Settings.df;
             end
@@ -379,7 +383,11 @@ for tr = trials
     if isfield(h.Settings,'attenchan')
         if ismember(chan,h.Settings.attenchan)
             if isfield(h,'vol_atten')
-                inten_atten = str2double(get(h.vol_atten,'string'));
+                try
+                    inten_atten = str2double(get(h.vol_atten,'string'));
+                catch
+                    inten_atten = str2double(h.vol_atten);
+                end
             else
                 inten_atten = h.Settings.atten; 
             end

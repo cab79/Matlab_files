@@ -10,22 +10,22 @@ S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes
 % root directory in which source DATAFILES are located
 S.datafile_path = 'C:\Data\Catastrophising study\SPMdata';
 % root directory in which source IMAGES are located
-S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_NoHan_Narrow';
+S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_NoHan';
 % directory in which SPM analysis is saved 
-S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning_Narrow';
+S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning';
 % specific folder(s) containing the SPM stats for this analysis, 
 % the original data file suffix,
 % and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
-    '_Time_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat',{'Int', 'Exp'}
+    %'_Time_Int_Exp_Subject_spm_t416_478',4,'_orig_cleaned_trialNmatch.mat',{'Int', 'Exp'}
     %'_Time_Int_Exp_Subject_spm_t116_878',3,'_orig_cleaned_trialNmatch.mat',{'Int', 'Exp'}
     %'_Time_Grp_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat',{}
     %'_Grp_Int_Exp_Subject_spm_t416_478',3,'_orig_cleaned_trialNmatch.mat',{}
-    %'_Time_Grp_Exp_Subject_spm_t-1288_-1076',2, '_orig_cleaned.mat',{'T1Exp',}
-    %'_Time_Grp_Exp_Subject_spm_t-2162_-2002',2, '_orig_cleaned.mat',{'T1Exp','T1Grp'}
-    %'_Time_Grp_Exp_Subject_spm_t-2264_-2202',2, '_orig_cleaned.mat',{'T1Exp','T1Grp'}
-    %'_Time_Grp_Exp_Subject_spm_t-2514_-2448',2, '_orig_cleaned.mat',{'T1Exp',}
-    %'_Time_Grp_Exp_Subject_spm_t-2362_-2338',2, '_orig_cleaned.mat',{'T1Exp',}
+    '_Time_Grp_Exp_Subject_spm_t-1288_-1076',2, '_orig_cleaned.mat',{'T1Exp',}
+    '_Time_Grp_Exp_Subject_spm_t-2162_-2002',2, '_orig_cleaned.mat',{'T1Exp','T1Grp'}
+    '_Time_Grp_Exp_Subject_spm_t-2264_-2202',2, '_orig_cleaned.mat',{'T1Exp','T1Grp'}
+    '_Time_Grp_Exp_Subject_spm_t-2514_-2448',2, '_orig_cleaned.mat',{'T1Exp',}
+    '_Time_Grp_Exp_Subject_spm_t-2362_-2338',2, '_orig_cleaned.mat',{'T1Exp',}
     %'_Time_Grp_Exp_Subject_spm_t-2802_-2500',1, '_orig_cleaned.mat',{'T1Exp','T1Grp * Exp'}
     %'_Time_Grp_Exp_Subject_spm_t-2922_-2900',1, '_orig_cleaned.mat',{'T1Exp',}
     %'_Time_Grp_Exp_Subject_spm_t-3050_-2946',1, '_orig_cleaned.mat',{'T1Exp',}
@@ -135,7 +135,7 @@ S.clusformthresh = 0.001;
 
 %% setup the ROI network connectivity statistics
 S.outputrank = 1000; % set to 1000 to use highest possible rank / number of unique ROIs
-S.rankminmax = 'min'; % use maximum or minimum rank
+S.rankminmax = 'max'; % use maximum or minimum rank
 S.ranktolfactor = 1.1; % e.g. 1.1 increases tolerance by 10% each time
 S.Regularize.do            = true;                           % use regularization on partial correlation matrices using the graphical lasso. 
 S.Regularize.path          = 0.001;                          % This specifies a single, or vector, of possible rho-parameters controlling the strength of regularization. 
