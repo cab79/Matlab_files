@@ -805,7 +805,7 @@ switch opt
                         % if button options are specified
                         if isfield(h.Settings,'buttonopt')
                             if ~isempty(h.Settings.buttonopt)
-                                if ~ismember(fpress,h.Settings.buttonopt) || ~ismember(lpress,h.Settings.buttonopt)
+                                if ~any(ismember(fpress,h.Settings.buttonopt)) || ~any(ismember(lpress,h.Settings.buttonopt))
                                     recordresp=0;
                                 end
                             end
