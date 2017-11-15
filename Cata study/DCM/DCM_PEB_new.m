@@ -14,7 +14,7 @@ end
 % Bayesian model averages, weighting each model by its marginal likelihood
 % Applied over subjects using FFX Baysian parameter averaging
 % Not needed for PEB.
-try; bma  = spm_dcm_bma(GCMex);end;
+%try; bma  = spm_dcm_bma(GCMex);end;
 
 % extract results
 [Ns Nm] = size(GCMex);
@@ -78,9 +78,9 @@ else
     
     % posterior predictive density and LOO cross validation
     %==========================================================================
-    if length(unique(Xb))>1
-        spm_dcm_loo(RCM(:,1),Xb,{'B'});
-    end
+    %if length(unique(Xb))>1
+    %    spm_dcm_loo(RCM(:,1),Xb,{'B'});
+    %end
     for i = 1:Ns
         % Parameter averages (over models)
         %----------------------------------------------------------------------
@@ -120,7 +120,7 @@ if loadorsave && exist(fullfile(DCMdir,pname),'file')
     clear RCM
     load(fullfile(DCMdir,pname));
 else
-    [peb,PCM] = spm_dcm_peb(RCM,[],{'A','B'});
+    [peb,PCM] = spm_dcm_peb(RCM,[],{'All'});
     clear RCM
     
     % Bayesian model averages, first level: weighting each model by its marginal likelihood pooled over subjects
