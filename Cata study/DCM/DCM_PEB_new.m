@@ -156,7 +156,7 @@ iB    = spm_find_pC(pC,pC,'B');
 
 % classical inference of second level
 %--------------------------------------------------------------------------
-i   = [iA;iB];
+i   = [iA;iB]; 
 %CVA = spm_cva(Q(i,:,1)',Xb,[],[0 1]'); 
 %CVA = spm_cva(Q(i,:,2)',Xb,[],[0 1]'); 
 CVA = spm_cva(Q(i,:,3)',Xb,[],[0 1]'); 
