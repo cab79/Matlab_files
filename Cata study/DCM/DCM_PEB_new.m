@@ -11,20 +11,17 @@ if excl_full
 end
 % first level model
 %--------------------------------------------------------------------------
-<<<<<<< HEAD
 % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
 try; bma  = spm_dcm_bma(GCMex);end;
 
 % second level model
 %--------------------------------------------------------------------------
 M    = struct('X',Xb);
-=======
 % Bayesian model averages, weighting each model by its marginal likelihood
 % Applied over subjects using FFX Baysian parameter averaging
 % Not needed for PEB.
 try; bma  = spm_dcm_bma(GCMex);end;
 
->>>>>>> 437e11667ac284e953016fa59ec7e6b5513fe23b
 % extract results
 [Ns Nm] = size(GCMex);
 clear P Q R
@@ -87,9 +84,9 @@ else
     
     % posterior predictive density and LOO cross validation
     %==========================================================================
-    if length(unique(Xb))>1
-        spm_dcm_loo(RCM(:,1),Xb,{'B'});
-    end
+    %if length(unique(Xb))>1
+    %    spm_dcm_loo(RCM(:,1),Xb,{'B'});
+    %end
     for i = 1:Ns
         % Parameter averages (over models)
         %----------------------------------------------------------------------
