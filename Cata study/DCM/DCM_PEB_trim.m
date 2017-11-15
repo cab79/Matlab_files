@@ -1,4 +1,4 @@
-function DCM_PEB_new(GCMfile,DCMdir,run_num,fullmodel,loadorsave,excl_full)
+function DCM_PEB_trim(GCMfile,DCMdir,run_num,fullmodel,loadorsave,excl_full)
 dbstop if error
 disp('loading GCM...')
 load(fullfile(DCMdir,GCMfile));
@@ -11,41 +11,36 @@ if excl_full
 end
 % first level model
 %--------------------------------------------------------------------------
-<<<<<<< HEAD
-% Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
-try; bma  = spm_dcm_bma(GCMex);end;
-
-% second level model
-%--------------------------------------------------------------------------
-M    = struct('X',Xb);
-=======
->>>>>>> 58d1068313ed98f2a4d9e90245d2c95852a15c4a
 % Bayesian model averages, weighting each model by its marginal likelihood
 % Applied over subjects using FFX Baysian parameter averaging
 % Not needed for PEB.
 %try; bma  = spm_dcm_bma(GCMex);end;
 
+% second level model
+%--------------------------------------------------------------------------
+M    = struct('X',Xb);
+
 % extract results
 [Ns Nm] = size(GCMex);
 clear P Q R
-for i = 1:Ns
-    
-    % data - over subjects
-    %----------------------------------------------------------------------
-    for nt = 1:length(GCM{i,1}.xY.y)
-        Y(:,i,nt) = GCM{i,1}.xY.y{nt}*DCM.M.U(:,1);
-    end
-    pst = GCM{i,1}.xY.pst;
-    % Parameter averages (over models)
-    %----------------------------------------------------------------------
-    try; Q(:,i,1) = full(spm_vec(bma.SUB(i).Ep));end;
-    
-    % Free energies
-    %----------------------------------------------------------------------
-    for j = 1:Nm
-        try;F(i,j,1) = GCM{i,j}.F - GCM{i,1}.F;end
-    end
-end
+%for i = 1:Ns
+%    
+%    % data - over subjects
+%    %----------------------------------------------------------------------
+%    for nt = 1:length(GCM{i,1}.xY.y)
+%        Y(:,i,nt) = GCM{i,1}.xY.y{nt}*DCM.M.U(:,1);
+%    end
+%    % Parameter averages (over models)
+%    %----------------------------------------------------------------------
+%    try; Q(:,i,1) = full(spm_vec(bma.SUB(i).Ep));end;
+%    
+%    % Free energies
+%    %----------------------------------------------------------------------
+%    for j = 1:Nm
+%        try;F(i,j,1) = GCM{i,j}.F - GCM{i,1}.F;end
+%    end
+%end
+pst = GCM{1,1}.xY.pst;
 clear GCMex bma
 
 % Bayesian model reduction (avoiding local minima over models)
@@ -71,9 +66,6 @@ else
         RCM(:,fullmodel) =[];
     end
     
-    % second level model
-    %--------------------------------------------------------------------------
-    M    = struct('X',Xb);
     % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
     %rma  = spm_dcm_bma(RCM);
     % BMC - search over first and second level effects
@@ -83,11 +75,11 @@ else
     % of first level parameters that show a second level effect. This is not
     % the same as trying to find the best model of second level effects. Model
     % comparison among second level parameters uses spm_dcm_peb_bmc.
-    [BMC,PEB] = spm_dcm_bmc_peb(RCM,M,{'All'});
+    %[BMC,PEB] = spm_dcm_bmc_peb(RCM,M,{'All'});
+    
     % BMA - exhaustive search over second level parameters
     %--------------------------------------------------------------------------
-    PEB.gamma = 1/128;
-    
+    %PEB.gamma = 1/128;
     %BMA       = spm_dcm_peb_bmc(PEB);
     
     % posterior predictive density and LOO cross validation
@@ -95,22 +87,26 @@ else
     %if length(unique(Xb))>1
     %    spm_dcm_loo(RCM(:,1),Xb,{'B'});
     %end
-    for i = 1:Ns
-        % Parameter averages (over models)
-        %----------------------------------------------------------------------
+    %for i = 1:Ns
+    %    % Parameter averages (over models)
+    %    %----------------------------------------------------------------------%
 
-        try; Q(:,i,2) = full(spm_vec(rma.SUB(i).Ep));end
+    %    try; Q(:,i,2) = full(spm_vec(rma.SUB(i).Ep));end
 
-        % Free energies
-        %----------------------------------------------------------------------
-        for j = 1:Nm
-            F(i,j,2) = RCM{i,j}.F - RCM{i,1}.F;
-        end
+    %    % Free energies
+    %    %----------------------------------------------------------------------
+    %    for j = 1:Nm
+    %        F(i,j,2) = RCM{i,j}.F - RCM{i,1}.F;
+    %    end
 
-    end
-    [~,~,xp] = spm_dcm_bmc(RCM);
+    %end
+    %[~,~,xp] = spm_dcm_bmc(RCM);
     % save
-    save(rname,'RCM','BMC','xp','-v7.3');
+    try 
+        save(rname,'RCM','BMC','xp','-v7.3');
+    catch
+        save(rname,'RCM','-v7.3');
+    end
 end
 clear rma PEB
 disp('finished creating/loading RCM')
@@ -139,6 +135,12 @@ else
     
     % Bayesian model averages, first level: weighting each model by its marginal likelihood pooled over subjects
     %pma  = spm_dcm_bma(PCM);
+    
+    % search over nested models
+    pma = spm_dcm_peb_bmc(peb);
+    
+    % Review results
+    spm_dcm_peb_review(pma,DCM);
     
     for i = 1:Ns
         % Parameter averages (over models)
