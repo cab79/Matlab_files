@@ -1,20 +1,24 @@
 function DCM_PEB_new(GCMfile,DCMdir,run_num,fullmodel,loadorsave,excl_full)
 dbstop if error
+disp('loading GCM...')
 load(fullfile(DCMdir,GCMfile));
+disp('finished loading GCM')
 cd(DCMdir)
 DCM = GCM{1,fullmodel};
+GCMex=GCM;
 if excl_full
-    GCM(:,fullmodel) =[];
+    GCMex(:,fullmodel) =[];
 end
 % first level model
 %--------------------------------------------------------------------------
 % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
-bma  = spm_dcm_bma(GCM);
+try; bma  = spm_dcm_bma(GCMex);end;
+
 % second level model
 %--------------------------------------------------------------------------
 M    = struct('X',Xb);
 % extract results
-[Ns Nm] = size(GCM);
+[Ns Nm] = size(GCMex);
 clear P Q R
 for i = 1:Ns
     
@@ -26,15 +30,15 @@ for i = 1:Ns
     pst = GCM{i,1}.xY.pst;
     % Parameter averages (over models)
     %----------------------------------------------------------------------
-    Q(:,i,1) = full(spm_vec(bma.SUB(i).Ep));
+    try; Q(:,i,1) = full(spm_vec(bma.SUB(i).Ep));end;
     
     % Free energies
     %----------------------------------------------------------------------
     for j = 1:Nm
-        F(i,j,1) = GCM{i,j}.F - GCM{i,1}.F;
+        try;F(i,j,1) = GCM{i,j}.F - GCM{i,1}.F;end
     end
 end
-clear GCM bma
+clear GCMex bma
 
 % Bayesian model reduction (avoiding local minima over models)
 %==========================================================================
@@ -45,18 +49,21 @@ clear GCM bma
 % models. If the other models have already been inverted, these are ignored
 % and only the full model inversion is used to derive the others.
 % GCM is a {Nsub x Nmodel} cell array of DCM filenames or model structures  
-%         of Nsub subjects, where each model is reduced independently 
+%         of Nsub subjects, where each model is reduced independently
+disp('creating/loading RCM...')
 rname=['RCM_fit' num2str(run_num) '.mat'];
 if loadorsave && exist(fullfile(DCMdir,rname),'file')
+    clear GCM
     load(fullfile(DCMdir,rname));
 else
     RCM   = spm_dcm_bmr(GCM);
+    clear GCM
     if iscell(RCM{1,1}); RCM = vertcat(RCM{:});end
     if excl_full
         RCM(:,fullmodel) =[];
     end
     % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
-    rma  = spm_dcm_bma(RCM);
+    %rma  = spm_dcm_bma(RCM);
     % BMC - search over first and second level effects
     %--------------------------------------------------------------------------
     [BMC,PEB] = spm_dcm_bmc_peb(RCM,M,{'A','B'});
@@ -75,7 +82,7 @@ else
         % Parameter averages (over models)
         %----------------------------------------------------------------------
 
-        Q(:,i,2) = full(spm_vec(rma.SUB(i).Ep));
+        try; Q(:,i,2) = full(spm_vec(rma.SUB(i).Ep));end
 
         % Free energies
         %----------------------------------------------------------------------
@@ -88,7 +95,8 @@ else
     % save
     save(rname,'RCM','BMC','xp','-v7.3');
 end
-clear RCM rma PEB
+clear rma PEB
+disp('finished creating/loading RCM')
 
 % hierarchical (empirical Bayes) model reduction:
 % optimises the empirical priors over the parameters of a set of first level DCMs, using second level or
@@ -103,14 +111,17 @@ clear RCM rma PEB
 % models/subjects
 % If P is an an (N x M} array, will return a number of PEBs as a 
 % {1 x M} cell array.
+disp('creating/loading PCM...')
 pname=['PCM_peb' num2str(run_num) '.mat'];
 if loadorsave && exist(fullfile(DCMdir,pname),'file')
+    clear RCM
     load(fullfile(DCMdir,pname));
 else
     [peb,PCM] = spm_dcm_peb(RCM,[],{'A','B'});
-    % Bayesian model averages, first level: weighting each model by its marginal likelihood pooled over subjects
+    clear RCM
     
-    %pma  = spm_dcm_bma(PCM);
+    % Bayesian model averages, first level: weighting each model by its marginal likelihood pooled over subjects
+    pma  = spm_dcm_bma(PCM);
     
     for i = 1:Ns
         % Parameter averages (over models)
@@ -126,8 +137,8 @@ else
     end
     save(pname,'PCM','-v7.3');
 end
-clear PCM peb 
-
+clear PCM peb rma
+disp('finished creating/loading PCM')
 save('data_and_estimates.mat','Y','Q','F')
 
 % classical inference
