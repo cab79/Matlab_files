@@ -124,12 +124,12 @@ else
     clear RCM
     
     % Bayesian model averages, first level: weighting each model by its marginal likelihood pooled over subjects
-    pma  = spm_dcm_bma(PCM);
+    %pma  = spm_dcm_bma(PCM);
     
     for i = 1:Ns
         % Parameter averages (over models)
         %----------------------------------------------------------------------
-        Q(:,i,3) = full(spm_vec(pma.SUB(i).Ep));
+        try;Q(:,i,3) = full(spm_vec(pma.SUB(i).Ep));end
 
         % Free energies
         %----------------------------------------------------------------------
@@ -140,7 +140,7 @@ else
     end
     save(pname,'PCM','-v7.3');
 end
-clear PCM peb rma
+clear PCM peb pma
 disp('finished creating/loading PCM')
 save('data_and_estimates.mat','Y','Q','F')
 
@@ -197,26 +197,27 @@ try
     if any(p); plot(pst,Y(:,p,1) - Y(:,p,2),'b'), hold off; end
     xlabel('pst'), ylabel('differential response'), title('Difference waveforms','FontSize',16)
     axis square, spm_axis tight
+
+    i = spm_fieldindices(DCM.Ep,'B{1}(1,1)');
+    j = spm_fieldindices(DCM.Ep,'B{1}(2,2)');
+
+    subplot(2,2,3)
+    plot(Q(i,q,3),Q(j,q,3),'.r','MarkerSize',24), hold on
+    plot(Q(i,p,3),Q(j,p,3),'.b','MarkerSize',24), hold off
+    xlabel('B{1}(1,1)'), ylabel('B{1}(2,2)'), title('Group effects PMA','FontSize',16)
+    axis square
+
+    i = spm_fieldindices(DCM.Ep,'B{1}(3,3)');
+    j = spm_fieldindices(DCM.Ep,'B{1}(4,4)');
+
+    subplot(2,2,4)
+    plot(Q(i,q,3),Q(j,q,3),'.r','MarkerSize',24), hold on
+    plot(Q(i,p,3),Q(j,p,3),'.b','MarkerSize',24), hold off
+    xlabel('B{1}(3,3)'), ylabel('B{1}(4,4)'), title('Group effects PMA','FontSize',16)
+    axis square
+    print('fig1','-dpng') 
+
 end
-
-i = spm_fieldindices(DCM.Ep,'B{1}(1,1)');
-j = spm_fieldindices(DCM.Ep,'B{1}(2,2)');
-
-subplot(2,2,3)
-plot(Q(i,q,3),Q(j,q,3),'.r','MarkerSize',24), hold on
-plot(Q(i,p,3),Q(j,p,3),'.b','MarkerSize',24), hold off
-xlabel('B{1}(1,1)'), ylabel('B{1}(2,2)'), title('Group effects PMA','FontSize',16)
-axis square
-
-i = spm_fieldindices(DCM.Ep,'B{1}(3,3)');
-j = spm_fieldindices(DCM.Ep,'B{1}(4,4)');
-
-subplot(2,2,4)
-plot(Q(i,q,3),Q(j,q,3),'.r','MarkerSize',24), hold on
-plot(Q(i,p,3),Q(j,p,3),'.b','MarkerSize',24), hold off
-xlabel('B{1}(3,3)'), ylabel('B{1}(4,4)'), title('Group effects PMA','FontSize',16)
-axis square
-print('fig1','-dpng') 
 
 % plot results: Bayesian model reduction vs. reduced models
 %--------------------------------------------------------------------------
