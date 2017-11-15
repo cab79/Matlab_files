@@ -11,20 +11,14 @@ if excl_full
 end
 % first level model
 %--------------------------------------------------------------------------
-<<<<<<< HEAD
 % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
+% Only needed if not use BMR to derive nested models. Otherwise would only
+% have 1 model - nothing to average.
 try; bma  = spm_dcm_bma(GCMex);end;
 
 % second level model
 %--------------------------------------------------------------------------
 M    = struct('X',Xb);
-=======
-% Bayesian model averages, weighting each model by its marginal likelihood
-% Applied over subjects using FFX Baysian parameter averaging
-% Not needed for PEB.
-try; bma  = spm_dcm_bma(GCMex);end;
-
->>>>>>> 437e11667ac284e953016fa59ec7e6b5513fe23b
 % extract results
 [Ns Nm] = size(GCMex);
 clear P Q R
@@ -70,15 +64,11 @@ else
     if excl_full
         RCM(:,fullmodel) =[];
     end
-    
-    % second level model
-    %--------------------------------------------------------------------------
-    M    = struct('X',Xb);
     % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
     %rma  = spm_dcm_bma(RCM);
     % BMC - search over first and second level effects
     %--------------------------------------------------------------------------
-    [BMC,PEB] = spm_dcm_bmc_peb(RCM,M,{'All'});
+    [BMC,PEB] = spm_dcm_bmc_peb(RCM,M,{'A','B'});
     % BMA - exhaustive search over second level parameters
     %--------------------------------------------------------------------------
     PEB.gamma = 1/128;
