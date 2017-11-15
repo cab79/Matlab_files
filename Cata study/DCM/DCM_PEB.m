@@ -1,6 +1,8 @@
 function DCM_PEB(GCMfile,DCMdir,run_num,fullmodel,loadorsave,excl_full)
 dbstop if error
+disp('loading GCM...')
 load(fullfile(DCMdir,GCMfile));
+disp('finished loading GCM')
 cd(DCMdir)
 DCM = GCM{1,fullmodel};
 % The following section contains the key analyses
@@ -16,6 +18,7 @@ DCM = GCM{1,fullmodel};
 % and only the full model inversion is used to derive the others.
 % GCM is a {Nsub x Nmodel} cell array of DCM filenames or model structures  
 %         of Nsub subjects, where each model is reduced independently 
+disp('creating/loading RCM...')
 rname=['RCM_fit' num2str(run_num) '.mat'];
 if loadorsave && exist(fullfile(DCMdir,rname),'file')
     load(fullfile(DCMdir,rname));
@@ -24,10 +27,11 @@ else
     if iscell(RCM{1,1}); RCM = vertcat(RCM{:});end;
     save(rname,'RCM','-v7.3');
 end
+disp('finished creating/loading RCM')
 
 % remove the full model, assuming it is biologically implausible
 if excl_full
-    GCM(:,fullmodel) =[];
+    try GCM(:,fullmodel) =[];end
     RCM(:,fullmodel) =[];
 end
 
@@ -44,6 +48,7 @@ end
 % models/subjects
 % If P is an an (N x M} array, will return a number of PEBs as a 
 % {1 x M} cell array.
+disp('creating/loading PCM...')
 pname=['PCM_peb' num2str(run_num) '.mat'];
 if loadorsave && exist(fullfile(DCMdir,pname),'file')
     load(fullfile(DCMdir,pname));
@@ -51,14 +56,41 @@ else
     [peb,PCM] = spm_dcm_peb(RCM,[],{'A','B'});
     save(pname,'PCM','peb','-v7.3');
 end
+disp('finished creating/loading PCM')
+
+% extract and plot results
+%==========================================================================
+[Ns Nm] = size(GCM);
+clear P Q R
+for i = 1:Ns
+    
+    % data - over subjects
+    %----------------------------------------------------------------------
+    for nt = 1:length(GCM{i,1}.xY.y)
+        Y(:,i,nt) = GCM{i,1}.xY.y{nt}*DCM.M.U(:,1);
+    end
+    pst = GCM{i,1}.xY.pst;
+
+    % Free energies
+    %----------------------------------------------------------------------
+    for j = 1:Nm
+        try F(i,j,1) = GCM{i,j}.F - GCM{i,1}.F;end;
+        F(i,j,2) = RCM{i,j}.F - RCM{i,1}.F;
+        F(i,j,3) = PCM{i,j}.F - PCM{i,1}.F;
+    end
+    
+end
+
+clear GCM % to free memory
 
 % BMA - first level
 %--------------------------------------------------------------------------
 % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
+disp('BMA...')
 try bma  = spm_dcm_bma(GCM); end;
 rma  = spm_dcm_bma(RCM);
 pma  = spm_dcm_bma(PCM);
-
+disp('finished BMA')
 % BMC/BMA - second level
 %==========================================================================
 
@@ -88,31 +120,13 @@ end
 
 % extract and plot results
 %==========================================================================
-[Ns Nm] = size(GCM);
-clear P Q R
 for i = 1:Ns
-    
-    % data - over subjects
-    %----------------------------------------------------------------------
-    for nt = 1:length(GCM{i,1}.xY.y)
-        Y(:,i,nt) = GCM{i,1}.xY.y{nt}*DCM.M.U(:,1);
-    end
-    pst = GCM{i,1}.xY.pst;
     
     % Parameter averages (over models)
     %----------------------------------------------------------------------
     try Q(:,i,1) = full(spm_vec(bma.SUB(i).Ep));end;
     Q(:,i,2) = full(spm_vec(rma.SUB(i).Ep));
     Q(:,i,3) = full(spm_vec(pma.SUB(i).Ep));
-    
-    % Free energies
-    %----------------------------------------------------------------------
-    for j = 1:Nm
-        try F(i,j,1) = GCM{i,j}.F - GCM{i,1}.F;end;
-        F(i,j,2) = RCM{i,j}.F - RCM{i,1}.F;
-        F(i,j,3) = PCM{i,j}.F - PCM{i,1}.F;
-    end
-    
 end
 
 
@@ -414,5 +428,5 @@ xlabel('Prior')
 subplot(2,2,2)
 plot(hE,Eh)
 xlabel('Prior')
-title('log-preciion','FontSize',16)
+title('log-precision','FontSize',16)
 
