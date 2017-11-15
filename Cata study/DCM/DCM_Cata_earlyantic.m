@@ -28,7 +28,7 @@ loadorsave=1;
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\DCMdata\Timewin1\Run1\modelA2'; 
+S.outpath = 'C:\Data\Catastrophising study\DCMdata\Timewin1\Run1\modelTest'; 
 % name for group analysis output file
 S.outname = 'DCM_GROUP'; % CURRENTLY UNUSED
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -671,5 +671,5 @@ if S.run_PEB
     end
     fu=1;
     clear GCM DCM % to free memory
-    DCM_PEB_new([lname '.mat'],S.outpath,S.run_num,fu,loadorsave,S.excl_full)
+    DCM_PEB_trim([lname '.mat'],S.outpath,S.run_num,fu,loadorsave,S.excl_full)
 end

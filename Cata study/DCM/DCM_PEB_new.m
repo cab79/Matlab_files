@@ -11,15 +11,12 @@ if excl_full
 end
 % first level model
 %--------------------------------------------------------------------------
-<<<<<<< HEAD
 % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
 try; bma  = spm_dcm_bma(GCMex);end;
 
 % second level model
 %--------------------------------------------------------------------------
 M    = struct('X',Xb);
-=======
->>>>>>> 58d1068313ed98f2a4d9e90245d2c95852a15c4a
 % Bayesian model averages, weighting each model by its marginal likelihood
 % Applied over subjects using FFX Baysian parameter averaging
 % Not needed for PEB.
@@ -70,12 +67,12 @@ else
     if excl_full
         RCM(:,fullmodel) =[];
     end
+    % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
+    %rma  = spm_dcm_bma(RCM);
     
     % second level model
     %--------------------------------------------------------------------------
     M    = struct('X',Xb);
-    % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
-    %rma  = spm_dcm_bma(RCM);
     % BMC - search over first and second level effects
     %--------------------------------------------------------------------------
     % This Bayesian model comparison should be contrasted with model

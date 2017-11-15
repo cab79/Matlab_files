@@ -18,6 +18,7 @@ end
 %--------------------------------------------------------------------------
 % Bayesian model averages, weighting each model by its marginal likelihood
 % Applied over subjects using FFX Baysian parameter averaging
+% Not needed for PEB.
 %try; bma  = spm_dcm_bma(GCMex);end;
 
 % second level model
@@ -27,9 +28,6 @@ M    = struct('X',Xb);
 % extract results
 [Ns Nm] = size(GCMex);
 clear P Q R
-Y=[];
-Q=[];
-F=[];
 %for i = 1:Ns
 %    
 %    % data - over subjects
@@ -65,7 +63,6 @@ rname=['RCM_fit' num2str(run_num) '.mat'];
 if loadorsave && exist(fullfile(DCMdir,rname),'file')
     clear GCM
     load(fullfile(DCMdir,rname));
-    try; load(fullfile(DCMdir,'data_and_estimates.mat'));end
 else
     RCM   = spm_dcm_bmr(GCM);
     clear GCM
@@ -78,9 +75,6 @@ else
     %rma  = spm_dcm_bma(RCM);
     
     % OPTION 1: Bayesian model reduction over the *joint* space of first and second level models
-    % this empirical Bayesian approach is implemented so that one can compare different second level models without having to repeat the inversion of each subject's DCM. 
-    % This can be thought of as a generalization of the standard summary statistic approach.
-    
     % BMC - search over first and second level effects
     %--------------------------------------------------------------------------
     % This Bayesian model comparison should be contrasted with model
@@ -88,7 +82,7 @@ else
     % of first level parameters that show a second level effect. This is not
     % the same as trying to find the best model of second level effects (see next section for that). Model
     % comparison among second level parameters uses spm_dcm_peb_bmc.
-    %[BMC,PEB] = spm_dcm_bmc_peb(RCM,M,fields);
+    [BMC,PEB] = spm_dcm_bmc_peb(RCM,M,fields);
     
     % BMA - exhaustive search over second level parameters
     %--------------------------------------------------------------------------
@@ -96,8 +90,8 @@ else
     % over the second level parameters (spm_dcm_peb_bmc.m) to find out where the key between-subject effects are expressed; 
     % in other words, identify the parameters that mediate group effects.
     % search over nested models
-    %PEB.gamma = 1/128;
-    %BMA       = spm_dcm_peb_bmc(PEB);
+    PEB.gamma = 1/128;
+    BMA       = spm_dcm_peb_bmc(PEB);
     
     % posterior predictive density and LOO cross validation
     %==========================================================================
@@ -146,7 +140,6 @@ pname=['PCM_peb' num2str(run_num) '.mat'];
 if loadorsave && exist(fullfile(DCMdir,pname),'file')
     clear RCM
     load(fullfile(DCMdir,pname));
-    if isempty(F);try;load(fullfile(DCMdir,'data_and_estimates.mat'));end;end
 else
     
     
@@ -170,19 +163,19 @@ else
     % then averages over models for classical 2nd level inference
     %pma  = spm_dcm_bma(PCM);
     
-    for i = 1:Ns
+%    for i = 1:Ns
         % Parameter averages (over models)
         %----------------------------------------------------------------------
-        try;Q(:,i,3) = full(spm_vec(pma.SUB(i).Ep));end
+%        try;Q(:,i,3) = full(spm_vec(pma.SUB(i).Ep));end
 
         % Free energies
         %----------------------------------------------------------------------
-        for j = 1:Nm
-            F(i,j,3) = PCM{i,j}.F - PCM{i,1}.F;
-        end
+%        for j = 1:Nm
+%            F(i,j,3) = PCM{i,j}.F - PCM{i,1}.F;
+%        end
 
-    end
-save(pname,'PCM','-v7.3');
+%    end
+%    save(pname,'PCM','-v7.3');
 end
 %clear PCM peb pma
 %disp('finished creating/loading PCM')
@@ -203,12 +196,13 @@ iB    = spm_find_pC(pC,pC,'B');
 i   = [iA;iB]; 
 %CVA = spm_cva(Q(i,:,1)',Xb,[],[0 1]'); 
 %CVA = spm_cva(Q(i,:,2)',Xb,[],[0 1]'); 
-%CVA = spm_cva(Q(i,:,3)',Xb,[],[0 1]'); 
-%spm_figure('GetWin','CVA');clf
-%bar(spm_en([Xb(:,2) CVA.v]))
-%title('Canonical variate','FontSize',16)
-%xlabel('parameter'), ylabel('weight'), axis square
-%legend({'RFX','True'})
+CVA = spm_cva(Q(i,:,3)',Xb,[],[0 1]'); 
+
+spm_figure('GetWin','CVA');clf
+bar(spm_en([Xb(:,2) CVA.v]))
+title('Canonical variate','FontSize',16)
+xlabel('parameter'), ylabel('weight'), axis square
+legend({'RFX','True'})
 
 % plot data
 %==========================================================================
@@ -224,7 +218,7 @@ if any(q)
         plot(pst,Y(:,q,np),col{np}),  hold on
     end
 end
-if any(p) && ~isempty(Y)
+if any(p)
     col = {'b','b:','b--'};
     for np = 1:size(Y,3)
         plot(pst,Y(:,p,np),col{np}),  hold on
@@ -439,27 +433,25 @@ axis([0 (length(p) + 1) 0 1]), axis square
 
 print('fig5','-dpng') 
 
-try
-    % random effects Bayesian model comparison
-    %==========================================================================
-    spm_figure('GetWin','Figure 6: random effects Bayesian model comparison');clf
+% random effects Bayesian model comparison
+%==========================================================================
+spm_figure('GetWin','Figure 6: random effects Bayesian model comparison');clf
 
-    p   = BMC.Pw;
-    subplot(2,2,1), bar(p),[m,i] = max(p);
-    text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
-    xlabel('model'), ylabel('RCM posterior probability'), title('Random parameter effects','FontSize',16)
-    axis([0 (length(p) + 1) 0 1]), axis square
-    save BMC_Pw p
+p   = BMC.Pw;
+subplot(2,2,1), bar(p),[m,i] = max(p);
+text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
+xlabel('model'), ylabel('RCM posterior probability'), title('Random parameter effects','FontSize',16)
+axis([0 (length(p) + 1) 0 1]), axis square
+save BMC_Pw p
 
-    p   = xp;
-    subplot(2,2,2), bar(p),[m,i] = max(p);
-    text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
-    xlabel('model'), ylabel('RCM exceedance probability'), title('Random model effects','FontSize',16)
-    axis([0 (length(p) + 1) 0 1]), axis square
-    save RCM_xp p
+p   = xp;
+subplot(2,2,2), bar(p),[m,i] = max(p);
+text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
+xlabel('model'), ylabel('RCM exceedance probability'), title('Random model effects','FontSize',16)
+axis([0 (length(p) + 1) 0 1]), axis square
+save RCM_xp p
 
-    print('fig6','-dpng') 
-end
+print('fig6','-dpng') 
 
 return
 
