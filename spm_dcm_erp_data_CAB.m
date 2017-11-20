@@ -189,7 +189,7 @@ for i = 1:length(trial)
     %----------------------------------------------------------------------
     %c            = D.indtrial(cond(trial(i)), 'GOOD');
     E=struct(D);
-    [~,~,c] = intersect(S.conds(S.contrast==trial(i)),{E.trials(:).label});
+    [~,~,c] = intersect(S.sortconds(S.conds==trial(i)),{E.trials(:).label});
     Nt           = length(c);
     DCM.xY.nt(i) = Nt;
 
