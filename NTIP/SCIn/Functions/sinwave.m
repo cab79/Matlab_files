@@ -127,6 +127,9 @@ for tr = trials
             if strcmp(h.Settings.oddballmethod,'pitch')
                 h.pitch = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+varlevel)]; % create new pitch pair
                 h.pitch = h.pitch(h.Seq.signal(tr));
+            elseif strcmp(h.Settings.oddballmethod,'intensity')
+                h.inten = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+varlevel)]; % create new pitch pair
+                h.inten = h.inten(h.Seq.signal(tr));
             elseif strcmp(h.Settings.oddballmethod,'duration') && strcmp(h.Settings.patternmethod,'pitch')
                 if iscell(h.Settings.oddballvalue)
                     h.dur = h.Settings.oddballvalue{h.Seq.signal(tr),:};

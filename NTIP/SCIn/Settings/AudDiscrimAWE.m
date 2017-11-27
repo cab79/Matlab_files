@@ -1,21 +1,5 @@
 function h = AudDiscrimAWE(h,opt)
 
-%% NOTES ON SETTINGS:
-% 1/h.Settings.df*0.25 AND (1/df+1/pitchdiff)*0.25 needs to be a multiple of 1/f0 to prevent clicking caused by phase re-setting of the f0 sound
-% Settings that work:
-% df=10Hz: f0=200, pitchdiff=200 
-% df=25Hz: f0=200, pitchdiff=200 
-% df=40Hz: f0=160, pitchdiff=160
-%strategy: decide on df first, then pitchdiff (ideally a multiple of df),
-%then calculate:
-% 1./((1/h.Settings.df+1/pitchdiff)*0.25 ./ [1:10])
-% and choose a frequency for f0.
-% seems to work if f0 and pitchdiff are both multiples of df, and f0 and
-% pitchdiff are also multiples of each other?
-
-%if ~exist('opt','var')
-%    opt = {'10Hz'};
-%end
 
 % FILENAME OF SEQUENCE CREATION FUNCTION (without .m)
 h.SeqFun = 'CreateSequence';
@@ -31,9 +15,13 @@ switch opt
         
     %% TRIALS or CONTINUOUS?
     h.Settings.design = 'continuous';
-    % if trials, how many trials ahead should be in the player schedule?
+    % if continuous, how many trials ahead should be in the player schedule?
     % (applied to stimulation via soundcard only)
     h.Settings.ntrialsahead = 2;  %0 = all trials
+    
+    %% EXPERIMENTAL CONDIITIONS
+    % name the settings that define orthogonal condtions at a different row
+    h.Settings.conds = {};
     
     %% Output options
     % save sinwave from all trials as part of stim sequence file
@@ -101,6 +89,7 @@ switch opt
   
     
     %% SEQUENCE
+    % Change probablity (CP): each condition is in rows
     h.Settings.oddprob = [
         % standard vs oddball
         0.8 0.2
@@ -109,16 +98,15 @@ switch opt
     % index of row of oddprob that are standards and oddballs
     h.Settings.standardind = 1; % does not apply to 'roving oddball' design
     h.Settings.oddind = 2; % does not apply to 'roving oddball' design
-    
     % keep oddball trials apart by at least sep_odd standards
     h.Settings.sep_odd = 2;
-    
+    % for sep_odd, which indices of h.Settings.oddballvalue to consider
+    % each time? (each list will be separated separately)
+    h.Settings.sep_odd_ind = {[1 2]};
     % for each set, ensure a number of leading standards 
     h.Settings.std_lead = 0;
-    
     % number of minimum sets to randomised together
     h.Settings.n_set = 1; % 1 = use min set size
-    
     % min number of oddballs within each CP condition
     h.Settings.n_odd = [1]; % overrides h.Settings.totdur
     % min number of oddballs per randomised set, per CP

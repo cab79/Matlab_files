@@ -20,10 +20,11 @@ if h.Settings.adaptive.oddonly
     % only continue if next trial (that can be modified! i.e. h.i+h.Settings.ntrialsahead-1) is an oddball
     try
         if h.i+h.Settings.ntrialsahead-1 < length(h.Seq.signal)
-            if any(ismember(h.Seq.odd_ind,h.Seq.condnum(h.i+h.Settings.ntrialsahead-1+1)))
-                disp(['next (modifiable) trial is an oddball: trial ' num2str(h.i+h.Settings.ntrialsahead-1+1) ', condnum ' num2str(h.Seq.condnum(h.i+h.Settings.ntrialsahead-1+1))])
-            end
-            if h.Settings.adaptive.oddonly && ~any(ismember(h.Seq.odd_ind,h.Seq.condnum(h.i+h.Settings.ntrialsahead-1+1))) % h.odd_ind is generated in CreateSequence
+            all_odd_ind = horzcat(h.Seq.odd_ind{:});
+            %if any(ismember(all_odd_ind,h.Seq.condnum(h.i+h.Settings.ntrialsahead-1+1)))
+            %    disp(['next (modifiable) trial is an oddball: trial ' num2str(h.i+h.Settings.ntrialsahead-1+1) ', condnum ' num2str(h.Seq.condnum(h.i+h.Settings.ntrialsahead-1+1))])
+            %end
+            if h.Settings.adaptive.oddonly && ~any(ismember(all_odd_ind,h.Seq.condnum(h.i+h.Settings.ntrialsahead-1+1))) % h.odd_ind is generated in CreateSequence
                 return
             end
         else
@@ -48,7 +49,7 @@ if h.Settings.adaptive.oddonly
     end
     
     % number of oddballs so far
-    s.mintrialcount = sum(ismember(h.Seq.condnum(1:h.i),h.Seq.odd_ind));
+    s.mintrialcount = sum(ismember(h.Seq.condnum(1:h.i),all_odd_ind));
 else
     s.mintrialcount = h.i;
 end
@@ -114,15 +115,15 @@ if strcmp(opt,'omitted')
     s.SubjectAccuracy(s.adaptive.trial)= 0;
 elseif strcmp(opt,'responded')
     if h.pressedsinceoddball 
-        presstrial=trls_pressed(end);
+        %presstrial=trls_pressed(end);
         pressbutton = h.out.pressbutton(h.out.presstrial==trls_pressed(end));
         correctsignal = h.Seq.signal(trls_pressed(end));
     elseif h.pressedlasttrial
-        presstrial=h.i;
+        %presstrial=h.i;
         pressbutton = h.out.lastpress{h.i};
         correctsignal = h.Seq.signal(h.i);
     elseif h.pressedthistrial
-        presstrial=h.i;
+        %presstrial=h.i;
         pressbutton = h.out.pressbutton(h.out.presstrial==h.i);
         correctsignal = h.Seq.signal(h.i);
     end

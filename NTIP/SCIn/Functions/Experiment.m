@@ -78,7 +78,7 @@ switch opt
         % KBCheck or KBQueueCheck results
         KbName('UnifyKeyNames'); %used for cross-platform compatibility of keynaming
         h.out.presstrial = [];
-        h.out.pressbutton = [];
+        h.out.pressbutton = {};
         h.out.presstime = [];
         h.out.RT = [];
         h.out.presstimedelta = [];
@@ -804,13 +804,21 @@ switch opt
                         lastPress = lastPress(lastPress>0);
                         % if button options are specified
                         if isfield(h.Settings,'buttonopt')
-                            if ~isempty(h.Settings.buttonopt)
+                            if ~isempty(h.Settings.buttonopt) && (~isempty(fpress) || ~isempty(lpress))
                                 if ~any(ismember(fpress,h.Settings.buttonopt)) || ~any(ismember(lpress,h.Settings.buttonopt))
                                     recordresp=0;
                                 end
                             end
                         end
                         if recordresp
+                            % need to specify fpress/lpress if KbName does
+                            % not assign a value.
+                            if isempty(fpress)
+                                fpress='noval';
+                            end
+                            if isempty(lpress)
+                                lpress='noval';
+                            end
                             if firstPress~=lastPress
                                 h.out.presstrial = [h.out.presstrial h.i*ones(1, length(firstPress)) h.i*ones(1, length(lastPress))];
                                 h.out.pressbutton = [h.out.pressbutton fpress lpress];
