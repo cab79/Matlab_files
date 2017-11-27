@@ -1,201 +1,57 @@
-function DCM_PEB_new(GCMfile,DCMdir,run_num,fullmodel,loadorsave,excl_full)
-dbstop if error
-disp('loading GCM...')
-load(fullfile(DCMdir,GCMfile));
-disp('finished loading GCM')
-cd(DCMdir)
-DCM = GCM{1,fullmodel};
-GCMex=GCM;
-if excl_full
-    GCMex(:,fullmodel) =[];
-end
-% first level model
-%--------------------------------------------------------------------------
-% Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
-try; bma  = spm_dcm_bma(GCMex);end;
+function DCM_PEB_PLOT(varargin)
 
-% second level model
-%--------------------------------------------------------------------------
-M    = struct('X',Xb);
-% Bayesian model averages, weighting each model by its marginal likelihood
-% Applied over subjects using FFX Baysian parameter averaging
-% Not needed for PEB.
-%try; bma  = spm_dcm_bma(GCMex);end;
-
-% extract results
-[Ns Nm] = size(GCMex);
-clear P Q R
-for i = 1:Ns
-    
-    % data - over subjects
-    %----------------------------------------------------------------------
-    for nt = 1:length(GCM{i,1}.xY.y)
-        Y(:,i,nt) = GCM{i,1}.xY.y{nt}*DCM.M.U(:,1);
-    end
-    pst = GCM{i,1}.xY.pst;
-    % Parameter averages (over models)
-    %----------------------------------------------------------------------
-    try; Q(:,i,1) = full(spm_vec(bma.SUB(i).Ep));end;
-    
-    % Free energies
-    %----------------------------------------------------------------------
-    for j = 1:Nm
-        try;F(i,j,1) = GCM{i,j}.F - GCM{i,1}.F;end
-    end
-end
-clear GCMex bma
-
-% Bayesian model reduction (avoiding local minima over models)
-%==========================================================================
-% spm_dcm_bmr operates on different DCMs of the same data (rows) to find
-% the best model. It assumes the full model - whose free-parameters are
-% the union (superset) of all free parameters in each model - has been
-% inverted, and from that model creates reduced versions for the other
-% models. If the other models have already been inverted, these are ignored
-% and only the full model inversion is used to derive the others.
-% GCM is a {Nsub x Nmodel} cell array of DCM filenames or model structures  
-%         of Nsub subjects, where each model is reduced independently
-disp('creating/loading RCM...')
-rname=['RCM_fit' num2str(run_num) '.mat'];
-if loadorsave && exist(fullfile(DCMdir,rname),'file')
-    clear GCM
-    load(fullfile(DCMdir,rname));
+if nargin<1
+    data= 'data_and_estimates.mat';
 else
-    RCM   = spm_dcm_bmr(GCM);
-    clear GCM
-    if iscell(RCM{1,1}); RCM = vertcat(RCM{:});end
-    if excl_full
-        RCM(:,fullmodel) =[];
-    end
-    % Bayesian model averages, weighting each model by its marginal likelihood pooled over subjects
-    %rma  = spm_dcm_bma(RCM);
-    
-    % second level model
-    %--------------------------------------------------------------------------
-    M    = struct('X',Xb);
-    % BMC - search over first and second level effects
-    %--------------------------------------------------------------------------
-    % This Bayesian model comparison should be contrasted with model
-    % comparison at the second level. Here, we are interested in the best model
-    % of first level parameters that show a second level effect. This is not
-    % the same as trying to find the best model of second level effects. Model
-    % comparison among second level parameters uses spm_dcm_peb_bmc.
-    [BMC,PEB] = spm_dcm_bmc_peb(RCM,M,{'All'});
-    % BMA - exhaustive search over second level parameters
-    %--------------------------------------------------------------------------
-    PEB.gamma = 1/128;
-    
-    %BMA       = spm_dcm_peb_bmc(PEB);
-    
-    % posterior predictive density and LOO cross validation
-    %==========================================================================
-    %if length(unique(Xb))>1
-    %    spm_dcm_loo(RCM(:,1),Xb,{'B'});
-    %end
-    for i = 1:Ns
-        % Parameter averages (over models)
-        %----------------------------------------------------------------------
-
-        try; Q(:,i,2) = full(spm_vec(rma.SUB(i).Ep));end
-
-        % Free energies
-        %----------------------------------------------------------------------
-        for j = 1:Nm
-            F(i,j,2) = RCM{i,j}.F - RCM{i,1}.F;
-        end
-
-    end
-    [~,~,xp] = spm_dcm_bmc(RCM);
-    % save
-    save(rname,'RCM','BMC','xp','-v7.3');
+    data = varargin{1};
 end
-clear rma PEB
-disp('finished creating/loading RCM')
 
-% hierarchical (empirical Bayes) model reduction:
-% optimises the empirical priors over the parameters of a set of first level DCMs, using second level or
-% between subject constraints specified in the design matrix X.
-% See: https://en.wikibooks.org/wiki/SPM/Parametric_Empirical_Bayes_(PEB)
-%==========================================================================
-%[PEB,P]   = spm_dcm_peb(P,M,field)
-% 'Field' refers to the parameter fields in DCM{i}.Ep to optimise [default: {'A','B'}]
-% 'All' will invoke all fields. This argument effectively allows 
-%  one to specify the parameters that constitute random effects. 
-% If P is an an {N [x M]} array, will return one PEB for all
-% models/subjects
-% If P is an an (N x M} array, will return a number of PEBs as a 
-% {1 x M} cell array.
-disp('creating/loading PCM...')
-pname=['PCM_peb' num2str(run_num) '.mat'];
-if loadorsave && exist(fullfile(DCMdir,pname),'file')
-    clear RCM
-    load(fullfile(DCMdir,pname));
-else
-    [peb,PCM] = spm_dcm_peb(RCM,[],{'All'});
-    clear RCM
-    
-    % Bayesian model averages, first level: weighting each model by its marginal likelihood pooled over subjects
-    %pma  = spm_dcm_bma(PCM);
-    
-    for i = 1:Ns
-        % Parameter averages (over models)
-        %----------------------------------------------------------------------
-        try;Q(:,i,3) = full(spm_vec(pma.SUB(i).Ep));end
-
-        % Free energies
-        %----------------------------------------------------------------------
-        for j = 1:Nm
-            F(i,j,3) = PCM{i,j}.F - PCM{i,1}.F;
-        end
-
-    end
-    save(pname,'PCM','-v7.3');
-end
-clear PCM peb pma
-disp('finished creating/loading PCM')
-save('data_and_estimates.mat','Y','Q','F')
-
+load(data)
 % classical inference
 %==========================================================================
 
 % indices to plot parameters
 %--------------------------------------------------------------------------
-pC    = DCM.M.pC;
-iA    = spm_find_pC(pC,pC,'A');
-iB    = spm_find_pC(pC,pC,'B');
+%pC    = DCM.M.pC;
+%iA    = spm_find_pC(pC,pC,'A');
+%iB    = spm_find_pC(pC,pC,'B');
 
 
 % classical inference of second level
 %--------------------------------------------------------------------------
-i   = [iA;iB]; 
+%i   = [iA;iB]; 
 %CVA = spm_cva(Q(i,:,1)',Xb,[],[0 1]'); 
 %CVA = spm_cva(Q(i,:,2)',Xb,[],[0 1]'); 
-CVA = spm_cva(Q(i,:,3)',Xb,[],[0 1]'); 
-
-spm_figure('GetWin','CVA');clf
-bar(spm_en([Xb(:,2) CVA.v]))
-title('Canonical variate','FontSize',16)
-xlabel('parameter'), ylabel('weight'), axis square
-legend({'RFX','True'})
+%CVA = spm_cva(Q(i,:,3)',Xb,[],[0 1]'); 
+%spm_figure('GetWin','CVA');clf
+%bar(spm_en([Xb(:,2) CVA.v]))
+%title('Canonical variate','FontSize',16)
+%xlabel('parameter'), ylabel('weight'), axis square
+%legend({'RFX','True'})
 
 % plot data
 %==========================================================================
 spm_figure('GetWin','Figure 1');clf
 
+if ~exist('Xb','var')
+    Xb = [ones(sum(size(F,1)),1) ones(sum(size(F,1)),1)];
+end
 p =  (Xb(:,2) > 0);
 q = ~(Xb(:,2) > 0);
 
 subplot(2,2,1)
-if any(q)
+if any(q) && ~isempty(Y)
     col = {'r','r:','r--'};
     for np = 1:size(Y,3)
         plot(pst,Y(:,q,np),col{np}),  hold on
     end
 end
-if any(p)
-    col = {'b','b:','b--'};
-    for np = 1:size(Y,3)
-        plot(pst,Y(:,p,np),col{np}),  hold on
+try
+    if any(p) && ~isempty(Y)
+        col = {'b','b:','b--'};
+        for np = 1:size(Y,3)
+            plot(pst,Y(:,p,np),col{np}),  hold on
+        end
     end
 end
 hold off
@@ -388,44 +244,46 @@ spm_figure('GetWin','Summed free energy');clf, ALim = 1/2;
 try 
     p   = spm_softmax(sum(F(:,:,1))');
     subplot(3,1,1), bar(p),[m,i] = max(p);
-    text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
+    text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
     xlabel('model'), ylabel('probability'), title('Posterior (FFX)','FontSize',16)
     axis([0 (length(p) + 1) 0 1]), axis square
 end
 
 p   = spm_softmax(sum(F(:,:,2))');
 subplot(3,1,2), bar(p),[m,i] = max(p);
-text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
+text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
 xlabel('model'), ylabel('probability'), title('Posterior (BMR)','FontSize',16)
 axis([0 (length(p) + 1) 0 1]), axis square
 
 p   = spm_softmax(sum(F(:,:,3))');
 subplot(3,1,3), bar(p),[m,i] = max(p);
-text(i - 1/4,m/2,sprintf('%-2.0f%%',m*100),'Color','k','FontSize',8)
+text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
 xlabel('model'), ylabel('probability'), title('Posterior (PEB)','FontSize',16)
 axis([0 (length(p) + 1) 0 1]), axis square
 
 print('fig5','-dpng') 
 
-% random effects Bayesian model comparison
-%==========================================================================
-spm_figure('GetWin','Figure 6: random effects Bayesian model comparison');clf
+try
+    % random effects Bayesian model comparison
+    %==========================================================================
+    spm_figure('GetWin','Figure 6: random effects Bayesian model comparison');clf
 
-p   = BMC.Pw;
-subplot(2,2,1), bar(p),[m,i] = max(p);
-text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
-xlabel('model'), ylabel('RCM posterior probability'), title('Random parameter effects','FontSize',16)
-axis([0 (length(p) + 1) 0 1]), axis square
-save BMC_Pw p
+    p   = BMC.Pw;
+    subplot(2,2,1), bar(p),[m,i] = max(p);
+    text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
+    xlabel('model'), ylabel('RCM posterior probability'), title('Random parameter effects','FontSize',16)
+    axis([0 (length(p) + 1) 0 1]), axis square
+    save BMC_Pw p
 
-p   = xp;
-subplot(2,2,2), bar(p),[m,i] = max(p);
-text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
-xlabel('model'), ylabel('RCM exceedance probability'), title('Random model effects','FontSize',16)
-axis([0 (length(p) + 1) 0 1]), axis square
-save RCM_xp p
+    p   = xp;
+    subplot(2,2,2), bar(p),[m,i] = max(p);
+    text(i - 1/4,m/2,sprintf('model %d, %-2.0f%%',i,m*100),'Color','k','FontSize',8)
+    xlabel('model'), ylabel('RCM exceedance probability'), title('Random model effects','FontSize',16)
+    axis([0 (length(p) + 1) 0 1]), axis square
+    save RCM_xp p
 
-print('fig6','-dpng') 
+    print('fig6','-dpng') 
+end
 
 return
 
@@ -454,4 +312,3 @@ subplot(2,2,2)
 plot(hE,Eh)
 xlabel('Prior')
 title('log-preciion','FontSize',16)
-

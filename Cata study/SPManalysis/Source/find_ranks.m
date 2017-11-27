@@ -63,4 +63,7 @@ end
 % create list of tols in order of preference
 [~,ord] = sort(S.rankinfo(:,3));
 S.rankinfo = S.rankinfo(ord,:);
+if strcmp(S.rankminmax,'min')
+    S.rankinfo(1,:)=[];
+end
 tol_ord = S.rankinfo(:,4);

@@ -303,7 +303,7 @@ M    = struct('X',X);
 %--------------------------------------------------------------------------
 spm_dcm_peb_rnd(RCM(:,mw),M,{'A','B'});
 
-% BMC - search over first and second level effects
+% BMC - search over first and second level effects jointly
 %--------------------------------------------------------------------------
 [BMC,PEB] = spm_dcm_bmc_peb(RCM,M,{'A','B'});
 

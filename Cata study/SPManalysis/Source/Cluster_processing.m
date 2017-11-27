@@ -29,11 +29,11 @@ S.spm_dir = {
     %'_Time_Grp_Exp_Subject_spm_t-2514_-2448',2, '_orig_cleaned.mat',{'T1Exp',}
     %'_Time_Grp_Exp_Subject_spm_t-2362_-2338',2, '_orig_cleaned.mat',{'T1Exp',}
     %'_Att_Grp_Exp_Subject_spm_t-4690_-4672',1, '_orig_cleaned.mat',{}
-    '_Time_Grp_Exp_Subject_spm_t-2802_-2500',1, '_orig_cleaned.mat',{'T1Exp','T1Grp * Exp'}
-    '_Time_Grp_Exp_Subject_spm_t-2922_-2900',1, '_orig_cleaned.mat',{'T1Exp',}
-    '_Time_Grp_Exp_Subject_spm_t-3050_-2946',1, '_orig_cleaned.mat',{'T1Exp',}
-    '_Time_Grp_Exp_Subject_spm_t-3264_-3210',1, '_orig_cleaned.mat',{'T1Grp * Exp'}
-    '_Time_Grp_Exp_Subject_spm_t-3364_-3292',1, '_orig_cleaned.mat',{'T1Grp * Exp'}
+    %'_Time_Grp_Exp_Subject_spm_t-2802_-2500',1, '_orig_cleaned.mat',{'T1Exp','T1Grp * Exp'}
+    %'_Time_Grp_Exp_Subject_spm_t-2922_-2900',1, '_orig_cleaned.mat',{'T1Exp',}
+    %'_Time_Grp_Exp_Subject_spm_t-3050_-2946',1, '_orig_cleaned.mat',{'T1Exp',}
+    %'_Time_Grp_Exp_Subject_spm_t-3264_-3210',1, '_orig_cleaned.mat',{'T1Grp * Exp'}
+    %'_Time_Grp_Exp_Subject_spm_t-3364_-3292',1, '_orig_cleaned.mat',{'T1Grp * Exp'}
     '_Time_Grp_Exp_Subject_spm_t-4330_-4222',1, '_orig_cleaned.mat',{'T1Grp * Exp'}
     '_Time_Grp_Exp_Subject_spm_t-4454_-4362',1, '_orig_cleaned.mat',{'T1Grp'}
     '_Time_Grp_Exp_Subject_spm_t-4564_-4468',1, '_orig_cleaned.mat',{'T1Grp'}
@@ -121,8 +121,8 @@ S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','','';
 % input into SPM design matrix. Levels must be in the same order as SPM
 % design, but characters don't need to match anything.
 S.factlev = {
-        %{'Time'},{'LOI vs Baseline'},{'LOI','Baseline'};
-        {'Att'},{'Attention'},{'Pain','Loc'};
+        {'Time'},{'LOI vs Baseline'},{'LOI','Baseline'};
+        %{'Att'},{'Attention'},{'Pain','Loc'};
         {'Grp'},{'Group'},{'High','Low'};
         %{'Int'},{'Stimulus Intensity'},{'Low','Medium'};
         {'Exp'},{'Expectation Cues'},{'Low, Low','High, Low'};
@@ -138,7 +138,8 @@ S.thresDesc = 'none'; % 'FWE' or 'none'
 S.clusformthresh = 0.001;
 
 %% setup the ROI network connectivity statistics
-S.outputrank = 1000; % set to 1000 to use highest possible rank / number of unique ROIs
+S.run_correlation_analysis = 0;
+S.outputrank = 4; % set to 1000 to use highest possible rank / number of unique ROIs
 S.rankminmax = 'max'; % use maximum or minimum rank
 S.ranktolfactor = 1.1; % e.g. 1.1 increases tolerance by 10% each time
 S.Regularize.do            = true;                           % use regularization on partial correlation matrices using the graphical lasso. 
@@ -177,11 +178,11 @@ S.GroupLevel.contrasts          = [1  1;  % contrast 1
                                    1 -1]; % contrast 2
 
 %% run functions (sit back and relax)
-Extract_clusters_source(S);
-Convert_VOImat_to_excel(S);
+%Extract_clusters_source(S);
+%Convert_VOImat_to_excel(S);
 %Extract_cluster_residuals(S);
 %Normality_test_residuals(S);
 %Combine_clusters_source(S);
 %Extract_cluster_waveforms_source(S);
-%SW_connectivity(S);
+SW_connectivity(S);
 %SW_connectivity_results(S);

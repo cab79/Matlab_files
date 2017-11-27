@@ -118,43 +118,49 @@ for sp = 1:size(S.spm_paths,1)
                 time = S.wf.comb_clus.time;
                 subs = unique(S.Fm(:,1+S.subrow));
 
-                % correlation analysis
-                try
-                    mats = source_correlation_analysis(S,subs,time,orth_wf);
-                    tryagain=0;
-                catch ME
-                    if strcmp(ME.identifier,'dp_glasso:NotPosDefCovInput')
-                        tol_ord = tol_ord(tol_i+1:end); 
+                if S.run_correlation_analysis
+                    % correlation analysis
+                    try
+                        mats = source_correlation_analysis(S,subs,time,orth_wf);
+                        tryagain=0;
+                    catch ME
+                        if strcmp(ME.identifier,'dp_glasso:NotPosDefCovInput')
+                            tol_ord = tol_ord(tol_i+1:end); 
+                        end
                     end
+                else
+                    tryagain=0;
                 end
             end
             
         end
         
-        % reformat results - correlationMats is a cell array of frequency bands
-        S.nFreqBands = length(S.frequencyBands);
-        S.nSessions = length(subs);  
-        correlationMats = reformat_results(mats, S);
+        if S.run_correlation_analysis
+            % reformat results - correlationMats is a cell array of frequency bands
+            S.nFreqBands = length(S.frequencyBands);
+            S.nSessions = length(subs);  
+            correlationMats = reformat_results(mats, S);
 
-        %% Subject-level analysis to average over sessions in a fixed-effects manner
-        % will be same output as first-level if there is one session per subject
-        correlationMats = do_subject_level_glm(correlationMats, S);
+            %% Subject-level analysis to average over sessions in a fixed-effects manner
+            % will be same output as first-level if there is one session per subject
+            correlationMats = do_subject_level_glm(correlationMats, S);
 
-        %% Group-level analysis
-        % Find whole group means
-        if strcmpi(S.paradigm, 'rest'),
-            correlationMats = do_group_level_statistics(correlationMats, S);
-        end%if
+            %% Group-level analysis
+            % Find whole group means
+            if strcmpi(S.paradigm, 'rest'),
+                correlationMats = do_group_level_statistics(correlationMats, S);
+            end%if
 
-        % Perform group-level GLM
-        if ~isempty(S.GroupLevel),
-            %correlationMats = select_regions(correlationMats,[1]);
-            correlationMats = do_group_level_glm_CAB(correlationMats, S);
-        end%if
-        
-        % save 
-        S.wf.(fnames{1}).correlationMats = correlationMats;
-        save(fullfile(S.clus_path{cldir},[cname '.mat']),'S');
+            % Perform group-level GLM
+            if ~isempty(S.GroupLevel),
+                %correlationMats = select_regions(correlationMats,[1]);
+                correlationMats = do_group_level_glm_CAB(correlationMats, S);
+            end%if
+
+            % save 
+            S.wf.(fnames{1}).correlationMats = correlationMats;
+            save(fullfile(S.clus_path{cldir},[cname '.mat']),'S');
+        end
 
     end
 end
