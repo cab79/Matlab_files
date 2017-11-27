@@ -84,7 +84,7 @@ for i = 1:size(blocks,1)
     onsets = stimtime(st)';
     durations = stimtime(en)'-stimtime(st)';
     
-    fid = fopen([blocks{i,1} '_block_onsets.txt'], 'wt');
+    fid = fopen([blocks{i,1} '_block.txt'], 'wt');
     fprintf(fid, '%.2f\n', onsets);
     fclose(fid);
     
