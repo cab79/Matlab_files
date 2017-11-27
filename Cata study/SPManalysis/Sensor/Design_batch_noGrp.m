@@ -9,7 +9,7 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Design_batch_noGrp.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_noGrp.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
@@ -26,11 +26,11 @@ D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats';
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
 % prefix and suffix of subject folder names (within 'data_path') either side of subject ID
-D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
+D.anapref = 't-5500_-2500_b-5500_-5000'; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
-D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
 D.identifier=''; % optional identifer to add to end of outputted SPM folder name
@@ -114,7 +114,7 @@ D.bVolm = 1; % 1=high memory usage, but faster
 D.ST_U = 0.05; % cluster forming threshold
 
 % Write residuals? For normality tests
-D.resid = 1;
+D.resid = 0;
 
 %% run design_batch function
 D=design_batch(D);

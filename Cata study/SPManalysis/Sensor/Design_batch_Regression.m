@@ -9,11 +9,11 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_Grp.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_Regression.m';
 % template flexible factorial matlabbatch
-D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
+D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_regression_template';
 %  template SnPM matlabbatch
-D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
+D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_regression_template';
 % root directory in which subject-specific folders are located
 D.data_path = 'C:\Data\Catastrophising study\SPMdata\sensorimages';
 % directory in which image masks are saved
@@ -30,11 +30,11 @@ D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats';
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
 % prefix and suffix of subject folder names (within 'data_path') either side of subject ID
-%D.anapref = 't-5500_-2500_b-5500_-5000'; %directory prefix for this specific analysis
-D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
+D.anapref = 't-5500_-2500_b-5500_-5000'; %directory prefix for this specific analysis
+%D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
-D.subdirsuff = '_orig_cleaned_SPN'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
 D.identifier=''; % optional identifer to add to end of outputted SPM folder name
@@ -59,54 +59,48 @@ D.imglist = {'scondition_c1.nii'
 D.para = 1;
 % specify a time window to analyse
 D.time_ana = []; % applies a mask to the data
-% cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
-% image from imglist. Columns must be in same order as for 'factors' of type 'w' 
-D.cond_list =  [1 1
-              1 2
-              1 1
-              1 2
-              2 1
-              2 2
-              2 1
-              2 2];
-% factors and statistical model
-D.factors = {'Grp', 'Att', 'Exp', 'Subject'}; % must include a subject factor at the end; Group factor must be first if being used
-D.factortype = {'g','w','w','s'}; % w = within, s = subject, g = subject group
+% contrast: regression will take place on a single image per subject. So,
+% if there are multiple images (multiple conditions) and new image will be
+% calculated first based on a contrast. Use 1s and 2s, not -1 and 1.
+D.regress_contrast =  [1 2 1 2 1 2 1 2];
+%D.regress_contrast =  [1 1 1 1 1 1 1 1];
+% unique name for this contrast to apply to images
+%D.regress_contrastname =  'Mean';
+D.regress_contrastname =  'Exp';
+% Z-score normalise output image?
+D.znorm = 1;
+% which groups to include in regression? (empty = all subjects in one regression, otherwise names of groups to do separate regressions on)
+D.regress_group = {};
+D.fcontrasts = {
+    [0 1], 'F'
+    };
 
-% Main effects and interactions: 
-%   - for spm, can specify the highest-level interaction to produc results
-%   for all sub-interactions. Only main effects beyond those captured by
-%   any interactions need to be listed, e.g. for Subject (only listed
-%   Subject if there is no Group factor). E.g.
-D.interactions = [1 1 1 0]; % one column per factor; one row per interaction
-D.maineffects = [0 0 0 0]; % one column per factor 
-%   - for snpm, only a single main effect or 2-way interaction can be performed each time, e.g.
-%D.interactions = [0 0 0 0]; % one column per factor
-%D.maineffects = [1 0 0 0]; % one column per factor 
+D.tcontrasts = {
+    [0 1], 't+'
+    [0 -1], 't-'
+    };
+
+% names of covariates in the regression
+D.cov_names = {
+    'Pain_Distraction','Pain_Reduction','Pain_Interfearnce_With_Task','pain_thresh',...
+    'B1_upward_anxious','B1_upward_fear','B1_downward_anxious','B1_downward_fear',...
+    'Task_Performance','Cue_Prediction','Cue_Attention','Cue_Influence','Prior_Expectancy_A',...
+    'POMS1','Confidence_A','Exp_effect','Exp_effect_c0norm','Relief'
+    };
+% if there are many covariates, these will be included in one multiple
+% regression, unless this next value is set to 1, in which case separate
+% regressions will be run.
+D.runmultiple = 1;
+%D.cov_names = {};
 
 D.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
 D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA
-
-% names of nuisance covariates
-%cov_names = {'Age','Gender'};
-D.cov_names = {};
 
 % the following are for spm analysis, not snpm
 D.GMsca = [0 0 0 0]; %grand mean scaling
 D.ancova = [0 0 0 0]; %covariate
 % after model estimation, constrasts to display
-D.fcontrasts = {
-    [-1 1 1 -1 1 -1 -1 1], 'Grp * Att * Exp'
-    [1 -1 1 -1 -1 1 -1 1], 'Grp * Exp'
-    [1 1 -1 -1 -1 -1 1 1], 'Grp * Att'
-    [1 -1 -1 1 1 -1 -1 1], 'Exp * Att'
-    [1 1 1 1 -1 -1 -1 -1], 'Grp'
-    [1 -1 1 -1 1 -1 1 -1], 'Exp'
-    [1 1 -1 -1 1 1 -1 -1], 'Att'
-    };
 
-D.tcontrasts = {
-    };
 % the following are for SnPM, not SPM
 D.nPerm = 5000; % permutations
 D.vFWHM = [20 20 20]; % variance smoothing (should be same as data smoothing used)
@@ -117,9 +111,18 @@ D.ST_U = 0.001; % cluster forming threshold
 D.resid = 0;
 
 %% run design_batch function
-D=design_batch(D);
+if D.runmultiple
+    D.cov_namesall=D.cov_names;
+    for i = 1:length(D.cov_names)
+        D.cov_names = D.cov_namesall(i);
+        D=design_batch(D);
+    end
+else
+    D=design_batch(D);
+end
 
-if D.para==1
+D.loadresults=0;
+if D.para==1 && D.loadresults
     spm eeg
     load(fullfile(D.spm_path,'SPM.mat'));
     SPM.Im=[]; % no masking

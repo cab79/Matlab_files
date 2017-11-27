@@ -15,19 +15,19 @@ outprefix = 'spm12_';
 % the folder
 fpref = '';
 fmid = '';
-fsuff = 'cleaned.set';
+fsuff = 'cleaned_SPN.set';
 
 % set data type: 'epoched' or 'continuous'
 dattype ='epoched';
 
 % set time window of interest in ms (advise whole epoch)
-timewin = [-5500 2000];
+timewin = [-3000 0];
 
 %% LOAD AND CONVERT
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
 cd(outpath)
 
-for f = 20%1:length(files)
+for f = 1:length(files)
     S=struct;
     S.dataset = fullfile(filepath,files(f).name);
     [pth nme ext] = fileparts(files(f).name);

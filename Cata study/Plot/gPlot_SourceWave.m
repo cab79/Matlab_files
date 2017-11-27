@@ -10,12 +10,14 @@ close all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % directory in which SPM is saved
-P.spm_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\_Time_Int_Exp_Subject_spm_t416_478';
-P.wavetype = 'source'; % source or sensor?
+%P.spm_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\_Time_Int_Exp_Subject_spm_t416_478';
+%P.wavetype = 'source'; % source or sensor?
+P.spm_path = 'C:\Data\Catastrophising study\SPMstats\Include1\Between-SPN\t-3000_0_b-3000_-2500_Grp_Att_Exp_Subject_orig_cleaned_SPN_spm';
+P.wavetype = 'sensor'; % source or sensor?
 
 %cluster directory name, which also specifies the constrast that will be
 %plotted (i.e. the characters before the underscore)
-P.clusdir='Int_clusters';
+P.clusdir='Grp_Exp_clusters';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -33,23 +35,24 @@ P.subfactname = 'Subject';
 
 %factor(s) to plot - if more than one, first factor levels will be on separate plots
 %must be the same characters as used to name the factors in design_batch
+%P.facplot={'Int','Exp'};
+P.facplot={'Exp','Grp'};
 %P.facplot={'Att','Exp'};
-%P.facplot={'Exp','Grp'};
-P.facplot={'Int','Exp'};
 %P.facplot={'Exp'};
 %Full factor names to use for labelling the plots
 fact_names = {
     %'Attention task';
-    'Intensity condition'
+    %'Intensity condition'
     'Expectancy condition'
-    %'Group';
+    'Group';
     };
 %condition labels, i.e. levels of each condition, in the same order as in
 %the SPM design matrix. One row per factor. second column in plotting order
 cval={
-    {'Low','Medium'}
-    {'Cue 1 Low, Cue 2 Low','Cue 1 High, Cue 2 Low'};
-    %{'Low PCS','High PCS'}
+    %{'Low','Medium'}
+    {'Low Exp','High Exp'}
+    %{'Cue 1 Low, Cue 2 Low','Cue 1 High, Cue 2 Low'};
+    {'High PCS','Low PCS'}
     %{'No Task','Task'};
     };
 colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red
@@ -61,7 +64,7 @@ xlimits = [];
 % vertical dashed lines to indicate events, time in ms
 xlines = [-5000 -2500 0];
 % polygon times (or leave blank to extract from clustertable)
-P.poly = [416 478];
+P.poly = [];
 
 % plot topographies
 plot_topo=0;

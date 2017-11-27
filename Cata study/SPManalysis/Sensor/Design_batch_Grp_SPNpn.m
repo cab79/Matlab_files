@@ -9,7 +9,7 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_Grp.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_Grp_SPNpn.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
@@ -34,7 +34,7 @@ D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats';
 D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
-D.subdirsuff = '_orig_cleaned_SPN'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_orig_cleaned_SPNpn'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
 D.identifier=''; % optional identifer to add to end of outputted SPM folder name
@@ -42,14 +42,14 @@ D.identifier=''; % optional identifer to add to end of outputted SPM folder name
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % list of image names within each subject folder
-D.imglist = {'scondition_c1.nii'
-            'scondition_c2.nii'
-            'scondition_c3.nii'
-            'scondition_c4.nii'
-            'scondition_c5.nii'
-            'scondition_c6.nii'
-            'scondition_c7.nii'
-            'scondition_c8.nii'};
+D.imglist = {'scondition_c2a.nii'
+            'scondition_c2b.nii'
+            'scondition_c4a.nii'
+            'scondition_c4b.nii'
+            'scondition_c6a.nii'
+            'scondition_c6b.nii'
+            'scondition_c8a.nii'
+            'scondition_c8b.nii'};
         
 %% analysis design and parameters
 %-------------------------------------------------------------

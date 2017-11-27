@@ -13,7 +13,7 @@ dbstop if error
 filepath = 'C:\Data\Catastrophising study\Preprocessed';
 cd(filepath);
 % generic file suffix
-filesuff = ('_orig_cleaned.set');
+filesuff = ('_orig_cleaned_SPN.set');
 % chanlocs file path
 load('C:\Data\Catastrophising study\Orig\chanlocs.mat');
 
@@ -25,13 +25,13 @@ pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.x
 
 % Here select analysis by selecting one line at a time:
 %select = 'TF'; TFmethod = '-FT'; % or, '-EL' % recommend FT (fieldtrip)
-select = 'Freq'; TFmethod = '-FT'; % Coherence (fieldtrip)
+%select = 'Freq'; TFmethod = '-FT'; % Coherence (fieldtrip)
 %select = 'Coh'; TFmethod = '-FT'; % Coherence (fieldtrip)
-%select = 'ERP'; TFmethod = ''; % if ERP, leave TF blank
+select = 'ERP'; TFmethod = ''; % if ERP, leave TF blank
 
 
-timebin = [-5.5 2]; % time window
-basebin = [-5.5 -5]; % baseline window
+timebin = [-3 0]; % time window
+basebin = [-3 -2.5]; % baseline window
 
 % select frequency range and resolution (if freq analysis)
 freqsrange = [4:2:20]; % example of keeping freq resolution high (2Hz) for TF analysis
@@ -44,6 +44,7 @@ bootrep = 50;
 ncycles=3;
 
 % stimtypes to include in analysis
+%eventtypes = {'c2a','c2b','c4a','c4b','c6a','c6b','c8a','c8b'}; % stim labels
 eventtypes = {'c1','c2','c3','c4','c5','c6','c7','c8'}; % stim labels
 use_etype = [1 2 3 4 5 6 7 8]; % index of labels to include
 no_cond = length(use_etype);
@@ -312,5 +313,5 @@ for g = 1:length(subjects)
     end
 end
 
-save([select TFmethod savenametype '_data.mat'],'-v7.3');
+save([select TFmethod savenametype '_data_SPN.mat'],'-v7.3');
 

@@ -24,6 +24,9 @@
 %D.globalnorm
 %D.fcontrasts
 %D.cov_names
+
+% or for regression:
+% D.regress_contrast
 %%
 %-----------------------------------------------------------------------  
 function D=design_batch(D)
@@ -53,7 +56,19 @@ end
 if ~isfield(D,'askoverwrite')
     D.askoverwrite=1;
 end
-
+if isfield(D,'maineffects')
+    isfactorial = 1;
+else 
+    isfactorial = 0;
+end
+if isfield(D,'regress_contrast')
+    isregress = 1;
+else
+    isregress=0;
+end
+if ~isfield(D,'znorm')
+    D.znorm = 0;
+end
 
 % select parametric or non-parametric analyses and the range of models
 if D.para==1
@@ -62,35 +77,43 @@ if D.para==1
 elseif D.para==2
     load(D.npbatch);
     paraname = '_snpm';
-    ismain = any(D.maineffects);
-    isinter = any(D.interactions);
-    if ismain
-        if strcmp(D.factortype(find(D.maineffects)),'w')
-            matlabbatch = matlabbatch(1);
-            model = 'w';
-        elseif strcmp(D.factortype(find(D.maineffects)),'g')
-            matlabbatch = matlabbatch(2);
-            model = 'g';
+    if isfactorial
+        ismain = any(D.maineffects);
+        isinter = any(D.interactions);
+        if ismain
+            if strcmp(D.factortype(find(D.maineffects)),'w')
+                matlabbatch = matlabbatch(1);
+                model = 'w';
+            elseif strcmp(D.factortype(find(D.maineffects)),'g')
+                matlabbatch = matlabbatch(2);
+                model = 'g';
+            end
+        elseif isinter
+            uf = length(unique(D.factortype(find(D.interactions))));
+            if uf==1 && strcmp(unique(D.factortype(find(D.interactions))),'w')% interaction of two within-subjects factors
+                matlabbatch = matlabbatch(1); % paired test after subtraction of second factor
+                model = 'ww';
+            elseif uf==2 % interaction of within-subjects and group factor
+                matlabbatch = matlabbatch(3); % unpaired test after subtraction of w factor
+                model = 'gw';
+            end
+        else % assume one-sample t-test
+            matlabbatch = matlabbatch(4);
+            model = 'one';
         end
-    elseif isinter
-        uf = length(unique(D.factortype(find(D.interactions))));
-        if uf==1 && strcmp(unique(D.factortype(find(D.interactions))),'w')% interaction of two within-subjects factors
-            matlabbatch = matlabbatch(1); % paired test after subtraction of second factor
-            model = 'ww';
-        elseif uf==2 % interaction of within-subjects and group factor
-            matlabbatch = matlabbatch(3); % unpaired test after subtraction of w factor
-            model = 'gw';
-        end
-    else % assume one-sample t-test
-        matlabbatch = matlabbatch(4);
-        model = 'one';
     end
 end
 
+% get factor names
 factnames = '';
-for f = 1:length(D.factors)
-    factnames = [factnames '_' D.factors{f}];
+if isfactorial
+    for f = 1:length(D.factors)
+        factnames = [factnames '_' D.factors{f}];
+    end
+elseif isregress
+    factnames = D.regress_contrastname;
 end
+
 covs = '';
 for c = 1:length(D.cov_names)
     covs = [covs '_' D.cov_names{c}];
@@ -144,14 +167,13 @@ if isfield(D,'grpind')
     grptype = unique([grpdat{:}]);
     Ngrp = length(grptype);
 else
-    %Change char Grp inputs to numbers
     grpdat = pdata(2:end,grp_col);
     if isnumeric(grpdat{2,1})
         grptype = unique([grpdat{:}]);
         grptype = grptype(~isnan(grptype));
         grptype(grptype==0)=[];
         Ngrp = length(grptype);
-    else
+    else %Change char Grp inputs to numbers
         grptype = unique(grpdat);
         grptype(isempty(grptype))=[];
         Ngrp = length(grptype);
@@ -180,24 +202,27 @@ for g = 1:Ngrp
 end
 
 % add factors to the design
+
 if D.para==1
     matlabbatch{1}.spm.stats.factorial_design.dir = {D.spm_path};
-    for f = 1:length(D.factors)
-        if strcmp(D.factortype(f),'w')
-            dept = 1; %dependence
-            variance = 0; % unequal variance
-        elseif strcmp(D.factortype(f),'s')
-            dept = 0; %dependence
-            variance = 0; % unequal variance
-        elseif strcmp(D.factortype(f),'g')
-            dept = 0; %dependence
-            variance = 1; % unequal variance
+    if isfactorial
+        for f = 1:length(D.factors)
+            if strcmp(D.factortype(f),'w')
+                dept = 1; %dependence
+                variance = 0; % unequal variance
+            elseif strcmp(D.factortype(f),'s')
+                dept = 0; %dependence
+                variance = 0; % unequal variance
+            elseif strcmp(D.factortype(f),'g')
+                dept = 0; %dependence
+                variance = 1; % unequal variance
+            end
+            matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).name = D.factors{f};
+            matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).dept = dept;
+            matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).variance = variance;
+            matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).gmsca = D.GMsca(f);
+            matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).ancova = D.ancova(f);
         end
-        matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).name = D.factors{f};
-        matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).dept = dept;
-        matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).variance = variance;
-        matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).gmsca = D.GMsca(f);
-        matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(f).ancova = D.ancova(f);
     end
 elseif D.para==2
     generic.dir = {D.spm_path};
@@ -205,34 +230,45 @@ elseif D.para==2
     generic.vFWHM = D.vFWHM;
     generic.bVolm = D.bVolm;
     generic.ST.ST_U = D.ST_U;
-    wfactind = double(ismember(D.factortype,'w'));
-    if strcmp(model,'w')
-        matlabbatch{1}.spm.tools.snpm.des.PairT = generic;
-        scanname=D.factors(find(D.maineffects));
-        scanname=scanname{:};
-        wnum = find(wfactind .* D.maineffects);
-    elseif strcmp(model,'ww')
-        matlabbatch{1}.spm.tools.snpm.des.PairT = generic;
-        scanname=horzcat(D.factors(find(D.interactions)));
-        scanname=scanname{:};
-        wnum = find(wfactind .* D.maineffects);
-    elseif strcmp(model,'g')
-        matlabbatch{1}.spm.tools.snpm.des.TwoSampT = generic;
-        scanname='allavg';
-        wnum = 0;
-    elseif strcmp(model,'gw')
-        matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT = generic;
-        wfactor = double(ismember(D.factortype,'w')) .* D.interactions;
-        scanname=horzcat(D.factors(find(wfactor)));
-        scanname=scanname{:};
-        wnum = find(wfactind .* D.interactions);
-    elseif strcmp(model,'one')
-        matlabbatch{1}.spm.tools.snpm.des.OneSampT = generic;
-        scanname='allavg';
-        wnum = 0;
+    if isfactorial
+        wfactind = double(ismember(D.factortype,'w'));
+        if strcmp(model,'w')
+            matlabbatch{1}.spm.tools.snpm.des.PairT = generic;
+            scanname=D.factors(find(D.maineffects));
+            scanname=scanname{:};
+            wnum = find(wfactind .* D.maineffects);
+        elseif strcmp(model,'ww')
+            matlabbatch{1}.spm.tools.snpm.des.PairT = generic;
+            scanname=horzcat(D.factors(find(D.interactions)));
+            scanname=scanname{:};
+            wnum = find(wfactind .* D.maineffects);
+        elseif strcmp(model,'g')
+            matlabbatch{1}.spm.tools.snpm.des.TwoSampT = generic;
+            scanname='allavg';
+            wnum = 0;
+        elseif strcmp(model,'gw')
+            matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT = generic;
+            wfactor = double(ismember(D.factortype,'w')) .* D.interactions;
+            scanname=horzcat(D.factors(find(wfactor)));
+            scanname=scanname{:};
+            wnum = find(wfactind .* D.interactions);
+        elseif strcmp(model,'one')
+            matlabbatch{1}.spm.tools.snpm.des.OneSampT = generic;
+            scanname='allavg';
+            wnum = 0;
+        end
     end
 end
+if isregress
+    scanname=D.regress_contrastname;
+end
+if D.znorm
+    scanname_ext = '_znorm';
+else
+    scanname_ext = '';
+end
 
+% find and load scans into matlabbatch
 gs = 0;
 subID={};
 for g = 1:Ngrp
@@ -265,37 +301,68 @@ for g = 1:Ngrp
         end
         
         subimg = cell(1,1);
-        if D.para==1
-            % for spm, load all files
-            for i = 1:length(D.imglist)
-                fname = fullfile(subdir, [subfile D.imglist{i}]);
-                if ~exist(fname,'file')
-                    fname_temp = dir(fullfile(subdir, [subfile D.imglist{i}]));
-                    if length(fname_temp)>1
-                        display(fname);
-                        error('Subject file name is not unique in this folder');
-                    elseif length(fname_temp)==0
-                        display(fname);
-                        error('no file found with this name');
+        if isfactorial
+            if D.para==1
+                % for spm, load all files
+                for i = 1:length(D.imglist)
+                    fname = fullfile(subdir, [subfile D.imglist{i}]);
+                    if ~exist(fname,'file')
+                        fname_temp = dir(fullfile(subdir, [subfile D.imglist{i}]));
+                        if length(fname_temp)>1
+                            display(fname);
+                            error('Subject file name is not unique in this folder');
+                        elseif length(fname_temp)==0
+                            display(fname);
+                            error('no file found with this name');
+                        end
+                        fname=fullfile(subdir, fname_temp.name);
                     end
-                    fname=fullfile(subdir, fname_temp.name);
+                    subimg{i,1} = [fname ',1'];
                 end
-                subimg{i,1} = [fname ',1'];
-            end
-        elseif D.para==2
-            if D.useIDfile==1
-                % for SnPM, check averaged files exist; if not then create them.
-                fnames = dir(fullfile(subdir, ['*' scanname '*']));
-                if wnum==0
-                    condlist = ones(length(D.cond_list),1);
+            elseif D.para==2
+                if D.useIDfile==1
+                    % for SnPM, check averaged files exist; if not then create them.
+                    fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
+                    if wnum==0
+                        condlist = ones(length(D.cond_list),1);
+                    else
+                        condlist = D.cond_list(:,wnum);
+                    end
+                    if isempty(fnames)
+                        factor_img(subdir,D.imglist,condlist,scanname,'meancond',D.znorm);
+                        fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
+                    end
+                    for i=1:length(fnames)
+                        subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
+                    end
                 else
-                    condlist = D.cond_list(:,wnum);
+                    subimg = subfile;
                 end
+            end
+        
+            % if there is a Group factor, add in group level to cond_list
+            grpfactind = find(strcmp(D.factortype,'g'));
+            if ~isempty(grpfactind)
+                nlist = D.cond_list;
+                if grpfactind<=size(D.cond_list,2)
+                    nlist(:,grpfactind+1:end+1) = nlist(:,grpfactind:end);
+                end
+                nlist(:,grpfactind) = g*ones(size(nlist,1),1);
+                condlist = nlist;
+            else
+                condlist = D.cond_list;
+            end
+            
+        elseif isregress
+            if D.useIDfile==1
+                % check averaged files exist; if not then create them.
+                fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
+                condlist = D.regress_contrast
                 if isempty(fnames)
-                    factor_img(subdir,D.imglist,condlist,scanname);
-                    fnames = dir(fullfile(subdir, ['*' scanname '*']));
+                    factor_img(subdir,D.imglist,condlist,scanname,'contrast',D.znorm);
+                    fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
                 end
-                for i=1:length(fnames)
+                for i=1%:length(fnames)
                     subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
                 end
             else
@@ -304,46 +371,41 @@ for g = 1:Ngrp
         end
         scans = subimg;
         
-        % if there is a Group factor, add in group level to cond_list
-        grpfactind = find(strcmp(D.factortype,'g'));
-        if ~isempty(grpfactind)
-            nlist = D.cond_list;
-            if grpfactind<=size(D.cond_list,2)
-                nlist(:,grpfactind+1:end+1) = nlist(:,grpfactind:end);
-            end
-            nlist(:,grpfactind) = g*ones(size(nlist,1),1);
-            condlist = nlist;
-        else
-            condlist = D.cond_list;
-        end
-        
         % add the above scan and group info to the matlabbatch, or create new scans
-        if D.para==1
-            matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(gs).scans = scans;
-            matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(gs).conds = condlist;
-        elseif D.para==2
-            if strcmp(model,'w')
-                matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scans = scans;
-                matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scindex = unique(condlist,'stable');
-            elseif strcmp(model,'ww')
-                %matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scans = ;
-                %matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scindex = ;
-            elseif strcmp(model,'g')
-                if g==1
-                    matlabbatch{1}.spm.tools.snpm.des.TwoSampT.scans1(s,1) = scans;
-                elseif g==2
-                    matlabbatch{1}.spm.tools.snpm.des.TwoSampT.scans2(s,1) = scans;
+        if isfactorial
+            if D.para==1
+                matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(gs).scans = scans;
+                matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(gs).conds = condlist;
+            elseif D.para==2
+                if strcmp(model,'w')
+                    matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scans = scans;
+                    matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scindex = unique(condlist,'stable');
+                elseif strcmp(model,'ww')
+                    %matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scans = ;
+                    %matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scindex = ;
+                elseif strcmp(model,'g')
+                    if g==1
+                        matlabbatch{1}.spm.tools.snpm.des.TwoSampT.scans1(s,1) = scans;
+                    elseif g==2
+                        matlabbatch{1}.spm.tools.snpm.des.TwoSampT.scans2(s,1) = scans;
+                    end
+                elseif strcmp(model,'gw')
+                    if g==1
+                        %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans1.fsubject(s).scans = ;
+                        %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans1.fsubject(s).scindex = ;
+                    elseif g==2
+                        %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scans = ;
+                        %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scindex = ;
+                    end
+                elseif strcmp(model,'one')
+                    matlabbatch{1}.spm.tools.snpm.des.OneSampT.P(gs,1) = scans;
                 end
-            elseif strcmp(model,'gw')
-                if g==1
-                    %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans1.fsubject(s).scans = ;
-                    %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans1.fsubject(s).scindex = ;
-                elseif g==2
-                    %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scans = ;
-                    %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scindex = ;
-                end
-            elseif strcmp(model,'one')
-                matlabbatch{1}.spm.tools.snpm.des.OneSampT.P(gs,1) = scans;
+            end
+        elseif isregress
+            if D.para==1
+                matlabbatch{1}.spm.stats.factorial_design.des.mreg.scans(gs,1) = scans;
+            elseif D.para==2
+                matlabbatch{1}.spm.tools.snpm.des.Corr.P(gs,1) = scans;
             end
         end
         
@@ -351,16 +413,18 @@ for g = 1:Ngrp
 end
 
 % add main effects and interactions
-if D.para==1
-    ne = 0;
-    for e = 1:size(D.interactions,1)
-        ne = ne+1;
-        matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{ne}.inter.fnums = find(D.interactions)';
-    end
-    me_ind = find(D.maineffects);
-    for e = 1:length(me_ind)
-        ne = ne+1;
-        matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{ne}.fmain.fnum = me_ind(e);
+if isfactorial
+    if D.para==1
+        ne = 0;
+        for e = 1:size(D.interactions,1)
+            ne = ne+1;
+            matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{ne}.inter.fnums = find(D.interactions)';
+        end
+        me_ind = find(D.maineffects);
+        for e = 1:length(me_ind)
+            ne = ne+1;
+            matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{ne}.fmain.fnum = me_ind(e);
+        end
     end
 end
 
@@ -383,23 +447,33 @@ if ~isempty(D.cov_names)
 
             covdat = [covdat{:}]';
             covdat = covdat(vertcat(SubInd{:}));
-            covdat = repmat(covdat(inc_idx),1,length(scans));
+            covdat = repmat(covdat,1,length(scans));
             covdat = reshape(covdat', size(covdat,1)*size(covdat,2),1);
-            if D.para==1
-                matlabbatch{1}.spm.stats.factorial_design.cov(c).c = covdat; % vector
-                matlabbatch{1}.spm.stats.factorial_design.cov(c).cname = D.cov_names{c}; % name
-                matlabbatch{1}.spm.stats.factorial_design.cov(c).iCFI = 1;% interaction with factor
-                matlabbatch{1}.spm.stats.factorial_design.cov(c).iCC = 1;% centering
-            elseif D.para==2
-                if strcmp(model,'g')
-                    matlabbatch{1}.spm.tools.snpm.des.TwoSampT.cov(c).c = covdat; % vector
-                    matlabbatch{1}.spm.tools.snpm.des.TwoSampT.cov(c).cname = D.cov_names{c}; % name
-                elseif strcmp(model,'gw')
-                    matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.cov(c).c = covdat; % vector
-                    matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.cov(c).cname = D.cov_names{c}; % name
-                elseif strcmp(model,'one')
-                    matlabbatch{1}.spm.tools.snpm.des.OneSampT.cov(c).c = covdat; % vector
-                    matlabbatch{1}.spm.tools.snpm.des.OneSampT.cov(c).cname = D.cov_names{c}; % name
+            covdat(isnan(covdat)) = mean(covdat(~isnan(covdat)));
+            if isfactorial
+                if D.para==1
+                    matlabbatch{1}.spm.stats.factorial_design.cov(c).c = covdat; % vector
+                    matlabbatch{1}.spm.stats.factorial_design.cov(c).cname = D.cov_names{c}; % name
+                    matlabbatch{1}.spm.stats.factorial_design.cov(c).iCFI = 1;% interaction with factor
+                    matlabbatch{1}.spm.stats.factorial_design.cov(c).iCC = 1;% centering
+                elseif D.para==2
+                    if strcmp(model,'g')
+                        matlabbatch{1}.spm.tools.snpm.des.TwoSampT.cov(c).c = covdat; % vector
+                        matlabbatch{1}.spm.tools.snpm.des.TwoSampT.cov(c).cname = D.cov_names{c}; % name
+                    elseif strcmp(model,'gw')
+                        matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.cov(c).c = covdat; % vector
+                        matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.cov(c).cname = D.cov_names{c}; % name
+                    elseif strcmp(model,'one')
+                        matlabbatch{1}.spm.tools.snpm.des.OneSampT.cov(c).c = covdat; % vector
+                        matlabbatch{1}.spm.tools.snpm.des.OneSampT.cov(c).cname = D.cov_names{c}; % name
+                    end
+                end
+            elseif isregress
+                if D.para==1
+                    matlabbatch{1}.spm.stats.factorial_design.des.mreg.mcov(c).c = covdat; % vector
+                    matlabbatch{1}.spm.stats.factorial_design.des.mreg.mcov(c).cname = D.cov_names{c}; % name
+                elseif D.para==2
+                    matlabbatch{1}.spm.tools.snpm.des.Corr.CovInt = covdat; % vector
                 end
             end
         end
@@ -408,15 +482,21 @@ else
     if D.para==1
         matlabbatch{1}.spm.stats.factorial_design.cov = struct('c', {}, 'cname', {}, 'iCFI', {}, 'iCC', {}); 
     elseif D.para==2
-        if strcmp(model,'g')
-            matlabbatch{1}.spm.tools.snpm.des.TwoSampT.cov = struct('c', {}, 'cname', {}); 
-        elseif strcmp(model,'gw')
-            matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.cov = struct('c', {}, 'cname', {});
+        if isfactorial
+            if strcmp(model,'g')
+                matlabbatch{1}.spm.tools.snpm.des.TwoSampT.cov = struct('c', {}, 'cname', {}); 
+            elseif strcmp(model,'gw')
+                matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.cov = struct('c', {}, 'cname', {});
+            end
+        elseif isregress
+            matlabbatch{1}.spm.tools.snpm.des.Corr.cov = struct('c', {}, 'cname', {});
         end
     end
 end
-if D.para==1
-    matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
+if isfactorial
+    if D.para==1
+        matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
+    end
 end
 
 % specify mask
@@ -441,22 +521,27 @@ if D.para==1
     matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
     %globalm=matlabbatch{1}.spm.stats.factorial_design.globalm;
 elseif D.para==2
-    if strcmp(model,'w') || strcmp(model,'ww')
-        matlabbatch{1}.spm.tools.snpm.des.PairT.masking = masking;
-        matlabbatch{1}.spm.tools.snpm.des.PairT.globalc.g_omit = 1;
-        %globalm=matlabbatch{1}.spm.tools.snpm.des.PairT.globalm;
-    elseif strcmp(model,'g')
-        matlabbatch{1}.spm.tools.snpm.des.TwoSampT.masking = masking;
-        matlabbatch{1}.spm.tools.snpm.des.TwoSampT.globalc.g_omit = 1;
-        %globalm=matlabbatch{1}.spm.tools.snpm.des.TwoSampT.globalm;
-    elseif strcmp(model,'gw')
-        matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.masking = masking;
-        matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalc.g_omit = 1;
-        %globalm=matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalm;
-    elseif strcmp(model,'one')
-        matlabbatch{1}.spm.tools.snpm.des.OneSampPairT.masking = masking;
-        matlabbatch{1}.spm.tools.snpm.des.OneSampPairT.globalc.g_omit = 1;
-        %globalm=matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalm;
+    if isfactorial
+        if strcmp(model,'w') || strcmp(model,'ww')
+            matlabbatch{1}.spm.tools.snpm.des.PairT.masking = masking;
+            matlabbatch{1}.spm.tools.snpm.des.PairT.globalc.g_omit = 1;
+            %globalm=matlabbatch{1}.spm.tools.snpm.des.PairT.globalm;
+        elseif strcmp(model,'g')
+            matlabbatch{1}.spm.tools.snpm.des.TwoSampT.masking = masking;
+            matlabbatch{1}.spm.tools.snpm.des.TwoSampT.globalc.g_omit = 1;
+            %globalm=matlabbatch{1}.spm.tools.snpm.des.TwoSampT.globalm;
+        elseif strcmp(model,'gw')
+            matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.masking = masking;
+            matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalc.g_omit = 1;
+            %globalm=matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalm;
+        elseif strcmp(model,'one')
+            matlabbatch{1}.spm.tools.snpm.des.OneSampPairT.masking = masking;
+            matlabbatch{1}.spm.tools.snpm.des.OneSampPairT.globalc.g_omit = 1;
+            %globalm=matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalm;
+        end
+    elseif isregress
+        matlabbatch{1}.spm.tools.snpm.des.Corr.masking = masking;
+        matlabbatch{1}.spm.tools.snpm.des.Corr.globalc.g_omit = 1;
     end
 end
 
@@ -499,14 +584,19 @@ if D.para==1
         matlabbatch{3}.spm.stats.con.consess{1,tc}.tcon.sessrep = 'none';
     end
 elseif D.para==2
-    if strcmp(model,'w') || strcmp(model,'ww')
-        matlabbatch{1}.spm.tools.snpm.des.PairT.globalm = globalm;
-    elseif strcmp(model,'g')
-        matlabbatch{1}.spm.tools.snpm.des.TwoSampT.globalm = globalm;
-    elseif strcmp(model,'gw')
-        matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalm = globalm;
-    elseif strcmp(model,'one')
-        matlabbatch{1}.spm.tools.snpm.des.OneSampT.globalm = globalm;
+    if isfactorial
+        if strcmp(model,'w') || strcmp(model,'ww')
+            matlabbatch{1}.spm.tools.snpm.des.PairT.globalm = globalm;
+        elseif strcmp(model,'g')
+            matlabbatch{1}.spm.tools.snpm.des.TwoSampT.globalm = globalm;
+        elseif strcmp(model,'gw')
+            matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.globalm = globalm;
+        elseif strcmp(model,'one')
+            matlabbatch{1}.spm.tools.snpm.des.OneSampT.globalm = globalm;
+        end
+        if isregress
+            matlabbatch{1}.spm.tools.snpm.des.Corr.globalm = globalm;
+        end
     end
 
     matlabbatch{2}.spm.tools.snpm.cp.snpmcfg = {fullfile(D.spm_path,'SnPMcfg.mat')};
@@ -526,9 +616,11 @@ spm_jobman('initcfg')
 try
     spm_jobman('run',matlabbatch);
 catch
-    % reduced number of subjects if fails
-    subind = randperm(length(matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject));
-    matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject = matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject(subind(1:D.nSubs));
-    spm_jobman('initcfg');
-    spm_jobman('run',matlabbatch);
+    if D.para==1
+        % reduced number of subjects if fails
+        subind = randperm(length(matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject));
+        matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject = matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject(subind(1:D.nSubs));
+        spm_jobman('initcfg');
+        spm_jobman('run',matlabbatch);
+    end
 end
