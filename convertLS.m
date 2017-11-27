@@ -13,6 +13,7 @@ function convertLS(D)
 if ~isfield(D,'mean_nonunique'); D.mean_nonunique=0; end;
 if ~isfield(D,'factavg'); D.factavg = 0; end;
 if ~isfield(D,'applyop'); D.applyop = 0; end;
+if ~isfield(D,'std'); D.std = 0; end;
 
 % load file
 [~,~,pdata] = xlsread(D.pdatfile);
@@ -242,14 +243,22 @@ if ~isempty(D.avg)
     fact_val_out(D.avg) = [];
     newdatout_temp(:,rmfact) = [];
     newdatout = newdatout_temp(1,:);
+    newdatout_std = newdatout_temp(1,:);
     for nc = 1:size(newdatout_temp,2)
         if isnumeric(newdatout_temp{D.Nhead+1,nc})
             meandat=[];
+            stddat=[];
             for ul = 1:length(uniqlev)
                 dat = cell2mat(newdatout_temp(D.Nhead+1:end,nc));
-                meandat(ul,1) = nanmean(dat(rowind{ul}));
+                if D.std % calculate zscores?
+                    meandat(ul,1) = nanstd(dat(rowind{ul}));
+                else
+                    meandat(ul,1) = nanmean(dat(rowind{ul}));
+                end
+                
             end
             newdatout(D.Nhead+1:D.Nhead+length(meandat),nc) = num2cell(meandat);
+            %newdatout_std(D.Nhead+1:D.Nhead+length(stddat),nc) = num2cell(stddat);
         else
             meandat={};
             for ul = 1:length(uniqlev)
@@ -257,10 +266,12 @@ if ~isempty(D.avg)
                 meandat{ul,1} = dat{rowind{ul}(1)};
             end
             newdatout(D.Nhead+1:D.Nhead+length(meandat),nc) = meandat;
+            %newdatout_std = newdatout;
         end
         
     end
     pdatout = newdatout;
+    pdatout_std = newdatout_std;
 end
 
 if D.mean_nonunique==1 

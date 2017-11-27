@@ -7,9 +7,91 @@ switch opt
     case 'setoptions'
         
     % settings options
-    h.SettingsOptions = {'practice','fMRI_run'};
+    h.SettingsOptions = {'practiceTACTILE','practiceAUDIO','fMRI_run'};
     
-    case 'practice'
+    
+    case 'practiceTACTILE'
+         % set general options
+        h = setgeneral(h);
+        %record response, 1=yes, 0=no
+        h.Settings.record_response=1;
+        %between-train frequency (1000 divided by ISI in ms)
+        h.Settings.freq = 1./(h.Settings.trialdur);
+        % stimulus types
+        % rows = conditions (stimuli randomised together), columns = outputs within each condition
+        % if using D188, would be the output channels 
+        % if auditory, would be the pitch, intensity or channel indices (actual channel numbers on device are
+        % specified later by h.Settings.stimchan).
+        h.Settings.stimtypeouts_init = [1 2]; % [1 2; 3 4] digit 1 vs digit 5; left vs. right ear
+        %condition numbers to associate with each condition; rows = conditions,
+        %column1 = no change condition, column 2 = change condition.
+        h.Settings.cond_num_init = [1 2]; %[1 2; 3 4]; 
+        %number of output channel types, e.g. hands being stimulated, modalities (auditory plus tactile).
+        h.Settings.num_chantypes = 1;
+        %on each hand, number of conditions (e.g. 3 digit changes vs 1 digit changes; or two different pitch/intensity changes)
+        h.Settings.num_oddballtypes = 1;
+        %list of probabilities of a stimulus changing location on each trial
+        h.Settings.change_prob_init = [0.4];
+        %for each change probability (rows), list of number of trials in which the stimuli remain in same
+        %location - these will be randomised within a block. Sum must be integer divider of h.Settings.nchanges_per_cond
+        h.Settings.cp_stims_init = [1 2 3 4];
+        %number of blocks of each change probability (CP)
+        h.Settings.cond_rep_init = [1]; % this DIVIDES nchanges_per_cond, i.e. does not increase the number of changes
+        %number of stimulus location changes within each CP condition
+        h.Settings.nchanges_per_cond = [10]; % multiply desired n changes PER CP CONDITION by cond_rep_init to get this number
+        
+        % BLOCKING/RUN OPTIONS
+        % 'divide' = equally divide trials by nblocks; 
+        % 'cond' = separate block for each condition
+        h.Settings.blockopt = 'divide';
+        % further options for 'divide':
+            % number of blocks (containing multiple conditions)
+            h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
+            %distribute conditions equally among blocks
+            h.Settings.distblocks = 1;
+           
+        
+    
+    case 'practiceAUDIO'
+         % set general options
+        h = setgeneral(h);
+        %record response, 1=yes, 0=no
+        h.Settings.record_response=1;
+        %between-train frequency (1000 divided by ISI in ms)
+        h.Settings.freq = 1./(h.Settings.trialdur);
+        % stimulus types
+        % rows = conditions (stimuli randomised together), columns = outputs within each condition
+        % if using D188, would be the output channels 
+        % if auditory, would be the pitch, intensity or channel indices (actual channel numbers on device are
+        % specified later by h.Settings.stimchan).
+        h.Settings.stimtypeouts_init = [3 4]; % [1 2; 3 4] digit 1 vs digit 5; left vs. right ear
+        %condition numbers to associate with each condition; rows = conditions,
+        %column1 = no change condition, column 2 = change condition.
+        h.Settings.cond_num_init = [3 4]; %[1 2; 3 4]; 
+        %number of output channel types, e.g. hands being stimulated, modalities (auditory plus tactile).
+        h.Settings.num_chantypes = 1;
+        %on each hand, number of conditions (e.g. 3 digit changes vs 1 digit changes; or two different pitch/intensity changes)
+        h.Settings.num_oddballtypes = 1;
+        %list of probabilities of a stimulus changing location on each trial
+        h.Settings.change_prob_init = [0.4];
+        %for each change probability (rows), list of number of trials in which the stimuli remain in same
+        %location - these will be randomised within a block. Sum must be integer divider of h.Settings.nchanges_per_cond
+        h.Settings.cp_stims_init = [1 2 3 4];
+        %number of blocks of each change probability (CP)
+        h.Settings.cond_rep_init = [1]; % this DIVIDES nchanges_per_cond, i.e. does not increase the number of changes
+        %number of stimulus location changes within each CP condition
+        h.Settings.nchanges_per_cond = [10]; % multiply desired n changes PER CP CONDITION by cond_rep_init to get this number
+        
+        % BLOCKING/RUN OPTIONS
+        % 'divide' = equally divide trials by nblocks; 
+        % 'cond' = separate block for each condition
+        h.Settings.blockopt = 'divide';
+        % further options for 'divide':
+            % number of blocks (containing multiple conditions)
+            h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
+            %distribute conditions equally among blocks
+            h.Settings.distblocks = 1;
+        
         
     case 'fMRI_run'
         % set general options
@@ -52,11 +134,11 @@ switch opt
             h.Settings.distblocks = 1;
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
-        % cell array
-        h.Settings.blockstart = {}; % audio,labjack,audio,
+        % cell array]%]%]
+        h.Settings.blockstart = {'audio','scannertrig'}; % audio,labjack,audio,
         % names of any audiofiles
         h.Settings.audiofile = {'instruct.wav'}; % labjack
-        h.Settings.audiochan = [5 6]; % labjack
+        h.Settings.audiochan = [1 2]; % labjack
         % number of scanner triggers to wait for before starting the
         % sequence
         
@@ -93,7 +175,7 @@ h.Settings.stimcontrol='PsychPortAudio';
     %rear = 5,6 - connect to 3/4
     %side = 7,8
 % total number of channels, e.g. on sound card
-h.Settings.nrchannels = 8; % 8 
+h.Settings.nrchannels = 2; % 8 
 % Use D188
 %h.Settings.D188 = 1;
 % message box with OK press to start experiment?
@@ -107,19 +189,19 @@ h.Settings.nrchannels = 8; % 8
 % duration of trial in seconds
 h.Settings.trialdur = 0;
 % duration of stimulus in seconds
-h.Settings.stimdur = [0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.5];
-%h.Settings.stimdur = [0.5 0.5];
+%h.Settings.stimdur = [0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.09 0.01 0.5];
+h.Settings.stimdur = [0.5 0.5];
 % Pattern type method: intensity, pitch. Not supported: channel, duration
 h.Settings.patternmethod = 'intensity';
 %h.Settings.patternvalue = [1 0]; % one per stimdur
-h.Settings.patternvalue = [1 0 1 0 1 0 1 0 1 0 0]; % one per stimdur
-%h.Settings.patternvalue = [1 0]; % one per stimdur
+%h.Settings.patternvalue = [1 0 1 0 1 0 1 0 1 0 0]; % one per stimdur
+h.Settings.patternvalue = [1 0]; % one per stimdur
 % 'rand' or 'reg' spacing?
-h.Settings.stimdurtype = 'rand';
+h.Settings.stimdurtype = 'reg';
 % index of stimdur to randomise
 h.Settings.stimrandind = [1:10];
 % channels on stimulator to use
-h.Settings.stimchan = [3 4 5 6]; 
+h.Settings.stimchan = [1 2 1 2]; 
 % Pitch/freq
 h.Settings.f0 = 500; 
 % Intensity
@@ -130,17 +212,18 @@ h.Settings.Tukeytype = 1; % 1 = apply to each tone within pattern; 2 = apply to 
 % sampling rate
 h.Settings.fs = 96000; % don't change this, unless sure soundcard supports higher rates
 h.Settings.atten = 0; % attenuation level in decibels
-h.Settings.attenchan = [5 6]; % [7 8 3 4]
+h.Settings.attenchan = [1 2]; % [7 8 3 4]
 
 %% Condition-dependent stimulus parameters
 % Condition method: do the stimtypes indexed by
 % h.Settings.stimtypeouts_init (oddball method) differ by any other
 % characteristic? E.g. different modalities may requrie different pitches
-h.Settings.conditionmethod = {'pitch','intensity'};
-h.Settings.conditionvalue = [23 23 500 500; 1 1 1 1];% for each number in h.Settings.stimtypeouts_init,
+h.Settings.conditionmethod = {'pitch'};
+h.Settings.conditionvalue = [23 23 300 500];% for each number in h.Settings.stimtypeouts_init,
 % Oddball method: intensity, pitch, channel
 h.Settings.oddballmethod = 'channel'; % can use same type for pattern only if oddball intensity is adaptive
-h.Settings.oddballvalue = [3 4, 5 6]; % [7 8 3 4]
+h.Settings.oddballvalue = {1,2,[1 2],[1 2]}; % [7 8 3 4]
+h.Settings.monostereo = 'mono'; 
 
 %% SEQUENCE: For future adoption of CreateSequence
 h.Settings.oddballtype = 'roving'; % options: 'roving', 'classical'
@@ -162,8 +245,8 @@ h.Settings.buttonopt = {};%'LeftArrow','RightArrow'};
 %display RT, 1=yes, 0=no
 h.Settings.displayRT=0;
 % response probe
-h.Settings.RPconds=[2 4]; % condition numbers to apply this
-h.Settings.RPprob=0.1;
+h.Settings.RPconds=[1 3]; % condition numbers to apply this
+h.Settings.RPprob=0.5;
 h.Settings.RPmethod='intensity';
 h.Settings.RPdur = [0.15 0.2 0.15 0.5];
 h.Settings.RPvalue=[1 0 1 0];

@@ -4,25 +4,26 @@ disp('Creating sequence...');
 h.Seq =struct;
 
 %% define orthgonal conditions
+conds = [];
+ncond = 0;
+nonprobcond = [];
 if isfield(h.Settings,'conds')
-    conds = h.Settings.conds;
-    allcondind='';
-    for i = 1:length(conds)
-        condval{i} = h.Settings.(conds{i});
-        if size(condval{i},1)<2
-            continue
+    if ~isempty(h.Settings.conds)
+        conds = h.Settings.conds;
+        allcondind='';
+        for i = 1:length(conds)
+            condval{i} = h.Settings.(conds{i});
+            if size(condval{i},1)<2
+                continue
+            end
+            condind{i} = 1:size(condval{i},1);
+            allcondind = [allcondind ' condind{' num2str(i) '},'];
         end
-        condind{i} = 1:size(condval{i},1);
-        allcondind = [allcondind ' condind{' num2str(i) '},'];
+        eval(['allcond = allcomb(' allcondind(1:end-1) ');']);
+        allcond = 1:i;
+        probcond = find(strcmp(conds,h.Settings.oddprob));
+        nonprobcond = allcond; nonprobcond(probcond) = [];
     end
-    eval(['allcond = allcomb(' allcondind(1:end-1) ');']);
-    allcond = 1:i;
-    probcond = find(strcmp(conds,h.Settings.oddprob));
-    nonprobcond = allcond; nonprobcond(probcond) = [];
-else
-    conds = [];
-    ncond = 0;
-    nonprobcond = [];
 end
 
 %% work out parameters of each sequence set (length, number of oddballs, probability of oddballs, etc.)

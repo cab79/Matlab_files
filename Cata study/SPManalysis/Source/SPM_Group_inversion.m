@@ -10,7 +10,7 @@ dbstop if error
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_Narrow'; 
+S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan'; 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 %fiducials directory
@@ -25,6 +25,7 @@ S.fmid = '';
 %S.fsuff = ;
 S.fsuff = {'_orig_cleaned.mat';
     '_orig_cleaned.mat';
+    '_orig_cleaned_trialNmatch.mat'; 
     '_orig_cleaned_trialNmatch.mat'; };
 
 %% specific settings for this analysis
@@ -33,8 +34,8 @@ S.include_codes = [1];
 S.grps = {1,2}; %inversion on each group separately: separate with colon. Otherwise separate with comma
 % time and frequecy windows
 S.freqwin = []; % empty if not requiring freq analysis
-S.timewin = [-5500 -2500; -3000 0; 116 878]; % Best to narrow this as much as possible to the range of interest. Empty will include whole epoch. 
-S.basewin = [-5500 -5000; -3000 -2500; -500 0]; % empty will not baseline correct and will not produce a baseline image.
+S.timewin = [-5500 -2500; -3000 0; -500 1500; -5500 1500]; % Best to narrow this as much as possible to the range of interest. Empty will include whole epoch. 
+S.basewin = [-5500 -5000; -3000 -2500; -500 0; -5500 -5000]; % empty will not baseline correct and will not produce a baseline image.
 %S.timewin = [-3000 0]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest.
 %S.basewin = [-3000 -2500]; % empty will not baseline correct and will not produce a baseline image.
 %S.timewin = [-500 1500]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest.
@@ -48,33 +49,39 @@ S.images_out={};
 S.images_out = {
         % from timewin 1
         {
-        'base',[];
-        [-4660 -4278],[]; %Exp
-        [-4564 -4468],[]; %Grp,Grp*Exp
-        [-4454 -4362],[]; %Grp,Grp*Exp
-        [-4330 -4222],[]; %Grp*Exp
-        [-3364 -3292],[]; %Grp*Exp
-        [-3264 -3210],[]; %Grp*Exp
-        [-3050 -2946],[]; %Exp
-        [-2922 -2900],[]; %Exp
-        [-2802 -2500],[]; %Exp, Grp*Exp
+        %'base',[];
+        [-4690 -4672],[]; %Att
+        %[-4660 -4278],[]; %Exp
+        %[-4564 -4468],[]; %Grp,Grp*Exp
+        %[-4454 -4362],[]; %Grp,Grp*Exp
+        %[-4330 -4222],[]; %Grp*Exp
+        %[-3364 -3292],[]; %Grp*Exp
+        %[-3264 -3210],[]; %Grp*Exp
+        %[-3050 -2946],[]; %Exp
+        %[-2922 -2900],[]; %Exp
+        %[-2802 -2500],[]; %Exp, Grp*Exp
         }; 
         
         % from timewin 2
         {
-        'base',[];
-        [-2514 -2448],[]; %Exp
-        [-2362 -2338],[]; %Exp
-        [-2264 -2202],[]; %Exp
-        [-2162 -2002],[]; %Grp
-        [-1288 -1076],[]; %Exp
+        %'base',[];
+        [-2368 -2014],[]; %Att
+        %[-2514 -2448],[]; %Exp
+        %[-2362 -2338],[]; %Exp
+        %[-2264 -2202],[]; %Exp
+        %[-2162 -2002],[]; %Grp
+        %[-1288 -1076],[]; %Exp
         }; 
         
         % from timewin 3
         {
-        'base',[];
-        [416 478],[]; %Exp
-        [116 878],[]; %Exp
+        %'base',[];
+        [336 356],[]; %Att
+        %[416 478],[]; %Exp
+        }; 
+        
+        % from timewin 4
+        {
         }; 
 };
 %end
@@ -85,6 +92,8 @@ S.sourceprior = 'GS'; % Priors on sources, e.g. MSP, GS, LOR or IID
 S.Npriors = 256; % Number of sparse priors (x 1/2 brain)
 S.Han = 0; % apply Hanning window
 S.run_forward = 0;
+
+tw_run = 1:3;%size(S.timewin,1);
 
 %% RUN
 
@@ -136,7 +145,7 @@ Ngrp_ana = length(SubInd_ana);
 Nsub_ana=[];
 
 % cycle though S.timewin
-for tw = 3:size(S.timewin,1)
+for tw = tw_run
     timewin = S.timewin(tw,:);
     basewin = S.basewin(tw,:);
     basecon=0;

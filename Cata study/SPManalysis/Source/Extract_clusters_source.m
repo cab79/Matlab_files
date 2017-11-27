@@ -112,7 +112,8 @@ for sp = 1:size(S.spm_paths,1)
         conname = strrep(conname,'*','_');
         S.clus_path{cont} = fullfile(S.spm_path,[conname '_clusters']); 
         if exist(S.clus_path{cont},'dir')
-            S.clus_path{cont} = [S.clus_path{cont} '_new'];
+            continue;
+            %S.clus_path{cont} = [S.clus_path{cont} '_new'];
         end
         if ~exist(S.clus_path{cont},'dir')
             mkdir(S.clus_path{cont});

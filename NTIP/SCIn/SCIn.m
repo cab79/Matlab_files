@@ -291,12 +291,12 @@ if ~isfield(h,'SeqName')
     opt = get(h.SeqOpt,'Value');
     h.SeqName = seq{opt};
 end
-if ~isfield(h,'Seq') || ~isfield(h,'Settings')
+%if ~isfield(h,'Seq') || ~isfield(h,'Settings')
     % load sequence
     A=load(fullfile(d.root,d.seq,h.SeqName));
     h.Seq = A.seq;
     h.Settings = A.settings;
-end
+%end
 if ~isfield(h,'startblock')
     h.startblock = '1';
 end

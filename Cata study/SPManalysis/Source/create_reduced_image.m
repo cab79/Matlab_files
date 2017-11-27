@@ -1,8 +1,8 @@
 function reduced_img = create_reduced_image(S,clusname,folder,saveimg,ucol)
 
-Cnii = load_nii(fullfile(folder,clusname));
+Hnii=spm_vol(fullfile(folder,clusname));
+img = spm_read_vols(Hnii);
 
-img = Cnii.img;
 if isempty(ucol)
     [~,clusfield,~] = fileparts(clusname);
     ucol = S.wf.(clusfield).ucol;
@@ -23,13 +23,13 @@ for u = 1:length(uimg)
     end
 end
 if saveimg
-    RCnii = Cnii;
-    RCnii.img = reduced_img;
-    save_nii(RCnii,fullfile(folder,'reduced.nii'))
+    RCnii=Hnii;
+    RCnii.fname=fullfile(folder,'reduced.nii');
+    spm_write_vol(RCnii,reduced_img);
 
-    NCnii = Cnii;
-    NCnii.img = new_clus_img;
-    save_nii(NCnii,fullfile(folder,'new_clus.nii'))
+    NCnii=Hnii;
+    NCnii.fname=fullfile(folder,'new_clus.nii');
+    spm_write_vol(NCnii,new_clus_img);
     
     % name by AAL regions
     if S.use_aal
@@ -43,10 +43,10 @@ if saveimg
         index = cellfun(@str2double,{index(:).Text});
 
         aal = load_nii(S.aal_path);
-        [ui,IA,IB] = unique(RCnii.img(RCnii.img>0));
+        [ui,IA,IB] = unique(reduced_img(reduced_img>0));
         lab = cell(length(ui),1);
         for i = 1:length(ui)
-            reg = reshape(RCnii.img==ui(i),size(RCnii.img));
+            reg = reshape(reduced_img==ui(i),size(reduced_img));
             regaal = reg.*double(aal.img);
             lab{i,1} = unique(regaal(regaal>0));
             temp = {};
@@ -57,6 +57,14 @@ if saveimg
             if isempty(lab{i,2})
                 lab{i,2} = 'unknown';
             end
+            % get centroid coordinates
+            STATS = regionprops(reg,'Centroid');
+            cent = {STATS.Centroid};
+            for cc = 1:length(cent)
+                mni = cor2mni(round(cent{cc}([2 1 3])), RCnii.mat); % convert to MNI
+                lab{i,3}(cc,:) = mni; 
+            end
+            lab{i,4} = length(cent);
         end
         save(fullfile(folder,'aal_labels.mat'),'lab');
     end

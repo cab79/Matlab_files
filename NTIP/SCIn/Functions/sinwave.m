@@ -127,6 +127,9 @@ for tr = trials
             if strcmp(h.Settings.oddballmethod,'pitch')
                 h.pitch = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+varlevel)]; % create new pitch pair
                 h.pitch = h.pitch(h.Seq.signal(tr));
+            elseif strcmp(h.Settings.oddballmethod,'intensity')
+                h.inten = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+varlevel)]; % create new pitch pair
+                h.inten = h.inten(h.Seq.signal(tr));
             elseif strcmp(h.Settings.oddballmethod,'duration') && strcmp(h.Settings.patternmethod,'pitch')
                 if iscell(h.Settings.oddballvalue)
                     h.dur = h.Settings.oddballvalue{h.Seq.signal(tr),:};
@@ -191,8 +194,12 @@ for tr = trials
     if isfield(h.Settings,'df') && length(chan)==2 % if pitch is different in two channels
         df=1;
         if isfield(h,'entrainfreq')
-            df_freq = str2double(h.entrainfreq);
-            if df_freq==0
+            try
+                df_freq = str2double(get(h.entrainfreq,'string'));
+            catch
+                df_freq = str2double(h.entrainfreq);
+            end
+            if df_freq==0 || isnan(df_freq)
                 df_freq=h.Settings.df;
             end
         else
@@ -379,7 +386,11 @@ for tr = trials
     if isfield(h.Settings,'attenchan')
         if ismember(chan,h.Settings.attenchan)
             if isfield(h,'vol_atten')
-                inten_atten = str2double(get(h.vol_atten,'string'));
+                try
+                    inten_atten = str2double(get(h.vol_atten,'string'));
+                catch
+                    inten_atten = str2double(h.vol_atten);
+                end
             else
                 inten_atten = h.Settings.atten; 
             end
