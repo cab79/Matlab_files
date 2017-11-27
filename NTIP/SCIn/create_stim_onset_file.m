@@ -1,0 +1,94 @@
+%% settings
+dname = 'C:\Matlab_files\CORE\TEMP data\COREpilot';
+seq_fname = 'Sequence_pilot_Sequence_CORE_fMRI_cont_8block_OptionfMRI_run_startblock1_20171024T104134.mat';
+out_fname = 'Output_pilot_Sequence_CORE_fMRI_cont_8block_OptionfMRI_run_startblock1_20171024T104134.mat';
+
+% 'expected' is based on stimulus design; 
+% 'recorded' is that recorded by the software - older data has a bug meaning this is not accurate
+onset_marker = 'expected';
+correct_missing = 1; % if there are missing stim onsets, infer what they should be. Number here is estimated ISI. Only works if ISI is fixed throughout expt.
+
+% event condition names and their numbers
+events = {
+    'tact_slow_odd',1
+    %'tact_slow_stan',2
+    'aud_slow_odd',3
+    %'aud_slow_stan',4
+    'tact_fast_odd',5
+    %'tact_fast_stan',6
+    'aud_fast_odd',7
+    %'aud_fast_stan',8
+    };
+
+% block names and associated condition numbers
+blocks = {
+    'tact_slow',[1 2]
+    'aud_slow',[3 4]
+    'tact_fast',[5 6]
+    'aud_fast',[7 8]
+    };
+blockmarker = 0;
+
+%% RUN
+cd(dname)
+load(seq_fname)
+load(out_fname)
+
+if length(out.trigtime)<4
+    error('should be 4 scanner triggers recorded')
+end
+
+scanstart = out.trigtime(1);
+rectime = out.stimtime;
+nostimrec = cellfun(@isempty,rectime);
+stimrec = ~nostimrec;
+rectime(nostimrec)={NaN};
+rectime = cell2mat(rectime);
+
+% fix expisi if too small
+expisi = out.expisi;
+expisi(1,end:length(stimrec)-1) = {NaN};
+expisi = cell2mat(expisi);
+
+switch onset_marker
+    case 'recorded'
+        stimtime = rectime - scanstart;
+        
+    case 'expected'
+        if correct_missing
+            expisi(isnan(expisi)) = correct_missing;
+        end
+        stimtime = [0 cumsum(expisi)] + rectime(1)-scanstart;
+end
+
+for i = 1:size(events,1)
+    conds = ismember(seq.condnum,events{i,2});
+    onsets = stimtime(conds)';
+    
+    %save([events{i,1} '.txt'],'onsets','-ASCII')
+    fid = fopen([events{i,1} '_event_onsets.txt'], 'wt');
+    fprintf(fid, '%.2f\n', onsets);
+    fclose(fid);
+end
+
+for i = 1:size(blocks,1)
+    conds = ismember(seq.condnum,blocks{i,2});
+    st=find(diff(conds)==1); % don't add 1 because we will start from the first '0' condition
+    en=find(diff(conds)==-1)+1;
+    
+    % add on last trial to en if needed
+    if length(en)==length(st)-1
+        en = [en length(conds)];
+    end
+    
+    onsets = stimtime(st)';
+    durations = stimtime(en)'-stimtime(st)';
+    
+    fid = fopen([blocks{i,1} '_block_onsets.txt'], 'wt');
+    fprintf(fid, '%.2f\n', onsets);
+    fclose(fid);
+    
+    fid = fopen([blocks{i,1} '_block_durations.txt'], 'wt');
+    fprintf(fid, '%.2f\n', durations);
+    fclose(fid);
+end
