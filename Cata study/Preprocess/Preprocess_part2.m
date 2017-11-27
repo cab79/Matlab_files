@@ -4,13 +4,13 @@ cd(filepath);
 files = dir('*_orig_ICA.set');
 load('C:\Data\Catastrophising study\Orig\chanlocs.mat');
 
-ALLEEG_save = 1; % 1= save multiple ERPs from one file; 2 = save one ERP from multiple files
+ALLEEG_save = 0; % 1= save multiple ERPs from one file; 2 = save one ERP from multiple files
 
 basebin = [-5.5 -5];
 endbin = [1.5 2];
 stimtypes = {'c0','c1','c2','c3','c4','c5','c6','c7','c8'};
 
-files_ana = [21];%length(files);
+files_ana = 1:length(files);
 for f = files_ana
     [pth nme ext] = fileparts(files(f).name); 
     C = strsplit(nme,'_');
@@ -20,7 +20,7 @@ for f = files_ana
     EEG = eeg_interp(EEG,eeg_mergelocs(chanlocs),'spherical');
     for i = 1:EEG.trials, EEG.data(:,:,i) = detrend(EEG.data(:,:,i)')'; end;
     EEG = pop_rmbase( EEG, [basebin(1)*1000 basebin(2)*1000]);
-    EEG = pop_reref( EEG, []);
+    %EEG = pop_reref( EEG, []);
     EEG = FTrejman(EEG,[0 0]);
     
     % NEW DETREND

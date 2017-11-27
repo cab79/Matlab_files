@@ -9,14 +9,14 @@ batchpath = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor';
 % the folder
 fpref = 'spm12';
 fmid = '';
-fsuff = 'cleaned.mat';
+fsuff = 'cleaned_SPN.mat';
 
 %% SPECIFY OPTIONS
 
 % use spm auto artefact rejection
 spmart = 0;
 % use FT manual artefact rejection
-ftart = 1;
+ftart = 0;
 
 % output type: 'average' (to create average) 'useaverage' (to use existing averaged file) or 'singletrial'
 outputtype = 'average'; % CAREFUL WITH USEAVERAGE: data might not be baselined correctly
@@ -35,10 +35,10 @@ mode = 'scalp x time';
 
 % time and frequecy windows
 freqwin = []; % empty if not requiring freq analysis
-timewin = [-5500 -2500]; % empty will include whole epoch
-basewin = [-5500 -5000]; % empty will not baseline correct
-%timewin = [-3000 0]; % empty will include whole epoch
-%basewin = [-3000 -2500]; % empty will not baseline correct
+%timewin = [-5500 -2500]; % empty will include whole epoch
+%basewin = [-5500 -5000]; % empty will not baseline correct
+timewin = [-3000 0]; % empty will include whole epoch
+basewin = [-3000 -2500]; % empty will not baseline correct
 %timewin = [-500 1500]; % empty will include whole epoch
 %basewin = [-500 0]; % empty will not baseline correct
 
@@ -99,11 +99,11 @@ for f = 1:length(files)
         S.review = 0;
         
         % turn these on for robust averaging
-        S.robust.ks = 3;
-        S.robust.bycondition = true;
-        S.robust.savew = false;
-        S.robust.removebad = true;
-        S.prefix = 'mr';
+        %S.robust.ks = 3;
+        %S.robust.bycondition = true;
+        %S.robust.savew = false;
+        %S.robust.removebad = true;
+        %S.prefix = 'mr';
         
         fprintf('Averaging: subject %i\n',f);
         S.D = fullfile(filepath,fname);
@@ -118,7 +118,7 @@ for f = 1:length(files)
         end
     elseif strcmp(outputtype,'useaverage')
         clear S;
-        S.prefix = 'mr';
+        S.prefix = 'm';
         fname = [S.prefix fname];
     end
    

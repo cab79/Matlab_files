@@ -102,7 +102,7 @@ for sp = 1:length(S.spm_paths)
         clustable(2,colwidth+2)={'F_temporal'};
 
         % re-draw stats using cluster extent threshold
-        if S.clusterextent
+        if S.clusformthresh
             SPMset.k=xSPM.uc(3)-1;
             s_merged = rmfield(SPM, intersect(fieldnames(SPM), fieldnames(SPMset)));
             names = [fieldnames(s_merged); fieldnames(SPMset)];
