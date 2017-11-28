@@ -1,4 +1,5 @@
 function h = recordEEG(h,opt)
+global dio
 
 switch opt
     case 'connect'
@@ -38,8 +39,7 @@ switch opt
                 % to a National Instruments NI-USB-6501 device
                 dio=digitalio('nidaq', 'Dev1'); % create digital IO object
                 addline(dio, 0:7, 'out'); % add 24 lines representing the 3 ports of 8 lines each
-                lineconfig=dio.Line % display index and digital line configurations to show mapping
-                
+                h.lineconfig=dio.Line % display index and digital line configurations to show mapping
             end
             
             choice = questdlg('Using EEG: Disable GUI buttons? (more accurate EEG markers)', ...
@@ -131,7 +131,11 @@ switch opt
                 disp('EEG not connected');
             end
         elseif strcmp(h.Settings.record_EEG,'daq')
-            TriggerNum = h.Seq.signal(h.i);
-            putvalue(dio.Line(1:8),TriggerNum); 
+            try
+                TriggerNum = h.Seq.signal(h.i);
+                putvalue(dio.Line(1:8),TriggerNum); 
+            catch
+                disp('EEG not connected');
+            end
         end
 end
