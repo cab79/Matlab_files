@@ -11,7 +11,7 @@ close all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Source\Design_batch_source_TimeGrpExp_SPN.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Source\Design_batch_source_TimeGrpExp_SPNpnT2.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
@@ -42,10 +42,12 @@ D.folder =0; % Is the data in a subject-specific folder?
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % time identifer for source image files, to add to end of outputted SPM folder name
-%identifier={'_t-2316_-1924','_t-2412_-2380','_t-2152_-2','_t-786_-732'}; 
+%identifier={'_t-2514_-2448','_t-2362_-2338','_t-2264_-2202','_t-2162_-2002','_t-1288_-1076'}; 
 %D.baseline='_t-3000_-2500'; 
-identifier={'_t-2412_-2364','_t-2394_-2380','_t-2316_-2024','_t-2272_-1924','_t-2152_-1418','_t-2092_-2','_t-786_-732','_t-576_-2'}; 
-D.baseline='3_t-3000_-2500'; 
+%identifier={'_t-4660_-4278','_t-4564_-4468','_t-4454_-4362','_t-4330_-4222','_t-3364_-3292','_t-3264_-3210','_t-3050_-2946','_t-2922_-2900','_t-2802_-2500'}; 
+%D.baseline='_t-5500_-5000'; 
+identifier={'_t-2200_-1986','_t-1292_-1750','_t-1578_-1540','_t-1320_-1092','_t-984_-2'}; 
+D.baseline='_t-3000_-2500'; 
 
 for di = 1:length(identifier)
     D.identifier = identifier{di}
@@ -56,22 +58,22 @@ for di = 1:length(identifier)
     % list of image names within each subject folder, or if not in a specific
     % folder then with a _ at the beginning
     D.imglist = {
-                ['_*' D.identifier '_f_c1.nii']
-                ['_*' D.identifier '_f_c2.nii']
-                ['_*' D.identifier '_f_c3.nii']
-                ['_*' D.identifier '_f_c4.nii']
-                ['_*' D.identifier '_f_c5.nii']
-                ['_*' D.identifier '_f_c6.nii']
-                ['_*' D.identifier '_f_c7.nii']
-                ['_*' D.identifier '_f_c8.nii']
-                ['_*' D.baseline '_f_c1.nii']
-                ['_*' D.baseline '_f_c2.nii']
-                ['_*' D.baseline '_f_c3.nii']
-                ['_*' D.baseline '_f_c4.nii']
-                ['_*' D.baseline '_f_c5.nii']
-                ['_*' D.baseline '_f_c6.nii']
-                ['_*' D.baseline '_f_c7.nii']
-                ['_*' D.baseline '_f_c8.nii']
+                ['_*' D.identifier '_f_c2a.nii']
+                ['_*' D.identifier '_f_c2b.nii']
+                ['_*' D.identifier '_f_c4a.nii']
+                ['_*' D.identifier '_f_c4b.nii']
+                ['_*' D.identifier '_f_c6a.nii']
+                ['_*' D.identifier '_f_c6b.nii']
+                ['_*' D.identifier '_f_c8a.nii']
+                ['_*' D.identifier '_f_c8b.nii']
+                ['_*' D.baseline '_f_c2a.nii']
+                ['_*' D.baseline '_f_c2b.nii']
+                ['_*' D.baseline '_f_c4a.nii']
+                ['_*' D.baseline '_f_c4b.nii']
+                ['_*' D.baseline '_f_c6a.nii']
+                ['_*' D.baseline '_f_c6b.nii']
+                ['_*' D.baseline '_f_c8a.nii']
+                ['_*' D.baseline '_f_c8b.nii']
                 };
 
     %% analysis design and parameters
@@ -134,13 +136,14 @@ for di = 1:length(identifier)
         [1 1 1 1 -1 -1 -1 -1], 'Time'
         [1 1 -1 -1 0 0 0 0], 'T1 Grp'
         [-1 1 -1 1 0 0 0 0], 'T1 Exp'
+        [-1 0 1 0 0 0 0 0], 'T2 Grp'
         };
 
     D.tcontrasts = {
         [1 1 1 1 -1 -1 -1 -1], 'Time A'
         [-1 -1 -1 -1 1 1 1 1], 'Time B'
-        [1 1 -1 -1 0 0 0 0], 'T1 Grp A'
-        [-1 -1 1 1 0 0 0 0], 'T1 Grp B'
+        %[1 1 -1 -1 0 0 0 0], 'T1 Grp A'
+        %[-1 -1 1 1 0 0 0 0], 'T1 Grp B'
         %[1 1 0 0 -1 -1 0 0], 'G1 Time A'
         %[0 0 1 1 0 0 -1 -1], 'G2 Time A'
         %[-1 -1 0 0 1 1 0 0], 'G1 Time B'

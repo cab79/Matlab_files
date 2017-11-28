@@ -10,7 +10,7 @@ dbstop if error
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_SPN'; 
+S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_SPN_induced'; 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 %fiducials directory
@@ -20,7 +20,7 @@ S.fid_dir='C:\Data\Catastrophising study\meegfid';
 %-------------------------------------------------------------
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
-S.fpref = 'mspm12';
+S.fpref = 'spm12';
 S.fmid = '';
 %S.fsuff = ;
 S.fsuff = {'_orig_cleaned_SPN.mat';
@@ -33,7 +33,7 @@ S.fsuff = {'_orig_cleaned_SPN.mat';
 S.include_codes = [1];
 S.grps = {1,2}; %inversion on each group separately: separate with colon. Otherwise separate with comma
 % time and frequecy windows
-S.freqwin = []; % empty if not requiring freq analysis
+S.freqwin = [8 12]; % empty if not requiring freq analysis
 S.timewin = [-3000 0;-3000 0;-3000 0]; % Best to narrow this as much as possible to the range of interest. Empty will include whole epoch. 
 S.basewin = [-3000 -2500;-3000 -2500;-3000 -2500]; % empty will not baseline correct and will not produce a baseline image.
 %S.timewin = [-3000 0]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest.
@@ -49,48 +49,52 @@ S.images_out={};
 S.images_out = {
         % from timewin 1
         {
-        'base',[];
+        [-3000 0],[]; %ALL
+        %'base',[];
         %[-2316 -1924],[]; %Grp
         %[-2412 -2380],[]; %Exp
         %[-2152 -2],[]; %Exp
         %[-786 -732],[]; %Grp*Exp
-        [-2412 -2364],[]; %Grp
-        [-2394 -2380],[]; %Grp
-        [-2316 -2024],[]; %Grp
-        [-2272 -1924],[]; %Grp
-        [-2152 -1418],[]; %Grp
-        [-2092 -2],[]; %Grp
-        [-786 -732],[]; %Grp
-        [-576 -2],[]; %Grp
+        
+        %[-2412 -2364],[]; %Grp
+        %[-2394 -2380],[]; %Grp
+        %[-2316 -2024],[]; %Grp
+        %[-2272 -1924],[]; %Grp
+        %[-2152 -1418],[]; %Grp
+        %[-2092 -2],[]; %Grp
+        %[-786 -732],[]; %Grp
+        %[-576 -2],[]; %Grp
         }; 
 
         
         % from timewin 2
         {
-        'base',[];
-        [-2896 -2840],[]; %Exp
-        [-2432 -2364],[]; %Exp
-        [-2256 -1830],[]; %Exp
-        [-2246 -1912],[];%Grp
-        [-1820 -666],[]; %Grp*Exp
-        [-1194 -84],[];  %Exp
-        [-388 -14],[];   %Grp*Exp
+        [-3000 0],[]; %ALL
+        %'base',[];
+        %[-2896 -2840],[]; %Exp
+        %[-2432 -2364],[]; %Exp
+        %[-2256 -1830],[]; %Exp
+        %[-2246 -1912],[];%Grp
+        %[-1820 -666],[]; %Grp*Exp
+        %[-1194 -84],[];  %Exp
+        %[-388 -14],[];   %Grp*Exp
         }; 
         
         % from timewin 3
         {
-        'base',[];
-        [-2200 -1986],[]; %Grp
-        [-1292 -1750],[]; %Grp
-        [-1578 -1540],[]; %Grp
-        [-1320 -1092],[]; %Grp
-        [-984 -2],[]; %Grp
+        [-3000 0],[]; %ALL
+        %'base',[];
+        %[-2200 -1986],[]; %Grp
+        %[-1292 -1750],[]; %Grp
+        %[-1578 -1540],[]; %Grp
+        %[-1320 -1092],[]; %Grp
+        %[-984 -2],[]; %Grp
         }; 
 };
 %end
 %smooth output images (specify FWHM or 0 for no smoothing)
 S.smooth = 12;
-S.type = 'evoked';
+S.type = 'induced';
 S.sourceprior = 'GS'; % Priors on sources, e.g. MSP, GS, LOR or IID
 S.Npriors = 256; % Number of sparse priors (x 1/2 brain)
 S.Han = 0; % apply Hanning window
@@ -168,13 +172,15 @@ for tw = tw_run
             if isnumeric(subID{s}); subID{s} = num2str(subID{s}); end;
             fname = dir(fullfile(S.filepath,[S.fpref '*' subID{s} '*' S.fmid  '*' S.fsuff{tw}]));
             files{s} = fname.name;
-            % Baseline Correction
-            clear B D
-            B.D = fullfile(S.filepath,files{s});
-            B.timewin = basewin;
-            B.save = 0; % save in separate file
-            B.prefix = 'b'; % for output, only if saving a new file
-            spm_eeg_bc(B);
+            if strcmp(S.type,'evoked')
+                % Baseline Correction
+                clear B D
+                B.D = fullfile(S.filepath,files{s});
+                B.timewin = basewin;
+                B.save = 0; % save in separate file
+                B.prefix = 'b'; % for output, only if saving a new file
+                spm_eeg_bc(B);
+            end
         end
 
         clear functions D;
@@ -498,7 +504,7 @@ for tw = tw_run
 
         % Cleanup
         %==========================================================================
-        outfiles = dir(fullfile(S.filepath,'mspm*nii'));
+        outfiles = dir(fullfile(S.filepath,'spm*nii'));
         for f = 1:length(outfiles)
             movefile(fullfile(S.filepath,outfiles(f).name),S.outpath);
         end

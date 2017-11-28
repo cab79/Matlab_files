@@ -190,7 +190,7 @@ end
 spm_progress_bar('Init',numel(ssq),'Interpolating images','');
 
 E=struct(D);
-con = {E.trials(:).label};
+con = D.inv{val}.inverse.trials;%{E.trials(:).label};
 %con       = mod(iw - 1, Nj) + 1;
 win       = ceil(iw/Nj);
 

@@ -11,13 +11,13 @@ close all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Source\Design_batch_source_TimeGrpExp_SPN.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Source\Design_batch_source_induced_SPN_GrpExp.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_SPN';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_SPN_induced';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -35,17 +35,19 @@ D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning
 D.anapref = ''; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
-D.subdirpref = 'mspm12_C'; % generic prefix for the SPM file type
+D.subdirpref = 'spm12_C'; % generic prefix for the SPM file type
 D.subdirsuff = '*'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
 D.folder =0; % Is the data in a subject-specific folder?
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % time identifer for source image files, to add to end of outputted SPM folder name
-%identifier={'_t-2316_-1924','_t-2412_-2380','_t-2152_-2','_t-786_-732'}; 
+%identifier={'_t-2514_-2448','_t-2362_-2338','_t-2264_-2202','_t-2162_-2002','_t-1288_-1076'}; 
 %D.baseline='_t-3000_-2500'; 
-identifier={'_t-2412_-2364','_t-2394_-2380','_t-2316_-2024','_t-2272_-1924','_t-2152_-1418','_t-2092_-2','_t-786_-732','_t-576_-2'}; 
-D.baseline='3_t-3000_-2500'; 
+%identifier={'_t-4660_-4278','_t-4564_-4468','_t-4454_-4362','_t-4330_-4222','_t-3364_-3292','_t-3264_-3210','_t-3050_-2946','_t-2922_-2900','_t-2802_-2500'}; 
+%D.baseline='_t-5500_-5000'; 
+identifier={'_t-3000_0'}; 
+D.baseline=''; 
 
 for di = 1:length(identifier)
     D.identifier = identifier{di}
@@ -56,22 +58,14 @@ for di = 1:length(identifier)
     % list of image names within each subject folder, or if not in a specific
     % folder then with a _ at the beginning
     D.imglist = {
-                ['_*' D.identifier '_f_c1.nii']
-                ['_*' D.identifier '_f_c2.nii']
-                ['_*' D.identifier '_f_c3.nii']
-                ['_*' D.identifier '_f_c4.nii']
-                ['_*' D.identifier '_f_c5.nii']
-                ['_*' D.identifier '_f_c6.nii']
-                ['_*' D.identifier '_f_c7.nii']
-                ['_*' D.identifier '_f_c8.nii']
-                ['_*' D.baseline '_f_c1.nii']
-                ['_*' D.baseline '_f_c2.nii']
-                ['_*' D.baseline '_f_c3.nii']
-                ['_*' D.baseline '_f_c4.nii']
-                ['_*' D.baseline '_f_c5.nii']
-                ['_*' D.baseline '_f_c6.nii']
-                ['_*' D.baseline '_f_c7.nii']
-                ['_*' D.baseline '_f_c8.nii']
+                ['_*' D.identifier '_f8_12_c1.nii']
+                ['_*' D.identifier '_f8_12_c2.nii']
+                ['_*' D.identifier '_f8_12_c3.nii']
+                ['_*' D.identifier '_f8_12_c4.nii']
+                ['_*' D.identifier '_f8_12_c5.nii']
+                ['_*' D.identifier '_f8_12_c6.nii']
+                ['_*' D.identifier '_f8_12_c7.nii']
+                ['_*' D.identifier '_f8_12_c8.nii']
                 };
 
     %% analysis design and parameters
@@ -84,24 +78,19 @@ for di = 1:length(identifier)
     D.time_ana = []; % applies a mask to the data
     % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
     % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
-    D.cond_list =  [1 1
-                  1 2
-                  1 1
-                  1 2
-                  1 1
-                  1 2
-                  1 1
-                  1 2
-                  2 1
-                  2 2
-                  2 1
-                  2 2
-                  2 1
-                  2 2
-                  2 1
-                  2 2];
+    D.cond_list =  [
+        1 1
+        1 2
+        1 1
+        1 2
+        2 1 
+        2 2
+        2 1 
+        2 2
+        ]';
+    %D.cond_list =  [1 1 1 1]';
     % factors and statistical model
-    D.factors = {'Time', 'Grp', 'Exp', 'Subject'}; % must include a subject factor at the end
+    D.factors = {'Att','Grp', 'Exp','Subject'}; % must include a subject factor at the end
     D.factortype = {'w','g','w','s'}; % w = within, s = subject, g = subject group
 
     % Main effects and interactions: 
@@ -126,31 +115,23 @@ for di = 1:length(identifier)
     D.GMsca = [0 0 0 0]; %grand mean scaling
     D.ancova = [0 0 0 0]; %covariate
     % after model estimation, constrasts to display (SPM, not SnPM)
-    D.fcontrasts = {
-        [1 -1 -1 1 -1 1 1 -1], 'Time * Grp * Exp'
-        [-1 1 -1 1 1 -1 1 -1], 'Time * Exp'
-        [1 1 -1 -1 -1 -1 1 1], 'Time * Grp'
-        [-1 1 1 -1 0 0 0 0], 'T1 Grp * Exp'
-        [1 1 1 1 -1 -1 -1 -1], 'Time'
-        [1 1 -1 -1 0 0 0 0], 'T1 Grp'
-        [-1 1 -1 1 0 0 0 0], 'T1 Exp'
+     D.fcontrasts = {
+        [1 -1 -1 1 -1 1 1 -1], 'Att * Grp * Exp'
+        [-1 1 -1 1 1 -1 1 -1], 'Att * Exp'
+        [1 1 -1 -1 -1 -1 1 1], 'Att * Grp'
+        [-1 1 1 -1 -1 1 1 -1], 'Grp * Exp'
+        [1 1 1 1 -1 -1 -1 -1], 'Att'
+        [1 1 -1 -1 1 1 -1 -1], 'Grp'
+        [-1 1 -1 1 -1 1 -1 1], 'Exp'
         };
 
     D.tcontrasts = {
-        [1 1 1 1 -1 -1 -1 -1], 'Time A'
-        [-1 -1 -1 -1 1 1 1 1], 'Time B'
-        [1 1 -1 -1 0 0 0 0], 'T1 Grp A'
-        [-1 -1 1 1 0 0 0 0], 'T1 Grp B'
-        %[1 1 0 0 -1 -1 0 0], 'G1 Time A'
-        %[0 0 1 1 0 0 -1 -1], 'G2 Time A'
-        %[-1 -1 0 0 1 1 0 0], 'G1 Time B'
-        %[0 0 -1 -1 0 0 1 1], 'G2 Time B'
-        [-1 1 -1 1 0 0 0 0], 'T1 Exp B'
-        [1 -1 1 -1 0 0 0 0], 'T1 Exp A'
-        %[-1 1 0 0 0 0 0 0], 'T1 G1 Exp B'
-        %[1 -1 0 0 0 0 0 0], 'T1 G1 Exp A'
-        %[0 0 -1 1 0 0 0 0], 'T1 G2 Exp B'
-        %[0 0 1 -1 0 0 0 0], 'T1 G2 Exp A'
+        [1 1 1 1 -1 -1 -1 -1], 'Att A'
+        [-1 -1 -1 -1 1 1 1 1], 'Att B'
+        [1 1 -1 -1 1 1 -1 -1], 'Grp A'
+        [-1 -1 1 1 -1 -1 1 1], 'Grp B'
+        [-1 1 -1 1 -1 1 -1 1], 'Exp B'
+        [1 -1 1 -1 1 -1 1 -1], 'Exp A'
         };
 
     % the following are for SnPM, not SPM
@@ -167,7 +148,7 @@ for di = 1:length(identifier)
 end
 
 %% load results
-load_results=0;
+load_results=1;
 if D.para==1 && load_results==1
     spm eeg
     load(fullfile(D.spm_path,'SPM.mat'));

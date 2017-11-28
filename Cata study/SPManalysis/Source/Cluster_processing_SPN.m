@@ -17,10 +17,10 @@ S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning
 % the original data file suffix,
 % and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
-    '_Att_Grp_Exp_Subject_spm_t-2316_-1924',1, '_orig_cleaned_SPN.mat',{'T1Grp'}
-    '_Att_Grp_Exp_Subject_spm_t-2412_-2380',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
-    '_Att_Grp_Exp_Subject_spm_t-2152_-2',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
-    '_Att_Grp_Exp_Subject_spm_t-786_-732',1, '_orig_cleaned_SPN.mat',{'T1Grp * Exp'}
+    %'_Att_Grp_Exp_Subject_spm_t-2316_-1924',1, '_orig_cleaned_SPN.mat',{'T1Grp'}
+    %'_Att_Grp_Exp_Subject_spm_t-2412_-2380',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
+    %'_Att_Grp_Exp_Subject_spm_t-2152_-2',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
+    %'_Att_Grp_Exp_Subject_spm_t-786_-732',1, '_orig_cleaned_SPN.mat',{'T1Grp * Exp'}
     %'_Att_Grp_Exp_Subject_spm_t-2896_-2840',2, '_orig_cleaned_SPNpn.mat',{'T1Exp'}
     %'_Att_Grp_Exp_Subject_spm_t-2432_-2364',2, '_orig_cleaned_SPNpn.mat',{'T1Exp'}
     %'_Att_Grp_Exp_Subject_spm_t-2256_-1830',2, '_orig_cleaned_SPNpn.mat',{'T1Exp'}
@@ -28,6 +28,20 @@ S.spm_dir = {
     %'_Att_Grp_Exp_Subject_spm_t-1820_-666',2, '_orig_cleaned_SPNpn.mat',{'T1Grp * Exp'}
     %'_Att_Grp_Exp_Subject_spm_t-1194_-84',2, '_orig_cleaned_SPNpn.mat',{'T1Exp'}
     %'_Att_Grp_Exp_Subject_spm_t-388_-14',2, '_orig_cleaned_SPNpn.mat',{'T1Grp * Exp'}
+    %'_Att_Grp_Exp_Subject_spm_t-2200_-1986',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
+    %'_Att_Grp_Exp_Subject_spm_t-1292_-1750',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
+    %'_Att_Grp_Exp_Subject_spm_t-1578_-1540',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
+    %'_Att_Grp_Exp_Subject_spm_t-1320_-1092',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
+    %'_Att_Grp_Exp_Subject_spm_t-984_-2',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
+    '_Time_Grp_Exp_Subject_spm_t-2412_-2364',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
+    '_Time_Grp_Exp_Subject_spm_t-2394_-2380',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
+    '_Time_Grp_Exp_Subject_spm_t-2316_-2024',1, '_orig_cleaned_SPN.mat',{'T1Grp'}
+    '_Time_Grp_Exp_Subject_spm_t-2272_-1924',1, '_orig_cleaned_SPN.mat',{'T1Grp'}
+    '_Time_Grp_Exp_Subject_spm_t-2152_-1418',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
+    '_Time_Grp_Exp_Subject_spm_t-2092_-2',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
+    '_Time_Grp_Exp_Subject_spm_t-786_-732',1, '_orig_cleaned_SPN.mat',{'T1Grp * Exp'}
+    '_Time_Grp_Exp_Subject_spm_t-576_-2',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
+   
 };
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
@@ -108,8 +122,8 @@ S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','','';
 % input into SPM design matrix. Levels must be in the same order as SPM
 % design, but characters don't need to match anything.
 S.factlev = {
-        {'Att'},{'Attention Task'},{'No Task','Task'};
-        %{'Time'},{'LOI vs Baseline'},{'LOI','Baseline'};
+        %{'Att'},{'Attention Task'},{'No Task','Task'};
+        {'Time'},{'LOI vs Baseline'},{'LOI','Baseline'};
         %{'Att'},{'Attention'},{'Pain','Loc'};
         {'Grp'},{'Group'},{'High','Low'};
         %{'Int'},{'Stimulus Intensity'},{'Low','Medium'};
