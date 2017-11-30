@@ -55,8 +55,8 @@ S.thresDesc = 'none'; % 'FWE' or 'none'
 S.clusformthresh = 0.001;
 
 %% run functions (sit back and relax)
-%Extract_clusters(S);
-%Extract_cluster_waveforms(S);
+Extract_clusters(S);
+Extract_cluster_waveforms(S);
 Convert_VOImat_to_excel(S);
 %Extract_cluster_residuals(S);
 %Normality_test_residuals(S)

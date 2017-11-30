@@ -34,7 +34,7 @@ outputtype = 'average'; % CAREFUL WITH USEAVERAGE: data might not be baselined c
 mode = 'scalp x time';
 
 % time and frequecy windows
-freqwin = []; % empty if not requiring freq analysis
+freqwin = [8 12]; % empty if not requiring freq analysis
 %timewin = [-5500 -2500]; % empty will include whole epoch
 %basewin = [-5500 -5000]; % empty will not baseline correct
 timewin = [-3000 0]; % empty will include whole epoch
