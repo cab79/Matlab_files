@@ -10,10 +10,10 @@ S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes
 % root directory in which subject-specific folders are located
 S.data_path = 'C:\Data\Catastrophising study\SPMdata\sensorimages';
 % directory in which SPM analysis is saved 
-S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Include1\Between-SPN';
+S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats';
 % specific folder containing the SPM stats for this analysis
 %S.spm_dir = 't-5500_-2500_b-5500_-5000_Grp_Att_Exp_Subject_orig_cleaned_spm';
-S.spm_dir = 't-3000_0_b-3000_-2500_Grp_Att_Exp_Subject_orig_cleaned_SPN_spm';
+S.spm_dir = 't-3000_0_b-3000_-2500_Grp_Exp_Subject_orig_cleaned_spm';
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
 S.batch = 'matlabbatch.mat';
@@ -42,11 +42,11 @@ S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','','';
 % design, but characters don't need to match anything.
 S.factlev = {
         {'Grp'},{'Group'},{'High PCS','Low PCS'};
-        {'Att'},{'Attention Task'},{'No Task','Task'};
+        %{'Att'},{'Attention Task'},{'No Task','Task'};
         {'Exp'},{'Expectation Cues'},{'Low, Low','High, Low'};
         {'Subject'},{'Subject'},{}; % can leave Subject levels empty as these will be populated by sub_info file.
     };
-S.subrow = 4; % row of above factlev containing the subject factor
+S.subrow = 3; % row of above factlev containing the subject factor
 
 % specific mask image (with fill path and extension) or leave empty
 S.imgmask = '';

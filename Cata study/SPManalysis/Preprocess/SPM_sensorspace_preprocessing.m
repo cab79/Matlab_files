@@ -1,5 +1,5 @@
 clear all
-
+dbstop if error
 %% SPECIFY DATA
 filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 outpath = 'C:\Data\Catastrophising study\SPMdata\sensorimages'; 
@@ -18,7 +18,7 @@ spmart = 0;
 % use FT manual artefact rejection
 ftart = 0;
 
-% output type: 'average' (to create average) 'useaverage' (to use existing averaged file) or 'singletrial'
+% output type: 'average' (to create average) 'useaverage' (to use existing averaged file), or 'singletrial'
 outputtype = 'average'; % CAREFUL WITH USEAVERAGE: data might not be baselined correctly
 
 % mode - type of images to generate. One of:
@@ -34,10 +34,11 @@ outputtype = 'average'; % CAREFUL WITH USEAVERAGE: data might not be baselined c
 mode = 'scalp x time';
 
 % time and frequecy windows
-freqwin = [8 12]; % empty if not requiring freq analysis
+freqwin = [10]; % empty if not requiring freq analysis
+freqres = 0; % freq resolution
 %timewin = [-5500 -2500]; % empty will include whole epoch
 %basewin = [-5500 -5000]; % empty will not baseline correct
-timewin = [-3000 0]; % empty will include whole epoch
+timewin = [-3000 -2]; % empty will include whole epoch
 basewin = [-3000 -2500]; % empty will not baseline correct
 %timewin = [-500 1500]; % empty will include whole epoch
 %basewin = [-500 0]; % empty will not baseline correct
@@ -89,6 +90,36 @@ end
 
 for f = 1:length(files)
     fname = files(f).name;
+    
+    if ~isempty(freqwin)
+        S.D                = fullfile(filepath,fname); %- MEEG object or filename of M/EEG mat-file with
+        S.channels         = 'All'; %- cell array of channel names. Can include generic
+        try
+            S.frequencies      = freqwin(1):freqres:freqwin(2); %- vector of frequencies of interest
+        catch
+            S.frequencies      = freqwin;
+        end
+        S.timewin          = timewin; %- time window of interest in PST in ms.
+        S.method           ='morlet'; %- name for the spectral estimation to use. This
+            %S.settings.subsample   =1;%- factor by which to subsample the time axis (default - 1)
+            %S.settings.freqres     =freqres/2;%- frequency resolutions (plus-minus for each frequency
+            %S.settings.order       =3;%- butterworth filter order (can be a vector with a value
+        S.phase            =0; %- also save phase dataset (1) or not (0)
+        prefix           ='tf_'; %- prefix added before the standard prefix (tf_ or tph_)
+        S.prefix           =''; %- prefix added before the standard prefix (tf_ or tph_)
+        spm_eeg_tf(S)
+        fname = [prefix fname];
+        
+        % Baseline correct
+        S.D                =fullfile(filepath,fname);%- MEEG object or filename of M/EEG mat-file
+        S.method           ='LogR';%- 'LogR', 'Diff', 'Rel', 'Log', 'Sqrt', 'None'
+        S.timewin          =basewin;%- 2-element vector: start and stop of baseline (ms)
+        S.pooledbaseline   =1;%- take the baseline individually for each trial: doi: 10.1111/ejn.13179
+        S.prefix           ='r';%- prefix for the output file (default - 'r')
+        spm_eeg_tf_rescale(S)
+        fname = [S.prefix fname];
+        
+    end
  
     if strcmp(outputtype,'average')
 
@@ -124,12 +155,14 @@ for f = 1:length(files)
    
     
     % Baseline Correction
-    clear S D
-    S.D = fullfile(filepath,fname);
-    S.timewin = basewin;
-    S.save = 0; % save in separate file
-    S.prefix = 'b'; % for output, only if saving a new file
-    spm_eeg_bc(S);
+    if isempty(freqwin)
+        clear S D
+        S.D = fullfile(filepath,fname);
+        S.timewin = basewin;
+        S.save = 0; % save in separate file
+        S.prefix = 'b'; % for output, only if saving a new file
+        spm_eeg_bc(S);
+    end
 
     % Convert to 3D images (2 space and 1 time dimension)
     %==========================================================================
@@ -138,7 +171,11 @@ for f = 1:length(files)
     S.prefix = '';
     if ~isempty(freqwin); 
         S.freqwin = freqwin; 
-        S.prefix = [S.prefix 'f' num2str(freqwin(1)) '_' num2str(freqwin(2)) '_'];
+        try
+            S.prefix = [S.prefix 'f' num2str(freqwin(1)) '_' num2str(freqwin(2)) '_'];
+        catch
+            S.prefix = [S.prefix 'f' num2str(freqwin(1)) '_' ];
+        end
     end;
     if ~isempty(timewin); 
         S.timewin = timewin; 

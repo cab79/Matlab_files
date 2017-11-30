@@ -11,7 +11,7 @@ close all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Source\Design_batch_source_TimeGrpExp_SPN.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Source\Design_batch_source_GrpExp_SPN.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
@@ -52,7 +52,7 @@ D.baseline='2_t-3000_-2500';
 load(fullfile(D.sensorpath,'image_win.mat'));
 for di = 2:size(image_win,1) % first one is baseline
     tw = image_win{di,1};
-    D.identifier = ['_t' num2str(tw(1)) '_' num2str(tw(2))];
+    D.identifier = ['_t' tw(1) '_' tw(2)];
 
     %D.identifier = [D.identifier num2str(fm)];
     %D.data_path = [D.data_path num2str(fm)];
@@ -68,14 +68,14 @@ for di = 2:size(image_win,1) % first one is baseline
                 ['_*' D.identifier '_f_c6.nii']
                 ['_*' D.identifier '_f_c7.nii']
                 ['_*' D.identifier '_f_c8.nii']
-                ['_*' D.baseline '_f_c1.nii']
-                ['_*' D.baseline '_f_c2.nii']
-                ['_*' D.baseline '_f_c3.nii']
-                ['_*' D.baseline '_f_c4.nii']
-                ['_*' D.baseline '_f_c5.nii']
-                ['_*' D.baseline '_f_c6.nii']
-                ['_*' D.baseline '_f_c7.nii']
-                ['_*' D.baseline '_f_c8.nii']
+                %['_*' D.baseline '_f_c1.nii']
+                %['_*' D.baseline '_f_c2.nii']
+                %['_*' D.baseline '_f_c3.nii']
+                %['_*' D.baseline '_f_c4.nii']
+                %['_*' D.baseline '_f_c5.nii']
+                %['_*' D.baseline '_f_c6.nii']
+                %['_*' D.baseline '_f_c7.nii']
+                %['_*' D.baseline '_f_c8.nii']
                 };
 
     %% analysis design and parameters
@@ -88,33 +88,25 @@ for di = 2:size(image_win,1) % first one is baseline
     D.time_ana = []; % applies a mask to the data
     % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
     % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
-    D.cond_list =  [1 1
-                  1 2
-                  1 1
-                  1 2
-                  1 1
-                  1 2
-                  1 1
-                  1 2
-                  2 1
-                  2 2
-                  2 1
-                  2 2
-                  2 1
-                  2 2
-                  2 1
-                  2 2];
+    D.cond_list =  [1
+                  2
+                  1
+                  2
+                  1
+                  2
+                  1
+                  2];
     % factors and statistical model
-    D.factors = {'Time','Grp', 'Exp', 'Subject'}; % must include a subject factor at the end
-    D.factortype = {'w','g','w','s'}; % w = within, s = subject, g = subject group
+    D.factors = {'Grp', 'Exp', 'Subject'}; % must include a subject factor at the end
+    D.factortype = {'g','w','s'}; % w = within, s = subject, g = subject group
 
     % Main effects and interactions: 
     %   - for spm, can specify the highest-level interaction to produc results
     %   for all sub-interactions. Only main effects beyond those captured by
     %   any interactions need to be listed, e.g. for Subject (only listed
     %   Subject if there is no Group factor). E.g.
-    D.interactions = [1 1 1 0]; % one column per factor; one row per interaction
-    D.maineffects = [0 0 0 0]; % one column per factor 
+    D.interactions = [1 1 0]; % one column per factor; one row per interaction
+    D.maineffects = [0 0 0]; % one column per factor 
     %   - for snpm, only a single main effect or 2-way interaction can be performed each time, e.g.
     %D.interactions = [0 0 0 0]; % one column per factor
     %D.maineffects = [0 0 1 0]; % one column per factor 
@@ -131,22 +123,22 @@ for di = 2:size(image_win,1) % first one is baseline
     D.ancova = [0 0 0 0]; %covariate
     % after model estimation, constrasts to display (SPM, not SnPM)
     D.fcontrasts = {
-        [-1 1 1 -1 0 0 0 0], 'Grp * Exp'
-        [1 1 -1 -1 0 0 0 0], 'Grp'
-        [-1 1 -1 1 0 0 0 0], 'Exp'
-        [0 1 0 -1 0 0 0 0], 'ExpB Grp'
-        [1 0 -1 0 0 0 0 0], 'ExpA Grp'
+        [-1 1 1 -1], 'Grp * Exp'
+        [1 1 -1 -1], 'Grp'
+        [-1 1 -1 1], 'Exp'
+        [0 1 0 -1], 'ExpB Grp'
+        [1 0 -1 0], 'ExpA Grp'
         };
 
     D.tcontrasts = {
-        [1 1 -1 -1 0 0 0 0], 'Grp A'
-        [-1 -1 1 1 0 0 0 0], 'Grp B'
-        [-1 1 -1 1 0 0 0 0], 'Exp B'
-        [1 -1 1 -1 0 0 0 0], 'Exp A'
-        [0 1 0 -1 0 0 0 0], 'ExpB GrpA'
-        [0 -1 0 1 0 0 0 0], 'ExpB GrpB'
-        [1 0 -1 0 0 0 0 0], 'ExpA GrpA'
-        [-1 0 1 0 0 0 0 0], 'ExpA GrpB'
+        [1 1 -1 -1], 'Grp A'
+        [-1 -1 1 1], 'Grp B'
+        [-1 1 -1 1], 'Exp B'
+        [1 -1 1 -1], 'Exp A'
+        [0 1 0 -1], 'ExpB GrpA'
+        [0 -1 0 1], 'ExpB GrpB'
+        [1 0 -1 0], 'ExpA GrpA'
+        [-1 0 1 0], 'ExpA GrpB'
         };
 
     % the following are for SnPM, not SPM

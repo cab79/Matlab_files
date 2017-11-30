@@ -13,36 +13,15 @@ S.datafile_path = 'C:\Data\Catastrophising study\SPMdata';
 S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_NoHan_SPN';
 % directory in which SPM analysis is saved 
 S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning\2nd_analysis_SPN';
+% path to sensor space analysis where image_win.mat is saved
+D.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_0_b-3000_-2500_Grp_Exp_Subject_orig_cleaned_SPN_spm';
 % specific folder(s) containing the SPM stats for this analysis, 
 % the original data file suffix,
 % and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
-    %'_Att_Grp_Exp_Subject_spm_t-2316_-1924',1, '_orig_cleaned_SPN.mat',{'T1Grp'}
-    %'_Att_Grp_Exp_Subject_spm_t-2412_-2380',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
-    %'_Att_Grp_Exp_Subject_spm_t-2152_-2',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
-    %'_Att_Grp_Exp_Subject_spm_t-786_-732',1, '_orig_cleaned_SPN.mat',{'T1Grp * Exp'}
-    %'_Att_Grp_Exp_Subject_spm_t-2896_-2840',2, '_orig_cleaned_SPNpn.mat',{'T1Exp'}
-    %'_Att_Grp_Exp_Subject_spm_t-2432_-2364',2, '_orig_cleaned_SPNpn.mat',{'T1Exp'}
-    %'_Att_Grp_Exp_Subject_spm_t-2256_-1830',2, '_orig_cleaned_SPNpn.mat',{'T1Exp'}
-    %'_Att_Grp_Exp_Subject_spm_t-2246_-1912',2, '_orig_cleaned_SPNpn.mat',{'T1Grp'}
-    %'_Att_Grp_Exp_Subject_spm_t-1820_-666',2, '_orig_cleaned_SPNpn.mat',{'T1Grp * Exp'}
-    %'_Att_Grp_Exp_Subject_spm_t-1194_-84',2, '_orig_cleaned_SPNpn.mat',{'T1Exp'}
-    %'_Att_Grp_Exp_Subject_spm_t-388_-14',2, '_orig_cleaned_SPNpn.mat',{'T1Grp * Exp'}
-    %'_Att_Grp_Exp_Subject_spm_t-2200_-1986',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
-    %'_Att_Grp_Exp_Subject_spm_t-1292_-1750',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
-    %'_Att_Grp_Exp_Subject_spm_t-1578_-1540',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
-    %'_Att_Grp_Exp_Subject_spm_t-1320_-1092',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
-    %'_Att_Grp_Exp_Subject_spm_t-984_-2',3, '_orig_cleaned_SPN.mat',{'T2 Grp'}
-    '_Time_Grp_Exp_Subject_spm_t-2412_-2364',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
-    '_Time_Grp_Exp_Subject_spm_t-2394_-2380',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
-    '_Time_Grp_Exp_Subject_spm_t-2316_-2024',1, '_orig_cleaned_SPN.mat',{'T1Grp'}
-    '_Time_Grp_Exp_Subject_spm_t-2272_-1924',1, '_orig_cleaned_SPN.mat',{'T1Grp'}
-    '_Time_Grp_Exp_Subject_spm_t-2152_-1418',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
-    '_Time_Grp_Exp_Subject_spm_t-2092_-2',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
-    '_Time_Grp_Exp_Subject_spm_t-786_-732',1, '_orig_cleaned_SPN.mat',{'T1Grp * Exp'}
-    '_Time_Grp_Exp_Subject_spm_t-576_-2',1, '_orig_cleaned_SPN.mat',{'T1Exp'}
-   
+    '_Time_Grp_Subject_spm',1, '_orig_cleaned_SPN.mat',{}
 };
+
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
 S.batch = 'matlabbatch.mat';
@@ -124,8 +103,8 @@ S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','','';
 S.factlev = {
         %{'Att'},{'Attention Task'},{'No Task','Task'};
         {'Time'},{'LOI vs Baseline'},{'LOI','Baseline'};
-        %{'Att'},{'Attention'},{'Pain','Loc'};
         {'Grp'},{'Group'},{'High','Low'};
+        %{'Att'},{'Attention'},{'Pain','Loc'};
         %{'Int'},{'Stimulus Intensity'},{'Low','Medium'};
         {'Exp'},{'Expectation Cues'},{'Low, Low','High, Low'};
         {'Subject'},{'Subject'},{}; % can leave Subject levels empty as these will be populated by sub_info file.
@@ -180,6 +159,19 @@ S.GroupLevel.contrasts          = [1  1;  % contrast 1
                                    1 -1]; % contrast 2
 
 %% run functions (sit back and relax)
+
+if isempty(strfind(S.spm_dir{1,1},'spm_t'))
+    sd = S.spm_dir;
+    load(fullfile(D.sensorpath,'image_win.mat'));
+    for di = 2:size(image_win,1) % first one is baseline
+        tw = image_win{di,1};
+        identifier = ['_t' num2str(tw(1)) '_' num2str(tw(2))];
+        S.spm_dir{di,1} = [sd{1,1} identifier];
+        S.spm_dir{di,2} = sd{1,2};
+        S.spm_dir{di,3} = sd{1,3};
+    end
+end
+
 Extract_clusters_source(S);
 Convert_VOImat_to_excel(S);
 %Extract_cluster_residuals(S);

@@ -9,7 +9,7 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_Grp.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_GrpExp.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
@@ -34,7 +34,7 @@ D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats';
 D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
-D.subdirsuff = '_orig_cleaned_SPN'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_orig_cleaned'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
 D.identifier=''; % optional identifer to add to end of outputted SPM folder name
@@ -61,25 +61,25 @@ D.para = 1;
 D.time_ana = []; % applies a mask to the data
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
-D.cond_list =  [1 1
-              1 2
-              1 1
-              1 2
-              2 1
-              2 2
-              2 1
-              2 2];
+D.cond_list =  [1
+              2
+              1
+              2
+              1
+              2
+              1
+              2];
 % factors and statistical model
-D.factors = {'Grp', 'Att', 'Exp', 'Subject'}; % must include a subject factor at the end; Group factor must be first if being used
-D.factortype = {'g','w','w','s'}; % w = within, s = subject, g = subject group
+D.factors = {'Grp', 'Exp', 'Subject'}; % must include a subject factor at the end; Group factor must be first if being used
+D.factortype = {'g','w','s'}; % w = within, s = subject, g = subject group
 
 % Main effects and interactions: 
 %   - for spm, can specify the highest-level interaction to produc results
 %   for all sub-interactions. Only main effects beyond those captured by
 %   any interactions need to be listed, e.g. for Subject (only listed
 %   Subject if there is no Group factor). E.g.
-D.interactions = [1 1 1 0]; % one column per factor; one row per interaction
-D.maineffects = [0 0 0 0]; % one column per factor 
+D.interactions = [1 1 0]; % one column per factor; one row per interaction
+D.maineffects = [0 0 0]; % one column per factor 
 %   - for snpm, only a single main effect or 2-way interaction can be performed each time, e.g.
 %D.interactions = [0 0 0 0]; % one column per factor
 %D.maineffects = [1 0 0 0]; % one column per factor 
@@ -92,23 +92,22 @@ D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA
 D.cov_names = {};
 
 % the following are for spm analysis, not snpm
-D.GMsca = [0 0 0 0]; %grand mean scaling
-D.ancova = [0 0 0 0]; %covariate
+D.GMsca = [0 0 0]; %grand mean scaling
+D.ancova = [0 0 0]; %covariate
 % after model estimation, constrasts to display
 D.fcontrasts = {
-    [-1 1 1 -1 1 -1 -1 1], 'Grp * Att * Exp'
-    [1 -1 1 -1 -1 1 -1 1], 'Grp * Exp'
-    [1 1 -1 -1 -1 -1 1 1], 'Grp * Att'
-    [1 -1 -1 1 1 -1 -1 1], 'Exp * Att'
-    [1 1 1 1 -1 -1 -1 -1], 'Grp'
-    [1 -1 1 -1 1 -1 1 -1], 'Exp'
-    [1 1 -1 -1 1 1 -1 -1], 'Att'
-    [0 1 0 1 0 -1 0 -1], 'ExpB Grp'
+    [1 -1 -1 1], 'Grp * Exp'
+    [1 1 -1 -1], 'Grp'
+    [1 -1 1 -1], 'Exp'
+    [0 -1 0 1], 'ExpB Grp'
+    [-1 0 1 0], 'ExpA Grp'
     };
 
 D.tcontrasts = {
-    [0 1 0 1 0 -1 0 -1], 'ExpB GrpB'
-    [0 -1 0 -1 0 1 0 1], 'ExpB GrpA'
+    [0 1 0 -1], 'ExpB GrpA'
+    [1 0 -1 0], 'ExpA GrpA'
+    [0 -1 0 1], 'ExpB GrpB'
+    [-1 0 1 0], 'ExpA GrpB'
     };
 % the following are for SnPM, not SPM
 D.nPerm = 5000; % permutations
@@ -122,7 +121,8 @@ D.resid = 0;
 %% run design_batch function
 D=design_batch(D);
 
-if D.para==1
+loadspm=0;
+if D.para==1 && loadspm==1
     spm eeg
     load(fullfile(D.spm_path,'SPM.mat'));
     SPM.Im=[]; % no masking

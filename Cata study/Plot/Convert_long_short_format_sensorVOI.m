@@ -12,25 +12,25 @@ clear all
 %% file info
 D.format = 'long'; %CURRENT format of data
 % file path and name
-D.pdatfile = 'C:\Data\Catastrophising study\SPMstats\Include1\Between-SPN\t-3000_0_b-3000_-2500_Grp_Att_Subject_orig_cleaned_SPN_spm\Grp_clusters\VOI_c4.xlsx';
+D.pdatfile = 'C:\Data\Catastrophising study\SPMstats\Include1\Between-SPN\t-3000_0_b-3000_-2500_Grp_Att_Subject_orig_cleaned_SPN_spm\Grp_clusters\VOI_c9.xlsx';
 % columns to sort INPUT by, in order. negative will sort descending.
 D.sortby_in = []; 
 % factors to sort OUTPUT by, in order (can include old and new factors). Negative will sort descending.
 D.sortby_out = [];
 % number of factors in the input (should all be leftmost columns):
-D.Nfact_in = 4;
+D.Nfact_in = 3;
 % number of data columns in the input (should all be rightmost column):
 D.Ndat_in = 1;
 % number of header rows in input data
 D.Nhead = 1; 
 % OUTPUT factor numbers to average data over
-D.avg = [2]; 
+D.avg = [3]; 
 % average over any non-unique rows in output
 D.mean_nonunique=0;
 
 %% enter info for converting from LONG to SHORT (only runs if data is currently long format):
 % columns of factors to remove:
-D.fact_rm = [1 3]; 
+D.fact_rm = []; 
 
 %% enter info for converting from SHORT to LONG (only runs if data is currently short format):
 % name the new factors to create:

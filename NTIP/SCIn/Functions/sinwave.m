@@ -120,7 +120,7 @@ for tr = trials
                 chan=oddval;
             elseif strcmp(h.Settings.oddballmethod,'intensity')
                 h.inten = oddval;
-            elseif strcmp(h.Settings.oddballmethod,'pitch') || strcmp(oddballmethod,'freq')
+            elseif strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq')
                 h.freq = oddval;
             elseif strcmp(h.Settings.oddballmethod,'duration')
                 h.dur = oddval;
@@ -276,12 +276,12 @@ for tr = trials
         
         % construction of mwav{i}
         if strcmp(h.Settings.wavetype,'sin')
-            mwav{i}(chan(1),:) = h.inten(i) *sin(2*pi*(h.freq(i))*t{i} + phadd(1) + 2*pi*h.freq(i)/h.Settings.fs);
-            if df; mwav{i}(chan(2),:) = h.inten(i) *sin(2*pi*(h.freq(i)+df_freq)*t{i} + phadd(2) + 2*pi*(h.freq(i)+df_freq)/h.Settings.fs);end
+            mwav{i}(chan(1),:) = useinten *sin(2*pi*(usefreq)*t{i} + phadd(1) + 2*pi*usefreq/h.Settings.fs);
+            if df; mwav{i}(chan(2),:) = useinten *sin(2*pi*(usefreq+df_freq)*t{i} + phadd(2) + 2*pi*(usefreq+df_freq)/h.Settings.fs);end
             temp_sin{i} = mwav{i};
         elseif strcmp(h.Settings.wavetype,'square')
-            mwav{i}(chan(1),:) = square(2*pi*(h.freq(i))*t{i} + phadd(1) + 2*pi*h.freq(i)/h.Settings.fs,h.inten(i));
-            temp_sin{i}(chan(1),:) = sin(2*pi*(h.freq(i))*t{i} + phadd(1) + 2*pi*h.freq(i)/h.Settings.fs); % for phase estimation
+            mwav{i}(chan(1),:) = square(2*pi*(usefreq)*t{i} + phadd(1) + 2*pi*usefreq/h.Settings.fs,useinten);
+            temp_sin{i}(chan(1),:) = sin(2*pi*(usefreq)*t{i} + phadd(1) + 2*pi*usefreq/h.Settings.fs); % for phase estimation
         end
         
         % instantaneous phase and direction at end of stim

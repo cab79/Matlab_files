@@ -98,8 +98,8 @@ for sp = 1:length(S.spm_paths)
         % add new column to save temporal extent of cluster
         clustable=S.clustab{tf(cont)};
         colwidth = size(clustable,2);
-        clustable(2,colwidth+1)={'Temporal extent (ms)'};
-        clustable(2,colwidth+2)={'F_temporal'};
+        clustable(2,colwidth+1)={'Min temporal extent (ms)'};
+        clustable(2,colwidth+2)={'Max temporal extent (ms)'};
 
         % re-draw stats using cluster extent threshold
         if S.clusformthresh
@@ -147,8 +147,8 @@ for sp = 1:length(S.spm_paths)
             clustable{Nhead+c,Nrhead+6} = vec2str(round([clustable{Nhead+c,Nrhead+6}])',{},{},0);
             loc = [TabDat.dat{:,colind(end)}];
             locF = [TabDat.dat{:,9}];
-            clustable(Nhead+c,colwidth+1)={loc(3,:)};
-            clustable(Nhead+c,colwidth+2)={locF};
+            clustable(Nhead+c,colwidth+1)={min(loc(3,:))};
+            clustable(Nhead+c,colwidth+2)={max(loc(3,:))};
 
             % save cluster volume image for masking
             cfname = fullfile(S.clus_path{cont},[cname '_mask']);

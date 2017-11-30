@@ -9,7 +9,7 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_Grp.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor\Design_batch_Grp_10Hz.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
@@ -31,9 +31,9 @@ D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats';
 %-------------------------------------------------------------
 % prefix and suffix of subject folder names (within 'data_path') either side of subject ID
 %D.anapref = 't-5500_-2500_b-5500_-5000'; %directory prefix for this specific analysis
-D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
+D.anapref = 'f10_t-3000_-2_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
-D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
+D.subdirpref = '_mrtf_spm12_C'; % generic prefix for the SPM file type
 D.subdirsuff = '_orig_cleaned_SPN'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
@@ -103,12 +103,9 @@ D.fcontrasts = {
     [1 1 1 1 -1 -1 -1 -1], 'Grp'
     [1 -1 1 -1 1 -1 1 -1], 'Exp'
     [1 1 -1 -1 1 1 -1 -1], 'Att'
-    [0 1 0 1 0 -1 0 -1], 'ExpB Grp'
     };
 
 D.tcontrasts = {
-    [0 1 0 1 0 -1 0 -1], 'ExpB GrpB'
-    [0 -1 0 -1 0 1 0 1], 'ExpB GrpA'
     };
 % the following are for SnPM, not SPM
 D.nPerm = 5000; % permutations

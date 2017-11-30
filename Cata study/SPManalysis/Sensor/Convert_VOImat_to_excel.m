@@ -59,10 +59,15 @@ for sp = 1:size(S.spm_paths,1)
 
     %if ~isfield(S,'clus_path')
         alldir=dir(fullfile(S.spm_path,'*_clusters'));
+        if isempty(alldir)
+            continue
+        end
         for c = 1:length(alldir)
             S.clus_path{c} = fullfile(S.spm_path,alldir(c).name);
         end
     %end
+    
+    
 
     for cldir = 1:length(S.clus_path)
 
