@@ -135,7 +135,7 @@ switch opt
         elseif strcmp(h.Settings.record_EEG,'daq')
             try
                 TriggerNum = h.Seq.signal(h.i);
-                outputSingleScan(dio,decimalToBinaryVector(TriggerNum))
+                outputSingle
                 %putvalue(dio.Line(1:8),TriggerNum); 
             catch
                 disp('EEG not connected');
