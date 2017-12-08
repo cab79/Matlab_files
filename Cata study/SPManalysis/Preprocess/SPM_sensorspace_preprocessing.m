@@ -9,7 +9,7 @@ batchpath = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor';
 % the folder
 fpref = 'spm12';
 fmid = '';
-fsuff = 'cleaned_SPN.mat';
+fsuff = 'cleaned_SPNall.mat';
 
 %% SPECIFY OPTIONS
 
@@ -34,7 +34,7 @@ outputtype = 'average'; % CAREFUL WITH USEAVERAGE: data might not be baselined c
 mode = 'scalp x time';
 
 % time and frequecy windows
-freqwin = [10]; % empty if not requiring freq analysis
+freqwin = []; % empty if not requiring freq analysis
 freqres = 0; % freq resolution
 %timewin = [-5500 -2500]; % empty will include whole epoch
 %basewin = [-5500 -5000]; % empty will not baseline correct
@@ -112,7 +112,7 @@ for f = 1:length(files)
         
         % Baseline correct
         S.D                =fullfile(filepath,fname);%- MEEG object or filename of M/EEG mat-file
-        S.method           ='LogR';%- 'LogR', 'Diff', 'Rel', 'Log', 'Sqrt', 'None'
+        S.method           ='Log';%- 'LogR', 'Diff', 'Rel', 'Log', 'Sqrt', 'None'
         S.timewin          =basewin;%- 2-element vector: start and stop of baseline (ms)
         S.pooledbaseline   =1;%- take the baseline individually for each trial: doi: 10.1111/ejn.13179
         S.prefix           ='r';%- prefix for the output file (default - 'r')

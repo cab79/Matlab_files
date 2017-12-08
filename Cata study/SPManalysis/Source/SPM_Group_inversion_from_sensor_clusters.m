@@ -10,13 +10,13 @@ dbstop if error
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_SPNnew'; 
+S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_SPNall_new'; 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 %fiducials directory
 S.fid_dir='C:\Data\Catastrophising study\meegfid';
 % path to sensor space analysis / cluster folders
-S.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_0_b-3000_-2500_Grp_Exp_Subject_orig_cleaned_SPN_spm';
+S.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_-2_b-3000_-2500_m_-2500_0_Grp_Exp_Subject_orig_cleaned_SPNall_spm';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -25,7 +25,7 @@ S.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_0
 S.fpref = 'mspm12';
 S.fmid = '';
 %S.fsuff = ;
-S.fsuff = {'_orig_cleaned_SPN.mat';
+S.fsuff = {'_orig_cleaned_SPNall.mat';
     };
 
 %% specific settings for this analysis
@@ -81,6 +81,9 @@ end
 nhead = 2;
 for c = 1:length(S.clusterdir)
     pth = fullfile(S.sensorpath,S.clusterdir{c});
+    if ~exist(pth,'dir')
+        continue
+    end
     load(fullfile(pth,'cluster_table.mat'));
     nclus = size(clustable,1)-nhead;
     for n = 1:nclus

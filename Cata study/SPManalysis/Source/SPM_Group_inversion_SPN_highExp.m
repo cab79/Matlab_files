@@ -10,7 +10,7 @@ dbstop if error
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_SPN'; 
+S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_SPNall'; 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 %fiducials directory
@@ -23,7 +23,7 @@ S.fid_dir='C:\Data\Catastrophising study\meegfid';
 S.fpref = 'mspm12';
 S.fmid = '';
 %S.fsuff = ;
-S.fsuff = {'_orig_cleaned_SPN.mat';
+S.fsuff = {'_orig_cleaned_SPNall.mat';
     };
 
 %% specific settings for this analysis
@@ -47,11 +47,8 @@ S.imout = []; % select which to produce on this run, or leave empty to run all
 S.images_out = {
         % from timewin 1
         {
-        'base',[];
-        [-2224 -1748],[]; %Grp
-        [-1210 -1194],[]; %Grp
-        [-968 -754],[]; %Grp
-        [-564 -78],[]; %Grp
+        %'base',[];
+        [-1690 -928],[]; %Grp
         }; 
 };
 

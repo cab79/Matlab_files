@@ -13,7 +13,8 @@ dbstop if error
 filepath = 'C:\Data\Catastrophising study\Preprocessed';
 cd(filepath);
 % generic file suffix
-filesuff = ('_orig_cleaned_SPN.set');
+filesuff = ('_orig_cleaned_SPNall.set');
+filepref ='';
 % chanlocs file path
 load('C:\Data\Catastrophising study\Orig\chanlocs.mat');
 
@@ -44,9 +45,9 @@ bootrep = 50;
 ncycles=3;
 
 % stimtypes to include in analysis
-%eventtypes = {'c2a','c2b','c4a','c4b','c6a','c6b','c8a','c8b'}; % stim labels
-eventtypes = {'c1','c2','c3','c4','c5','c6','c7','c8'}; % stim labels
-use_etype = [1 2 3 4 5 6 7 8]; % index of labels to include
+eventtypes = {'c1','c3','c5','c7','c2a','c4a','c6a','c8a','c2b','c4b','c6b','c8b'}; % stim labels
+%eventtypes = {'c1','c2','c3','c4','c5','c6','c7','c8'}; % stim labels
+use_etype = [1 2 3 4 5 6 7 8 9 10 11 12]; % index of labels to include
 no_cond = length(use_etype);
 
 % save single trial data? (large files!)
@@ -144,7 +145,7 @@ sublist = {};
 for g = 1:length(subjects)
     for s = 1:length(subjects{g,1}) 
         subj = subjects{g,1}{s,1};
-        EEG = pop_loadset([subj filesuff],filepath);
+        EEG = pop_loadset([filepref subj filesuff],filepath);
         dsize = size(EEG.data);
         intimes=EEG.times;
 

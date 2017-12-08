@@ -10,16 +10,21 @@ S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes
 % root directory in which source DATAFILES are located
 S.datafile_path = 'C:\Data\Catastrophising study\SPMdata';
 % root directory in which source IMAGES are located
-S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_NoHan_SPN';
+S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_SPNall_new';
 % directory in which SPM analysis is saved 
 S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning\2nd_analysis_SPN';
 % path to sensor space analysis where image_win.mat is saved
-D.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_0_b-3000_-2500_Grp_Exp_Subject_orig_cleaned_SPN_spm';
+S.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_-2_b-3000_-2500_m_-2500_0_Grp_Exp_Subject_orig_cleaned_SPNall_spm';
 % specific folder(s) containing the SPM stats for this analysis, 
 % the original data file suffix,
 % and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
-    '_Time_Grp_Subject_spm',1, '_orig_cleaned_SPN.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-2500_-2332',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-2296_-1950',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-2144_-102',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-1790_-1028',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-938_-632',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-350_-16',1, '_orig_cleaned_SPNall.mat',{}
 };
 
 %name of batch .mat file saved from design_batch.m and within same folder
@@ -106,7 +111,7 @@ S.factlev = {
         {'Grp'},{'Group'},{'High','Low'};
         %{'Att'},{'Attention'},{'Pain','Loc'};
         %{'Int'},{'Stimulus Intensity'},{'Low','Medium'};
-        {'Exp'},{'Expectation Cues'},{'Low, Low','High, Low'};
+        {'Exp'},{'Expectation Cues'},{'Low, Low','High, Low','High'};
         {'Subject'},{'Subject'},{}; % can leave Subject levels empty as these will be populated by sub_info file.
     };
 S.subrow = 4; % row of above factlev containing the subject factor
@@ -162,9 +167,9 @@ S.GroupLevel.contrasts          = [1  1;  % contrast 1
 
 if isempty(strfind(S.spm_dir{1,1},'spm_t'))
     sd = S.spm_dir;
-    load(fullfile(D.sensorpath,'image_win.mat'));
-    for di = 2:size(image_win,1) % first one is baseline
-        tw = image_win{di,1};
+    load(fullfile(S.sensorpath,'image_win.mat'));
+    for di = 1:size(image_win,1)-1 % first one is baseline
+        tw = image_win{di+1,1};
         identifier = ['_t' num2str(tw(1)) '_' num2str(tw(2))];
         S.spm_dir{di,1} = [sd{1,1} identifier];
         S.spm_dir{di,2} = sd{1,2};
