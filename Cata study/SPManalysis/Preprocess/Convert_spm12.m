@@ -15,13 +15,13 @@ outprefix = 'spm12_';
 % the folder
 fpref = '';
 fmid = '';
-fsuff = 'cleaned_SPN.set';
+fsuff = 'cleaned_SPNall.set';
 
 % set data type: 'epoched' or 'continuous'
 dattype ='epoched';
 
 % set time window of interest in ms (advise whole epoch)
-timewin = [-3000 0];
+timewin = [];
 
 %% LOAD AND CONVERT
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));

@@ -69,39 +69,19 @@ end
 if ~isfield(D,'znorm')
     D.znorm = 0;
 end
+if ~isfield(D,'para')
+    D.para = 0;
+end
+if ~isfield(D,'grandmean')
+    D.grandmean = 0;
+end
 
-% select parametric or non-parametric analyses and the range of models
 if D.para==1
-    load(D.ffbatch);
     paraname = '_spm';
 elseif D.para==2
-    load(D.npbatch);
     paraname = '_snpm';
-    if isfactorial
-        ismain = any(D.maineffects);
-        isinter = any(D.interactions);
-        if ismain
-            if strcmp(D.factortype(find(D.maineffects)),'w')
-                matlabbatch = matlabbatch(1);
-                model = 'w';
-            elseif strcmp(D.factortype(find(D.maineffects)),'g')
-                matlabbatch = matlabbatch(2);
-                model = 'g';
-            end
-        elseif isinter
-            uf = length(unique(D.factortype(find(D.interactions))));
-            if uf==1 && strcmp(unique(D.factortype(find(D.interactions))),'w')% interaction of two within-subjects factors
-                matlabbatch = matlabbatch(1); % paired test after subtraction of second factor
-                model = 'ww';
-            elseif uf==2 % interaction of within-subjects and group factor
-                matlabbatch = matlabbatch(3); % unpaired test after subtraction of w factor
-                model = 'gw';
-            end
-        else % assume one-sample t-test
-            matlabbatch = matlabbatch(4);
-            model = 'one';
-        end
-    end
+elseif D.pronto
+    paraname = '_prt';
 end
 
 % get factor names
@@ -201,6 +181,57 @@ for g = 1:Ngrp
     Nsub(g,1) = length(SubInd{g,1});
 end
 
+% select parametric or non-parametric analyses and the range of models
+if D.para==1
+    load(D.ffbatch);
+elseif D.para==2
+    load(D.npbatch);
+    if isfactorial
+        ismain = any(D.maineffects);
+        isinter = any(D.interactions);
+        if ismain
+            if strcmp(D.factortype(find(D.maineffects)),'w')
+                matlabbatch = matlabbatch(1);
+                model = 'w';
+            elseif strcmp(D.factortype(find(D.maineffects)),'g')
+                matlabbatch = matlabbatch(2);
+                model = 'g';
+            end
+        elseif isinter
+            uf = length(unique(D.factortype(find(D.interactions))));
+            if uf==1 && strcmp(unique(D.factortype(find(D.interactions))),'w')% interaction of two within-subjects factors
+                matlabbatch = matlabbatch(1); % paired test after subtraction of second factor
+                model = 'ww';
+            elseif uf==2 % interaction of within-subjects and group factor
+                matlabbatch = matlabbatch(3); % unpaired test after subtraction of w factor
+                model = 'gw';
+            end
+        else % assume one-sample t-test
+            matlabbatch = matlabbatch(4);
+            model = 'one';
+        end
+    end
+elseif D.pronto
+    load(D.batch);
+    matlabbatch{1}.prt.data.group = [];
+    paraname = '_pronto';
+    if isfactorial
+        ismain = any(D.maineffects);
+        if ismain
+            if strcmp(D.factortype(find(D.maineffects)),'w')
+                matlabbatch{1}.prt.data.group(1).gr_name = 'all';
+                model = 'w';
+            elseif strcmp(D.factortype(find(D.maineffects)),'g')
+                for g = 1:Ngrp
+                    matlabbatch{1}.prt.data.group(g).gr_name = ['Group' num2str(g)];
+                end
+                model = 'g';
+            end
+        end
+    end
+end
+
+
 % add factors to the design
 
 if D.para==1
@@ -258,6 +289,27 @@ elseif D.para==2
             wnum = 0;
         end
     end
+elseif D.pronto
+    matlabbatch{1}.prt.data.dir_name = {D.spm_path};
+    generic.mod_name = 'eeg';
+    generic.TR = 0.0001;
+    generic.design.new_design.unit = 0; % scans
+    generic.design.new_design.multi_conds = {''};
+    if isfactorial
+        wfactind = double(ismember(D.factortype,'w'));
+        if strcmp(model,'w')
+            Nconds = length(unique(D.cond_list));
+            for c = 1:Nconds
+                generic.design.new_design.conds(c).cond_name = [D.factors{find(D.maineffects)} num2str(c)];
+                generic.design.new_design.conds(c).onsets = find(D.cond_list==c)'-1;
+                generic.design.new_design.conds(c).durations = ones(length(generic.design.new_design.conds(c).onsets),1);
+            end
+        elseif strcmp(model,'g')
+            generic.design.new_design.conds(1).cond_name = 'allcond';
+            generic.design.new_design.conds(1).onsets = find(D.cond_list)'-1;
+            generic.design.new_design.conds(1).durations = ones(length(generic.design.new_design.conds(1).onsets),1);
+        end
+    end
 end
 if isregress
     scanname=D.regress_contrastname;
@@ -275,7 +327,7 @@ for g = 1:Ngrp
     for s = 1:Nsub(g)
         gs = gs+1;
         if D.useIDfile==1
-            subID{gs} = deblank(pdata{SubInd{g,1}(s)+1,sub_col});
+            subID{gs} = deblank(num2str((pdata{SubInd{g,1}(s)+1,sub_col})));
             if isnumeric(subID{gs}); subID{gs} = num2str(subID{gs}); end;
             if D.folder
                 subdir = fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]);
@@ -302,7 +354,7 @@ for g = 1:Ngrp
         
         subimg = cell(1,1);
         if isfactorial
-            if D.para==1
+            if D.para==1 || D.pronto
                 % for spm, load all files
                 for i = 1:length(D.imglist)
                     fname = fullfile(subdir, [subfile D.imglist{i}]);
@@ -399,6 +451,14 @@ for g = 1:Ngrp
                     end
                 elseif strcmp(model,'one')
                     matlabbatch{1}.spm.tools.snpm.des.OneSampT.P(gs,1) = scans;
+                end
+            elseif D.pronto
+                if strcmp(model,'w')
+                    matlabbatch{1}.prt.data.group(1).select.subject{gs,1} = generic;
+                    matlabbatch{1}.prt.data.group(1).select.subject{gs,1}.scans = scans;
+                elseif strcmp(model,'g')
+                    matlabbatch{1}.prt.data.group(g).select.subject{s,1} = generic;
+                    matlabbatch{1}.prt.data.group(g).select.subject{s,1}.scans = scans;
                 end
             end
         elseif isregress
@@ -543,22 +603,27 @@ elseif D.para==2
         matlabbatch{1}.spm.tools.snpm.des.Corr.masking = masking;
         matlabbatch{1}.spm.tools.snpm.des.Corr.globalc.g_omit = 1;
     end
+elseif D.pronto
+    matlabbatch{1}.prt.data.mask.mod_name = 'eeg';
+    matlabbatch{1}.prt.data.mask.fmask = masking.em;
 end
 
 
 %specify scaling parameters
-if D.grandmean
-    globalm.gmsca.gmsca_yes.gmscv = D.grandmean;
-    %if isfield(globalm.gmsca, 'gmsca_no')
-    %    globalm.gmsca = rmfield(globalm.gmsca, 'gmsca_no');
-    %end
-else
-    globalm.gmsca.gmsca_no = 1;
-    %if isfield(globalm.gmsca, 'gmsca_yes')
-    %    globalm.gmsca = rmfield(globalm.gmsca, 'gmsca_yes');
-    %end
+if D.para
+    if D.grandmean
+        globalm.gmsca.gmsca_yes.gmscv = D.grandmean;
+        %if isfield(globalm.gmsca, 'gmsca_no')
+        %    globalm.gmsca = rmfield(globalm.gmsca, 'gmsca_no');
+        %end
+    else
+        globalm.gmsca.gmsca_no = 1;
+        %if isfield(globalm.gmsca, 'gmsca_yes')
+        %    globalm.gmsca = rmfield(globalm.gmsca, 'gmsca_yes');
+        %end
+    end
+    globalm.glonorm = D.globalnorm;
 end
-globalm.glonorm = D.globalnorm;
 
 if D.para==1
     matlabbatch{1}.spm.stats.factorial_design.globalm = globalm;
@@ -608,13 +673,108 @@ elseif D.para==2
     matlabbatch{3}.spm.tools.snpm.inference.Tsign=1;
     matlabbatch{3}.spm.tools.snpm.inference.WriteFiltImg.name='SnPM_filtered';
     matlabbatch{3}.spm.tools.snpm.inference.Report = 'MIPtable';
+elseif D.pronto
+    % kernel / feature selection
+    matlabbatch{2}.prt.fs.infile = {fullfile(D.spm_path,'PRT.mat')};
+    matlabbatch{2}.prt.fs.k_file = 'kernelname';
+    matlabbatch{2}.prt.fs.modality.mod_name = 'eeg';
+    matlabbatch{2}.prt.fs.modality.conditions = [];
+    
+    if strcmp(model,'w')
+        matlabbatch{2}.prt.fs.modality.conditions.all_cond = 1;
+    elseif strcmp(model,'g')
+        matlabbatch{2}.prt.fs.modality.conditions.all_scans = 1;
+    end
+    
+    matlabbatch{2}.prt.fs.modality.voxels.all_voxels = 1;
+    matlabbatch{2}.prt.fs.modality.detrend.no_dt = 1; % no detrend
+    matlabbatch{2}.prt.fs.modality.normalise.no_gms = 1;
+    matlabbatch{2}.prt.fs.modality.atlasroi{1, 1} = '';
+    matlabbatch{2}.prt.fs.flag_mm = 0;
+    % model
+    matlabbatch{3}.prt.model.infile = {fullfile(D.spm_path,'PRT.mat')};
+    matlabbatch{3}.prt.model.use_kernel = 1;
+    matlabbatch{3}.prt.model.fsets = 'kernelname';
+    if isfactorial
+        matlabbatch{3}.prt.model.model_name = D.factors{find(D.maineffects)};
+        matlabbatch{3}.prt.model.model_type.classification.machine_cl = [];
+        switch D.machine 
+            case 'svm_binary'
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.svm.svm_opt = 1; % optimise hyperparameter?
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.svm.svm_args = [0.01 0.1 1 10 100]; % soft-margin hyperparameter range (only if svm_opt is 1)
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.svm.cv_type_nested.cv_loso = 1;
+            case 'gpc_binary'
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.gpc.gpc_args = '-l erf -h';
+            case 'gpc_multi'
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.gpclap.gpclap_args = '-h';
+        end
+        
+        matlabbatch{3}.prt.model.cv_type.cv_loso = 1;
+        matlabbatch{3}.prt.model.include_allscans = 0;
+        if strcmp(model,'w')
+            % classes
+            Nconds = length(unique(D.cond_list));
+            for c = 1:Nconds
+                matlabbatch{3}.prt.model.model_type.classification.class(c).class_name = [D.factors{find(D.maineffects)} num2str(c)];
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.gr_name = 'all';
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.subj_nums = (1:sum(Nsub))';
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions.conds.cond_name = [D.factors{find(D.maineffects)} num2str(c)];
+            end
+        elseif strcmp(model,'g')
+            % classes
+            for c = 1:Ngrp
+                matlabbatch{3}.prt.model.model_type.classification.class(c).class_name = ['Group' num2str(c)];
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.gr_name = ['Group' num2str(c)];
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.subj_nums = (1:sum(Nsub(c)))';
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions.conds.all_conds = 1;
+            end
+        end
+    end
+    % operations
+    matlabbatch{3}.prt.model.sel_ops.data_op_mc = 1;
+    if ~isempty(D.data_op)
+        matlabbatch{3}.prt.model.sel_ops.use_other_ops = rmfield(matlabbatch{3}.prt.model.sel_ops.use_other_ops,'no_op');
+        matlabbatch{3}.prt.model.sel_ops.use_other_ops.data_op  = D.data_op;
+    end
+    
+    % cross-validation
+    matlabbatch{4}.prt.cv_model.infile = {fullfile(D.spm_path,'PRT.mat')};
+    matlabbatch{4}.prt.cv_model.model_name = D.factors{find(D.maineffects)};
+    matlabbatch{4}.prt.cv_model.perm_test.no_perm  = 1;
+    
+    % weights
+    matlabbatch{5}.prt.weights.infile = {fullfile(D.spm_path,'PRT.mat')};
+    matlabbatch{5}.prt.weights.model_name = D.factors{find(D.maineffects)};
+    matlabbatch{5}.prt.weights.img_name = '';
+    matlabbatch{5}.prt.weights.build_wpr.no_atl = 0;
+    matlabbatch{5}.prt.weights.flag_cwi = 0;
 end
 
-save(fullfile(D.spm_path,'matlabbatch'),'matlabbatch');
+if D.para
+    save(fullfile(D.spm_path,'matlabbatch'),'matlabbatch');
+elseif D.pronto
+    save(fullfile(D.spm_path,'PRT'),'matlabbatch');
+end
 save(fullfile(D.spm_path,'sub_info'),'subID','SubInd');
-spm_jobman('initcfg')
+
+if D.pronto
+    %jobs = fullfile(D.spm_path,'PRT.mat');
+    %inputs = cell(0, 1);
+    %job_id = cfg_util('initjob', jobs);
+    %sts    = cfg_util('filljob', job_id, matlabbatch{:});
+    %if sts
+    cfg_get_defaults('cfg_util.genscript_run', @genscript_run);
+    cfg_util('initcfg');
+    prt_batch
+    cfg_util('run', matlabbatch);
+    %end
+    %cfg_util('deljob', job_id);
+end
 try
-    spm_jobman('run',matlabbatch);
+    if D.para
+        spm_jobman('initcfg')
+        spm_jobman('run',matlabbatch);
+    end
 catch
     if D.para==1
         % reduced number of subjects if fails

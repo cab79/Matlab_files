@@ -12,7 +12,7 @@ clear all
 %% file info
 D.format = 'long'; %CURRENT format of data
 % file path and name
-D.pdatfile = 'C:\Data\Catastrophising study\SPMstats\Include1\Between-SPN\t-3000_0_b-3000_-2500_Grp_Att_Subject_orig_cleaned_SPN_spm\Grp_clusters\VOI_c4.xlsx';
+D.pdatfile = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning\2nd_analysis_SPN\_Time_Grp_Exp_Subject_spm_t-350_-16\Grp_Exp_clusters\VOI_c6.xlsx';
 % columns to sort INPUT by, in order. negative will sort descending.
 D.sortby_in = []; 
 % factors to sort OUTPUT by, in order (can include old and new factors). Negative will sort descending.

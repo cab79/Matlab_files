@@ -11,13 +11,13 @@ close all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Source\Design_batch_source_GrpExp_SPN.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Source\Design_batch_source_TimeGrpExp_SPNall.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_SPN';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_SPNall_new';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -28,6 +28,8 @@ D.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes
     D.inchead = 'Include';
 % directory in which SPM analyses will be saved (new folder created)
 D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning\2nd_analysis_SPN';
+% path to sensor space analysis where image_win.mat is saved
+D.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_-2_b-3000_-2500_m_-2500_0_Grp_Exp_Subject_orig_cleaned_SPNall_spm';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -44,34 +46,48 @@ D.include_codes = [1];
 % time identifer for source image files, to add to end of outputted SPM folder name
 %identifier={'_t-2316_-1924','_t-2412_-2380','_t-2152_-2','_t-786_-732'}; 
 %D.baseline='_t-3000_-2500'; 
-identifier={'_t-2412_-2364','_t-2394_-2380','_t-2316_-2024','_t-2272_-1924','_t-2152_-1418','_t-2092_-2','_t-786_-732','_t-576_-2'}; 
-D.baseline='3_t-3000_-2500'; 
+identifier={'_t-2500_-2332','_t-2296_-1950','_t-2144_-102','_t-1790_-1028','_t-938_-632','_t-350_-16'}; 
+D.baseline='2_t-3000_-2500';
 
-for di = 1:length(identifier)
-    D.identifier = identifier{di}
+if isempty(identifier)
+    load(fullfile(D.sensorpath,'image_win.mat'));
+    for di = 2:size(image_win,1) % first one is baseline
+        tw = image_win{di,1};
+        identifier{di-1} = ['_t' num2str(tw(1)) '_' num2str(tw(2))];
+    end
+end
 
-    %D.identifier = [D.identifier num2str(fm)];
+for di = 1:length(identifier) % first one is baseline
+    D.identifier = identifier{di};
     %D.data_path = [D.data_path num2str(fm)];
 
     % list of image names within each subject folder, or if not in a specific
     % folder then with a _ at the beginning
     D.imglist = {
                 ['_*' D.identifier '_f_c1.nii']
-                ['_*' D.identifier '_f_c2.nii']
                 ['_*' D.identifier '_f_c3.nii']
-                ['_*' D.identifier '_f_c4.nii']
                 ['_*' D.identifier '_f_c5.nii']
-                ['_*' D.identifier '_f_c6.nii']
                 ['_*' D.identifier '_f_c7.nii']
-                ['_*' D.identifier '_f_c8.nii']
-                %['_*' D.baseline '_f_c1.nii']
-                %['_*' D.baseline '_f_c2.nii']
-                %['_*' D.baseline '_f_c3.nii']
-                %['_*' D.baseline '_f_c4.nii']
-                %['_*' D.baseline '_f_c5.nii']
-                %['_*' D.baseline '_f_c6.nii']
-                %['_*' D.baseline '_f_c7.nii']
-                %['_*' D.baseline '_f_c8.nii']
+                ['_*' D.identifier '_f_c2a.nii']
+                ['_*' D.identifier '_f_c4a.nii']
+                ['_*' D.identifier '_f_c6a.nii']
+                ['_*' D.identifier '_f_c8a.nii']
+                ['_*' D.identifier '_f_c2b.nii']
+                ['_*' D.identifier '_f_c4b.nii']
+                ['_*' D.identifier '_f_c6b.nii']
+                ['_*' D.identifier '_f_c8b.nii']
+                ['_*' D.baseline '_f_c1.nii']
+                ['_*' D.baseline '_f_c3.nii']
+                ['_*' D.baseline '_f_c5.nii']
+                ['_*' D.baseline '_f_c7.nii']
+                ['_*' D.baseline '_f_c2a.nii']
+                ['_*' D.baseline '_f_c4a.nii']
+                ['_*' D.baseline '_f_c6a.nii']
+                ['_*' D.baseline '_f_c8a.nii']
+                ['_*' D.baseline '_f_c2b.nii']
+                ['_*' D.baseline '_f_c4b.nii']
+                ['_*' D.baseline '_f_c6b.nii']
+                ['_*' D.baseline '_f_c8b.nii']
                 };
 
     %% analysis design and parameters
@@ -84,25 +100,41 @@ for di = 1:length(identifier)
     D.time_ana = []; % applies a mask to the data
     % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
     % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
-    D.cond_list =  [1
-                  2
-                  1
-                  2
-                  1
-                  2
-                  1
-                  2];
+    D.cond_list =  [1 1
+                  1 1
+                  1 1
+                  1 1
+                  1 2
+                  1 2
+                  1 2
+                  1 2
+                  1 3
+                  1 3
+                  1 3
+                  1 3
+                  2 1
+                  2 1
+                  2 1
+                  2 1
+                  2 2
+                  2 2
+                  2 2
+                  2 2
+                  2 3
+                  2 3
+                  2 3
+                  2 3];
     % factors and statistical model
-    D.factors = {'Grp', 'Exp', 'Subject'}; % must include a subject factor at the end
-    D.factortype = {'g','w','s'}; % w = within, s = subject, g = subject group
+    D.factors = {'Time','Grp', 'Exp', 'Subject'}; % must include a subject factor at the end
+    D.factortype = {'w','g','w','s'}; % w = within, s = subject, g = subject group
 
     % Main effects and interactions: 
     %   - for spm, can specify the highest-level interaction to produc results
     %   for all sub-interactions. Only main effects beyond those captured by
     %   any interactions need to be listed, e.g. for Subject (only listed
     %   Subject if there is no Group factor). E.g.
-    D.interactions = [1 1 0]; % one column per factor; one row per interaction
-    D.maineffects = [0 0 0]; % one column per factor 
+    D.interactions = [1 1 1 0]; % one column per factor; one row per interaction
+    D.maineffects = [0 0 0 0]; % one column per factor 
     %   - for snpm, only a single main effect or 2-way interaction can be performed each time, e.g.
     %D.interactions = [0 0 0 0]; % one column per factor
     %D.maineffects = [0 0 1 0]; % one column per factor 
@@ -119,19 +151,33 @@ for di = 1:length(identifier)
     D.ancova = [0 0 0 0]; %covariate
     % after model estimation, constrasts to display (SPM, not SnPM)
     D.fcontrasts = {
-        [-1 1 1 -1], 'Grp * Exp'
-        [1 1 -1 -1], 'Grp'
-        [-1 1 -1 1], 'Exp'
-        [0 1 0 -1], 'ExpB Grp'
+        [-1 1 0 1 -1 0; 0 -1 1 0 1 -1], 'Grp * Exp'
+        [1 -1 0 -1 1 0], 'Grp * ExpAB'
+        [1 0 -1 -1 0 1], 'Grp * ExpAC'
+        [1 1 1 -1 -1 -1], 'Grp'
+        [1 1 0 -1 -1 0], 'ExpAB Grp'
+        [1 0 1 -1 0 -1], 'ExpAC Grp'
+        [-1 1 0 -1 1 0; 0 -1 1 0 -1 1], 'Exp'
+        [1 -1 0 1 -1 0], 'ExpAB'
+        [1 0 -1 1 0 -1], 'ExpAC'
+        [0 0 1 0 0 -1], 'ExpC Grp'
+        [0 1 0 0 -1 0], 'ExpB Grp'
+        [1 0 0 -1 0 0], 'ExpA Grp'
         };
 
     D.tcontrasts = {
-        [1 1 -1 -1], 'Grp A'
-        [-1 -1 1 1], 'Grp B'
-        [-1 1 -1 1], 'Exp B'
-        [1 -1 1 -1], 'Exp A'
-        [0 1 0 -1], 'ExpB GrpA'
-        [0 -1 0 1], 'ExpB GrpB'
+        [1 1 1 -1 -1 -1], 'Grp A_t'
+        [-1 -1 -1 1 1 1], 'Grp B_t'
+        [1 -1 0 1 -1 0], 'ExpAB_t'
+        [1 0 -1 1 0 -1], 'ExpAC_t'
+        [-1 1 0 -1 1 0], 'ExpBA_t'
+        [-1 0 1 -1 0 1], 'ExpCA_t'
+        [0 0 1 0 0 -1], 'ExpC GrpA_t'
+        [0 0 -1 0 0 1], 'ExpC GrpB_t'
+        [0 1 0 0 -1 0], 'ExpB GrpA_t'
+        [0 -1 0 0 1 0], 'ExpB GrpB_t'
+        [1 0 0 -1 0 0], 'ExpA GrpA_t'
+        [-1 0 0 1 0 0], 'ExpA GrpB_t'
         };
 
     % the following are for SnPM, not SPM

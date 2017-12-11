@@ -10,13 +10,11 @@ dbstop if error
 % root directory in which SPM data files are located
 S.filepath = 'C:\Data\Catastrophising study\SPMdata'; 
 % place to save source images
-S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_GS_1grp_noHan_SPN'; 
+S.outpath = 'C:\Data\Catastrophising study\SPMdata\sourceimages_SPNall_new'; 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 S.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 %fiducials directory
 S.fid_dir='C:\Data\Catastrophising study\meegfid';
-% path to sensor space analysis / cluster folders
-S.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_0_b-3000_-2500_Grp_Exp_Subject_orig_cleaned_SPN_spm';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -25,7 +23,7 @@ S.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_0
 S.fpref = 'mspm12';
 S.fmid = '';
 %S.fsuff = ;
-S.fsuff = {'_orig_cleaned_SPN.mat';
+S.fsuff = {'_orig_cleaned_SPNall.mat';
     };
 
 %% specific settings for this analysis
@@ -46,17 +44,20 @@ S.baseest = 1; % 1 = baseline estimated in separate model
 S.imout = []; % select which to produce on this run, or leave empty to run all
 %S.images_out={};
 %if 0
-%S.images_out = {
+S.images_out = {
         % from timewin 1
-%        {
-%        'base',[];
-%        [-2224 -1748],[]; %Grp
-%        [-1210 -1194],[]; %Grp
-%        [-968 -754],[]; %Grp
-%        [-564 -78],[]; %Grp
-%        }; 
-%};
+        {
+        'base',[];
+        [-2500 -2332],[]; %Exp
+        [-2296 -1950],[]; %Grp
+        [-2144 -102],[]; %Exp
+        [-1790 -1028],[]; %Grp*Exp
+        [-938 -632],[]; %Grp*Exp
+        [-350 -16],[]; %Grp*Exp
+        }; 
+};
 
+sensorpath = '';
 
 %end
 %smooth output images (specify FWHM or 0 for no smoothing)
