@@ -1,4 +1,4 @@
-function h = CORE_fMRI_cont(h,opt)
+function h = CORE_fMRI_cont_8block(h,opt)
 
 % FILENAME OF SEQUENCE CREATION FUNCTION (without .m)
 h.SeqFun = 'OddballCreateSequence';
@@ -49,6 +49,7 @@ switch opt
             h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
             %distribute conditions equally among blocks
             h.Settings.distblocks = 1;
+        h.Settings.blockstart = {'start'};
            
         
     
@@ -91,7 +92,7 @@ switch opt
             h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
             %distribute conditions equally among blocks
             h.Settings.distblocks = 1;
-        
+        h.Settings.blockstart = {'start'};
         
     case 'fMRI_run'
         % set general options
@@ -135,7 +136,7 @@ switch opt
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
         % cell array]%]%]
-        h.Settings.blockstart = {'audio','scannertrig'}; % audio,labjack,audio,
+        h.Settings.blockstart = {'start','audio','scannertrig'}; % audio,labjack,audio,
         % names of any audiofiles
         h.Settings.audiofile = {'instruct.wav'}; % labjack
         h.Settings.audiochan = [5 6]; % labjack

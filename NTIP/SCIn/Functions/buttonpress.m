@@ -11,6 +11,7 @@ switch opt
     case 'start'
         GUIh = guidata(h.GUIhname);
         disp('The experiment will start after pressing the button');
+        disp('FIRST, TURN ON THE STIMULATOR!!');
         set(GUIh.info, 'String', 'Press button to start');
         pause(0.001)
         %% get GUI data
