@@ -36,6 +36,14 @@ if isfield(h.Settings,'adaptive')
     end
 end
 
+% if THRESHOLD
+threshold=0;
+if isfield(h.Settings,'threshold')
+    if ~isempty(h.Settings.threshold)
+        threshold=1;
+    end
+end
+
 % if ODDBALL
 oddball=0;
 if isfield(h.Settings,'oddballmethod')
@@ -106,7 +114,7 @@ for tr = trials
     
     % oddball method
     if oddball
-        if ~adaptive
+        if ~adaptive && ~threshold
             if iscell(h.Settings.oddballvalue)
                 if size(h.Settings.oddballvalue,1)==1
                     oddval = h.Settings.oddballvalue{h.Seq.signal(tr)};
@@ -125,11 +133,15 @@ for tr = trials
             elseif strcmp(h.Settings.oddballmethod,'duration')
                 h.dur = oddval;
             end
-        elseif adaptive
+        elseif adaptive || threshold
             if isfield(h,'s')
                 varlevel = h.s.StimulusLevel;
             else
-                varlevel = h.Settings.adaptive.startinglevel;
+                if adaptive
+                    varlevel = h.Settings.adaptive.startinglevel;
+                else
+                    varlevel = h.Settings.threshold.startinglevel;
+                end  
             end
             if strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq')
                 h.freq = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+varlevel)]; % create new pitch pair
@@ -153,7 +165,7 @@ for tr = trials
     if isfield(h.Settings,'patternmethod')
         if strcmp(h.Settings.patternmethod,'pitch') || strcmp(h.Settings.patternmethod,'freq') % pitch changes
             freqpattern=1;
-            if ~(adaptive && (strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq'))) && ~(strcmp(h.Settings.conditionmethod,'pitch') || strcmp(h.Settings.conditionmethod,'freq')) % pitch already defined above in this case
+            if ~((adaptive || threshold) && (strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq'))) && ~(strcmp(h.Settings.conditionmethod,'pitch') || strcmp(h.Settings.conditionmethod,'freq')) % pitch already defined above in this case
                 if isnumeric(h.Settings.patternvalue)
                     h.freq = h.Settings.patternvalue;
                 elseif iscell(h.Settings.patternvalue)
@@ -402,7 +414,7 @@ for tr = trials
     % RESOLUTION:
     %       20*log10(2^16)=96.33
     if isfield(h.Settings,'attenchan')
-        if ismember(chan,h.Settings.attenchan)
+        if any(ismember(chan,h.Settings.attenchan))
             if isfield(h,'vol_atten')
                 try
                     inten_atten = str2double(get(h.vol_atten,'string'));
@@ -412,14 +424,14 @@ for tr = trials
             else
                 inten_atten = h.Settings.atten; 
             end
-            if ~adaptive 
+            if ~adaptive && ~threshold
                 h.inten_atten = inten_atten;
-            elseif adaptive && oddball
+            elseif (adaptive || threshold) && oddball
                 if strcmp(h.Settings.oddballmethod,'intensity')
                     h.inten_atten = [inten_atten, (inten_atten+varlevel)];
                     h.inten_atten = h.inten_atten(h.Seq.signal(tr));
                 else
-                    h.inten_atten = inten_atten; 
+                    h.inten_atten = inten_atten+varlevel;
                 end
             end
         else
@@ -428,15 +440,9 @@ for tr = trials
     else
         h.inten_atten = 0; 
     end
-    % find max rms_sound_dB
-    %h.mwav_orig = h.mwav; % non-attenuated version
-    temp = reshape(permute(h.mwav,[2,1,3]),length(tsum),[]);
-    for i = 1:size(temp,2)
-        rms_sound_dB(i) = norm(temp(:,i))/sqrt(length(temp(:,i)));
-    end
-    rms_sound_dB = max(rms_sound_dB);
-    ratio = min(1,(10^(h.inten_atten/20))/rms_sound_dB); % should always be smaller than 1
-    h.mwav = ratio*h.mwav;
+    
+    h.mwav = attenute_sound(h.mwav,h.inten_atten);
+    
     if isfield(h,'mon')
         h.mon = ratio*h.mon;
     end
@@ -528,11 +534,11 @@ for tr = trials
     %    figure
     %    plot(0:1/samplerate:active,sigB)
     %end
-    if isfield(h,'mon'); 
+    if isfield(h,'mon')
         h.Seq.stimseq = [h.Seq.stimseq h.mon];
     else
         h.Seq.stimseq = [h.Seq.stimseq h.mwav];
-    end;
+    end
     
     if strcmp(h.Settings.design,'continuous')
         if isfield(h,'i') % add to trialend according to true position in sequence

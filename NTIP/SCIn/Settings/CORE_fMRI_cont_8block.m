@@ -1,5 +1,5 @@
 function h = CORE_fMRI_cont_8block(h,opt)
-
+h.Settings=[];
 % FILENAME OF SEQUENCE CREATION FUNCTION (without .m)
 h.SeqFun = 'OddballCreateSequence';
 
@@ -7,7 +7,7 @@ switch opt
     case 'setoptions'
         
     % settings options
-    h.SettingsOptions = {'practiceTACTILE','practiceAUDIO','fMRI_run'};
+    h.SettingsOptions = {'practiceTACTILE','practiceAUDIO','thresholdAUDIO','fMRI_run'};
     
     
     case 'practiceTACTILE'
@@ -49,11 +49,9 @@ switch opt
             h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
             %distribute conditions equally among blocks
             h.Settings.distblocks = 1;
-        h.Settings.blockstart = {'start'};
+        h.Settings.blockstart = {'buttonpress'};
            
-        
-    
-    case 'practiceAUDIO'
+     case 'practiceAUDIO'
          % set general options
         h = setgeneral(h);
         %record response, 1=yes, 0=no
@@ -92,7 +90,60 @@ switch opt
             h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
             %distribute conditions equally among blocks
             h.Settings.distblocks = 1;
-        h.Settings.blockstart = {'start'};
+        h.Settings.blockstart = {'buttonpress'};
+        
+        h.Settings.atten = -40; % attenuation level in decibels
+    
+    case 'thresholdAUDIO'
+         % set general options
+        h = setgeneral(h);
+        %record response, 1=yes, 0=no
+        h.Settings.record_response=1;
+        %between-train frequency (1000 divided by ISI in ms)
+        h.Settings.freq = 1./(h.Settings.trialdur);
+        % stimulus types
+        % rows = conditions (stimuli randomised together), columns = outputs within each condition
+        % if using D188, would be the output channels 
+        % if auditory, would be the pitch, intensity or channel indices (actual channel numbers on device are
+        % specified later by h.Settings.stimchan).
+        h.Settings.stimtypeouts_init = [3 4]; % [1 2; 3 4] digit 1 vs digit 5; left vs. right ear
+        %condition numbers to associate with each condition; rows = conditions,
+        %column1 = no change condition, column 2 = change condition.
+        h.Settings.cond_num_init = [3 4]; %[1 2; 3 4]; 
+        %number of output channel types, e.g. hands being stimulated, modalities (auditory plus tactile).
+        h.Settings.num_chantypes = 1;
+        %on each hand, number of conditions (e.g. 3 digit changes vs 1 digit changes; or two different pitch/intensity changes)
+        h.Settings.num_oddballtypes = 1;
+        %list of probabilities of a stimulus changing location on each trial
+        h.Settings.change_prob_init = [0.4];
+        %for each change probability (rows), list of number of trials in which the stimuli remain in same
+        %location - these will be randomised within a block. Sum must be integer divider of h.Settings.nchanges_per_cond
+        h.Settings.cp_stims_init = [1 2 3 4];
+        %number of blocks of each change probability (CP)
+        h.Settings.cond_rep_init = [1]; % this DIVIDES nchanges_per_cond, i.e. does not increase the number of changes
+        %number of stimulus location changes within each CP condition
+        h.Settings.nchanges_per_cond = [100]; % multiply desired n changes PER CP CONDITION by cond_rep_init to get this number
+        
+        % BLOCKING/RUN OPTIONS
+        % 'divide' = equally divide trials by nblocks; 
+        % 'cond' = separate block for each condition
+        h.Settings.blockopt = 'divide';
+        % further options for 'divide':
+            % number of blocks (containing multiple conditions)
+            h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
+            %distribute conditions equally among blocks
+            h.Settings.distblocks = 1;
+        h.Settings.blockstart = {'buttonpress'};
+        h.Settings.RPmethod='';
+        h.Settings.stimdur = [0.5 1.5];
+
+        %% THRESHOLDING
+        % starting level of adaptive staircase
+        h.Settings.threshold.startinglevel = h.Settings.atten-60; % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100)
+        % adapt to omissions of response (not suitable for 2AFC tasks!!)
+        h.Settings.threshold.step = 5;
+        h.Settings.ntrialsahead = 1;  %0 = all trials
+       
         
     case 'fMRI_run'
         % set general options
@@ -136,7 +187,7 @@ switch opt
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
         % cell array]%]%]
-        h.Settings.blockstart = {'start','audio','scannertrig'}; % audio,labjack,audio,
+        h.Settings.blockstart = {'buttonpress','audio','scannertrig'}; % audio,labjack,audio,
         % names of any audiofiles
         h.Settings.audiofile = {'instruct.wav'}; % labjack
         h.Settings.audiochan = [5 6]; % labjack
@@ -213,6 +264,7 @@ h.Settings.Tukeytype = 1; % 1 = apply to each tone within pattern; 2 = apply to 
 % sampling rate
 h.Settings.fs = 96000; % don't change this, unless sure soundcard supports higher rates
 h.Settings.atten = 0; % attenuation level in decibels
+h.Settings.atten_instruct = -10; % add on further attentuation to any other attenuation for audio instructions
 h.Settings.attenchan = [5 6]; % [7 8 3 4]
 
 %% Condition-dependent stimulus parameters
@@ -242,7 +294,7 @@ h.Settings.n_set = 1; % 1 = use min set size
 % buttonpress options: key: keyboard inputs. Blank for no button press
 h.Settings.buttontype='key';
 % range of keyboard presses indicating a recordable response
-h.Settings.buttonopt = {};%'LeftArrow','RightArrow'}; 
+h.Settings.buttonopt = {'1!','2@','3#','4$','7&'}; 
 %display RT, 1=yes, 0=no
 h.Settings.displayRT=0;
 % response probe

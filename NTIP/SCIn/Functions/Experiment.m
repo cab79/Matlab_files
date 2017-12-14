@@ -3,6 +3,7 @@ function h = Experiment(h,opt)
 % GUI handle name
 h.GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
 
+
 switch opt
     
     case 'setup'
@@ -302,12 +303,14 @@ while (h.ct-h.st)<h.trialdur
 
     %only continue loop (which can be slow) if not too close to end of
     %trial. Increases accuracy of EEG markers.
-    t1=GetSecs;
-    if h.i>1 && h.i<length(h.Seq.signal)
-        if h.out.projend{h.i}>t1+0.1
-            continue
+    %if h.Settings.increase_isi_accuracy
+        t1=GetSecs;
+        if h.i>1 && h.i<length(h.Seq.signal)
+            if h.out.projend{h.i}>t1+0.1
+                continue
+            end
         end
-    end
+    %end
     
     %
     
@@ -317,9 +320,9 @@ while (h.ct-h.st)<h.trialdur
     % update current time and exit if needed
     if strcmp(h.Settings.design,'trials')
         h.ct=GetSecs;
-        if (h.ct-h.st)>h.trialdur; 
+        if (h.ct-h.st)>h.trialdur
             break; 
-        end;
+        end
     end
     
     try
@@ -419,9 +422,9 @@ while (h.ct-h.st)<h.trialdur
     % update current time and exit if needed
     if strcmp(h.Settings.design,'trials')
         h.ct=GetSecs;
-        if (h.ct-h.st)>h.trialdur; 
+        if (h.ct-h.st)>h.trialdur
             break; 
-        end;
+        end
     end
 
     % get GUI data for start/stop
@@ -471,9 +474,9 @@ while (h.ct-h.st)<h.trialdur
     % update current time and exit if needed
     if strcmp(h.Settings.design,'trials')
         h.ct=GetSecs;
-        if (h.ct-h.st)>h.trialdur; 
+        if (h.ct-h.st)>h.trialdur
             break; 
-        end;
+        end
     end
 
     if h.i~=length(h.Seq.signal)
@@ -520,9 +523,9 @@ while (h.ct-h.st)<h.trialdur
     % update current time and exit if needed
     if strcmp(h.Settings.design,'trials')
         h.ct=GetSecs;
-        if (h.ct-h.st)>h.trialdur; 
+        if (h.ct-h.st)>h.trialdur
             break; 
-        end;
+        end
     end
 
     %if ~isempty(h.out.RT{h.i}) %&& h.Settings.record_response==1 %&& h.trialdur-(h.ct-h.st) > 0.1 % only save if 0.1s left, otherwise maybe too slow
@@ -608,11 +611,17 @@ end
 % new-trial events:
 % if current sample is greater than the sample at the end of the trial 
 % OR if projected time of the end sample is greater than the current time
-trials = find(h.Seq.trialend > h.currentsample);
 newtrial=0;
-if ~isempty(trials)
-    if h.i ~= trials(1)
-        newtrial = 1;
+if h.Settings.ntrialsahead>1
+    trials = find(h.Seq.trialend > h.currentsample);
+    if ~isempty(trials)
+        if h.i < trials(1)
+            newtrial = 1;
+            % FOR DEBUGGING:
+            %if h.i>100
+            %    pause
+            %end
+        end
     end
 end
 if nowtime>=proj_end
@@ -658,6 +667,8 @@ if newtrial
         
         triallength = (h.Seq.trialend(h.i)-h.Seq.trialend(h.i-1))/h.Settings.fs;
         h.out.projend{h.i} = h.out.stimtime{h.i}+triallength;
+    catch
+        h.out.projend{h.i} = 0;
     end
     
     % D188 - set output channel
@@ -858,6 +869,12 @@ end
 if isfield(h.Settings,'adaptive')
     if ~isempty(h.Settings.adaptive)
         h = AdaptStair(h);
+    end
+end
+% if stimulation requires thresholding
+if isfield(h.Settings,'threshold')
+    if ~isempty(h.Settings.threshold)
+        h = Threshold(h);
     end
 end
 
