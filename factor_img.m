@@ -1,5 +1,5 @@
-function factor_img(subdir,imglist,cond_list,scanname,outputtype,norm)
-cond = unique(cond_list);
+function fout = factor_img(subdir,imglist,cond_list,scanname,outputtype,norm)
+cond = unique(cond_list(cond_list>0));
 Ncond = length(cond);
 
 switch outputtype
@@ -8,17 +8,17 @@ switch outputtype
             condimg=imglist(cond_list==cond(c));
             fnames={};
             for i = 1:length(condimg)
-                fnames{i} = fullfile(subdir, [condimg{i}]); 
-                if norm
-                    fout = fullfile(subdir,[scanname '_znorm_' num2str(cond(c)) '.nii']);
-                    if ~exist(fout,'file')
-                        spm_imcalc_ui(fnames,fout,'mean(X)./std(X)',{1,[],[],[]});
-                    end
-                else
-                    fout = fullfile(subdir,[scanname '_' num2str(cond(c)) '.nii']);
-                    if ~exist(fout,'file')
-                        spm_imcalc_ui(fnames,fout,'mean(X)',{1,[],[],[]});
-                    end
+                fnames{i,1} = fullfile(subdir, [condimg{i}]); 
+            end
+            if norm
+                fout = fullfile(subdir,[scanname '_znorm_' num2str(cond(c)) '_' outputtype '.nii']);
+                if ~exist(fout,'file')
+                    spm_imcalc_ui(fnames,fout,'mean(X)./std(X)',{1,[],[],[]});
+                end
+            else
+                fout = fullfile(subdir,[scanname '_' num2str(cond(c)) '_' outputtype '.nii']);
+                if ~exist(fout,'file')
+                    spm_imcalc_ui(fnames,fout,'mean(X)',{1,[],[],[]});
                 end
             end
         end
@@ -48,17 +48,17 @@ switch outputtype
                 fnames{f} = fullfile(subdir, [condimg{i}]); 
             end
         end
-        fout = fullfile(subdir,[scanname '_contrast.nii']);
-        if ~exist(fout,'file')
+        fout = fullfile(subdir,[scanname '_' outputtype '.nii']);
+        %if ~exist(fout,'file')
             spm_imcalc_ui(fnames,fout,expr);
-        end
+        %end
         if norm
             fnorm = fullfile(subdir,'std_allcond.nii');
             if ~exist(fnorm,'file')
                 spm_imcalc_ui(fnames,fnorm,'std(X)',{1,[],[],[]});
             end
             fnamesnorm = {fout;fnorm};
-            fout = fullfile(subdir,[scanname '_znorm_contrast.nii']);
+            fout = fullfile(subdir,[scanname '_znorm_' outputtype '.nii']);
             if ~exist(fout,'file')
                 spm_imcalc_ui(fnamesnorm,fout,'i1./i2');
             end

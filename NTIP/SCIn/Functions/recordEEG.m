@@ -37,9 +37,11 @@ switch opt
             elseif strcmp(h.Settings.record_EEG,'daq')
                 %% Using Data Acquisition Toolbox to write 8 lines of digital output data
                 % to a National Instruments NI-USB-6501 device
-                dio=digitalio('nidaq', 'Dev1'); % create digital IO object
-                addline(dio, 0:7, 'out'); % add 24 lines representing the 3 ports of 8 lines each
-                h.lineconfig=dio.Line % display index and digital line configurations to show mapping
+                dio = daq.createSession('ni');
+                h.dioch = addDigitalChannel(dio,'dev1','Port0/Line0:7','OutputOnly');
+                %dio=digitalio('nidaq', 'Dev1'); % create digital IO object
+                %addline(dio, 0:7, 'out'); % add 24 lines representing the 3 ports of 8 lines each
+                %h.lineconfig=dio.Line % display index and digital line configurations to show mapping
             end
             
             choice = questdlg('Using EEG: Disable GUI buttons? (more accurate EEG markers)', ...
@@ -133,7 +135,8 @@ switch opt
         elseif strcmp(h.Settings.record_EEG,'daq')
             try
                 TriggerNum = h.Seq.signal(h.i);
-                putvalue(dio.Line(1:8),TriggerNum); 
+                outputSingleScan(dio,decimalToBinaryVector(TriggerNum,8))
+                %putvalue(dio.Line(1:8),TriggerNum); 
             catch
                 disp('EEG not connected');
             end

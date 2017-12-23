@@ -32,6 +32,9 @@
 function D=design_batch(D)
 dbstop if error
 
+if ~isfield(D,'anatype')
+    D.anatype='group';
+end
 if ~isfield(D,'time_ana')
     D.time_ana=[];
 end
@@ -60,6 +63,8 @@ if isfield(D,'maineffects')
     isfactorial = 1;
 else 
     isfactorial = 0;
+    ismain = 0;
+    isinter = 0;
 end
 if isfield(D,'regress_contrast')
     isregress = 1;
@@ -74,6 +79,12 @@ if ~isfield(D,'para')
 end
 if ~isfield(D,'grandmean')
     D.grandmean = 0;
+end
+if ~isfield(D,'fileoptype')
+    D.fileoptype = 'meancond';
+end
+if ~isfield(D,'timewin')
+    D.timewin = 0;
 end
 
 if D.para==1
@@ -128,13 +139,42 @@ if isfield(D,'batch_path')
     copyfile(D.batch_path,D.spm_path);
 end
 
+if isfield(D,'TrainTest')
+    TrainTestFac = D.factortype(find(~cellfun(@isempty,D.TrainTest)));
+else
+    TrainTestFac = {''};
+end
+
 [~,~,pdata] = xlsread(D.pdatfile);
-grp_col = find(strcmp(pdata(1,:),D.grphead));
+if cell2mat(strfind(TrainTestFac,'w'))
+    wlev = unique(D.TrainTest{ismember(D.factortype,'w')},'stable');
+else
+    wlev=0;
+end
+if cell2mat(strfind(TrainTestFac,'g'))
+    glev = unique(D.TrainTest{ismember(D.factortype,'g')},'stable');
+else
+    glev=1;
+end
+if length(glev)>1 && length(D.grphead)>1
+    grphead = D.grphead(glev);
+else
+    grphead = D.grphead(1);
+end
+    
+for gh = 1:length(D.grphead)
+    grp_col(gh) = find(strcmp(pdata(1,:),D.grphead{gh}));
+end
 sub_col = find(strcmp(pdata(1,:),D.subhead));
 inc_col = find(strcmp(pdata(1,:),D.inchead));
 
+if glev && wlev
+    % duplicate grouping to provide feature space for TrainTest
+    grp_col = repmat(grp_col,1,2);
+end
+
 if isempty(grp_col) && ~isfield(D,'grpind')
-    error(['no header in xls file called ' D.grphead]);
+    error(['no header in xls file called ' grphead]);
 elseif isempty(sub_col)
     error(['no header in xls file called ' D.subhead]);
 elseif isempty(inc_col)
@@ -147,48 +187,66 @@ if isfield(D,'grpind')
     grptype = unique([grpdat{:}]);
     Ngrp = length(grptype);
 else
-    grpdat = pdata(2:end,grp_col);
-    if isnumeric(grpdat{2,1})
-        grptype = unique([grpdat{:}]);
-        grptype = grptype(~isnan(grptype));
-        grptype(grptype==0)=[];
-        Ngrp = length(grptype);
-    else %Change char Grp inputs to numbers
-        grptype = unique(grpdat);
-        grptype(isempty(grptype))=[];
-        Ngrp = length(grptype);
-        for g = 1:Ngrp
-            grp_idx = cellfun(@(x) any(strcmp(grptype(g),x)), grpdat, 'UniformOutput', 0);
-            grpdat(cell2mat(grp_idx)) = {[g]};
+    for gd = 1:length(grp_col)
+        grpdat = pdata(2:end,grp_col(gd));
+        if isnumeric(grpdat{2,1})
+            grpdat = grpdat(~cellfun(@isnan,grpdat));
+            grptype = unique([grpdat{:}]);
+            grptype = grptype(~isnan(grptype));
+            grptype(grptype==0)=[];
+            Ngrp(gd) = length(grptype);
+        else %Change char Grp inputs to numbers
+            grpdat = grpdat(~cellfun(@isnan,grpdat));
+            grptype = unique(grpdat);
+            grptype(isempty(grptype))=[];
+            Ngrp(gd) = length(grptype);
+            for g = 1:Ngrp(gd)
+                grp_idx = cellfun(@(x) any(strcmp(grptype(g),x)), grpdat, 'UniformOutput', 0);
+                grpdat(cell2mat(grp_idx)) = {[g]};
+            end
         end
+        grpdatall(:,gd) = grpdat;
     end
+    grpdat = grpdatall;
 end
 
 % find index of subjects to include in analysis
-SubInd = cell(Ngrp,1);
-Subs = [];
 inc_idx = cellfun(@(x) ismember(x,D.include_codes), pdata(2:end,inc_col), 'UniformOutput', 0);
 inc_idx = find(cell2mat(inc_idx));
 
 % find subject indices for each specific group
-for g = 1:Ngrp
-    grp_idx = find(cellfun(@(x) x==g, grpdat, 'UniformOutput', 1));
-    if D.useIDfile==1
-        SubInd{g,1} = intersect(inc_idx,grp_idx);
-    else
-        SubInd{g,1} = grp_idx;
+SubInd = {};
+for gd = 1:length(Ngrp)
+    for g = 1:Ngrp(gd)
+        grp_idx = find(cellfun(@(x) x==g, grpdat(:,gd), 'UniformOutput', 1));
+        if D.useIDfile==1
+            SubInd{g,gd} = intersect(inc_idx,grp_idx);
+        else
+            SubInd{g,gd} = grp_idx;
+        end
+        Nsub(g,gd) = length(SubInd{g,gd});
     end
-    Nsub(g,1) = length(SubInd{g,1});
+end
+
+% select specific group(s)
+if isfield(D,'grp_list')
+   Nsub = Nsub(D.grp_list,:); 
+   for gd = 1:length(Ngrp)
+        Ngrp(gd) = length(Nsub(:,gd));
+   end
+   SubInd = SubInd(D.grp_list,:); 
 end
 
 % select parametric or non-parametric analyses and the range of models
+if isfactorial
+    ismain = any(D.maineffects);
+    isinter = any(D.interactions);
+end
 if D.para==1
     load(D.ffbatch);
 elseif D.para==2
     load(D.npbatch);
     if isfactorial
-        ismain = any(D.maineffects);
-        isinter = any(D.interactions);
         if ismain
             if strcmp(D.factortype(find(D.maineffects)),'w')
                 matlabbatch = matlabbatch(1);
@@ -216,18 +274,57 @@ elseif D.pronto
     matlabbatch{1}.prt.data.group = [];
     paraname = '_pronto';
     if isfactorial
-        ismain = any(D.maineffects);
         if ismain
-            if strcmp(D.factortype(find(D.maineffects)),'w')
-                matlabbatch{1}.prt.data.group(1).gr_name = 'all';
-                model = 'w';
-            elseif strcmp(D.factortype(find(D.maineffects)),'g')
-                for g = 1:Ngrp
-                    matlabbatch{1}.prt.data.group(g).gr_name = ['Group' num2str(g)];
+            if any(strcmp(D.factortype(find(D.maineffects)),'w')) && any(strcmp(D.factortype(find(D.maineffects)),'g')) && any(cell2mat(strfind(TrainTestFac,'g'))) && any(cell2mat(strfind(TrainTestFac,'w')))
+                % training on within, testing on between, or vice versa
+                %gn=0;
+                %for gd = 1:length(Ngrp)
+                    for g = 1:2 % 1=training "group", 2=testing "group"
+                        %gn = gn+1;
+                        matlabbatch{1}.prt.data.group(g).gr_name = ['Group' num2str(g)];
+                    end
+                %end
+                model = 'wgtt';
+            elseif strcmp(D.factortype(find(D.maineffects)),'w')
+                if cell2mat(strfind(TrainTestFac,'g'))
+                    for g = 1:Ngrp
+                        matlabbatch{1}.prt.data.group(g).gr_name = ['Group' num2str(g)];
+                    end
+                    model = 'wg';
+                else
+                    matlabbatch{1}.prt.data.group(1).gr_name = 'all';
+                    model = 'w';
                 end
-                model = 'g';
+            elseif strcmp(D.factortype(find(D.maineffects)),'g')
+                gn=0;
+                model = '';
+                for gd = 1:length(Ngrp)
+                    for g = 1:Ngrp(gd)
+                        gn = gn+1;
+                        matlabbatch{1}.prt.data.group(gn).gr_name = ['Group' num2str(gn)];
+                    end
+                    model = [model 'g'];
+                end
+            end
+        elseif isinter
+            uf = length(unique(D.factortype(find(D.interactions))));
+            if uf==1 && strcmp(unique(D.factortype(find(D.interactions))),'w')% interaction of two within-subjects factors
+                matlabbatch{1}.prt.data.group(1).gr_name = 'all';
+                model = 'ww';
+            elseif uf==2 % interaction of within-subjects and group factor
+                gn=0;
+                model = 'w';
+                for gd = 1:length(Ngrp)
+                    for g = 1:Ngrp(gd)
+                        gn = gn+1;
+                        matlabbatch{1}.prt.data.group(gn).gr_name = ['Group' num2str(gn)];
+                    end
+                    model = ['g' model];
+                end
             end
         end
+    elseif isregress
+        matlabbatch{1}.prt.data.group(1).gr_name = 'all';
     end
 end
 
@@ -291,25 +388,46 @@ elseif D.para==2
     end
 elseif D.pronto
     matlabbatch{1}.prt.data.dir_name = {D.spm_path};
-    generic.mod_name = 'eeg';
-    generic.TR = 0.0001;
-    generic.design.new_design.unit = 0; % scans
-    generic.design.new_design.multi_conds = {''};
     if isfactorial
+        generic.mod_name = 'eeg';
+        generic.TR = 0.0001;
+        generic.design.new_design.unit = 0; % scans
+        generic.design.new_design.multi_conds = {''};
         wfactind = double(ismember(D.factortype,'w'));
-        if strcmp(model,'w')
+        gfactind = double(ismember(D.factortype,'g'));
+        if strcmp(model,'w') || strcmp(model,'wg') || strcmp(model,'wgtt')
+            wnum = find(wfactind .* D.maineffects);
             Nconds = length(unique(D.cond_list));
             for c = 1:Nconds
-                generic.design.new_design.conds(c).cond_name = [D.factors{find(D.maineffects)} num2str(c)];
+                generic.design.new_design.conds(c).cond_name = [D.factors{strcmp(D.factortype,'w')} num2str(c)];
                 generic.design.new_design.conds(c).onsets = find(D.cond_list==c)'-1;
                 generic.design.new_design.conds(c).durations = ones(length(generic.design.new_design.conds(c).onsets),1);
             end
-        elseif strcmp(model,'g')
+        elseif strcmp(model,'g') || strcmp(model,'gg')
+            wnum = 0;
             generic.design.new_design.conds(1).cond_name = 'allcond';
             generic.design.new_design.conds(1).onsets = find(D.cond_list)'-1;
             generic.design.new_design.conds(1).durations = ones(length(generic.design.new_design.conds(1).onsets),1);
+        elseif strcmp(model,'ww')
+            wnum = find(wfactind .* D.interactions);
+            Nconds = length(unique(D.cond_list(:,wnum(1))));
+            for c = 1:Nconds
+                generic.design.new_design.conds(c).cond_name = [D.factors{wnum(1)} num2str(c)];
+                generic.design.new_design.conds(c).onsets = 0;%find(D.cond_list(:,1)==c)'-1;
+                generic.design.new_design.conds(c).durations = 1;%ones(length(generic.design.new_design.conds(c).onsets),1);
+            end
+            scanname=strcat(D.factors{wnum});
+            %scanname=scanname{:};
+        elseif strcmp(model,'gw') || strcmp(model,'ggw')
+            wnum = find(wfactind .* D.interactions);
+            gnum = find(gfactind .* D.interactions);
+            generic.design.new_design.conds(1).cond_name = 'allcond';
+            generic.design.new_design.conds(1).onsets = 0;%find(D.cond_list(:,1))'-1;
+            generic.design.new_design.conds(1).durations = 1;%ones(length(generic.design.new_design.conds(1).onsets),1);
+            scanname=strcat(D.factors{wnum});
+            %scanname=scanname{:};
         end
-    end
+    end 
 end
 if isregress
     scanname=D.regress_contrastname;
@@ -320,157 +438,6 @@ else
     scanname_ext = '';
 end
 
-% find and load scans into matlabbatch
-gs = 0;
-subID={};
-for g = 1:Ngrp
-    for s = 1:Nsub(g)
-        gs = gs+1;
-        if D.useIDfile==1
-            subID{gs} = deblank(num2str((pdata{SubInd{g,1}(s)+1,sub_col})));
-            if isnumeric(subID{gs}); subID{gs} = num2str(subID{gs}); end;
-            if D.folder
-                subdir = fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]);
-                if ~exist(subdir,'dir')
-                    subdir = dir(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
-                    if length(subdir)>1
-                        error('Subject directory name is not unique in this folder');
-                        display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
-                    elseif length(subdir)==0
-                        error('no directory found with this name');
-                        display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
-                    end
-                    subdir=fullfile(D.data_path, subdir.name);
-                end
-                subfile = '';
-            else
-                subdir = D.data_path;
-                subfile = [D.anapref D.subdirpref subID{gs} D.subdirsuff];
-            end
-        else
-            subdir = D.data_path;
-            subfile = D.imglist(gs,:)';
-        end
-        
-        subimg = cell(1,1);
-        if isfactorial
-            if D.para==1 || D.pronto
-                % for spm, load all files
-                for i = 1:length(D.imglist)
-                    fname = fullfile(subdir, [subfile D.imglist{i}]);
-                    if ~exist(fname,'file')
-                        fname_temp = dir(fullfile(subdir, [subfile D.imglist{i}]));
-                        if length(fname_temp)>1
-                            display(fname);
-                            error('Subject file name is not unique in this folder');
-                        elseif length(fname_temp)==0
-                            display(fname);
-                            error('no file found with this name');
-                        end
-                        fname=fullfile(subdir, fname_temp.name);
-                    end
-                    subimg{i,1} = [fname ',1'];
-                end
-            elseif D.para==2
-                if D.useIDfile==1
-                    % for SnPM, check averaged files exist; if not then create them.
-                    fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
-                    if wnum==0
-                        condlist = ones(length(D.cond_list),1);
-                    else
-                        condlist = D.cond_list(:,wnum);
-                    end
-                    if isempty(fnames)
-                        factor_img(subdir,D.imglist,condlist,scanname,'meancond',D.znorm);
-                        fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
-                    end
-                    for i=1:length(fnames)
-                        subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
-                    end
-                else
-                    subimg = subfile;
-                end
-            end
-        
-            % if there is a Group factor, add in group level to cond_list
-            grpfactind = find(strcmp(D.factortype,'g'));
-            if ~isempty(grpfactind)
-                nlist = D.cond_list;
-                if grpfactind<=size(D.cond_list,2)
-                    nlist(:,grpfactind+1:end+1) = nlist(:,grpfactind:end);
-                end
-                nlist(:,grpfactind) = g*ones(size(nlist,1),1);
-                condlist = nlist;
-            else
-                condlist = D.cond_list;
-            end
-            
-        elseif isregress
-            if D.useIDfile==1
-                % check averaged files exist; if not then create them.
-                fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
-                condlist = D.regress_contrast
-                if isempty(fnames)
-                    factor_img(subdir,D.imglist,condlist,scanname,'contrast',D.znorm);
-                    fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
-                end
-                for i=1%:length(fnames)
-                    subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
-                end
-            else
-                subimg = subfile;
-            end
-        end
-        scans = subimg;
-        
-        % add the above scan and group info to the matlabbatch, or create new scans
-        if isfactorial
-            if D.para==1
-                matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(gs).scans = scans;
-                matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(gs).conds = condlist;
-            elseif D.para==2
-                if strcmp(model,'w')
-                    matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scans = scans;
-                    matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scindex = unique(condlist,'stable');
-                elseif strcmp(model,'ww')
-                    %matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scans = ;
-                    %matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scindex = ;
-                elseif strcmp(model,'g')
-                    if g==1
-                        matlabbatch{1}.spm.tools.snpm.des.TwoSampT.scans1(s,1) = scans;
-                    elseif g==2
-                        matlabbatch{1}.spm.tools.snpm.des.TwoSampT.scans2(s,1) = scans;
-                    end
-                elseif strcmp(model,'gw')
-                    if g==1
-                        %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans1.fsubject(s).scans = ;
-                        %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans1.fsubject(s).scindex = ;
-                    elseif g==2
-                        %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scans = ;
-                        %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scindex = ;
-                    end
-                elseif strcmp(model,'one')
-                    matlabbatch{1}.spm.tools.snpm.des.OneSampT.P(gs,1) = scans;
-                end
-            elseif D.pronto
-                if strcmp(model,'w')
-                    matlabbatch{1}.prt.data.group(1).select.subject{gs,1} = generic;
-                    matlabbatch{1}.prt.data.group(1).select.subject{gs,1}.scans = scans;
-                elseif strcmp(model,'g')
-                    matlabbatch{1}.prt.data.group(g).select.subject{s,1} = generic;
-                    matlabbatch{1}.prt.data.group(g).select.subject{s,1}.scans = scans;
-                end
-            end
-        elseif isregress
-            if D.para==1
-                matlabbatch{1}.spm.stats.factorial_design.des.mreg.scans(gs,1) = scans;
-            elseif D.para==2
-                matlabbatch{1}.spm.tools.snpm.des.Corr.P(gs,1) = scans;
-            end
-        end
-        
-    end
-end
 
 % add main effects and interactions
 if isfactorial
@@ -484,6 +451,203 @@ if isfactorial
         for e = 1:length(me_ind)
             ne = ne+1;
             matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{ne}.fmain.fnum = me_ind(e);
+        end
+    end
+end
+
+
+% find and load scans into matlabbatch
+gs = 0;
+subID={};
+for gd = 1:length(Ngrp)
+    gds = 0;
+    for g = 1:Ngrp(gd)
+        for s = 1:Nsub(g,gd)
+            gs = gs+1;
+            gds = gds+1;
+            if D.useIDfile==1
+                subID{gs} = deblank(num2str((pdata{SubInd{g,gd}(s)+1,sub_col})));
+                if isnumeric(subID{gs}); subID{gs} = num2str(subID{gs}); end;
+                if D.folder
+                    subdir = fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]);
+                    if ~exist(subdir,'dir')
+                        subdir = dir(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
+                        if length(subdir)>1
+                            error('Subject directory name is not unique in this folder');
+                            display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
+                        elseif length(subdir)==0
+                            error('no directory found with this name');
+                            display(fullfile(D.data_path, [D.anapref D.subdirpref subID{gs} D.subdirsuff]));
+                        end
+                        subdir=fullfile(D.data_path, subdir.name);
+                    end
+                    subfile = '';
+                else
+                    subdir = D.data_path;
+                    subfile = [D.anapref D.subdirpref subID{gs} D.subdirsuff];
+                end
+            else
+                subdir = D.data_path;
+                subfile = D.imglist(gs,:)';
+            end
+
+            subimg = cell(1,1);
+            subimgcond=[];
+            if isfactorial
+                if D.para==1 || (D.pronto && ~isinter)
+                    % for spm, load all files
+                    ii=0;
+                    for i = 1:length(D.imglist)
+                        fname = {fullfile(subdir, [subfile D.imglist{i}])};
+                        if ~exist(fname{:},'file')
+                            fname_temp = dir(fullfile(subdir, [subfile D.imglist{i}]));
+                            if length(fname_temp)>1 && ~strcmp(D.anatype,'singlesubject')
+                                display(fname);
+                                error('Subject file name is not unique in this folder');
+                            elseif length(fname_temp)==0
+                                display(fname);
+                                error('no file found with this name');
+                            end
+                            for f = 1:length(fname_temp)
+                                fname{f}=fullfile(subdir, fname_temp(f).name);
+                            end
+                        end
+                        for f = 1:length(fname)
+                            ii = ii+1;
+                            subimg{ii,1} = [fname{f} ',1'];
+                            subimgcond(ii,1) = i;
+                        end
+                    end
+                    if strcmp(D.anatype,'singlesubject')
+                        condind=[];
+                        for c = 1:Nconds
+                            ntrial(c) = [condind sum(ismember(subimgcond,find(D.cond_list==c)))];
+                            generic.design.new_design.conds(c).durations = ones(ntrial(c),1);
+                            generic.design.new_design.conds(c).onsets = find(ismember(subimgcond,find(D.cond_list==c)))'-1;
+                            generic.design.new_design.conds(c).blocks = generic.design.new_design.conds(c).onsets+1;
+                        end
+                        %if D.randomise
+                        %    blockind = randperm(sum(ntrial));
+                        %    condind = [0 cumsum(ntrial)];
+                        %    subimg = subimg(blockind);
+                        %    for c = 1:Nconds
+                        %        cind = condind(c)+1:condind(c+1);
+                        %        generic.design.new_design.conds(c).onsets = blockind(ismember(blockind,cind))-1;
+                        %        %generic.design.new_design.conds(c).blocks = blockind(ismember(blockind,cind));
+                        %    end
+                        %end
+                    end
+                elseif D.para==2 || (D.pronto && isinter)
+                    if D.useIDfile==1
+                        % for SnPM, check averaged files exist; if not then create them.
+                        fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
+                        if wnum==0
+                            condlist = ones(length(D.cond_list),1);
+                        else
+                            condlist = D.cond_list(:,find(find(wfactind)==wnum));
+                        end
+                        if isempty(fnames) || D.overwrite
+                            factor_img(subdir,D.imglist,condlist,scanname,D.fileoptype,D.znorm);
+                            fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
+                        end
+                        for i=1:length(fnames)
+                            subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);
+                        end
+                    else
+                        subimg = subfile;
+                    end
+                end
+
+                % if there is a Group factor, add in group level to cond_list
+                grpfactind = find(strcmp(D.factortype,'g'));
+                if ~isempty(grpfactind)
+                    nlist = D.cond_list;
+                    if grpfactind<=size(D.cond_list,2)
+                        nlist(:,grpfactind+1:end+1) = nlist(:,grpfactind:end);
+                    end
+                    nlist(:,grpfactind) = g*ones(size(nlist,1),1);
+                    condlist = nlist;
+                else
+                    condlist = D.cond_list;
+                end
+
+            elseif isregress
+                if D.useIDfile==1
+                    % check averaged files exist; if not then create them.
+                    %fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
+                    condlist = D.regress_contrast
+                    %if isempty(fnames)
+                        fname = factor_img(subdir,D.imglist,condlist,scanname,D.fileoptype,D.znorm);
+                        %fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
+                    %end
+                    for i=1%:length(fnames)
+                        subimg{i,1} = [fname ',1'];
+                    end
+                else
+                    subimg = subfile;
+                end
+            end
+            scans = subimg;
+
+            % add the above scan and group info to the matlabbatch, or create new scans
+            if isfactorial
+                if D.para==1
+                    matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(gs).scans = scans;
+                    matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(gs).conds = condlist;
+                elseif D.para==2
+                    if strcmp(model,'w')
+                        matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scans = scans;
+                        matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scindex = unique(condlist,'stable');
+                    elseif strcmp(model,'ww')
+                        %matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scans = ;
+                        %matlabbatch{1}.spm.tools.snpm.des.PairT.fsubject(gs).scindex = ;
+                    elseif strcmp(model,'g')
+                        if g==1
+                            matlabbatch{1}.spm.tools.snpm.des.TwoSampT.scans1(s,1) = scans;
+                        elseif g==2
+                            matlabbatch{1}.spm.tools.snpm.des.TwoSampT.scans2(s,1) = scans;
+                        end
+                    elseif strcmp(model,'gw')
+                        if g==1
+                            %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans1.fsubject(s).scans = ;
+                            %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans1.fsubject(s).scindex = ;
+                        elseif g==2
+                            %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scans = ;
+                            %matlabbatch{1}.spm.tools.snpm.des.TwoSampPairT.scans2.fsubject(s).scindex = ;
+                        end
+                    elseif strcmp(model,'one')
+                        matlabbatch{1}.spm.tools.snpm.des.OneSampT.P(gs,1) = scans;
+                    end
+                elseif D.pronto
+                    if strcmp(model,'wgtt')
+                        if gd==1 % within-subject factor "group"
+                            matlabbatch{1}.prt.data.group(1).select.subject{gds,1} = generic;
+                            matlabbatch{1}.prt.data.group(1).select.subject{gds,1}.scans = scans;
+                        elseif gd==2 % between-subject factor "group"
+                            %generic.design.new_design.conds(:) = generic.design.new_design.conds(D.grpcond);
+                            %generic.design.new_design.conds.cond_name = [D.factors{wnum(1)} num2str(g)]; % change the name to match the within levels so that pronto can perform testing
+                            scans = [scans(D.cond_list==D.grpcond);scans(D.cond_list==D.grpcond)];
+                            matlabbatch{1}.prt.data.group(2).select.subject{gds,1} = generic;
+                            matlabbatch{1}.prt.data.group(2).select.subject{gds,1}.scans = scans;
+                        end
+                    elseif strcmp(model,'g') || strcmp(model,'gw') || strcmp(model,'gg') || strcmp(model,'ggw') || strcmp(model,'wg')
+                         matlabbatch{1}.prt.data.group(g+2*(gd-1)).select.subject{s,1} = generic;
+                         matlabbatch{1}.prt.data.group(g+2*(gd-1)).select.subject{s,1}.scans = scans;
+                    elseif strcmp(model,'w') || strcmp(model,'ww')
+                        matlabbatch{1}.prt.data.group(1).select.subject{gs,1} = generic;
+                        matlabbatch{1}.prt.data.group(1).select.subject{gs,1}.scans = scans;
+                    end
+                end
+            elseif isregress
+                if D.para==1
+                    matlabbatch{1}.spm.stats.factorial_design.des.mreg.scans(gs,1) = scans;
+                elseif D.para==2
+                    matlabbatch{1}.spm.tools.snpm.des.Corr.P(gs,1) = scans;
+                elseif D.pronto
+                    matlabbatch{1}.prt.data.group(g).select.modality.mod_name = 'eeg';
+                    matlabbatch{1}.prt.data.group(g).select.modality.subjects(s,1) = scans;
+                end
+            end
         end
     end
 end
@@ -534,6 +698,14 @@ if ~isempty(D.cov_names)
                     matlabbatch{1}.spm.stats.factorial_design.des.mreg.mcov(c).cname = D.cov_names{c}; % name
                 elseif D.para==2
                     matlabbatch{1}.spm.tools.snpm.des.Corr.CovInt = covdat; % vector
+                elseif D.pronto
+                    gs = 0;
+                    for g = 1:Ngrp
+                        for s = 1:Nsub(g)
+                            gs = gs+1;
+                            matlabbatch{1}.prt.data.group(g).select.modality.rt_subj(s,1) = covdat(gs); % vector
+                        end
+                    end
                 end
             end
         end
@@ -563,17 +735,57 @@ end
 if ~isempty(D.time_ana)
     maskname = [num2str(D.time_ana(1)) '_' num2str(D.time_ana(2)) '.img'];
     maskfile = fullfile(D.mask_path,maskname);
-    if ~exist(maskfile,'file')
+    %if ~exist(maskfile,'file')
         S = struct;
         S.image = subimg{1}(1:end-2); % example image
         S.timewin = D.time_ana;
         S.outfile = maskfile;
         spm_eeg_mask(S)
-    end
+    %end
     masking.em = {[maskfile  ',1']};
 else
     masking.em = {''};
 end
+
+% specify ROI atlas
+if ~isempty(D.timewin) && ~isempty(D.time_ana)
+    % create window range
+    winr=[];
+    for i = 1:Inf
+        if D.time_ana(1)+D.timewin(1)-1+(D.timewin(1)*(i-1))>D.time_ana(2)
+            break
+        else
+            winr(i,:) = [D.time_ana(1),D.time_ana(1)+D.timewin(1)-1]+(D.timewin(1)*(i-1));
+        end
+    end
+    ROIname = [num2str(D.time_ana(1)) '_' num2str(D.time_ana(2)) '_step' num2str(D.timewin) '.img'];
+    ROIfile = fullfile(D.mask_path,ROIname);
+    %if ~exist(ROIfile,'file')
+        V=spm_vol(maskfile);
+        Y = spm_read_vols(V);
+        Nt=size(Y,3);
+        for i = 1:size(winr,1)
+            begsample = V.mat\[0 0 winr(i,1) 1]';
+            begsample = begsample(3);
+            endsample = V.mat\[0 0 winr(i,2) 1]';
+            endsample = endsample(3);
+            if any([begsample endsample] < 0) || any([begsample endsample] > Nt)
+                error('The window is out of limits for the image.');
+            end
+            [junk,begsample] = min(abs(begsample-(1:Nt)));
+            [junk,endsample] = min(abs(endsample-(1:Nt)));
+            Y(: , :, begsample:endsample)  = i;
+            if i==1
+                Y(: , :, 1:(begsample-1))   = 0;
+            elseif i==size(winr,1)
+                Y(: , :, (endsample+1):end) = 0;
+            end
+        end
+        V.fname=ROIfile;
+        spm_write_vol(V,Y);
+    %end
+end
+
 masking.tm.tm_none = 1;
 masking.im = 1;
 if D.para==1
@@ -675,98 +887,259 @@ elseif D.para==2
     matlabbatch{3}.spm.tools.snpm.inference.Report = 'MIPtable';
 elseif D.pronto
     % kernel / feature selection
-    matlabbatch{2}.prt.fs.infile = {fullfile(D.spm_path,'PRT.mat')};
     matlabbatch{2}.prt.fs.k_file = 'kernelname';
+    matlabbatch{2}.prt.fs.modality.voxels=[];
+    matlabbatch{2}.prt.fs.modality.voxels.all_voxels = 1;
+    matlabbatch{2}.prt.fs.modality.atlasroi{1, 1} = '';
+    if D.timewin
+        matlabbatch{2}.prt.fs.modality.atlasroi{1,1}   = [ROIfile ',1'];
+    end
+    matlabbatch{2}.prt.fs.infile = {fullfile(D.spm_path,'PRT.mat')};
     matlabbatch{2}.prt.fs.modality.mod_name = 'eeg';
     matlabbatch{2}.prt.fs.modality.conditions = [];
-    
-    if strcmp(model,'w')
+    if isfactorial
         matlabbatch{2}.prt.fs.modality.conditions.all_cond = 1;
-    elseif strcmp(model,'g')
+    elseif isregress
         matlabbatch{2}.prt.fs.modality.conditions.all_scans = 1;
     end
-    
-    matlabbatch{2}.prt.fs.modality.voxels.all_voxels = 1;
     matlabbatch{2}.prt.fs.modality.detrend.no_dt = 1; % no detrend
     matlabbatch{2}.prt.fs.modality.normalise.no_gms = 1;
-    matlabbatch{2}.prt.fs.modality.atlasroi{1, 1} = '';
     matlabbatch{2}.prt.fs.flag_mm = 0;
+    
+    
     % model
     matlabbatch{3}.prt.model.infile = {fullfile(D.spm_path,'PRT.mat')};
-    matlabbatch{3}.prt.model.use_kernel = 1;
+    matlabbatch{3}.prt.model.use_kernel = D.kernel;
     matlabbatch{3}.prt.model.fsets = 'kernelname';
+    matlabbatch{3}.prt.model.model_type = [];
+    matlabbatch{3}.prt.model.cv_type = [];
+    CV=[];
     if isfactorial
-        matlabbatch{3}.prt.model.model_name = D.factors{find(D.maineffects)};
+        try
+            matlabbatch{3}.prt.model.model_name = D.factors{find(D.maineffects)};
+        catch
+            matlabbatch{3}.prt.model.model_name = D.factors{find(D.interactions(1))};
+        end
         matlabbatch{3}.prt.model.model_type.classification.machine_cl = [];
         switch D.machine 
             case 'svm_binary'
                 matlabbatch{3}.prt.model.model_type.classification.machine_cl.svm.svm_opt = 1; % optimise hyperparameter?
                 matlabbatch{3}.prt.model.model_type.classification.machine_cl.svm.svm_args = [0.01 0.1 1 10 100]; % soft-margin hyperparameter range (only if svm_opt is 1)
-                matlabbatch{3}.prt.model.model_type.classification.machine_cl.svm.cv_type_nested.cv_loso = 1;
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.svm.cv_type_nested = [];
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.svm.cv_type_nested.(D.cv_type) = 1;
             case 'gpc_binary'
                 matlabbatch{3}.prt.model.model_type.classification.machine_cl.gpc.gpc_args = '-l erf -h';
             case 'gpc_multi'
+                error('PRT_MODEL.M HAS BEEN MODIFIED TO ONLY ALLOW BINARY')
                 matlabbatch{3}.prt.model.model_type.classification.machine_cl.gpclap.gpclap_args = '-h';
+            case 'mkl'
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.sMKL_cla.sMKL_cla_opt = 1;
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.sMKL_cla.sMKL_cla_args = [0.01 0.1 1 10 100];
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.sMKL_cla.cv_type_nested = [];
+                matlabbatch{3}.prt.model.model_type.classification.machine_cl.sMKL_cla.cv_type_nested.(D.cv_type) = 1;
         end
         
-        matlabbatch{3}.prt.model.cv_type.cv_loso = 1;
         matlabbatch{3}.prt.model.include_allscans = 0;
-        if strcmp(model,'w')
+        if strcmp(model,'w') || strcmp(model,'ww')
             % classes
             Nconds = length(unique(D.cond_list));
             for c = 1:Nconds
-                matlabbatch{3}.prt.model.model_type.classification.class(c).class_name = [D.factors{find(D.maineffects)} num2str(c)];
+                matlabbatch{3}.prt.model.model_type.classification.class(c).class_name = [D.factors{wnum} num2str(c)];
                 matlabbatch{3}.prt.model.model_type.classification.class(c).group.gr_name = 'all';
                 matlabbatch{3}.prt.model.model_type.classification.class(c).group.subj_nums = (1:sum(Nsub))';
-                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions.conds.cond_name = [D.factors{find(D.maineffects)} num2str(c)];
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions=[];
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions.conds.cond_name = [D.factors{wnum} num2str(c)];
             end
-        elseif strcmp(model,'g')
+        elseif strcmp(model,'g') || strcmp(model,'gw') || strcmp(model,'gg') || strcmp(model,'ggw')
             % classes
-            for c = 1:Ngrp
-                matlabbatch{3}.prt.model.model_type.classification.class(c).class_name = ['Group' num2str(c)];
-                matlabbatch{3}.prt.model.model_type.classification.class(c).group.gr_name = ['Group' num2str(c)];
-                matlabbatch{3}.prt.model.model_type.classification.class(c).group.subj_nums = (1:sum(Nsub(c)))';
-                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions.conds.all_conds = 1;
+            c=0;
+            for gd = 1:length(Ngrp)
+                for g = 1:Ngrp(gd)
+                    c=c+1;
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).class_name = ['Group' num2str(c)];
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).group.gr_name = ['Group' num2str(c)];
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).group.subj_nums = (1:sum(Nsub(g,gd)))'; %(subind(c)+1:subind(c+1))';
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions=[];
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions.all_cond = 1;
+                end
             end
+        elseif strcmp(model,'wg')
+            % classes
+            Nconds = length(unique(D.cond_list));
+            for g = 1:Ngrp
+                for c = 1:Nconds
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).class_name = [D.factors{wnum} num2str(c)];
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).group(g).gr_name = ['Group' num2str(g)];
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).group(g).subj_nums = (1:Nsub(g))';
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).group(g).conditions=[];
+                    matlabbatch{3}.prt.model.model_type.classification.class(c).group(g).conditions.conds.cond_name = [D.factors{wnum} num2str(c)];
+                end
+            end
+        elseif strcmp(model,'wgtt')
+            Nconds = length(unique(D.cond_list));
+            %if wlev==1 && glev==2
+                % class indices
+           %     cw = 1:Nconds;
+           %     gw = Nconds+[1:Ngrp(2)];
+           % elseif wlev==2 && glev==1
+           %     gw = 1:Ngrp(1);
+           %     cw = Ngrp(1)+[1:Nconds];
+           % end
+            % within factor
+            for c = 1:Nconds
+                matlabbatch{3}.prt.model.model_type.classification.class(c).class_name = [D.factors{wnum} num2str(c)];
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.gr_name = 'Group1';
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.subj_nums = (1:sum(Nsub(:,1)))';
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions=[];
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions.conds.cond_name = [D.factors{wnum} num2str(c)];
+                
+            end
+            % between factor
+            subind = [0;cumsum(Nsub(:,1))];
+            for c = 1:length(Ngrp)
+                cn=c+Nconds;
+                matlabbatch{3}.prt.model.model_type.classification.class(cn).class_name = ['Group' num2str(c)];
+                matlabbatch{3}.prt.model.model_type.classification.class(cn).group.gr_name = 'Group2';
+                matlabbatch{3}.prt.model.model_type.classification.class(cn).group.subj_nums = (subind(c)+1:subind(c+1))';
+                matlabbatch{3}.prt.model.model_type.classification.class(cn).group.conditions=[];
+                if D.grpcond
+                %    matlabbatch{3}.prt.model.model_type.classification.class(cn).group.conditions.conds.cond_name = [D.factors{wnum} num2str(c)];
+                %else
+                    matlabbatch{3}.prt.model.model_type.classification.class(cn).group.conditions.all_cond = 1;
+                %    CV = [CV; glev*ones(Nsub(g,2)*Nconds,1)];
+                end
+            end
+            %CV = [CV; wlev*ones(sum(Nsub(:,1))*length(find(D.cond_list)),1)];
+            %CV = [CV; glev*ones(Nsub(g,2)*length(find(D.cond_list==D.grpcond)),1)];
         end
-    end
-    % operations
-    matlabbatch{3}.prt.model.sel_ops.data_op_mc = 1;
-    if ~isempty(D.data_op)
-        matlabbatch{3}.prt.model.sel_ops.use_other_ops = rmfield(matlabbatch{3}.prt.model.sel_ops.use_other_ops,'no_op');
-        matlabbatch{3}.prt.model.sel_ops.use_other_ops.data_op  = D.data_op;
+        
+        % factorial CV
+        if cell2mat(strfind(TrainTestFac,'g'))
+            if isempty(CV)
+                if length(Ngrp)>1 % train and test on different groupings, or across within and between factors
+                    for gd = 1:length(Ngrp)
+                        CV = [CV;gd*ones(sum(Nsub(:,gd))*length(scans),1)];
+                    end
+                elseif length(Ngrp)==1 % train and test on different levels within a single grouping
+                    for g = 1:Ngrp
+                        CV = [CV;glev(g)*ones(Nsub(g)*length(scans),1)];
+                    end
+                end
+            end
+            save(fullfile(D.spm_path,'custom_CV.mat'),'CV');
+        end
+    
+    elseif isregress
+        matlabbatch{3}.prt.model.model_name = D.regress_contrastname;
+        matlabbatch{3}.prt.model.model_type.regression.machine_rg = [];
+        switch D.machine 
+            case 'gpr'
+                matlabbatch{3}.prt.model.model_type.regression.machine_rg.gpr.gpr_args = '-l gauss -h';
+            case 'krr'
+                matlabbatch{3}.prt.model.model_type.regression.machine_rg.krr.krr_opt = 1;
+                matlabbatch{3}.prt.model.model_type.regression.machine_rg.krr.krr_args = 1;
+                matlabbatch{3}.prt.model.model_type.regression.machine_rg.krr.cv_type_nested = [];
+                matlabbatch{3}.prt.model.model_type.regression.machine_rg.krr.cv_type_nested.(D.cv_type) = 1;
+        end
+       
+        matlabbatch{3}.prt.model.include_allscans = 0;
+        
+        % groups
+        subind = [0;cumsum(Nsub)];
+        for c = 1:Ngrp
+            matlabbatch{1}.prt.data.group(c).gr_name = ['Group' num2str(c)];
+            matlabbatch{3}.prt.model.model_type.regression.reg_group(c).gr_name = ['Group' num2str(c)];
+            matlabbatch{3}.prt.model.model_type.regression.reg_group(c).subj_nums = (1:sum(Nsub(c)))'; %(subind(c)+1:subind(c+1))';
+        end
     end
     
     % cross-validation
+    if ~isempty(CV)
+        matlabbatch{3}.prt.model.cv_type.cv_custom = {fullfile(D.spm_path,'custom_CV.mat')}; 
+    elseif strcmp(D.cv_type,'cv_lkso')
+        matlabbatch{3}.prt.model.cv_type.cv_lkso.k_args = D.nfolds;
+    elseif strcmp(D.cv_type,'cv_lkbo')
+        matlabbatch{3}.prt.model.cv_type.cv_lkbo.k_args = D.nfolds;
+    else
+        matlabbatch{3}.prt.model.cv_type.(D.cv_type) = 1;
+    end
+    
+    % operations
+    matlabbatch{3}.prt.model.sel_ops.data_op_mc = D.meancentre;
+    if ~isempty(D.data_op)
+        if isfield(matlabbatch{3}.prt.model.sel_ops.use_other_ops,'no_op')
+            matlabbatch{3}.prt.model.sel_ops.use_other_ops = rmfield(matlabbatch{3}.prt.model.sel_ops.use_other_ops,'no_op');
+        end
+        matlabbatch{3}.prt.model.sel_ops.use_other_ops.data_op  = D.data_op;
+    end
+    
+    % permutations
     matlabbatch{4}.prt.cv_model.infile = {fullfile(D.spm_path,'PRT.mat')};
-    matlabbatch{4}.prt.cv_model.model_name = D.factors{find(D.maineffects)};
-    matlabbatch{4}.prt.cv_model.perm_test.no_perm  = 1;
+    matlabbatch{4}.prt.cv_model.model_name = matlabbatch{3}.prt.model.model_name;
+    matlabbatch{4}.prt.cv_model.perm_test=[];
+    if D.permtest
+        matlabbatch{4}.prt.cv_model.perm_test.perm_t.N_perm = D.permtest;
+        matlabbatch{4}.prt.cv_model.perm_test.perm_t.flag_sw = D.saveallweights;
+    else
+        matlabbatch{4}.prt.cv_model.perm_test.no_perm  = 1;
+    end
     
     % weights
     matlabbatch{5}.prt.weights.infile = {fullfile(D.spm_path,'PRT.mat')};
-    matlabbatch{5}.prt.weights.model_name = D.factors{find(D.maineffects)};
+    matlabbatch{5}.prt.weights.model_name = matlabbatch{3}.prt.model.model_name;
     matlabbatch{5}.prt.weights.img_name = '';
-    matlabbatch{5}.prt.weights.build_wpr.no_atl = 0;
-    matlabbatch{5}.prt.weights.flag_cwi = 0;
+    matlabbatch{5}.prt.weights.build_wpr=[];
+    if D.timewin
+        matlabbatch{5}.prt.weights.build_wpr.atl_name{1,1} = ROIfile;  
+    else
+        matlabbatch{5}.prt.weights.build_wpr.no_atl = 0;
+    end
+    matlabbatch{5}.prt.weights.flag_cwi = D.saveallweights;
 end
 
-if D.para
+%if D.para
     save(fullfile(D.spm_path,'matlabbatch'),'matlabbatch');
-elseif D.pronto
-    save(fullfile(D.spm_path,'PRT'),'matlabbatch');
-end
+%elseif D.pronto
+%    save(fullfile(D.spm_path,'PRT'),'matlabbatch');
+%end
 save(fullfile(D.spm_path,'sub_info'),'subID','SubInd');
-
+cd(D.spm_path)
 if D.pronto
+    if strcmp(D.anatype,'singlesubject')
+        Nsub = length(matlabbatch{1}.prt.data.group.select.subject);
+        for n = 1:Nsub
+            run(n).matlabbatch = matlabbatch;
+            run(n).matlabbatch{1}.prt.data.group.select.subject = run(n).matlabbatch{1}.prt.data.group.select.subject(n);
+            for c = 1:length(run(n).matlabbatch{3}.prt.model.model_type.classification.class)
+                run(n).matlabbatch{3}.prt.model.model_type.classification.class(c).group.subj_nums = 1;
+            end
+            subpath = fullfile(D.spm_path,['sub' num2str(n)]);
+            if ~exist(subpath,'dir')
+                mkdir(subpath);
+            end
+            run(n).matlabbatch{1}.prt.data.dir_name = {subpath};
+            run(n).matlabbatch{2}.prt.fs.infile = {fullfile(subpath,'PRT.mat')};
+            run(n).matlabbatch{3}.prt.model.infile = {fullfile(subpath,'PRT.mat')};
+            run(n).matlabbatch{4}.prt.cv_model.infile = {fullfile(subpath,'PRT.mat')};
+            run(n).matlabbatch{5}.prt.weights.infile = {fullfile(subpath,'PRT.mat')};
+        end
+    else
+        run(1).matlabbatch = matlabbatch;
+    end
     %jobs = fullfile(D.spm_path,'PRT.mat');
     %inputs = cell(0, 1);
     %job_id = cfg_util('initjob', jobs);
     %sts    = cfg_util('filljob', job_id, matlabbatch{:});
     %if sts
-    cfg_get_defaults('cfg_util.genscript_run', @genscript_run);
-    cfg_util('initcfg');
-    prt_batch
-    cfg_util('run', matlabbatch);
+    for n = 1:length(run)
+        if n==1
+            cfg_get_defaults('cfg_util.genscript_run', @genscript_run);
+            cfg_util('initcfg');
+            prt_batch
+        end
+        cfg_util('run', run(n).matlabbatch);
+        close all
+    end
     %end
     %cfg_util('deljob', job_id);
 end

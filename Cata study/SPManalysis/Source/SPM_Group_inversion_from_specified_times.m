@@ -62,7 +62,7 @@ sensorpath = '';
 %end
 %smooth output images (specify FWHM or 0 for no smoothing)
 S.smooth = 12;
-S.type = 'evoked';
+S.type = 'evoked'; % 'evoked', 'induced' or 'trials' (single trial images)
 S.sourceprior = 'GS'; % Priors on sources, e.g. MSP, GS, LOR or IID
 S.Npriors = 256; % Number of sparse priors (x 1/2 brain)
 S.Han = 0; % apply Hanning window
