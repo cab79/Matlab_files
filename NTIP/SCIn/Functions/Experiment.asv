@@ -613,14 +613,13 @@ end
 % OR if projected time of the end sample is greater than the current time
 newtrial=0;
 if h.Settings.ntrialsahead>1
-    trials = find(h.Seq.trialend > h.currentsample);
+    trials = find(h.Seq.trialend > h.currentsample && h.Seq.trialend <= h.currentsample);
     if ~isempty(trials)
-        if h.i < trials(1)
+        if h.i ~= trials(1)
             newtrial = 1;
-            % FOR DEBUGGING:
-            %if h.i>100
-            %    pause
-            %end
+            if h.i>100
+                pause
+            end
         end
     end
 end

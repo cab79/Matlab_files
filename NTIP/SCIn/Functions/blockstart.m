@@ -62,8 +62,13 @@ switch opt
         h = buttonpress(h,opt);
         
     case 'audio'
-        disp('PLAYING AUDIO')
-        h = audio(h);
+        go = questdlg('Play audio instructions?', ...
+        'Audio', ...
+        'Yes please','No thank you','Yes please');
+        if strcmp(go,'Yes please')
+                disp('PLAYING AUDIO')
+                h = audio(h);
+        end
 
 %pause(1);
 

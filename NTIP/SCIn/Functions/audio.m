@@ -24,6 +24,29 @@ if isfield(h.Settings,'audiochan')
     y=ytemp;
 end
 
+% attenuate
+if isfield(h.Settings,'attenchan')
+    %if ismember(chan,h.Settings.attenchan)
+        if isfield(h,'vol_atten')
+            try
+                inten_atten = str2double(get(h.vol_atten,'string'));
+            catch
+                inten_atten = str2double(h.vol_atten);
+            end
+        else
+            inten_atten = h.Settings.atten; 
+        end
+        if isfield(h.Settings,'atten_instruct')
+            inten_atten = inten_atten+h.Settings.atten_instruct;
+        end
+    %else
+    %    h.inten_atten = 0; 
+    %end
+else
+    inten_atten = 0; 
+end
+y = attenute_sound(y,inten_atten);
+
 switch opt
     
     case 'audioplayer'
