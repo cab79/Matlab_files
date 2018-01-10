@@ -1,6 +1,7 @@
 
 %% run
 function gplot_waveforms(P)
+dbstop if error
 
 %% load EEGLAB data to plot topography - will take a few mins if ERP_DAT file does not already exist
 if P.plot_topo && ~exist(fullfile(P.eeglab_path,'ERP_DAT.mat'),'file')
@@ -28,6 +29,7 @@ if P.plot_topo && ~exist(fullfile(P.eeglab_path,'ERP_DAT.mat'),'file')
     end
     DAT=reshape(DAT,[],1);
     EEGtimes = EEGall.times;
+    chanlocs=EEGall.chanlocs;
     save(fullfile(P.eeglab_path,'ERP_DAT.mat'),'DAT','chanlocs','EEGtimes');
 elseif P.plot_topo
     load(fullfile(P.eeglab_path,'ERP_DAT.mat'));
@@ -151,13 +153,13 @@ for cl = 1:length(clnames)
         % construct condition labels (of last or only factor)
         condlev=P.cval{end,1};
         factind=Fi(Fi_ind{p},end);
-        fi=ismember(factind,P.cval{end,2});
-        factind = factind(fi);
-        cond = condlev(factind);
+        fi{p}=ismember(factind,P.cval{end,2});
+        factind = factind(fi{p});
+        cond{p} = condlev(factind);
         
         % set x and y axis data to plot
         y=wff(Fi_ind{p});
-        y=y(fi);
+        y=y(fi{p});
         if ~isempty(P.xlimits)
             xlim = dsearchn(itimes',P.xlimits')';% x values of the selected segment to plot
             x = itimes(xlim(1):xlim(2));
@@ -173,7 +175,7 @@ for cl = 1:length(clnames)
         %construct gramm plot
         %cond = cond(end:-1:1);
         %y = y(end:-1:1);
-        g(1,p)=gramm('x',x,'y',y,'color',cond);
+        g(1,p)=gramm('x',x,'y',y,'color',cond{p});
 
         % name the axes and legend
         g(1,p).set_names('x',P.xaxisname,'y',P.yaxisname,'color',P.fact_names{end},'column','','row','');
@@ -216,16 +218,50 @@ for cl = 1:length(clnames)
         for i = unique(WFrows)'
             DATa{i}=mean(cat(3,DAT{WFrows==i}),3);
         end
-        figure
+        f1=figure
+        pln=0;
         for p = 1:Nplots
-            peakdata = mean(cat(3,DATa{Fi_ind{p}}),3);
-            plotchans=1:length(chanlocs);
-            plotchans(P.no_plot_ele)=[];
-            %[~,markchans] = intersect(plotchans,tp);
-            lat = find(EEGtimes==E_val(1));
-            subplot(1,Nplots,p); topoplot(mean(peakdata(:,lat),2), chanlocs,'maplimits','absmax','electrodes','on','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
-            colorbar
+            y=DATa(Fi_ind{p});
+            y=y(fi{p});
+            [~,~,condind]=unique(cond{p},'stable');
+            unicond = unique(condind)';
+            for cn = unicond
+                peakdata=y(condind==cn);
+                peakdata = mean(cat(3,peakdata{:}),3);
+                plotchans=1:length(chanlocs);
+                plotchans(P.no_plot_ele)=[];
+                %[~,markchans] = intersect(plotchans,tp);
+                if any(P.topo_subtimewin) && length(P.topo_subtimewin)==1 % multiple plots within a range
+                    cluswin = E_val(end)-E_val(1);
+                    nlat = floor(cluswin/P.topo_subtimewin);
+                    if nlat>1
+                        lats = linspace(E_val(1),E_val(end),nlat);
+                        lats = dsearchn(EEGtimes',lats');
+                    else
+                        lats = [find(EEGtimes==E_val(1)) find(EEGtimes==E_val(end))];
+                    end
+                    
+                    for ln = 1:length(lats)-1
+                        pln = pln+1;
+                        lat=lats(ln:ln+1);
+                        subplot(Nplots+length(unicond),length(lats)-1,pln); topoplot(mean(peakdata(:,lat(1):lat(2)),2), chanlocs,'maplimits','absmax','electrodes','on','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
+                        title(num2str(EEGtimes(lat)'))
+                    end
+                elseif any(P.topo_subtimewin) && length(P.topo_subtimewin)==2 % specified time window
+                    pln = pln+1;
+                    lat = dsearchn(EEGtimes',P.topo_subtimewin');
+                    subplot(Nplots+length(unicond),Nplots,pln); topoplot(mean(peakdata(:,lat),2), chanlocs,'maplimits','absmax','electrodes','on','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
+                    title(num2str(EEGtimes(lat)'))
+                else
+                    pln = pln+1;
+                    lat = find(EEGtimes==E_val(1));
+                    subplot(Nplots+length(unicond),Nplots,pln); topoplot(mean(peakdata(:,lat),2), chanlocs,'maplimits','absmax','electrodes','on','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
+                    title(num2str(EEGtimes(lat)'))
+                end
+            end
+            %colorbar
         end
+        tightfig(f1)
         %save figure 
         if P.save_topo
             print(fullfile(P.spm_path,P.clusdir,[cllabel '_topo']),'-dpng');

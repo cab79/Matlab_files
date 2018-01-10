@@ -9,7 +9,7 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\pronto\Construct_PRT_pronto_LEP.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\pronto\Construct_PRT_pronto.m';
 % template flexible factorial matlabbatch
 D.batch = 'C:\Data\Catastrophising study\SPMstats\pronto\PRT.mat';
 % root directory in which subject-specific folders are located
@@ -36,7 +36,8 @@ D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
 %D.subdirsuff = '_orig_cleaned_SPNall'; % generic suffix for the EEGLAB analysis file
 D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier='_Exp_gpc_ROI_noperm'; % optional identifer to add to end of outputted SPM folder name
+%D.identifier='_GrpHighExp_gpc_ROI_noMC'; % optional identifer to add to end of outputted SPM folder name
+D.identifier='Exp_TrainLowPC_TestHighPC'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -72,20 +73,24 @@ D.timewin = [10];% apply windowing over the range of D.time_ana? Provide window 
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
 % For SnPM and Pronto, the second of two within-factors are subtracted.
 D.cond_list =  [
-              2
-              2
-              2
-              2
               1
               1
               1
               1
+              2
+              2
+              2
+              2
+              %3
+              %3
+              %3
+              %3
               ];
 D.grp_list = [1 2]; 
 % factors and statistical model
 D.factors = {'Grp','Exp','Subject'}; % must include a subject factor at the end; Group factor must be first if being used
 D.factortype = {'g','w','s'}; % w = within, s = subject, g = subject group
-%D.TrainTest = {[2 1],[],[]}; % select levels: model trains on first level and tests on second.
+D.TrainTest = {[2 1],[],[]}; % select levels: model trains on first level and tests on second.
 %D.grpcond = 1; % select a condition for the Grp Test
 
 % Main effects and interactions: 
@@ -149,8 +154,8 @@ D.machine = 'gpc_binary';
 %D.machine = 'gpc_multi'; % PRT_MODEL.M HAS BEEN MODIFIED TO ONLY ALLOW BINARY
 %D.machine = 'mkl';
 
-%D.cv_type = 'cv_lkso';D.nfolds = 2;
-D.cv_type = 'cv_loso';
+D.cv_type = 'cv_lkso';D.nfolds = 2;
+%D.cv_type = 'cv_loso';
 
 %% run design_batch function
 D=design_batch(D);

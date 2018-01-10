@@ -9,7 +9,7 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\pronto\Construct_PRT_pronto_LEP.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\pronto\Construct_PRT_pronto.m';
 % template flexible factorial matlabbatch
 D.batch = 'C:\Data\Catastrophising study\SPMstats\pronto\PRT.mat';
 % root directory in which subject-specific folders are located
@@ -36,7 +36,7 @@ D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
 %D.subdirsuff = '_orig_cleaned_SPNall'; % generic suffix for the EEGLAB analysis file
 D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier='_Exp_gpc_ROI_noperm'; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_GrpAvCond_gpc_ROI_perm100'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -93,15 +93,15 @@ D.factortype = {'g','w','s'}; % w = within, s = subject, g = subject group
 %   for all sub-interactions. Only main effects beyond those captured by
 %   any interactions need to be listed, e.g. for Subject (only listed
 %   Subject if there is no Group factor). E.g.
-D.interactions = [0 0 0]; % one column per factor; one row per interaction
-D.maineffects = [0 1 0]; % one column per factor 
+D.interactions = [1 1 0]; % one column per factor; one row per interaction
+D.maineffects = [0 0 0]; % one column per factor 
 %   - for snpm and Pronto, only a single main effect or 2-way interaction can be performed each time, e.g.
 %D.interactions = [0 0 0 0]; % one column per factor
 %D.maineffects = [1 0 0 0]; % one column per factor 
 
 % For SnPM or Pronto, if interactions enter the design then subtractions
 % are needed by specifying 'contrast' here
-D.fileoptype = 'contrast';
+D.fileoptype = 'meancond';
 % overwrite previous images with same name
 D.overwrite =0;
 
@@ -123,8 +123,8 @@ D.cov_names = {};
 D.kernel = 1;
 
 % permutation testing
-D.permtest = 0;
-D.saveallweights = 0; % Requires adding code to prt_compute_weights_class.m, line 287:
+D.permtest = 100;
+D.saveallweights = 0; % Requires added code to prt_compute_weights_class.m, line 287:
                 %if length(d.coeffs)>size(d.datamat,1)
                 %    keep_idx = train_idx(find(ID(:,6)==1));
                 %    d.coeffs = d.coeffs(train_idx);
@@ -150,7 +150,7 @@ D.machine = 'gpc_binary';
 %D.machine = 'mkl';
 
 %D.cv_type = 'cv_lkso';D.nfolds = 2;
-D.cv_type = 'cv_loso';
+D.cv_type = 'cv_losgo';
 
 %% run design_batch function
 D=design_batch(D);

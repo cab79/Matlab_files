@@ -1,13 +1,15 @@
 %% settings
+dbstop if error
 studyname = 'CORE';
-subnum = 'pilot';
-dname = 'C:\Matlab_files\CORE\fMRI\SCIn_outputs';
-seq_fname = 'Sequence_pilot_Sequence_CORE_fMRI_cont_8block_OptionfMRI_run_startblock1_20171024T104134.mat';
-out_fname = 'Output_pilot_Sequence_CORE_fMRI_cont_8block_OptionfMRI_run_startblock1_20171024T104134.mat';
+subnum = '022';
+dname = 'C:\Data\CORE_fMRI\SCIn_outputs';
+seq_pref = 'Sequence_';
+out_pref = 'Output_';
 
 % 'expected' is based on stimulus design; 
 % 'recorded' is that recorded by the software - older data has a bug meaning this is not accurate
-onset_marker = 'expected';
+%onset_marker = 'expected';
+onset_marker = 'recorded';
 correct_missing = 1; % if there are missing stim onsets, infer what they should be. Number here is estimated ISI. Only works if ISI is fixed throughout expt.
 
 % event condition names, "condition" numbers, and "signal" numbers of interest
@@ -46,14 +48,18 @@ blockmarker = 0;
 %% RUN
 dname = fullfile(dname,[studyname subnum]);
 cd(dname)
-load(seq_fname)
-load(out_fname)
+sf = dir(fullfile(dname,[seq_pref subnum '*']));
+of = dir(fullfile(dname,[out_pref subnum '*']));
+load(sf.name)
+load(of.name)
 
-if length(out.trigtime)<4
+trigtime = out.presstime(out.presstrial==0 & strcmp(out.pressbutton,'7&'));
+
+if length(trigtime)<4
     error('should be 4 scanner triggers recorded')
 end
 
-scanstart = out.trigtime(1);
+scanstart = trigtime(1);
 rectime = out.stimtime;
 nostimrec = cellfun(@isempty,rectime);
 stimrec = ~nostimrec;
@@ -75,13 +81,21 @@ switch onset_marker
         end
         stimtime = [0 cumsum(expisi)] + rectime(1)-scanstart;
 end
+sname = fullfile(dname,onset_marker);
+if ~exist(sname,'dir')
+    mkdir(sname)
+end
 
 for i = 1:size(events,1) 
     conds = ismember(seq.condnum,events{i,2}) & ismember(seq.signal,events{i,3});
     onsets = stimtime(conds)';
     
+    if any(isnan(onsets))
+        error('onsets contains NaNs');
+    end
+    
     %save([events{i,1} '.txt'],'onsets','-ASCII')
-    fid = fopen(fullfile(dname,[studyname subnum '_' events{i,1} '_event.txt']), 'wt');
+    fid = fopen(fullfile(sname,[studyname subnum '_' events{i,1} '_event.txt']), 'wt');
     fprintf(fid, '%.2f\n', onsets);
     fclose(fid);
 end
@@ -99,11 +113,11 @@ for i = 1:size(blocks,1)
     onsets = stimtime(st)';
     durations = stimtime(en)'-stimtime(st)';
     
-    fid = fopen(fullfile(dname,[studyname subnum '_' blocks{i,1} '_block.txt']), 'wt');
+    fid = fopen(fullfile(sname,[studyname subnum '_' blocks{i,1} '_block.txt']), 'wt');
     fprintf(fid, '%.2f\n', onsets);
     fclose(fid);
     
-    fid = fopen(fullfile(dname,[studyname subnum '_' blocks{i,1} '_block_dur.txt']), 'wt');
+    fid = fopen(fullfile(sname,[studyname subnum '_' blocks{i,1} '_block_dur.txt']), 'wt');
     fprintf(fid, '%.2f\n', durations);
     fclose(fid);
 end

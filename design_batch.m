@@ -86,6 +86,12 @@ end
 if ~isfield(D,'timewin')
     D.timewin = 0;
 end
+if ~isfield(D,'meancentre')
+    D.meancentre = 0;
+end
+if ~isfield(D,'pronto')
+    D.pronto = 0;
+end
 
 if D.para==1
     paraname = '_spm';
@@ -156,6 +162,7 @@ if cell2mat(strfind(TrainTestFac,'g'))
 else
     glev=1;
 end
+if ~iscell(D.grphead); D.grphead = {D.grphead};end
 if length(glev)>1 && length(D.grphead)>1
     grphead = D.grphead(glev);
 else
@@ -168,7 +175,7 @@ end
 sub_col = find(strcmp(pdata(1,:),D.subhead));
 inc_col = find(strcmp(pdata(1,:),D.inchead));
 
-if glev && wlev
+if any(glev) && wlev
     % duplicate grouping to provide feature space for TrainTest
     grp_col = repmat(grp_col,1,2);
 end
@@ -540,7 +547,7 @@ for gd = 1:length(Ngrp)
                 elseif D.para==2 || (D.pronto && isinter)
                     if D.useIDfile==1
                         % for SnPM, check averaged files exist; if not then create them.
-                        fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
+                        fnames = dir(fullfile(subdir, [scanname '*' D.fileoptype '*' scanname_ext '*']));
                         if wnum==0
                             condlist = ones(length(D.cond_list),1);
                         else
@@ -548,7 +555,7 @@ for gd = 1:length(Ngrp)
                         end
                         if isempty(fnames) || D.overwrite
                             factor_img(subdir,D.imglist,condlist,scanname,D.fileoptype,D.znorm);
-                            fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
+                            fnames = dir(fullfile(subdir, [scanname '*' D.fileoptype '*' scanname_ext '*']));
                         end
                         for i=1:length(fnames)
                             subimg{i,1} = fullfile(subdir,[fnames(i).name ',1']);

@@ -5,11 +5,28 @@ close all
 % directory for all prt analyses:
 D.stats_path = 'C:\Data\Catastrophising study\SPMstats\pronto';
 % analysis folder prefix
-D.pref = 't-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_';
+%D.pref = 'Group\Per condition\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_';
 %D.pref = 't-3000_-2_b-3000_-2500_m_-2500_-1000HighExp_Exp_effect_orig_cleaned_SPNall_prt_gpr_MC';
+%D.pref = 'Group Expectancy\t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt';
+D.pref = '';
 % analysis folder suffix
-%D.suff = {'grpHighExp_gpc_ROI','Exp_gpc_ROI','ExpLL_gpc_ROI'};
-D.suff = {'Gender1_Exp_gpc_ROI','Gender2_Exp_gpc_ROI'};
+%D.suff = {'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_noperm'};
+%D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_GrpAvCond_gpc_ROI_noperm'};
+D.suff = {'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI'};
+%D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Exp_gpc_ROI_noperm'};
+%D.suff = {'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_noperm',...
+    %'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI_noperm'};%,...
+    %'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_Exp_gpc_ROI'
+    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLowPC_gpc_ROI'
+    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHighPC_gpc_ROI'};
+    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLL_LowPC_gpc_ROI'};
+    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLL_HighPC_gpc_ROI'};
+    %''};
+%D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_GrpAvCond_gpc_ROI_noperm',...
+%    't-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Exp_gpc_ROI_noperm'};
+    %'Group Expectancy\t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_ExpLowPC_gpc_ROI'};
+    %'Group Expectancy\t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_ExpHighPC_gpc_ROI'};
+    %''};
 %D.suff = {''};
 D.maxarray = 1e+09;
 
@@ -25,10 +42,18 @@ D = get_fnames(D)
 %create_projections(D,1)
 
 %% regression of weight vectors
-% input 2: indices of D.suff for dependent variable
-% input 3: indices of D.suff for independent variable(s)
-use_bootstrapped=1;
-regress_images(D,{'wimg','pwimg'},1,2,use_bootstrapped)
+% input 3: indices of D.suff for dependent variable
+% input 4: indices of D.suff for independent variable(s)
+% input 5: indices of D.suff for nuisance covariate(s)
+%use_bootstrapped=0; 
+%regress_images(D,{'wimg','pwimg'},1,2,[],use_bootstrapped)
+
+%% plot weight TOIs
+% input 3: indices of D.suff to plot
+% input 4: masked time array (for x axis)
+% input 5: full time window unmasked
+plot_weight_TOIs(D,{'wimg','pwimg'},1,[-2495:10:-1005],[-3000:2:-2]);
+%plot_weight_TOIs(D,{'wimg','pwimg'},1,[5:10:1495],[-5500:2:1500]);
 
 end
 
@@ -66,7 +91,7 @@ end
 end
 
 
-function create_projections(D,ind) % UNFINISHED: cannot calculate cov of large arrays
+function create_projections(D,ind) 
 % creates weighted images for group data
 
 for i = ind
@@ -79,15 +104,30 @@ for i = ind
         
     % get feature set
     load(D.prt{i});
-    fs=PRT.fas.dat(:,:);
+    try
+        fs=PRT.fas.dat(:,:);
+    catch % correct path
+        [pth nme ext] = fileparts(PRT.fas.dat.fname);
+        PRT.fas.dat.fname = fullfile(D.stats_path,D.suff{1},[nme ext]);
+        fs=PRT.fas.dat(:,:);
+    end
     
     % get indices of feature set
-    %fsind = PRT.fas.idfeat_img;
+    fsind = PRT.fas.idfeat_img;
+    
+    % put features into the full array
+    fs_full = nan(size(fs,1),length(nonan));
+    for ii = 1:size(fs,1)
+        fs_full(ii,fsind) = fs(ii,:); 
+    end
+    
+    % reshape fs_full to the dimensions of the weight image
+    fsd = reshape(fs_full,size(fs_full,1),size(Wimg,1),size(Wimg,2),size(Wimg,3));
     
     % put feature set in weight image dimensions and convert to 2D
-    fsd = repmat(double(~isnan(Wimg)),1,1,1,size(fs,1));
-    fsd=permute(fsd,[4 1 2 3]);
-    fsd(find(fsd)) = fs(:);
+    %fsd = repmat(double(~isnan(Wimg)),1,1,1,size(fs,1));
+    %fsd=permute(fsd,[4 1 2 3]);
+    %fsd(find(fsd)) = fs(:);
     fsd = reshape(fsd,size(fs,1),[]);
     fsd=fsd(:,nonan);
     
@@ -152,7 +192,7 @@ end
 end
 
 
-function regress_images(D,fields,indDV,indIV,boot)
+function regress_images(D,fields,indDV,indIV,cov,boot)
 
 R = struct();
 for f = 1:length(fields)
@@ -167,9 +207,11 @@ for f = 1:length(fields)
     % vectorise
     dv = Vdv(:);
     
-    for i = 1:length(indIV)
+    IVind = [indIV,cov];
+    
+    for i = 1:length(IVind)
         % load IV
-        R.IV{i} = D.(fields{f}){indIV(i)};
+        R.IV{i} = D.(fields{f}){IVind(i)};
         V=spm_vol(R.IV{i});
         Viv=spm_read_vols(V(end));
         % vectorise
@@ -178,23 +220,22 @@ for f = 1:length(fields)
     dvi = ~isnan(dv);
     ivi = ~isnan(iv(:,1));
     if sum(dvi)~=sum(ivi)
-        error('dv and iv are different sizes')
+        %error('dv and iv are different sizes')
+        dvi = dvi.*ivi;
+        ivi = dvi;
     end
-    % multiple regression
-    %STATS contains:
-    %the R-square statistic, 
-    %the F statistic 
-    %the p value
-    %an estimate of the error variance.
-    [b,bint,r,rint,R.st.stats] = regress(dv(dvi),[ones(sum(ivi),1) iv(ivi,:)]);
+    
+    % run regression
+    [R.st.stats,rdv] = regress_with_cov(dv(find(dvi)),iv(find(ivi),IVind==indIV),iv(find(ivi),ismember(IVind,cov)));
+    
     if boot && strcmp(fields{f},'wimg')
         DVs = dir(fullfile(D.stats_path,[D.pref D.suff{indDV}],'perm_weights*'));
         DV = fullfile(D.stats_path,[D.pref D.suff{indDV}],DVs.name);
-        for ii = 1:length(indIV)
-            IVs = dir(fullfile(D.stats_path,[D.pref D.suff{indIV(ii)}],'perm_weights*'));
-            IV{ii,1} = fullfile(D.stats_path,[D.pref D.suff{indIV(ii)}],IVs.name);
+        for ii = 1:length(IVind)
+            IVs = dir(fullfile(D.stats_path,[D.pref D.suff{IVind(ii)}],'perm_weights*'));
+            IV{ii,1} = fullfile(D.stats_path,[D.pref D.suff{IVind(ii)}],IVs.name);
         end
-        P = regress_permuted(DV,IV);
+        P = regress_permuted(DV,IV,find(IVind==indIV),find(IVind==cov));
         R.st.permresults = extractfield(P, 'rspacetime'); 
         R.st.pval = sum(abs(R.st.permresults) > abs(R.st.stats(1))) / length(R.st.permresults);
         pID='permuted';
@@ -204,7 +245,7 @@ for f = 1:length(fields)
         pID='';
         R.st.CIs = [nan,nan];
     end
-    figure;scatter(iv(ivi,:),dv(dvi))
+    figure;scatter(iv(find(ivi),IVind==indIV),rdv)
     title([fields{f} ': space-time r2=' num2str(R.st.stats(1)) ', ' pID ' p=' num2str(R.st.pval) ', CIs = ' num2str(R.st.CIs(1)) ' ' num2str(R.st.CIs(2))])
     
     % regression over space for each time point
@@ -232,7 +273,7 @@ for f = 1:length(fields)
             pT='permuted';
             R.s.CIs(d,:) = prctile(permresults,[2.5 97.5]);
         else
-            R.s.pval = stats(3);
+            R.s.pval(d) = stats(3);
             pT='';
             R.s.CIs(d,:) = [nan,nan];
         end
@@ -240,16 +281,16 @@ for f = 1:length(fields)
     figure;
     rtime = R.s.rtime;
     rtime_corr = nan(size(rtime));
-    if strcmp(pT,'permuted')
+    %if strcmp(pT,'permuted')
         rtime(R.s.pval>0.05)=nan;
         [R.s.pID,R.s.pN] = fdr(R.s.pval,0.05);
         if ~isempty(R.s.pN)
             rtime_corr = rtime;
-            rtime_corr(rtime_corr>R.s.pN) = nan;
+            rtime_corr(R.s.pval>R.s.pN) = nan;
         end
-    end
-    plot(rtime,'b'); hold on
-    plot(rtime_corr,'r'); hold off
+    %end 
+    scatter(1:length(rtime),rtime,'b'); hold on
+    scatter(1:length(rtime_corr),rtime_corr,'r'); hold off
     title([fields{f} ': r2 over time, ' pID])
     [maxr,maxt]=max(rtime);
     xx=Viv(:,:,maxt);
@@ -261,27 +302,31 @@ for f = 1:length(fields)
     % get weights from DV and IV prt
     load(D.prt{indDV});
     dvwt = PRT.model.output.weight_ROI{1, 1}(:,end);
-    for i = 1:length(indIV)
-        load(D.prt{indIV});
+    for i = 1:length(IVind)
+        load(D.prt{IVind(i)});
         ivwt(:,i) = PRT.model.output.weight_ROI{1, 1}(:,end);
         if length(ivwt(:,i))~=length(dvwt)
             error('dv and iv are different sizes')
         end
     end
+    
+    % run regression
+    [R.t.stats,dvwt] = regress_with_cov(dvwt,ivwt(:,IVind==indIV),ivwt(:,ismember(IVind,cov)));
+    
     % multiple regression
     %STATS contains:
     %the R-square statistic, 
     %the F statistic 
     %the p value
     %an estimate of the error variance.
-    [b,bint,r,rint,R.t.stats] = regress(dvwt,[ones(length(dvwt),1) ivwt]);
-    figure;scatter(ivwt,dvwt)
+    %[b,bint,r,rint,R.t.stats] = regress(dvwt,[ones(length(dvwt),1) ivwt]);
+    figure;scatter(ivwt(:,IVind==indIV),dvwt)
     title([fields{f} ': weights over time, r2=' num2str(R.t.stats(1)) ', p=' num2str(R.t.stats(3))])
 end
 save(fullfile(D.stats_path,[D.pref D.suff{indDV}],'weights_stats.mat'),'R');
 end
 
-function P = regress_permuted(DV,IV)
+function P = regress_permuted(DV,IV,indIV,indCOV)
     
 % DV & IV: path of permuted weights folder
 dimgs = dir(fullfile(DV,'*.img'));
@@ -311,13 +356,8 @@ for ii = 1:length(IV)
     end
 end
 for i = 1:length(dimgs)
-    % multiple regression
-    %STATS contains:
-    %the R-square statistic, 
-    %the F statistic 
-    %the p value
-    %an estimate of the error variance.
-    [b,bint,r,rint,stats] = regress(P(i).dv(P(i).dvi),[ones(sum(P(i).ivi(:,1)),1) P(i).iv(P(i).ivi(:,1))]);
+    % run regression
+    stats = regress_with_cov(P(i).dv(P(i).dvi),P(i).iv(P(i).ivi(:,indIV)),P(i).iv(P(i).ivi(:,indCOV)));
     P(i).rspacetime = stats(1);
 end
 
@@ -339,4 +379,133 @@ for i = 1:length(dimgs)
         P(i).rtime(d) = stats(1);
     end
 end
+end
+
+function [stats,rdv] = regress_with_cov(dv,iv,cov)
+% multiple regression, controlling for nuisance covariates
+%STATS contains:
+%the R-square statistic, 
+%the F statistic 
+%the p value
+%an estimate of the error variance.
+
+% first, get residuals from regressing with covariate
+r=[];
+if ~isempty(cov)
+    for c = 1:size(cov,2)
+        if c==1;
+            rdv = dv;
+        else
+            rdv = r;
+        end
+        [~,~,r,~,~] = regress(rdv,[ones(size(cov,1),1) cov(:,c)]);
+    end
+end
+
+% then, regress residuals with IV of interest
+if ~isempty(r);
+    rdv = r;
+else
+    rdv = dv;
+end
+[b,bint,r,rint,stats] = regress(rdv,[ones(size(iv,1),1) iv]);
+end
+
+function plot_weight_TOIs(D,field,ind,xval,tp)
+
+DV = D.(field{1}){ind};
+load(D.prt{ind});
+dvwt = PRT.model.output.weight_ROI{1, 1}(:,end);
+
+% for plotting colours in variance range
+%figure;
+%set(gcf, 'Position', [100, 100, 1000, 300])
+%scatter(xval,dvwt,[],[0.5 0.5 0.5],'filled'); hold on
+%sds = [0 1 2];
+%cols = {[0 0 1],[0 0.8 0],[1 0 0]};
+%cols = linspace(1,10,length(sds));
+
+
+%plot([min(xval),max(xval)],[thresh,thresh],'r')
+%title([field ': weights over time'])
+%xlabel('Time (ms)')
+%ylabel('Weight')
+
+si_peak = find(dvwt==max(dvwt));
+xval_peak = xval(si_peak);
+disp(['peak value: ' num2str(xval_peak)]);
+
+
+C=zeros(1,length(xval));
+sds = [-3:1:3];
+for s = 1:length(sds)
+    sd=sds(s);
+    thresh = mean(dvwt)+sd*std(dvwt);
+    si = find(dvwt>thresh);
+    C(si) = sd;
+end
+figure
+set(gcf, 'Position', [100, 100, 1000, 300])
+x = xval;
+y = [0.5];
+%C = 1:1500;
+imagesc(x,y,C)
+colormap(jet)
+colorbar
+
+f1=figure
+set(gcf, 'Position', [100, 100, 1000, 300])
+s=scatter(xval,dvwt*100/sum(dvwt),100,C,'filled'); 
+s.MarkerEdgeColor = [0 0 0];
+s.LineWidth=0.5;
+colormap(jet)
+caxis([min(sds),max(sds)])
+%title([field ': weights over time'])
+xlabel('Time (ms)')
+ylabel('Weight (% contribution)')
+%axis off
+tightfig(f1)
+colorbar
+
+
+[sdv,si] = sort(dvwt,'descend');
+for s = 1:length(sds)
+    sd1=sds(s);
+    sd2=sds(min(s+1,length(sds)));
+    thresh1 = mean(dvwt)+sd1*std(dvwt);
+    if sd2>sd1
+        thresh2 = mean(dvwt)+sd2*std(dvwt);
+    else
+        thresh2 = Inf;
+    end
+    si = find(dvwt>thresh1 & dvwt<thresh2);
+    xval_max{s} = nan(size(xval));
+    dvwt_max{s} = nan(size(dvwt));
+    xval_max{s}(si) = xval(si);
+    dvwt_max{s}(si) = dvwt(si);
+%    scatter(xval_max{s},dvwt_max{s},[],cols{s},'filled')
+    disp(['max values (SD: ' num2str(sd1) '): ' num2str(xval_max{s}(~isnan(xval_max{s})))]);
+end
+
+% get weight matrix imge and plot max TOI topo/projection
+for f = 1:length(field)
+    W = D.(field{f}){ind};
+    if ~exist(W)
+        disp('no projections');
+        continue
+    end
+    V=spm_vol(W);
+    Vdv=spm_read_vols(V(end));
+    % find time range
+    incr = (xval(2)-xval(1))/2; % increment in TOI image
+    %tp = xval(1)-incr/2:xval(end)+incr/2;% time points
+    tw=find(tp>xval_peak-incr & tp<xval_peak+incr);
+    topo = nanmean(Vdv(:,:,tw),3);
+    figure
+    imagesc(topo)
+    colormap(jet)
+    title([field{f} ': time of max weight'])
+    colorbar
+end
+
 end

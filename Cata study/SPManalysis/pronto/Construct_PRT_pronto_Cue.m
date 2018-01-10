@@ -9,7 +9,7 @@ clear all
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\pronto\Construct_PRT_pronto_LEP.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\pronto\Construct_PRT_pronto_Cue.m';
 % template flexible factorial matlabbatch
 D.batch = 'C:\Data\Catastrophising study\SPMstats\pronto\PRT.mat';
 % root directory in which subject-specific folders are located
@@ -28,15 +28,15 @@ D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\pronto';
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
 % prefix and suffix of subject folder names (within 'data_path') either side of subject ID
-%D.anapref = 't-3000_-2_b-3000_-2500'; %directory prefix for this specific analysis
-D.anapref = 't-5500_1500_b-5500_-5000'; %directory prefix for this specific analysis
+D.anapref = 't-3000_-2_b-3000_-2500'; %directory prefix for this specific analysis
+%D.anapref = 't-5500_1500_b-5500_-5000'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
 %D.anapref = 'f10_t-3000_-2_b-3000_-2500'; %directory prefix for this specific analysis
 %D.subdirpref = '_mrtf_spm12_C'; % generic prefix for the SPM file type
-%D.subdirsuff = '_orig_cleaned_SPNall'; % generic suffix for the EEGLAB analysis file
-D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_orig_cleaned_SPNall'; % generic suffix for the EEGLAB analysis file
+%D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier='_Exp_gpc_ROI_noperm'; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_ExpHL_gpc_ROI_noperm'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -50,14 +50,14 @@ D.imglist = {
             %'scondition_c4a.nii'
             %'scondition_c6a.nii'
             %'scondition_c8a.nii'
-            %'scondition_c2b.nii'
-            %'scondition_c4b.nii'
-            %'scondition_c6b.nii'
-            %'scondition_c8b.nii'
-            'scondition_c2.nii'
-            'scondition_c4.nii'
-            'scondition_c6.nii'
-            'scondition_c8.nii'
+            'scondition_c2b.nii'
+            'scondition_c4b.nii'
+            'scondition_c6b.nii'
+            'scondition_c8b.nii'
+            %'scondition_c2.nii'
+            %'scondition_c4.nii'
+            %'scondition_c6.nii'
+            %'scondition_c8.nii'
             };
         
 %% analysis design and parameters
@@ -65,8 +65,8 @@ D.imglist = {
 D.pronto = 1; % multivariate
 % specify a time window to analyse
 %D.time_ana = [-3000 -500]; % applies a mask to the data
-%D.time_ana = [-2500 -1000]; % applies a temporal mask to the data (first level)
-D.time_ana = [0 1500]; % applies a temporal mask to the data (first level)
+D.time_ana = [-2500 -1000]; % applies a temporal mask to the data (first level)
+%D.time_ana = [0 1500]; % applies a temporal mask to the data (first level)
 D.timewin = [10];% apply windowing over the range of D.time_ana? Provide window size
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
@@ -124,7 +124,7 @@ D.kernel = 1;
 
 % permutation testing
 D.permtest = 0;
-D.saveallweights = 0; % Requires adding code to prt_compute_weights_class.m, line 287:
+D.saveallweights = 0; % Requires added code to prt_compute_weights_class.m, line 287:
                 %if length(d.coeffs)>size(d.datamat,1)
                 %    keep_idx = train_idx(find(ID(:,6)==1));
                 %    d.coeffs = d.coeffs(train_idx);

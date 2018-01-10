@@ -8,21 +8,21 @@ load('C:\Data\Catastrophising study\Orig\chanlocs.mat');
 
 min_trials_gavg=3;
 anatype = {'evoked', 'induced','itc'}; anaDAT=1; % 1:evoked, 2:induced, 3: ITC
-lat_ms = [-2346]; %ms
+lat_ms = [-2266]; %ms
 sigtimes =[-2346 -2266]; % grey background at cluster extent. Can use find_cluster_extent.m
 %sigtimes = [104 131]; %268ms peak
 %sigtimes = [80 95]; %132ms peak
 %sigtimes = [79 96]; %124ms peak
 no_plot_ele=[];
-pos_neg_peak = -1; %1 or -1
+pos_neg_peak = 1; %1 or -1
 num_ele = 3;
 lat = (lat_ms+3000)/2;
 no_cond=9;
 av_grps = {2,3};
 plotidx=[1 2];
-col = {'b','r'};
+col = {'r','b'};
 %col = {'b','b--','r','r--'};
-plottimewin = [-3000 0];
+plottimewin = [-3000 -1500];
 
 % read participant data
 [~,~,pdata] = xlsread(pdatfile);

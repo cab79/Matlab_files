@@ -19,12 +19,13 @@ S.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_-
 % the original data file suffix,
 % and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
-    '_Time_Grp_Exp_Subject_spm_t-2500_-2332',1, '_orig_cleaned_SPNall.mat',{}
-    '_Time_Grp_Exp_Subject_spm_t-2296_-1950',1, '_orig_cleaned_SPNall.mat',{}
-    '_Time_Grp_Exp_Subject_spm_t-2144_-102',1, '_orig_cleaned_SPNall.mat',{}
-    '_Time_Grp_Exp_Subject_spm_t-1790_-1028',1, '_orig_cleaned_SPNall.mat',{}
-    '_Time_Grp_Exp_Subject_spm_t-938_-632',1, '_orig_cleaned_SPNall.mat',{}
-    '_Time_Grp_Exp_Subject_spm_t-350_-16',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-2346_-2266',1, '_orig_cleaned_SPNall.mat',{}
+    %'_Time_Grp_Exp_Subject_spm_t-2500_-2332',1, '_orig_cleaned_SPNall.mat',{}
+    %'_Time_Grp_Exp_Subject_spm_t-2296_-1950',1, '_orig_cleaned_SPNall.mat',{}
+    %'_Time_Grp_Exp_Subject_spm_t-2144_-102',1, '_orig_cleaned_SPNall.mat',{}
+    %'_Time_Grp_Exp_Subject_spm_t-1790_-1028',1, '_orig_cleaned_SPNall.mat',{}
+    %'_Time_Grp_Exp_Subject_spm_t-938_-632',1, '_orig_cleaned_SPNall.mat',{}
+    %'_Time_Grp_Exp_Subject_spm_t-350_-16',1, '_orig_cleaned_SPNall.mat',{}
 };
 
 %name of batch .mat file saved from design_batch.m and within same folder

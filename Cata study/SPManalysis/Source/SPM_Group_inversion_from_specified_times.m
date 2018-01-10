@@ -47,13 +47,14 @@ S.imout = []; % select which to produce on this run, or leave empty to run all
 S.images_out = {
         % from timewin 1
         {
-        'base',[];
-        [-2500 -2332],[]; %Exp
-        [-2296 -1950],[]; %Grp
-        [-2144 -102],[]; %Exp
-        [-1790 -1028],[]; %Grp*Exp
-        [-938 -632],[]; %Grp*Exp
-        [-350 -16],[]; %Grp*Exp
+        %'base',[];
+        [-2346 -2266],[]; %MVPA group
+        %[-2500 -2332],[]; %Exp
+        %[-2296 -1950],[]; %Grp
+        %[-2144 -102],[]; %Exp
+        %[-1790 -1028],[]; %Grp*Exp
+        %[-938 -632],[]; %Grp*Exp
+        %[-350 -16],[]; %Grp*Exp
         }; 
 };
 

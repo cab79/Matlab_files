@@ -46,7 +46,7 @@ D.include_codes = [1];
 % time identifer for source image files, to add to end of outputted SPM folder name
 %identifier={'_t-2316_-1924','_t-2412_-2380','_t-2152_-2','_t-786_-732'}; 
 %D.baseline='_t-3000_-2500'; 
-identifier={'_t-2500_-2332','_t-2296_-1950','_t-2144_-102','_t-1790_-1028','_t-938_-632','_t-350_-16'}; 
+identifier={'_t-2346_-2266'};%'_t-2500_-2332','_t-2296_-1950','_t-2144_-102','_t-1790_-1028','_t-938_-632','_t-350_-16'}; 
 D.baseline='2_t-3000_-2500';
 
 if isempty(identifier)

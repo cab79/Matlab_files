@@ -35,17 +35,18 @@ P.xlines = [-5000 -2500 0];
 P.poly = [];
 
 % plot topographies
-P.plot_topo=0;
+P.plot_topo=1;
 P.eventtypes = {'c1','c3','c5','c7','c2a','c4a','c6a','c8a','c2b','c4b','c6b','c8b'};
 P.eeglab_path = 'C:\Data\Catastrophising study\Preprocessed';
 P.no_plot_ele=[];
+P.topo_subtimewin=[-2265 -2265]; % time window length. single value: plots multiple topos in consecutive windows with this length. 2 values: specifies a window. 0 = whole cluster.
 
 % save optons
 P.save_waveforms=0;
-P.save_topo=0;
+P.save_topo=1;
 
 %% figures to plot
-P.plotnum = 4;
+P.plotnum = 3;
 
 switch P.plotnum
     case 1
@@ -100,7 +101,7 @@ switch P.plotnum
         P.cval={
             %{'Low','Medium'},[1 2]
             {'Low Exp','Low Exp (post-High)','High Exp'},[1 3]
-            %{'Cue 1 Low, Cue 2 Low','Cue 1 High, Cue 2 Low'},[1 2]
+            %{'Cue 1 Low, Cue 2 Low','Cue 1 High, Cue 2 Low'},[1 3]
             %{'High PCS','Low PCS'},[1 2]
             %{'No Task','Task'},[1 2]
             };

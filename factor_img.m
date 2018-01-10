@@ -17,9 +17,9 @@ switch outputtype
                 end
             else
                 fout = fullfile(subdir,[scanname '_' num2str(cond(c)) '_' outputtype '.nii']);
-                if ~exist(fout,'file')
+                %if ~exist(fout,'file')
                     spm_imcalc_ui(fnames,fout,'mean(X)',{1,[],[],[]});
-                end
+                %end
             end
         end
     case 'contrast'
