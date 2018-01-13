@@ -136,8 +136,11 @@ for sp = 1:size(S.spm_paths,1)
             clustable{Nhead+c,Nrhead+6} = vec2str(round([clustable{Nhead+c,Nrhead+6}])',{},{},0);
             loc = [TabDat.dat{:,colind(end)}];
             locF = [TabDat.dat{:,9}];
-            clustable(Nhead+c,size(clustable,2)+1)={loc(3,:)};
-            clustable(Nhead+c,size(clustable,2)+1)={locF};
+            if c==1
+                locind = size(clustable,2)+1;
+            end
+            clustable(Nhead+c,locind)={loc(3,:)};
+            clustable(Nhead+c,locind)={locF};
 
             % save cluster volume image for masking
             cfname = fullfile(S.clus_path{cont},[cname '_mask']);
@@ -178,6 +181,17 @@ for sp = 1:size(S.spm_paths,1)
             SPM = cell2struct([struct2cell(s_merged); struct2cell(SPMset)], names, 1);
             [hReg,xSPM,SPM] = spm_results_ui('setup',SPM);
             TabDat = spm_list('List',xSPM,hReg);
+            
+            % get aal labels
+            if S.use_aal
+                if c==1
+                    aalind = size(clustable,2)+1:size(clustable,2)+4;
+                end
+                S.cimg = [cname '_mask'];
+                S.folder = S.clus_path{cont};
+                lab=create_aal_labels(S);
+                clustable(Nhead+c,aalind)=lab;
+            end
         end
 
         save(fullfile(S.clus_path{cont},'cluster_table.mat'),'clustable');

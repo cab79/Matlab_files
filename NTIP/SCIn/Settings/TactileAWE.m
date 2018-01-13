@@ -8,9 +8,9 @@ switch opt
     case 'setoptions'
         
     % settings options
-    h.SettingsOptions = {'10Hz'};
+    h.SettingsOptions = {'1Hz'};
     
-    case '10Hz'
+    case '1Hz'
         
     %% TRIALS or CONTINUOUS?
     h.Settings.design = 'trials';
@@ -83,9 +83,9 @@ switch opt
     %intensity
     h.Settings.inten = 1; % value between 0 and 1
     % Tactile: number of pulses in a train
-    h.Settings.npulses_train = 6000; % set to zero to be determined by stimdur
+    h.Settings.npulses_train = 5; % set to zero to be determined by stimdur
     % Tactile: within-train frequency (Hz)
-    h.Settings.p_freq=10; 
+    h.Settings.p_freq=1; 
     
     %% CHANGING STIMULUS INTENSITY EVERY X PULSES
     % REFER TO "TIMER STOP": https://labjack.com/support/ud/df-lj-app-guide/10.5

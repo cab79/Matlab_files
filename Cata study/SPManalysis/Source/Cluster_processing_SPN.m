@@ -14,18 +14,15 @@ S.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_SPNall_new';
 % directory in which SPM analysis is saved 
 S.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning\2nd_analysis_SPN';
 % path to sensor space analysis where image_win.mat is saved
-S.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_-2_b-3000_-2500_m_-2500_0_Grp_Exp_Subject_orig_cleaned_SPNall_spm';
+S.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_spm';
 % specific folder(s) containing the SPM stats for this analysis, 
 % the original data file suffix,
 % and the corresponding D.val (i.e. index of D.inv) from source analysis
 S.spm_dir = {
-    '_Time_Grp_Exp_Subject_spm_t-2346_-2266',1, '_orig_cleaned_SPNall.mat',{}
-    %'_Time_Grp_Exp_Subject_spm_t-2500_-2332',1, '_orig_cleaned_SPNall.mat',{}
-    %'_Time_Grp_Exp_Subject_spm_t-2296_-1950',1, '_orig_cleaned_SPNall.mat',{}
-    %'_Time_Grp_Exp_Subject_spm_t-2144_-102',1, '_orig_cleaned_SPNall.mat',{}
-    %'_Time_Grp_Exp_Subject_spm_t-1790_-1028',1, '_orig_cleaned_SPNall.mat',{}
-    %'_Time_Grp_Exp_Subject_spm_t-938_-632',1, '_orig_cleaned_SPNall.mat',{}
-    %'_Time_Grp_Exp_Subject_spm_t-350_-16',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-2384_-2348',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-2258_-1896',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-2138_-1188',1, '_orig_cleaned_SPNall.mat',{}
+    '_Time_Grp_Exp_Subject_spm_t-1166_-1060',1, '_orig_cleaned_SPNall.mat',{}
 };
 
 %name of batch .mat file saved from design_batch.m and within same folder

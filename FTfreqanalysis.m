@@ -15,8 +15,8 @@ elseif strcmp(select,'Coh')
     cfg.output     = 'powandcsd';
     cfg.method     = 'mtmfft';
 end
-
-cfg.pad        = 'nextpow2';
+%timewin = length(intimes)/(intimes(2)-intimes(1))/1000;
+cfg.pad        = min(divisors(min(freqrange)));%-timewin;%'nextpow2';
 if size(freqrange,1)>1
     cfg.foilim        = [min(freqrange) max(freqrange)];
 else

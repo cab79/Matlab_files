@@ -10,17 +10,17 @@
 
 clear all
 %% file info
-D.format = 'long'; %CURRENT format of data
+D.format = 'short'; %CURRENT format of data
 % file path and name
-D.pdatfile = 'C:\Data\Catastrophising study\Behavioural\All_PR_long_std.xlsx';
+D.pdatfile = 'C:\Users\cab79\Google Drive\1. Liverpool University\Publications\Cata anticipation 2017\PR.xlsx';
 % columns to sort INPUT by, in order. negative will sort descending.
-D.sortby_in = [1]; 
+D.sortby_in = []; 
 % factors to sort OUTPUT by, in order (can include old and new factors). Negative will sort descending.
-D.sortby_out = [1];
+D.sortby_out = [];
 % number of factors in the input (should all be leftmost columns):
 D.Nfact_in = 2;
 % number of data columns in the input (should all be rightmost column):
-D.Ndat_in = 1;
+D.Ndat_in = 8;
 % number of header columns in input data
 D.Nhead = 1; 
 % OUTPUT factor numbers to average data over
@@ -32,13 +32,13 @@ D.mean_nonunique=0;
 
 %% enter info for converting from LONG to SHORT (only runs if data is currently long format):
 % columns of factors to remove:
-D.fact_rm = [1]; 
+D.fact_rm = []; 
 
 %% enter info for converting from SHORT to LONG (only runs if data is currently short format):
 % name the new factors to create:
-D.fact_new = {'S'}; 
+D.fact_new = {'Block','Intensity','Cue'}; 
 % number of levels of each new factor
-D.Nlev_fact_new = [53]; 
+D.Nlev_fact_new = [2 2 2]; 
 
 %% create factor averages for data outputs in short format
 % turn on this feature (1 = on, 0 = off)

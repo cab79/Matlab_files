@@ -10,9 +10,10 @@ D.stats_path = 'C:\Data\Catastrophising study\SPMstats\pronto';
 %D.pref = 'Group Expectancy\t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt';
 D.pref = '';
 % analysis folder suffix
+D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Int_gpc_ROI_noperm'};
 %D.suff = {'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_noperm'};
 %D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_GrpAvCond_gpc_ROI_noperm'};
-D.suff = {'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI'};
+%D.suff = {'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI'};
 %D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Exp_gpc_ROI_noperm'};
 %D.suff = {'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_noperm',...
     %'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI_noperm'};%,...
@@ -22,8 +23,9 @@ D.suff = {'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject
     %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLL_LowPC_gpc_ROI'};
     %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLL_HighPC_gpc_ROI'};
     %''};
-%D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_GrpAvCond_gpc_ROI_noperm',...
-%    't-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Exp_gpc_ROI_noperm'};
+%D.suff = {%'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_GrpAvCond_gpc_ROI_noperm',...
+%    't-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Exp_gpc_ROI_noperm'
+%    't-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Int_gpc_ROI_noperm'};
     %'Group Expectancy\t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_ExpLowPC_gpc_ROI'};
     %'Group Expectancy\t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_ExpHighPC_gpc_ROI'};
     %''};
@@ -52,8 +54,8 @@ D = get_fnames(D)
 % input 3: indices of D.suff to plot
 % input 4: masked time array (for x axis)
 % input 5: full time window unmasked
-plot_weight_TOIs(D,{'wimg','pwimg'},1,[-2495:10:-1005],[-3000:2:-2]);
-%plot_weight_TOIs(D,{'wimg','pwimg'},1,[5:10:1495],[-5500:2:1500]);
+%plot_weight_TOIs(D,{'wimg','pwimg'},1,[-2495:10:-1005],[-3000:2:-2]);
+plot_weight_TOIs(D,{'wimg','pwimg'},1,[5:10:1495],[-5500:2:1500]);
 
 end
 
@@ -252,16 +254,33 @@ for f = 1:length(fields)
     R.s.rtime=nan(size(Vdv,3),1);
     R.s.pval = nan(size(Vdv,3),1);
     R.s.CIs = nan(size(Vdv,3),2);
+    ivi=[];
+    dvi=[];
     for d = 1:size(Vdv,3)
+        ivt=[];
+        dvt=[];
         if all(isnan(Vdv(:,:,d)))
             continue;
         end
         dvt = Vdv(:,:,d);
-        dvt = dvt(~isnan(dvt));
         for i = 1:size(iv,2)
             ivtemp = Viv(:,:,d);
-            ivt(:,i) = ivtemp(~isnan(ivtemp));
+            ivi(:,i) = ~isnan(ivtemp(:));
         end
+        dvt=dvt(:);
+        dvi = ~isnan(dvt);
+        if sum(dvi)~=sum(ivi(1))
+            %error('dv and iv are different sizes')
+            for i = 1:size(iv,2)
+                ivtemp = Viv(:,:,d);
+                ivtemp = ivtemp(:);
+                ivi(:,i) = ~isnan(ivtemp);
+                dvi = dvi.*ivi;
+                ivi = dvi;
+                ivt(:,i) = ivtemp(find(ivi(:,i)));
+            end
+        end
+        dvt = dvt(find(dvi));
         [b,bint,r,rint,stats] = regress(dvt,[ones(length(dvt),1) ivt]);
         R.s.rtime(d) = stats(1);
         if boot && strcmp(fields{f},'wimg')
@@ -414,6 +433,7 @@ end
 function plot_weight_TOIs(D,field,ind,xval,tp)
 
 DV = D.(field{1}){ind};
+pth=fileparts(DV);
 load(D.prt{ind});
 dvwt = PRT.model.output.weight_ROI{1, 1}(:,end);
 
@@ -435,7 +455,6 @@ si_peak = find(dvwt==max(dvwt));
 xval_peak = xval(si_peak);
 disp(['peak value: ' num2str(xval_peak)]);
 
-
 C=zeros(1,length(xval));
 sds = [-3:1:3];
 for s = 1:length(sds)
@@ -453,6 +472,29 @@ imagesc(x,y,C)
 colormap(jet)
 colorbar
 
+% get weight matrix imge 
+for f = 1:length(field)
+    W = D.(field{f}){ind};
+    if ~exist(W)
+        disp('no projections');
+        continue
+    end
+    V=spm_vol(W);
+    R(f).Vdv=spm_read_vols(V(end));
+    
+    % plot temporal summaries
+    
+    Vdv = reshape(R(f).Vdv,size(R(f).Vdv,1)*size(R(f).Vdv,2),size(R(f).Vdv,3));
+    incr = (xval(2)-xval(1))/2; % increment in TOI image
+    for x = 1:length(xval)
+        xv = xval(x)-incr+1:xval(x)+incr;
+        tw=find(tp>=xv(1) & tp<=xv(end));
+        temp=Vdv(:,tw);
+        R(f).TOImean(x,1) = nanmean(abs(temp(:)));
+        R(f).TOIstd(x,1) = nanstd(temp(:));
+    end
+end
+
 f1=figure
 set(gcf, 'Position', [100, 100, 1000, 300])
 s=scatter(xval,dvwt*100/sum(dvwt),100,C,'filled'); 
@@ -467,6 +509,64 @@ ylabel('Weight (% contribution)')
 tightfig(f1)
 colorbar
 
+% get weight matrix img
+T=table;
+for f = 1:length(field)
+    
+    W = D.(field{f}){ind};
+    if ~exist(W)
+        disp('no projections');
+        continue
+    end
+    
+    dat = R(f).TOImean;
+    si_peak = find(dat==max(dat));
+    xval_peak = xval(si_peak);
+    for s = 1:length(sds)
+        sd=sds(s);
+        thresh = mean(dat)+sd*std(dat);
+        si = find(dat>thresh);
+        C(si) = sd;
+    end
+    fig(f)=figure
+    set(gcf, 'Position', [100, 100, 1000, 300])
+    s=scatter(xval,dat*100/sum(dat),100,C,'filled'); 
+    s.MarkerEdgeColor = [0 0 0];
+    s.LineWidth=0.5;
+    colormap(jet)
+    caxis([min(sds),max(sds)])
+    title([field{f} ': weights over time - means'])
+    xlabel('Time (ms)')
+    ylabel('Weight (% contribution)')
+    %axis off
+    %tightfig(fig(f))
+    colorbar
+    
+    % Tabulate
+    T.time = xval';
+    T.([field{f} '_val']) = dat;
+    T.([field{f} '_stdev']) = C';
+    
+    % plot max TOI topo/projection
+    incr = (xval(2)-xval(1))/2; % increment in TOI image
+    tw=find(tp>xval_peak-incr & tp<xval_peak+incr);
+    for f2 = 1:length(field)
+        if length(R)>=f2
+            topo = nanmean(R(f2).Vdv(:,:,tw),3);
+            figure
+            set(gcf, 'Position', [400, 400, 350, 300])
+            %imagesc(rot90(topo))
+            pcolor(rot90(topo,3)), shading interp
+            axis off
+            colormap(jet)
+            title([field{f} ': time of max ' field{f2} ' for image ' num2str(xval_peak) 'ms'])
+            colorbar
+        end
+    end
+end
+
+writetable(T,fullfile(pth,'weight_timeseries.xlsx'));
+cd(pth)
 
 [sdv,si] = sort(dvwt,'descend');
 for s = 1:length(sds)
@@ -485,27 +585,6 @@ for s = 1:length(sds)
     dvwt_max{s}(si) = dvwt(si);
 %    scatter(xval_max{s},dvwt_max{s},[],cols{s},'filled')
     disp(['max values (SD: ' num2str(sd1) '): ' num2str(xval_max{s}(~isnan(xval_max{s})))]);
-end
-
-% get weight matrix imge and plot max TOI topo/projection
-for f = 1:length(field)
-    W = D.(field{f}){ind};
-    if ~exist(W)
-        disp('no projections');
-        continue
-    end
-    V=spm_vol(W);
-    Vdv=spm_read_vols(V(end));
-    % find time range
-    incr = (xval(2)-xval(1))/2; % increment in TOI image
-    %tp = xval(1)-incr/2:xval(end)+incr/2;% time points
-    tw=find(tp>xval_peak-incr & tp<xval_peak+incr);
-    topo = nanmean(Vdv(:,:,tw),3);
-    figure
-    imagesc(topo)
-    colormap(jet)
-    title([field{f} ': time of max weight'])
-    colorbar
 end
 
 end

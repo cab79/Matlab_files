@@ -755,42 +755,44 @@ else
 end
 
 % specify ROI atlas
-if ~isempty(D.timewin) && ~isempty(D.time_ana)
-    % create window range
-    winr=[];
-    for i = 1:Inf
-        if D.time_ana(1)+D.timewin(1)-1+(D.timewin(1)*(i-1))>D.time_ana(2)
-            break
-        else
-            winr(i,:) = [D.time_ana(1),D.time_ana(1)+D.timewin(1)-1]+(D.timewin(1)*(i-1));
+if D.pronto
+    if ~isempty(D.timewin) && ~isempty(D.time_ana)
+        % create window range
+        winr=[];
+        for i = 1:Inf
+            if D.time_ana(1)+D.timewin(1)-1+(D.timewin(1)*(i-1))>D.time_ana(2)
+                break
+            else
+                winr(i,:) = [D.time_ana(1),D.time_ana(1)+D.timewin(1)-1]+(D.timewin(1)*(i-1));
+            end
         end
+        ROIname = [num2str(D.time_ana(1)) '_' num2str(D.time_ana(2)) '_step' num2str(D.timewin) '.img'];
+        ROIfile = fullfile(D.mask_path,ROIname);
+        %if ~exist(ROIfile,'file')
+            V=spm_vol(maskfile);
+            Y = spm_read_vols(V);
+            Nt=size(Y,3);
+            for i = 1:size(winr,1)
+                begsample = V.mat\[0 0 winr(i,1) 1]';
+                begsample = begsample(3);
+                endsample = V.mat\[0 0 winr(i,2) 1]';
+                endsample = endsample(3);
+                if any([begsample endsample] < 0) || any([begsample endsample] > Nt)
+                    error('The window is out of limits for the image.');
+                end
+                [junk,begsample] = min(abs(begsample-(1:Nt)));
+                [junk,endsample] = min(abs(endsample-(1:Nt)));
+                Y(: , :, begsample:endsample)  = i;
+                if i==1
+                    Y(: , :, 1:(begsample-1))   = 0;
+                elseif i==size(winr,1)
+                    Y(: , :, (endsample+1):end) = 0;
+                end
+            end
+            V.fname=ROIfile;
+            spm_write_vol(V,Y);
+        %end
     end
-    ROIname = [num2str(D.time_ana(1)) '_' num2str(D.time_ana(2)) '_step' num2str(D.timewin) '.img'];
-    ROIfile = fullfile(D.mask_path,ROIname);
-    %if ~exist(ROIfile,'file')
-        V=spm_vol(maskfile);
-        Y = spm_read_vols(V);
-        Nt=size(Y,3);
-        for i = 1:size(winr,1)
-            begsample = V.mat\[0 0 winr(i,1) 1]';
-            begsample = begsample(3);
-            endsample = V.mat\[0 0 winr(i,2) 1]';
-            endsample = endsample(3);
-            if any([begsample endsample] < 0) || any([begsample endsample] > Nt)
-                error('The window is out of limits for the image.');
-            end
-            [junk,begsample] = min(abs(begsample-(1:Nt)));
-            [junk,endsample] = min(abs(endsample-(1:Nt)));
-            Y(: , :, begsample:endsample)  = i;
-            if i==1
-                Y(: , :, 1:(begsample-1))   = 0;
-            elseif i==size(winr,1)
-                Y(: , :, (endsample+1):end) = 0;
-            end
-        end
-        V.fname=ROIfile;
-        spm_write_vol(V,Y);
-    %end
 end
 
 masking.tm.tm_none = 1;

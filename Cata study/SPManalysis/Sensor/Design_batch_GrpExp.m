@@ -30,8 +30,8 @@ D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats';
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
 % prefix and suffix of subject folder names (within 'data_path') either side of subject ID
-D.anapref = 'f10_t-3000_-2_b-3000_-2500'; %directory prefix for this specific analysis
-D.subdirpref = '_mrtf_spm12_C'; % generic prefix for the SPM file type
+D.anapref = 't-3000_-2_b-3000_-2500'; %directory prefix for this specific analysis
+D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
 %D.anapref = 'f10_t-3000_-2_b-3000_-2500'; %directory prefix for this specific analysis
 %D.subdirpref = '_mrtf_spm12_C'; % generic prefix for the SPM file type
 D.subdirsuff = '_orig_cleaned_SPNall'; % generic suffix for the EEGLAB analysis file
@@ -63,7 +63,7 @@ D.imglist = {'scondition_c1.nii'
 D.para = 1;
 % specify a time window to analyse
 %D.time_ana = [-3000 -500]; % applies a mask to the data
-D.time_ana = [-2500 0]; % applies a mask to the data
+D.time_ana = [-2500 -1000]; % applies a mask to the data
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
 D.cond_list =  [
@@ -107,26 +107,26 @@ D.GMsca = [0 0 0]; %grand mean scaling
 D.ancova = [0 0 0]; %covariate
 % after model estimation, constrasts to display
 D.fcontrasts = {
-    [1 -1 0 -1 1 0; 0 1 -1 0 -1 1], 'Grp * Exp'
-    [1 -1 0 -1 1 0], 'Grp * ExpAB'
+    %[1 -1 0 -1 1 0; 0 1 -1 0 -1 1], 'Grp * Exp'
+    %[1 -1 0 -1 1 0], 'Grp * ExpAB'
     [1 0 -1 -1 0 1], 'Grp * ExpAC'
-    [1 1 1 -1 -1 -1], 'Grp'
-    [1 -1 0 1 -1 0; 0 1 -1 0 1 -1], 'Exp'
-    [1 -1 0 1 -1 0], 'ExpAB'
+    %[1 1 1 -1 -1 -1], 'Grp'
+    %[1 -1 0 1 -1 0; 0 1 -1 0 1 -1], 'Exp'
+    %[1 -1 0 1 -1 0], 'ExpAB'
     [1 0 -1 1 0 -1], 'ExpAC'
-    [1 1 0 -1 -1 0], 'ExpAB Grp'
+    %[1 1 0 -1 -1 0], 'ExpAB Grp'
     [1 0 1 -1 0 -1], 'ExpAC Grp'
     [0 0 -1 0 0 1], 'ExpC Grp'
-    [0 -1 0 0 1 0], 'ExpB Grp'
+    %[0 -1 0 0 1 0], 'ExpB Grp'
     [-1 0 0 1 0 0], 'ExpA Grp'
     };
 
 D.tcontrasts = {
     [0 0 1 0 0 -1], 'ExpC GrpA'
-    [0 1 0 0 -1 0], 'ExpB GrpA'
+    %[0 1 0 0 -1 0], 'ExpB GrpA'
     [1 0 0 -1 0 0], 'ExpA GrpA'
     [0 0 -1 0 0 1], 'ExpC GrpB'
-    [0 -1 0 0 1 0], 'ExpB GrpB'
+    %[0 -1 0 0 1 0], 'ExpB GrpB'
     [-1 0 0 1 0 0], 'ExpA GrpB'
     };
 % the following are for SnPM, not SPM

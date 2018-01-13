@@ -17,7 +17,7 @@ D.ffbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_flexiblefactoria
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\Catastrophising study\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_SPNall_new';
+D.data_path = 'C:\Data\Catastrophising study\SPMdata\sourceimages_SPNall_new_AC';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -29,7 +29,7 @@ D.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes
 % directory in which SPM analyses will be saved (new folder created)
 D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\Source\1_grp\NoHanning\2nd_analysis_SPN';
 % path to sensor space analysis where image_win.mat is saved
-D.sensorpath = 'C:\Data\Catastrophising study\SPMstats\Include1\Between\t-3000_-2_b-3000_-2500_m_-2500_0_Grp_Exp_Subject_orig_cleaned_SPNall_spm';
+D.sensorpath = 'C:\Data\Catastrophising study\SPMstats\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_spm';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------
@@ -45,9 +45,26 @@ D.folder =0; % Is the data in a subject-specific folder?
 D.include_codes = [1];
 % time identifer for source image files, to add to end of outputted SPM folder name
 %identifier={'_t-2316_-1924','_t-2412_-2380','_t-2152_-2','_t-786_-732'}; 
-%D.baseline='_t-3000_-2500'; 
-identifier={'_t-2346_-2266'};%'_t-2500_-2332','_t-2296_-1950','_t-2144_-102','_t-1790_-1028','_t-938_-632','_t-350_-16'}; 
-D.baseline='2_t-3000_-2500';
+D.baseline='t-3000_-2500'; 
+D.images_out = {
+        [-2384 -2348],[]; %Exp
+        [-2258 -1896],[]; %Grp
+        [-2138 -1188],[]; %Exp
+        [-1166 -1060],[]; %Grp*Exp
+};
+
+for i = 1:length(D.images_out)
+    if ischar(D.images_out{i,1})
+        if strcmp(D.images_out{i,1},'base')
+            tw=D.baseline;
+        end
+    else
+        tw=D.images_out{i,1};
+    end
+    identifier{i} = ['_t' num2str(tw(1)) '_' num2str(tw(2))];
+end
+%identifier={'_t-2346_-2266','_t-2500_-2332','_t-2296_-1950','_t-2144_-102','_t-1790_-1028','_t-938_-632','_t-350_-16'}; 
+%identifier={'_t-2346_-2266','_t-2500_-2332','_t-2296_-1950','_t-2144_-102','_t-1790_-1028','_t-938_-632','_t-350_-16'}; 
 
 if isempty(identifier)
     load(fullfile(D.sensorpath,'image_win.mat'));
@@ -151,33 +168,33 @@ for di = 1:length(identifier) % first one is baseline
     D.ancova = [0 0 0 0]; %covariate
     % after model estimation, constrasts to display (SPM, not SnPM)
     D.fcontrasts = {
-        [-1 1 0 1 -1 0; 0 -1 1 0 1 -1], 'Grp * Exp'
-        [1 -1 0 -1 1 0], 'Grp * ExpAB'
+        %[-1 1 0 1 -1 0; 0 -1 1 0 1 -1], 'Grp * Exp'
+        %[1 -1 0 -1 1 0], 'Grp * ExpAB'
         [1 0 -1 -1 0 1], 'Grp * ExpAC'
-        [1 1 1 -1 -1 -1], 'Grp'
-        [1 1 0 -1 -1 0], 'ExpAB Grp'
+        %[1 1 1 -1 -1 -1], 'Grp'
+        %[1 1 0 -1 -1 0], 'ExpAB Grp'
         [1 0 1 -1 0 -1], 'ExpAC Grp'
-        [-1 1 0 -1 1 0; 0 -1 1 0 -1 1], 'Exp'
-        [1 -1 0 1 -1 0], 'ExpAB'
+        %[-1 1 0 -1 1 0; 0 -1 1 0 -1 1], 'Exp'
+        %[1 -1 0 1 -1 0], 'ExpAB'
         [1 0 -1 1 0 -1], 'ExpAC'
-        [0 0 1 0 0 -1], 'ExpC Grp'
-        [0 1 0 0 -1 0], 'ExpB Grp'
-        [1 0 0 -1 0 0], 'ExpA Grp'
+        %[0 0 1 0 0 -1], 'ExpC Grp'
+        %[0 1 0 0 -1 0], 'ExpB Grp'
+        %[1 0 0 -1 0 0], 'ExpA Grp'
         };
 
     D.tcontrasts = {
-        [1 1 1 -1 -1 -1], 'Grp A_t'
-        [-1 -1 -1 1 1 1], 'Grp B_t'
-        [1 -1 0 1 -1 0], 'ExpAB_t'
-        [1 0 -1 1 0 -1], 'ExpAC_t'
-        [-1 1 0 -1 1 0], 'ExpBA_t'
-        [-1 0 1 -1 0 1], 'ExpCA_t'
-        [0 0 1 0 0 -1], 'ExpC GrpA_t'
-        [0 0 -1 0 0 1], 'ExpC GrpB_t'
-        [0 1 0 0 -1 0], 'ExpB GrpA_t'
-        [0 -1 0 0 1 0], 'ExpB GrpB_t'
-        [1 0 0 -1 0 0], 'ExpA GrpA_t'
-        [-1 0 0 1 0 0], 'ExpA GrpB_t'
+        %[1 1 1 -1 -1 -1], 'Grp A_t'
+        %[-1 -1 -1 1 1 1], 'Grp B_t'
+        %[1 -1 0 1 -1 0], 'ExpAB_t'
+        %[1 0 -1 1 0 -1], 'ExpAC_t'
+        %[-1 1 0 -1 1 0], 'ExpBA_t'
+        %[-1 0 1 -1 0 1], 'ExpCA_t'
+        %[0 0 1 0 0 -1], 'ExpC GrpA_t'
+        %[0 0 -1 0 0 1], 'ExpC GrpB_t'
+        %[0 1 0 0 -1 0], 'ExpB GrpA_t'
+        %[0 -1 0 0 1 0], 'ExpB GrpB_t'
+        %[1 0 0 -1 0 0], 'ExpA GrpA_t'
+        %[-1 0 0 1 0 0], 'ExpA GrpB_t'
         };
 
     % the following are for SnPM, not SPM
