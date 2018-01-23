@@ -36,7 +36,7 @@ D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
 %D.subdirsuff = '_orig_cleaned_SPNall'; % generic suffix for the EEGLAB analysis file
 D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier='_Int_gpc_ROI_noperm'; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_Int_gpc_ROI_perm10000'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -83,8 +83,8 @@ D.cond_list =  [
               ];
 D.grp_list = [1 2]; 
 % factors and statistical model
-D.factors = {'Grp','Exp','Subject'}; % must include a subject factor at the end; Group factor must be first if being used
-D.factortype = {'g','w','s'}; % w = within, s = subject, g = subject group
+D.factors = {'Exp','Int','Subject'}; % must include a subject factor at the end; Group factor must be first if being used
+D.factortype = {'w','w','s'}; % w = within, s = subject, g = subject group
 %D.TrainTest = {[2 1],[],[]}; % select levels: model trains on first level and tests on second.
 %D.grpcond = 1; % select a condition for the Grp Test
 
@@ -103,7 +103,7 @@ D.maineffects = [0 1 0]; % one column per factor
 % are needed by specifying 'contrast' here
 D.fileoptype = 'contrast';
 % overwrite previous images with same name
-D.overwrite =0;
+D.overwrite =1;
 
 %D.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
 %D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA

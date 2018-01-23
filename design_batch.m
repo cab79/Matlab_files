@@ -420,7 +420,7 @@ elseif D.pronto
             Nconds = length(unique(D.cond_list(:,wnum(1))));
             for c = 1:Nconds
                 generic.design.new_design.conds(c).cond_name = [D.factors{wnum(1)} num2str(c)];
-                generic.design.new_design.conds(c).onsets = 0;%find(D.cond_list(:,1)==c)'-1;
+                generic.design.new_design.conds(c).onsets = c-1;
                 generic.design.new_design.conds(c).durations = 1;%ones(length(generic.design.new_design.conds(c).onsets),1);
             end
             scanname=strcat(D.factors{wnum});
@@ -432,7 +432,10 @@ elseif D.pronto
             generic.design.new_design.conds(1).onsets = 0;%find(D.cond_list(:,1))'-1;
             generic.design.new_design.conds(1).durations = 1;%ones(length(generic.design.new_design.conds(1).onsets),1);
             scanname=strcat(D.factors{wnum});
-            %scanname=scanname{:};
+            ucond = unique(D.cond_list);
+            if length(ucond)==1
+               scanname=[scanname '_'  num2str(ucond)];
+            end
         end
     end 
 end
@@ -951,13 +954,13 @@ elseif D.pronto
         matlabbatch{3}.prt.model.include_allscans = 0;
         if strcmp(model,'w') || strcmp(model,'ww')
             % classes
-            Nconds = length(unique(D.cond_list));
+            Nconds = length(unique(D.cond_list(:,1)));
             for c = 1:Nconds
                 matlabbatch{3}.prt.model.model_type.classification.class(c).class_name = [D.factors{wnum} num2str(c)];
                 matlabbatch{3}.prt.model.model_type.classification.class(c).group.gr_name = 'all';
                 matlabbatch{3}.prt.model.model_type.classification.class(c).group.subj_nums = (1:sum(Nsub))';
                 matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions=[];
-                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions.conds.cond_name = [D.factors{wnum} num2str(c)];
+                matlabbatch{3}.prt.model.model_type.classification.class(c).group.conditions.conds.cond_name = [D.factors{wnum(1)} num2str(c)];
             end
         elseif strcmp(model,'g') || strcmp(model,'gw') || strcmp(model,'gg') || strcmp(model,'ggw')
             % classes

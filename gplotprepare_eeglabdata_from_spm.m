@@ -1,4 +1,4 @@
-function D=gplotprepare_eeglabdata_from_spm(S,D)
+function E=gplotprepare_eeglabdata_from_spm(S,D)
 %% load EEGLAB data using filenames from an SPM file and reformat for plotting topography
 % requires P containing fields:
     % P.spm_path
@@ -31,4 +31,5 @@ end
 D.DAT=reshape(D.DAT,[],1);
 D.EEGtimes = EEGall.times;
 D.chanlocs=EEGall.chanlocs;
-save(fullfile(S.eeglab_path,S.ERPsavename),'D');
+E=D;
+save(fullfile(S.eeglab_path,S.ERPsavename),'E');

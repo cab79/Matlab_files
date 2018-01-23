@@ -36,7 +36,7 @@ D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
 D.subdirsuff = '_orig_cleaned_SPNall'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier='_GrpAvCond_gpc_ROI_noperm'; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_GrpAvCond_gpc_ROI_perm10000_loso'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -123,7 +123,7 @@ D.cov_names = {};
 D.kernel = 1;
 
 % permutation testing
-D.permtest = 0;
+D.permtest = 10000;
 D.saveallweights = 0; % Requires added code to prt_compute_weights_class.m, line 287:
                 %if length(d.coeffs)>size(d.datamat,1)
                 %    keep_idx = train_idx(find(ID(:,6)==1));
@@ -150,7 +150,7 @@ D.machine = 'gpc_binary';
 %D.machine = 'mkl';
 
 %D.cv_type = 'cv_lkso';D.nfolds = 17;
-D.cv_type = 'cv_losgo';
+D.cv_type = 'cv_loso';
 
 %% run design_batch function
 D=design_batch(D);

@@ -9,7 +9,7 @@ addpath(genpath('C:\Data\Matlab\spm12\external'));
 % prefix of output files
 filepath = 'C:\Data\Catastrophising study\Preprocessed'; 
 outpath = 'C:\Data\Catastrophising study\SPMdata'; 
-outprefix = 'spm12_';
+outprefix = 'spm12_csd_';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
@@ -22,6 +22,11 @@ dattype ='epoched';
 
 % set time window of interest in ms (advise whole epoch)
 timewin = [];
+
+% Apply CSD (leave as 0 unless you know what you are doing!)
+applyCSD=1; 
+% path to CSD montage (only needed if using CSD)
+if applyCSD; load('C:\Data\Catastrophising study\Orig\CSDmontage_64.mat'); end
 
 %% LOAD AND CONVERT
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
@@ -37,6 +42,14 @@ for f = 1:length(files)
     
     % list events
     EEG = pop_loadset(files(f).name,filepath);
+    
+    if applyCSD
+        [nchan,nsamp,ntrial] = size(EEG.data);
+        EEG.data = reshape(EEG.data,nchan,nsamp*ntrial);
+        EEG.data=CSD(EEG.data,G,H); 
+        EEG.data = reshape(EEG.data,nchan,nsamp,ntrial);
+    end
+    
     S.conditionlabels = {EEG.epoch.eventtype};
     
     % check if chanlocs names are all uppercase - if so needs modifying for

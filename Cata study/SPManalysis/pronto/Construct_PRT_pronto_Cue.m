@@ -36,7 +36,7 @@ D.subdirpref = '_mspm12_C'; % generic prefix for the SPM file type
 D.subdirsuff = '_orig_cleaned_SPNall'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier='_ExpHL_gpc_ROI_perm1000weights'; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_ExpHLHighPC_gpc_ROI_perm1000weights_no2'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -81,12 +81,12 @@ D.cond_list =  [
               1
               1
               ];
-D.grp_list = [1 2]; 
+D.grp_list = [1]; 
 % factors and statistical model
 D.factors = {'Grp','Exp','Subject'}; % must include a subject factor at the end; Group factor must be first if being used
 D.factortype = {'g','w','s'}; % w = within, s = subject, g = subject group
 %D.TrainTest = {[2 1],[],[]}; % select levels: model trains on first level and tests on second.
-%D.grpcond = 1; % select a condition for the Grp Test
+%D.grpcond = 1; % select a scondition for the Grp Test
 
 % Main effects and interactions: 
 %   - for spm, can specify the highest-level interaction to produc results
@@ -132,9 +132,9 @@ D.saveallweights = 1; % Requires added code to prt_compute_weights_class.m, line
 
 % Data operations
 % 1. Sample averaging (within blocks): constructs samples by computing the average of all
-% scans within each block or event for each subject and condition.
+% scans within each block or event for each subject and scondition.
 % 2. Sample averaging (within subjects): constructs samples by computing the average of
-% all scans within all blocks for each subject and condition.
+% all scans within all blocks for each subject and scondition.
 % 3. Mean centre features using training data: subtract the voxel-wise mean from each
 % data vector.
 % 4. Divide data vectors by their norm: scales each data vector (i.e. each example) to lie

@@ -5,14 +5,14 @@ function D = gplotprepare_spmeegsensorcluster(S)
 D(1).spm_path=S.spm_path;
 D(1).clusdir=S.clusdir;
 D(1).facplot=S.facplot;
-S.plotclus;
-S.wavetype; % source or sensor?
-S.wfname; %generic cluster waveform file name
-S.batch; %name of batch .mat file saved from design_batch.m and within same folder
-S.subfactname; 
+%S.plotclus;
+%S.wavetype; % source or sensor?
+%S.wfname; %generic cluster waveform file name
+%S.batch; %name of batch .mat file saved from design_batch.m and within same folder
+%S.subfactname; 
 
 %%
-dbstop if error
+%dbstop if error
 
 %% plot cluster waveforms
 % load waveform data
@@ -87,12 +87,22 @@ for cl = 1:length(clnames)
     end
     
     D(cl).ptitle = cllabel;
-    D(cl).Fi_ind = 1:length(D(cl).Fi);
+    if length(S.cval)>1 && isfield(S,'selectlev')
+        D(cl).Fi_ind = find(D(cl).Fi(:,1)==S.selectlev); % indices of Fi (and wf) for each plot
+    else
+        D(cl).Fi_ind = 1:length(D(cl).Fi);
+    end
     
     % extract cluster statistics
     ct_ind = find(ismember(clustable(:,1),cllabel));
-    D(cl).E_val = [clustable{ct_ind,11:12}];
-    D(cl).P_val = [clustable{ct_ind,10}];
+    try
+        colind = strcmp(clustable(2,:),'Temporal extent (ms)');
+        D(cl).E_val = [min([clustable{ct_ind,colind}]),max([clustable{ct_ind,colind}])];
+        D(cl).P_val = [clustable{ct_ind,colind}(1)];
+    catch
+        D(cl).E_val = [clustable{ct_ind,11:12}];
+        D(cl).P_val = [clustable{ct_ind,10}];
+    end
     
     % construct condition labels (of last or only factor)
     condlev=S.cval{end,1};

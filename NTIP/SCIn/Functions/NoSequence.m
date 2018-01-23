@@ -1,4 +1,4 @@
-function h = CreateSequence(h)
+function h = NoSequence(h)
 
 disp('Creating sequence...');
 h.Seq =struct;

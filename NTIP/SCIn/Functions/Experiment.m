@@ -1,5 +1,5 @@
 function h = Experiment(h,opt)
-
+dbstop if error
 % GUI handle name
 h.GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
 
@@ -189,6 +189,10 @@ while h.i<length(h.Seq.signal)
         if ~isempty(h.Settings.stimcontrol)
             opt = 'create';
             h = stimtrain(h,opt); % stimulus train
+            if strcmp(h.Settings.stimcontrol,'LJTick-DAQ');
+                opt = 'setDAC';
+                h = stimtrain(h,opt); % intensity via DAC
+            end
             opt = 'start';
             h = stimtrain(h,opt); % stimulus train
         end
@@ -234,6 +238,10 @@ if isfield(h.Settings,'stimcontrol')
         if h.Settings.ntrialsahead
             opt = 'create';
             h = stimtrain(h,opt); % stimulus train
+        end
+        if strcmp(h.Settings.stimcontrol,'LJTick-DAQ');
+            opt = 'setDAC';
+            h = stimtrain(h,opt); % intensity via DAC
         end
         opt = 'start';
         h = stimtrain(h,opt); % stimulus train

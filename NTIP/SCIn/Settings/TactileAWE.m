@@ -1,7 +1,7 @@
 function h = TactileAWE(h,opt)
 
 % FILENAME OF SEQUENCE CREATION FUNCTION (without .m)
-h.SeqFun = 'NoSequence';
+h.SeqFun = 'SimpleSequence';
 
 switch opt
     
@@ -35,12 +35,13 @@ switch opt
     %h.Settings.EEGMarkPattern = 1; % mark EEG for every change in stimulus pattern (0 = start of trial only)
     h.Settings.labjack=1; % Use labjack for controlling any equipment?
     h.Settings.labjack_timer=1; % Use timer to control frequency of labjack outputs? Otherwise uses GoOne.
-    h.Settings.stimcontrol='labjack'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
+    h.Settings.stimcontrol='LJTick-DAQ'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
+    h.Settings.labjack_DACport = 4;
+    h.Settings.stimchan = [6]; h.Settings.stimchanforLJ = 1;
     h.Settings.nrchannels = 1; % total number of channels, e.g. on sound card
     % channels on stimulator to use; use differenr rows for different pairs
     % (e.g. for different conditions). If labjack, this can refer to output
     % port(s).
-    h.Settings.stimchan = [4]; h.Settings.stimchanforLJ = 1;
     
     %% BLOCKING/RUN OPTIONS
     % 'divide' = equally divide trials by nblocks; 
@@ -62,7 +63,7 @@ switch opt
     % duration of stimulus sequence in seconds
     h.Settings.totdur = 0; 
     % duration of trial in seconds
-    h.Settings.trialdur = 0; % if 0, consecutive stimuli will occur with no gap
+    h.Settings.trialdur = 4; % if 0, consecutive stimuli will occur with no gap
     % duration of stimulus in seconds
     h.Settings.stimdur = 0; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
@@ -81,9 +82,9 @@ switch opt
     % pitch
     %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
     %intensity
-    h.Settings.inten = 1; % value between 0 and 1
+    h.Settings.inten = 10; % value between 2 and 1000mA for Digitimer DS8R
     % Tactile: number of pulses in a train
-    h.Settings.npulses_train = 5; % set to zero to be determined by stimdur
+    h.Settings.npulses_train = 3; % set to zero to be determined by stimdur
     % Tactile: within-train frequency (Hz)
     h.Settings.p_freq=1; 
     
@@ -101,10 +102,11 @@ switch opt
 
     
     %% SEQUENCE
+    h.Settings.ntrials = 50;
     % Change probablity (CP): each condition is in rows
-    h.Settings.oddprob = [
+    %h.Settings.oddprob = [
         % standard (left) vs oddball (right)=
-        ];
+    %    ];
     % index of row of oddprob that are standards and oddballs
     %h.Settings.standardind = 1; % does not apply to 'roving oddball' design
     % keep oddball trials apart by at least sep_odd standards
@@ -146,6 +148,11 @@ switch opt
     % number of trials of plot
     h.Settings.plottrials=0;
     
+    %% THRESHOLDING
+    % starting level of adaptive staircase
+    h.Settings.threshold.startinglevel = 2; % for intensity
+    % adapt to omissions of response (not suitable for 2AFC tasks!!)
+    h.Settings.threshold.step = 2;
 
 end
 

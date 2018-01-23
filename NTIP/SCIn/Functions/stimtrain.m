@@ -1,11 +1,9 @@
 function h = stimtrain(h,opt)
 
-% mods needed: use settings to define port number
-
 
 switch h.Settings.stimcontrol
 
-    case 'labjack'
+    case {'labjack','LJTick-DAQ'}
         
         if ~isfield(h,'ljHandle')
             try
@@ -18,22 +16,57 @@ switch h.Settings.stimcontrol
         if h.Settings.stimchanforLJ
             port = h.Settings.stimchan;
         else
-            port=4;
+            port=6;
         end
         
         switch opt
             case 'setDAC'
                 
-                Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_DAC, 0, 0.00, 0,0);
-                Error_Message(Error)
+                %convert h.Settings.inten from mA to V
+                inten = h.Settings.inten/100;
+                
+                if length(inten)==1
+                    % if THRESHOLD
+                    if isfield(h.Settings,'threshold')
+                        if ~isempty(h.Settings.threshold)
+                            if ~isfield(h,'s')
+                                inten = h.Settings.threshold.startinglevel/100;
+                            else
+                                inten = h.s.actStimulusLevel/100;
+                            end
+                        end
+                    end
+
+                    %Set DACA 
+                    Error = ljud_ePut(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, inten, 0); 
+                    Error_Message(Error)
+                elseif isfield(h.Settings,'p_freq') % apply a train of intensity changes at this freq
+                    for i = 1:length(inten)
+                        %Set DACA 
+                        Error = ljud_AddRequest(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, inten, 0, 0); 
+                        Error_Message(Error)
+                    
+                        Error = ljud_AddRequest(h.ljHandle,LJ_ioPUT_WAIT,h.Settings.labjack_DACport,round(1000000/h.Settings.p_freq),0,0); % Actual resolution is 64 microseconds.
+                        Error_Message(Error)
+                    end
+                end
+
+                % to use DAC0 port
+                %Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_DAC, 0, 0.00, 0,0);
+                %Error_Message(Error)
+                
                 Error = ljud_GoOne(h.ljHandle);
                 Error_Message(Error)
+               
                 
             case 'start'
+                
+                % projected time at end of trial
+                h.out.projend{h.i} = h.ct+h.Settings.trialdur;
 
                 if h.Settings.labjack_timer
                     if h.Settings.p_freq>=h.LJfreqtable(1,1)
-                        %Set the timer/counter pin offset to 4, which will put the first timer/counter on FIO4. 
+                        %Set the timer/counter pin offset to 6, which will put the first timer/counter on FIO6. 
                         Error = ljud_AddRequest (h.ljHandle,  LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, port, 0, 0);
                         Error_Message(Error)
 
@@ -75,7 +108,7 @@ switch h.Settings.stimcontrol
                 %Error = ljud_GoOne(h.ljHandle);
                 %Error_Message(Error)
                     
-                        %Set the timer/counter pin offset to 4, which will put the first timer/counter on FIO4. 
+                        %Set the timer/counter pin offset to 6, which will put the first timer/counter on FIO6. 
                         Error = ljud_AddRequest (h.ljHandle,  LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, port, 0, 0);
                         Error_Message(Error)
 
@@ -125,6 +158,7 @@ switch h.Settings.stimcontrol
                     
                 else
                     % pulse train instruction
+                    port=2
                     for pr = 1:h.Settings.npulses_train % train
                         Error = ljud_AddRequest(h.ljHandle,LJ_ioPUT_DIGITAL_BIT,port,1,0,0); % 
                         Error_Message(Error)
@@ -149,6 +183,11 @@ switch h.Settings.stimcontrol
                 
             case 'stop'
                 
+                try
+                    Error = ljud_ePut(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, 0, 0); 
+                    Error_Message(Error)
+                end
+                
                 if h.Settings.labjack_timer
                     Error = ljud_AddRequest (h.ljHandle,  LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, port, 0, 0);
                     Error_Message(Error)
@@ -156,6 +195,8 @@ switch h.Settings.stimcontrol
                     Error = ljud_GoOne(h.ljHandle);
                     Error_Message(Error)
                 end
+                
+                
          end
         
     case 'audioplayer'

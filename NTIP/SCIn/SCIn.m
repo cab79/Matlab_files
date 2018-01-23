@@ -308,10 +308,11 @@ if get(hObject, 'Value') == get(hObject, 'Max')
     set(h.info, 'String', 'Setting up...');
     opt = 'setup';
     eval(['h = ' h.exptFun '(h,opt);']);
+    global d 
+    d = h.d;
     if h.Settings.labjack
         set(h.ljhandle, 'Value', h.ljHandle);
     end
- 
     
     % select blocks to run
     set(h.info, 'String', 'Setting blocks...');
@@ -548,3 +549,4 @@ function entrainfreq_CreateFcn(hObject, eventdata, h)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+

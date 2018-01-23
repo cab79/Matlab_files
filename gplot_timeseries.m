@@ -15,16 +15,19 @@ function g = gplot_timeseries(g,P)
 %construct gramm plot
 %cond = cond(end:-1:1);
 %y = y(end:-1:1);
-g(P.xy(1),P.xy(2))=gramm('x',P.x,'y',P.y,'color',P.cond);
+g(P.xy(1),P.xy(2))=gramm('x',P.x,'y',P.y,'color',P.cond,'size',P.condsize);
 g(P.xy(1),P.xy(2)).set_names('x',P.xaxisname,'y',P.yaxisname,'color',P.fact_names{end},'column','','row','');
 g(P.xy(1),P.xy(2)).set_order_options('color',-1);
-g(P.xy(1),P.xy(2)).set_color_options('map',P.colours);
+g(P.xy(1),P.xy(2)).set_color_options('map',P.colours,'chroma_range',[30 90]);
 g(P.xy(1),P.xy(2)).set_point_options('base_size',3);
 g(P.xy(1),P.xy(2)).set_title(P.ptitle);
-if P.xlinedashed
+if ~P.legend
+    g(P.xy(1),P.xy(2)).no_legend();
+end
+if any(P.xlinedashed)
     g(P.xy(1),P.xy(2)).geom_vline('xintercept',P.xlinedashed,'style','k--','extent',4);
 end
-if P.xlinesolid
+if any(P.xlinesolid)
     g(P.xy(1),P.xy(2)).geom_vline('xintercept',P.xlinesolid,'style','k');
 end
 if P.poly
@@ -42,9 +45,9 @@ switch P.plottype
         g(P.xy(1),P.xy(2)).geom_point();
 
 end
-
-tix=get(gca,'ytick')';
-g(P.xy(1),P.xy(2)).axe_property('yticklabel',num2str(tix,'%.1f'));
+end
+%tix=get(g(P.xy(1),P.xy(2)).facet_axes_handles,'ytick')
+%g(P.xy(1),P.xy(2)).axe_property('yticklabel',num2str(tix,'%.1f'));
 
 %Possibility to set color and fill by indices (using a column vector of
 %integers. Colormap generated between 1 and max(vector))

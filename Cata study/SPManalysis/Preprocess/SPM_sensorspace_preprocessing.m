@@ -2,15 +2,15 @@ clear all
 dbstop if error
 %% SPECIFY DATA
 filepath = 'C:\Data\Catastrophising study\SPMdata'; 
-outpath = 'C:\Data\Catastrophising study\SPMdata\sensorimages'; 
+outpath = 'C:\Data\Catastrophising study\SPMdata\sensorimages_nosmooth'; 
 batchpath = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
-fpref = 'spm12';
+fpref = 'spm12_csd_';
 fmid = '';
-%fsuff = 'cleaned_SPNall.mat';
-fsuff = 'cleaned_trialNmatch.mat';
+fsuff = 'cleaned_SPNall.mat';
+%fsuff = 'cleaned_trialNmatch.mat';
 
 %% SPECIFY OPTIONS
 
@@ -41,14 +41,14 @@ freqwin = []; % empty if not requiring freq analysis
 freqres = 0; % freq resolution
 %timewin = [-5500 -2500]; % empty will include whole epoch
 %basewin = [-5500 -5000]; % empty will not baseline correct
-%timewin = [-3000 -2]; % empty will include whole epoch
-%basewin = [-3000 -2500]; % empty will not baseline correct
-timewin = [-5500 1500]; % empty will include whole epoch
-basewin = [-5500 -5000]; % empty will not baseline correct
+timewin = [-3000 -2]; % empty will include whole epoch
+basewin = [-3000 -2500]; % empty will not baseline correct
+%timewin = [-5500 1500]; % empty will include whole epoch
+%basewin = [-5500 -5000]; % empty will not baseline correct
 
 %smooth output images (specify FWHM or 0 for no smoothing)
-spmsmooth = 20;
-delete_unsmoothed = 1;
+spmsmooth = 1;
+delete_unsmoothed = 0;
 
 %% RUN
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
@@ -91,7 +91,7 @@ for f = 1:length(files)
     end
 end
 
-for f = 1:length(files)
+for f = 12:length(files)
     fname = files(f).name;
     
     if ~isempty(freqwin)

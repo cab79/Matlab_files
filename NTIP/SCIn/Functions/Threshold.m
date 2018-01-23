@@ -125,8 +125,8 @@ end
 
 function s = ThresholdParameters(h)
 
-s.stepsize = 2;
-s.SaveResults =1;
+%s.stepsize = 2;
+%s.SaveResults =1;
 s.numForthresh = 3;
 s.isstep = 1;
 

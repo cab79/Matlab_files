@@ -10,19 +10,20 @@ D.stats_path = 'C:\Data\Catastrophising study\SPMstats\pronto';
 %D.pref = 'Group Expectancy\t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt';
 D.pref = '';
 % analysis folder suffix
-D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Int_gpc_ROI_noperm'};
+%D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Int_gpc_ROI_noperm'};
 %D.suff = {'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_noperm'};
 %D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_GrpAvCond_gpc_ROI_noperm'};
 %D.suff = {'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI'};
-%D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Exp_gpc_ROI_noperm'};
-%D.suff = {'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_noperm',...
-    %'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI_noperm'};%,...
+%D.suff = {'Expectancy\LEP\t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Exp_gpc_ROI_noperm'};
+%D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Int_gpc_ROI_perm1000weights'};
+D.suff = {'Group\Main effect\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_perm1000weights',...
+    %'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI_perm1000weights'%,...
     %'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_Exp_gpc_ROI'
-    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLowPC_gpc_ROI'
-    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHighPC_gpc_ROI'};
-    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLL_LowPC_gpc_ROI'};
-    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLL_HighPC_gpc_ROI'};
-    %''};
+    %'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHLLowPC_gpc_ROI_perm1000weights'
+    'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHLHighPC_gpc_ROI_perm1000weights'
+    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLL_LowPC_gpc_ROI'
+    %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpLL_HighPC_gpc_ROI'
+    };
 %D.suff = {%'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_GrpAvCond_gpc_ROI_noperm',...
 %    't-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Exp_gpc_ROI_noperm'
 %    't-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Int_gpc_ROI_noperm'};
@@ -47,15 +48,15 @@ D = get_fnames(D)
 % input 3: indices of D.suff for dependent variable
 % input 4: indices of D.suff for independent variable(s)
 % input 5: indices of D.suff for nuisance covariate(s)
-%use_bootstrapped=0; 
-%regress_images(D,{'wimg','pwimg'},1,2,[],use_bootstrapped)
+use_bootstrapped=1; 
+regress_images(D,{'wimg','pwimg'},1,2,[],use_bootstrapped)
 
 %% plot weight TOIs
 % input 3: indices of D.suff to plot
 % input 4: masked time array (for x axis)
 % input 5: full time window unmasked
 %plot_weight_TOIs(D,{'wimg','pwimg'},1,[-2495:10:-1005],[-3000:2:-2]);
-plot_weight_TOIs(D,{'wimg','pwimg'},1,[5:10:1495],[-5500:2:1500]);
+%plot_weight_TOIs(D,{'wimg','pwimg'},1,[5:10:1495],[-5500:2:1500]);
 
 end
 
@@ -247,9 +248,17 @@ for f = 1:length(fields)
         pID='';
         R.st.CIs = [nan,nan];
     end
-    figure;scatter(iv(find(ivi),IVind==indIV),rdv)
+    ivr=iv(find(ivi),IVind==indIV);
+    figure;scatter(ivr,rdv)
     title([fields{f} ': space-time r2=' num2str(R.st.stats(1)) ', ' pID ' p=' num2str(R.st.pval) ', CIs = ' num2str(R.st.CIs(1)) ' ' num2str(R.st.CIs(2))])
     
+    % save
+    T=table;
+    T.([fields{f} '_iv']) = ivr;
+    T.([fields{f} '_dvresid']) = rdv;
+    pth=fileparts(R.DV);
+    writetable(T,fullfile(pth,'weight_regress.xlsx'));
+
     % regression over space for each time point
     R.s.rtime=nan(size(Vdv,3),1);
     R.s.pval = nan(size(Vdv,3),1);
@@ -269,7 +278,7 @@ for f = 1:length(fields)
         end
         dvt=dvt(:);
         dvi = ~isnan(dvt);
-        if sum(dvi)~=sum(ivi(1))
+        if sum(dvi)~=sum(ivi(:,1))
             %error('dv and iv are different sizes')
             for i = 1:size(iv,2)
                 ivtemp = Viv(:,:,d);
@@ -346,7 +355,7 @@ save(fullfile(D.stats_path,[D.pref D.suff{indDV}],'weights_stats.mat'),'R');
 end
 
 function P = regress_permuted(DV,IV,indIV,indCOV)
-    
+
 % DV & IV: path of permuted weights folder
 dimgs = dir(fullfile(DV,'*.img'));
 for i = 1:length(dimgs)
@@ -370,13 +379,15 @@ for ii = 1:length(IV)
         P(i).iv(:,ii) = P(i).Viv{ii}(:);
         P(i).ivi(:,ii) = ~isnan(P(i).iv(:,ii));
         if sum(P(i).dvi)~=sum(P(i).ivi(:,ii))
-            error('dv and iv are different sizes')
+            %error('dv and iv are different sizes')
+            P(i).dvi = P(i).dvi.*P(i).ivi(:,ii);
+            P(i).ivi(:,ii) = P(i).dvi;
         end
     end
 end
 for i = 1:length(dimgs)
     % run regression
-    stats = regress_with_cov(P(i).dv(P(i).dvi),P(i).iv(P(i).ivi(:,indIV)),P(i).iv(P(i).ivi(:,indCOV)));
+    stats = regress_with_cov(P(i).dv(find(P(i).dvi)),P(i).iv(find(P(i).ivi(:,indIV))),P(i).iv(find(P(i).ivi(:,indCOV))));
     P(i).rspacetime = stats(1);
 end
 
@@ -388,12 +399,36 @@ for i = 1:length(dimgs)
         if all(isnan(P(i).Vdv(:,:,d)))
             continue;
         end
+        
+        
         dvt = P(i).Vdv(:,:,d);
-        dvt = dvt(~isnan(dvt));
         for ii = 1:size(P(i).iv,2)
             ivtemp = P(i).Viv{ii}(:,:,d);
-            ivt(:,ii) = ivtemp(~isnan(ivtemp));
+            ivi(:,ii) = ~isnan(ivtemp(:));
         end
+        dvt=dvt(:);
+        dvi = ~isnan(dvt);
+        ivt=[];
+        if sum(dvi)~=sum(ivi(:,1))
+            %error('dv and iv are different sizes')
+            for i = 1:size(P(i).iv,2)
+                ivtemp = P(i).Viv{ii}(:,:,d);
+                ivtemp = ivtemp(:);
+                ivi(:,i) = ~isnan(ivtemp);
+                dvi = dvi.*ivi;
+                ivi = dvi;
+                ivt(:,i) = ivtemp(find(ivi(:,i)));
+            end
+        end
+        dvt = dvt(find(dvi));
+        
+        
+        %dvt = P(i).Vdv(:,:,d);
+        %dvt = dvt(~isnan(dvt));
+        %for ii = 1:size(P(i).iv,2)
+        %    ivtemp = P(i).Viv{ii}(:,:,d);
+        %    ivt(:,ii) = ivtemp(~isnan(ivtemp));
+        %end
         [b,bint,r,rint,stats] = regress(dvt,[ones(length(dvt),1) ivt]);
         P(i).rtime(d) = stats(1);
     end
@@ -552,18 +587,20 @@ for f = 1:length(field)
     tw=find(tp>xval_peak-incr & tp<xval_peak+incr);
     for f2 = 1:length(field)
         if length(R)>=f2
-            topo = nanmean(R(f2).Vdv(:,:,tw),3);
+            topo.(field{f2}).(field{f}).map = nanmean(R(f2).Vdv(:,:,tw),3);
+            topo.(field{f2}).(field{f}).peaktime = xval_peak;
             figure
             set(gcf, 'Position', [400, 400, 350, 300])
             %imagesc(rot90(topo))
-            pcolor(rot90(topo,3)), shading interp
+            pcolor(rot90(topo.(field{f2}).(field{f}).map,3)), shading interp
             axis off
             colormap(jet)
-            title([field{f} ': time of max ' field{f2} ' for image ' num2str(xval_peak) 'ms'])
+            title([field{f2} ': time of max ' field{f} ' for image ' num2str(xval_peak) 'ms'])
             colorbar
         end
     end
 end
+save(fullfile(pth,'weight_image_topos.mat'),'topo')
 
 writetable(T,fullfile(pth,'weight_timeseries.xlsx'));
 cd(pth)
