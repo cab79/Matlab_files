@@ -165,7 +165,7 @@ for tr = trials
     if isfield(h.Settings,'patternmethod')
         if strcmp(h.Settings.patternmethod,'pitch') || strcmp(h.Settings.patternmethod,'freq') % pitch changes
             freqpattern=1;
-            if ~((adaptive || threshold) && (strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq'))) && ~(strcmp(h.Settings.conditionmethod,'pitch') || strcmp(h.Settings.conditionmethod,'freq')) % pitch already defined above in this case
+            if ~((adaptive || threshold) && (strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq'))) && ~(~isempty(strcmp(h.Settings.conditionmethod,'pitch')) || ~isempty(strcmp(h.Settings.conditionmethod,'freq'))) % pitch already defined above in this case
                 if isnumeric(h.Settings.patternvalue)
                     h.freq = h.Settings.patternvalue;
                 elseif iscell(h.Settings.patternvalue)

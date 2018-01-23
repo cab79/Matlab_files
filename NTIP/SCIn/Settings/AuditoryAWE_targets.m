@@ -60,7 +60,7 @@ switch opt
         h.Settings.design = 'continuous';
         % if continuous, how many trials ahead should be in the player schedule?
         % (applies to stimulation via soundcard only)
-        h.Settings.ntrialsahead = 2;  %0 = all trials
+        h.Settings.ntrialsahead = 4;  %0 = all trials
 
         %% Output options
         % save sinwave from all trials as part of stim sequence file
