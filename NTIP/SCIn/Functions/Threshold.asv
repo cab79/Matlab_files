@@ -93,19 +93,18 @@ if isfield(h,'vol_atten')
 else
     inten_atten = h.Settings.atten; 
 end
-% additional intensity (e.g. GUI control of base tactile intensity)
-if isfield(h,'baseinten')
-    baseinten = h.baseinten(1);
+if isfield(h,'inten')
+    inten = h.inten(1);
 else
-    baseinten = 0; 
+    inten = 0; 
 end
-s.actStimulusLevel = baseinten+inten_atten+s.StimulusLevel;
+s.actStimulusLevel = inteinten_atten+s.StimulusLevel;
 
 % UPDATE THE ROWOFOUTPUT
 s.trial = s.trial + 1;
 
 %disp(['length_blockthresh = ' num2str(length(s.blockthresholds))]);
-disp(['Current trial level = ' num2str(s.actStimulusLevel)]);
+disp(['level = ' num2str(s.actStimulusLevel)]);
 
 % threshold calculation
 s.expthresholds=0;

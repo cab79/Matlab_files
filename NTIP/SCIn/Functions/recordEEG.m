@@ -38,7 +38,7 @@ switch opt
                 %% Using Data Acquisition Toolbox to write 8 lines of digital output data
                 % to a National Instruments NI-USB-6501 device
                 dio = daq.createSession('ni');
-                h.dioch = addDigitalChannel(dio,'dev1','Port0/Line0:7','OutputOnly');
+                h.dioch = addDigitalChannel(dio,'Dev1','Port0/Line0:7','OutputOnly');
                 %dio=digitalio('nidaq', 'Dev1'); % create digital IO object
                 %addline(dio, 0:7, 'out'); % add 24 lines representing the 3 ports of 8 lines each
                 %h.lineconfig=dio.Line % display index and digital line configurations to show mapping

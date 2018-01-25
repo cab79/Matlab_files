@@ -373,8 +373,8 @@ case 'Adapt_overtrials'
     h.Settings.adaptive_general.order = [1 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2];
     
     %% ADAPTIVE 1: Discrimination level
-    % number of trials each run
-    h.Settings.adaptive(1).trialsperrun = 12;
+    % adaptive staircase: meanings of the buttonopt
+    h.Settings.adaptive(1).buttonfun
     % adaptive staircase: meanings of the buttonopt
     h.Settings.adaptive(1).buttonfun = {'LeftArrow','RightArrow'}; 
     % adaptive staircase: corresponding signal values that would signify a
@@ -405,8 +405,6 @@ case 'Adapt_overtrials'
     h.Settings.adaptive(1).levelmax = 10; % should be a DIFFERENCE value in mA. Keep small as it will increase naturally over time.
     
     %% ADAPTIVE 2: Mean level
-    % number of trials each run
-    h.Settings.adaptive(2).trialsperrun = 12;
     % adaptive staircase: meanings of the buttonopt
     h.Settings.adaptive(2).buttonfun = {'LeftArrow','RightArrow'}; 
     % adaptive staircase: corresponding signal values that would signify a

@@ -230,9 +230,7 @@ s.rowofoutput (1, 9) = h.inten(1); % absolute stimulus intensity
 % calculate mean of intensity for each type of response in order to
 % dynamically adjust the mean over time
 if h.Settings.adaptive.getmeanfromresponses
-    try
-        s.inten_mean = s.out.adaptive(end, 11); % by default, should be same as previous trial, unless modified later
-    end
+    s.inten_mean = s.out.adaptive(end, 11);
     try
         resp1_ind = find(s.out.adaptive(:, 8)==1); % responses
         resp2_ind = find(s.out.adaptive(:, 8)==2); % responses
@@ -329,12 +327,12 @@ s.exppos = 1;
 %s.experiment = 'IntensityDiscriminationPureTone_S';
 s.thresholdtype='Arithmetic';
 if isfield(h.Settings,'reversalForthresh')
-    s.reversalForthresh = h.Settings.adaptive.reversalForthresh;
+    s.reversalForthresh = h.Settings.reversalForthresh;
 else
     s.reversalForthresh = 3;
 end
 if isfield(h.Settings,'steptype')
-    s.isstep = h.Settings.adaptive.steptype;
+    s.isstep = h.Settings.steptype;
 else
     s.isstep = 0;
 end

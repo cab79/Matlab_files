@@ -3,6 +3,12 @@ dbstop if error
 % GUI handle name
 h.GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
 
+if ~isfield(h.Settings,'record_response_type')
+   h.Settings.record_response_type = {'all'};
+end
+if ~isfield(h.Settings,'nstim_trial')
+    h.Settings.nstim_trial = 1;
+end
 
 switch opt
     
@@ -160,6 +166,13 @@ while h.i<length(h.Seq.signal)
         h.st_prev = h.st; 
     end
     
+    % ensure stop button is not pressed already
+    % get GUI data for pause/resume
+    GUIh = guihandles(h.GUIhname);
+    if ~get(GUIh.StartStop, 'Value')
+        break
+    end
+    
     % start time of trial
     h.st = GetSecs;
     h.ct=h.st;
@@ -189,12 +202,21 @@ while h.i<length(h.Seq.signal)
         if ~isempty(h.Settings.stimcontrol)
             opt = 'create';
             h = stimtrain(h,opt); % stimulus train
-            if strcmp(h.Settings.stimcontrol,'LJTick-DAQ');
-                opt = 'setDAC';
-                h = stimtrain(h,opt); % intensity via DAC
+            for i = 1:h.Settings.nstim_trial
+                if strcmp(h.Settings.stimcontrol,'LJTick-DAQ');
+                    opt = 'setDAC';
+                    h.trialstimnum = i;
+                    h = stimtrain(h,opt); % intensity via DAC
+                end
+                opt = 'start';
+                h = stimtrain(h,opt); % stimulus train
+                
+                % wait
+                if h.Settings.nstim_trial>1 && i~=h.Settings.nstim_trial
+                    WaitSecs(0.5/h.Settings.t_freq)
+                end
+                
             end
-            opt = 'start';
-            h = stimtrain(h,opt); % stimulus train
         end
     end
     
@@ -307,7 +329,11 @@ while (h.ct-h.st)<h.trialdur
     if strcmp(h.Settings.design,'continuous')
         h = ContFun(h);
     end
-    h = record_response(h,'all');
+    
+    % record responses
+    for rt = 1:length(h.Settings.record_response_type)
+        h = record_response(h,h.Settings.record_response_type{rt});
+    end
 
     %only continue loop (which can be slow) if not too close to end of
     %trial. Increases accuracy of EEG markers.

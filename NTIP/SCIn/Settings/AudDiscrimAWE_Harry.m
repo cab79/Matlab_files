@@ -143,8 +143,8 @@ h.Settings.oddprob = [
     ];
 
 % index of row of oddprob that are standards and oddballs
-h.Settings.standardind = 1; % does not apply to 'roving oddball' design
-h.Settings.oddind = 2; % does not apply to 'roving oddball' design
+h.Settings.standardind = 1; 
+h.Settings.oddind = 2; 
 % keep oddball trials apart by at least sep_odd standards
 h.Settings.sep_odd = 2;
 % for sep_odd, which indices of h.Settings.oddballvalue to consider

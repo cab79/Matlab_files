@@ -47,50 +47,42 @@ switch h.Settings.stimcontrol
                 %try
                 %    inten_array = [str2double(get(h.intensity1,'string')), str2double(get(h.intensity2,'string'))];
                 %catch
-                    if ~isfield(h,'inten_mean'); h.inten_mean='0';end
-                    if ~isfield(h,'inten_diff'); h.inten_diff='0';end
-                    inten_mean = str2double(h.inten_mean)
-                    inten_diff = str2double(h.inten_diff);
+                    if ~isfield(h,'intensity1'); h.intensity1='0';end
+                    if ~isfield(h,'intensity2'); h.intensity2='0';end
+                    inten_array = [str2double(h.intensity1), str2double(h.intensity2)];
                 %end
                     
                 % set initial value
-                if any(inten_mean)
-                    h.inten = inten_mean;
+                if any(inten_array)
+                    h.inten = inten_array;
                 elseif isempty(h.Settings.inten)
                     h.inten = 0;
                 else
                     h.inten = h.Settings.inten;
                 end
-                %if ~isfield(h,'baseinten')
-                %    h.baseinten=h.inten;
-                %end
+                if ~isfield(h,'baseinten')
+                    h.baseinten=h.inten;
+                end
                 
                 % modify according to procedure
                 if thresh
                     if ~isfield(h,'s')
-                        h.inten = h.inten+h.Settings.threshold.startinglevel;
+                        h.inten = h.inten(1)+h.Settings.threshold.startinglevel;
                     else
-                        h.inten = h.inten+h.s.StimulusLevel;
+                        h.inten = h.inten(1)+h.s.StimulusLevel;
                     end
                 elseif adapt
-                    % currently, inten(1) is the mean of the two levels
-                    % produced
-                    if isfield(h,'s') 
-                        if isfield(h.s,'inten_mean') && ~isnan(h.s.inten_mean) && h.Settings.adaptive.getmeanfromresponses % if an intensity average has been determined from the responses yet
-                            h.inten = h.s.inten_mean;
-                        end
-                    end
                     if h.Seq.signal(h.i)==h.trialstimnum
                         if ~isfield(h,'s')
-                            h.inten = h.inten + h.Settings.adaptive.stepdir * h.Settings.adaptive.startinglevel / 2;
+                            h.inten = h.inten(1) + h.Settings.stepdir * h.Settings.adaptive.startinglevel;
                         else
-                            h.inten = h.inten + h.Settings.adaptive.stepdir * h.s.StimulusLevel / 2;
+                            h.inten = h.inten(1) + h.Settings.stepdir * h.s.StimulusLevel;
                         end
                     else
                         if ~isfield(h,'s')
-                            h.inten = h.inten - h.Settings.adaptive.stepdir * h.Settings.adaptive.startinglevel / 2;
+                            h.inten = h.inten(1) + h.Settings.stepdir * h.Settings.adaptive.startinglevel;
                         else
-                            h.inten = h.inten - h.Settings.adaptive.stepdir * h.s.StimulusLevel / 2;
+                            h.inten = h.inten(1) + h.Settings.stepdir * h.s.StimulusLevel;
                         end
                     end
                 % Otherwise, using pre-programmed sequence to determine intensity
