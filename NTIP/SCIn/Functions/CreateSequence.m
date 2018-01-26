@@ -311,3 +311,31 @@ if ~isfield(h.Seq,'signal')
     end
     figure;plot(h.Seq.condnum)
 end
+
+%% create Adaptive type order
+
+if isfield(h.Settings,'adaptive')
+    if length(h.Settings.adaptive)>1 && isfield(h.Settings.adaptive_general,'order')
+        
+        % get trial/order information from settings 
+        order = h.Settings.adaptive_general.order;
+        uorder = unique(order)';
+        for i = 1:length(unique)
+            ntype(i) = h.Settings.adaptive(i).trialsperrun;
+        end
+        
+        % create sequence
+        aseq=[];
+        for i = 1:length(order)
+            aseq = [aseq order(i)*ones(1,ntype(order(i)))];
+        end
+        
+        % add to Seq
+        h.Seq.adapttype = aseq;
+        
+        % check Seq.signal is long enough
+        if length(h.Seq.signal)<h.Seq.adapttype
+            error('sequence is not long enough for this number of adaptive trials')
+        end
+    end
+end

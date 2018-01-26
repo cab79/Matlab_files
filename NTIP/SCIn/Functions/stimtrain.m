@@ -35,6 +35,9 @@ switch h.Settings.stimcontrol
                         thresh=0;
                         adapt=1;
                         seq=0;
+                        for ad = 1:length(h.Settings.adaptive)
+                            atypes{ad} = h.Settings.adaptive(1).type;
+                        end
                     end
                 % Otherwise, using pre-programmed sequence to determine intensity
                 else
@@ -43,55 +46,53 @@ switch h.Settings.stimcontrol
                     seq=1;
                 end
                 
-                %convert h.Settings.inten from mA to V
-                %try
-                %    inten_array = [str2double(get(h.intensity1,'string')), str2double(get(h.intensity2,'string'))];
-                %catch
-                    if ~isfield(h,'inten_mean'); h.inten_mean='0';end
-                    if ~isfield(h,'inten_diff'); h.inten_diff='0';end
-                    inten_mean = str2double(h.inten_mean)
-                    inten_diff = str2double(h.inten_diff);
-                %end
+                % set initial values from GUI
+                if ~isfield(h,'inten_mean'); h.inten_mean='0';end
+                if ~isfield(h,'inten_diff'); h.inten_diff='0';end
+                h.inten_mean = str2double(h.inten_mean);
+                h.inten_diff = str2double(h.inten_diff);
                     
-                % set initial value
-                if any(inten_mean)
-                    h.inten = inten_mean;
-                elseif isempty(h.Settings.inten)
-                    h.inten = 0;
-                else
-                    h.inten = h.Settings.inten;
+                % set initial values from Settings if not from GUI
+                if ~any(h.inten_mean) && ~isempty(h.Settings.inten)
+                    h.inten_mean = h.Settings.inten;
                 end
-                %if ~isfield(h,'baseinten')
-                %    h.baseinten=h.inten;
+                %if ~any(h.inten_diff) && ~isempty(h.Settings.inten_diff)
+                %    h.inten_diff = h.Settings.inten_diff;
                 %end
                 
                 % modify according to procedure
                 if thresh
                     if ~isfield(h,'s')
-                        h.inten = h.inten+h.Settings.threshold.startinglevel;
+                        h.inten = h.inten_mean+h.Settings.threshold.startinglevel;
                     else
-                        h.inten = h.inten+h.s.StimulusLevel;
+                        h.inten = h.inten_mean+h.s.StimulusLevel;
                     end
                 elseif adapt
-                    % currently, inten(1) is the mean of the two levels
-                    % produced
-                    if isfield(h,'s') 
-                        if isfield(h.s,'inten_mean') && ~isnan(h.s.inten_mean) && h.Settings.adaptive.getmeanfromresponses % if an intensity average has been determined from the responses yet
-                            h.inten = h.s.inten_mean;
+                    % update mean from adaptive procedure.
+                    % do this even if it's a discrim trial
+                    atype = find(strcmp(atypes,'detect'));
+                    if ~isempty(atype) && isfield(h,'s') 
+                        if isfield(h.s.a(atype),'StimulusLevel') % if a level has been determined
+                            h.inten_mean = h.s.a(atype).StimulusLevel;
                         end
                     end
-                    if h.Seq.signal(h.i)==h.trialstimnum
-                        if ~isfield(h,'s')
-                            h.inten = h.inten + h.Settings.adaptive.stepdir * h.Settings.adaptive.startinglevel / 2;
+                    % update diff from adaptive
+                    % only do this if it's a discrim trial, not a detect trial
+                    atype = find(strcmp(atypes,'discrim'));
+                    if ~isempty(atype) && h.Seq.adapttype(h.i) == atype
+                        if isfield(h,'s')
+                            h.inten_diff = h.s.a(atype).StimulusLevel;
+                        elseif h.inten_diff == 0 % if not set in GUI
+                            h.inten_diff = h.Settings.adaptive(atype).startinglevel;
+                        end
+                        % calculate intensity
+                        if h.Seq.signal(h.i)==h.trialstimnum
+                            h.inten = h.inten_mean + h.Settings.adaptive(atype).stepdir * h.inten_diff / 2;
                         else
-                            h.inten = h.inten + h.Settings.adaptive.stepdir * h.s.StimulusLevel / 2;
+                            h.inten = h.inten_mean - h.Settings.adaptive(atype).stepdir * h.inten_diff / 2;
                         end
                     else
-                        if ~isfield(h,'s')
-                            h.inten = h.inten - h.Settings.adaptive.stepdir * h.Settings.adaptive.startinglevel / 2;
-                        else
-                            h.inten = h.inten - h.Settings.adaptive.stepdir * h.s.StimulusLevel / 2;
-                        end
+                        h.inten = h.inten_mean;
                     end
                 % Otherwise, using pre-programmed sequence to determine intensity
                 else

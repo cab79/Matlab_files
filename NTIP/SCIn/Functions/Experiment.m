@@ -902,7 +902,12 @@ end
 % if stimulation requires adaptive tuning to responses
 if isfield(h.Settings,'adaptive')
     if ~isempty(h.Settings.adaptive)
-        h = AdaptStair(h);
+        if length(h.Settings.adaptive)>1
+            adapttype = h.Seq.adapttype(h.i);
+            h = AdaptStair(h,adapttype);
+        else
+            h = AdaptStair(h);
+        end
     end
 end
 % if stimulation requires thresholding

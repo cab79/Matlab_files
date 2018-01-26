@@ -372,7 +372,9 @@ case 'Adapt_overtrials'
     % Order of running
     h.Settings.adaptive_general.order = [1 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2];
     
-    %% ADAPTIVE 1: Discrimination level
+    %% ADAPTIVE 1
+    h.Settings.adaptive(1).type = 'detect';
+    h.Settings.adaptive(1).updown = [1 1];
     % number of trials each run
     h.Settings.adaptive(1).trialsperrun = 12;
     % adaptive staircase: meanings of the buttonopt
@@ -380,6 +382,10 @@ case 'Adapt_overtrials'
     % adaptive staircase: corresponding signal values that would signify a
     % correct answer
     h.Settings.adaptive(1).signalval = [1 2];
+    % reversals
+    h.Settings.adaptive(1).reversals = [4;8];
+    % stepsize
+    h.Settings.adaptive(1).stepsize = [2;sqrt(2)];
     % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
     h.Settings.adaptive(1).steptype = 0;
     % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
@@ -397,14 +403,16 @@ case 'Adapt_overtrials'
     % number of reversals to average over to calculate threshold.
     h.Settings.adaptive(1).reversalForthresh = 6;
     % use mean from the first X responses of each type (high and low)
-    h.Settings.adaptive(1).getmeanfromresponses = 6;
+    %h.Settings.adaptive(1).getmeanfromresponses = 6;
     % maximum amount to adjust the mean if their responses are very
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(1).meanadjustmax = 10;
+    %h.Settings.adaptive(1).meanadjustmax = 10;
     % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     h.Settings.adaptive(1).levelmax = 10; % should be a DIFFERENCE value in mA. Keep small as it will increase naturally over time.
     
-    %% ADAPTIVE 2: Mean level
+    %% ADAPTIVE 2
+    h.Settings.adaptive(2).type = 'discrim';
+    h.Settings.adaptive(2).updown = [1 2];
     % number of trials each run
     h.Settings.adaptive(2).trialsperrun = 12;
     % adaptive staircase: meanings of the buttonopt
@@ -412,6 +420,10 @@ case 'Adapt_overtrials'
     % adaptive staircase: corresponding signal values that would signify a
     % correct answer
     h.Settings.adaptive(2).signalval = [1 2];
+    % reversals
+    h.Settings.adaptive(2).reversals = [4;8];
+    % stepsize
+    h.Settings.adaptive(2).stepsize = [2;sqrt(2)];
     % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
     h.Settings.adaptive(2).steptype = 0;
     % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
@@ -429,10 +441,10 @@ case 'Adapt_overtrials'
     % number of reversals to average over to calculate threshold.
     h.Settings.adaptive(2).reversalForthresh = 6;
     % use mean from the first X responses of each type (high and low)
-    h.Settings.adaptive(2).getmeanfromresponses = 6;
+    %h.Settings.adaptive(2).getmeanfromresponses = 6;
     % maximum amount to adjust the mean if their responses are very
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(2).meanadjustmax = 10;
+    %h.Settings.adaptive(2).meanadjustmax = 10;
     % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     h.Settings.adaptive(2).levelmax = 10; % should be a DIFFERENCE value in mA. Keep small as it will increase naturally over time.
     
