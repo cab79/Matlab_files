@@ -204,15 +204,20 @@ if nCP>0
                 stimtype{cp}{s}(ismember(condnum{cp}{s},[2 3])) = 2;
             else
                 stan_odd_val = [1 2];
-                %update values according to oddball method
-                if strcmp(h.Settings.oddballmethod,'intensityindex')
-                    if ~isempty(h.Settings.oddballvalue)
-                        stan_odd_val = h.Settings.oddballvalue{cp};
+                if all(ismember(unique(randind{cp}{s}),stan_odd_val));
+                    %update values according to oddball method
+                    if strcmp(h.Settings.oddballmethod,'intensityindex')
+                        if ~isempty(h.Settings.oddballvalue)
+                            stan_odd_val = h.Settings.oddballvalue{cp};
+                        end
                     end
+                    stimtype{cp}{s}(randind{cp}{s}==1)=stan_odd_val(1);
+                    stimtype{cp}{s}(randind{cp}{s}==2)=stan_odd_val(2);
+                    condnum{cp}{s}=stimtype{cp}{s};
+                else
+                    stimtype{cp}{s}=randind{cp}{s};
+                    condnum{cp}{s}=randind{cp}{s};
                 end
-                stimtype{cp}{s}(randind{cp}{s}==1)=stan_odd_val(1);
-                stimtype{cp}{s}(randind{cp}{s}==2)=stan_odd_val(2);
-                condnum{cp}{s}=stimtype{cp}{s};
             end
         end
 
