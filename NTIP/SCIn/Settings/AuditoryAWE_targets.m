@@ -29,38 +29,59 @@ switch opt
     case 'setoptions'
         
     % settings options
-    h.SettingsOptions = {'10Hz_oddball_target','1Hz_oddball_target','10Hz','1Hz'};
+    h.SettingsOptions = {'10Hz_oddball_target','1Hz_oddball_target','10Hz','10Hz_monaural','1Hz'};
     
     case '10Hz'
         h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h.Settings.patternvalue = [300 300]; 
+        h.Settings.patternvalue = [500 500]; 
         h.Settings.patternvaluetarget = 0; % amount to add/substract for targets 
         h = AuditoryAWE_targets(h,'commonsettings');
+        
+        % Monaural beats instead? 
+        h.Settings.monaural = 0; 
+    
+    case '10Hz_monaural'
+        h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
+        h.Settings.patternvalue = [500 500]; 
+        h.Settings.patternvaluetarget = 0; % amount to add/substract for targets 
+        h = AuditoryAWE_targets(h,'commonsettings');
+        
+        % Monaural beats instead? 
+        h.Settings.monaural = 1; 
         
     case '1Hz'
         h.Settings.df = 1; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h.Settings.patternvalue = [300 300]; 
+        h.Settings.patternvalue = [500 500]; 
         h.Settings.patternvaluetarget = 0; % amount to add/substract for targets 
         h = AuditoryAWE_targets(h,'commonsettings');
+        
+        % Monaural beats instead? 
+        h.Settings.monaural = 0; 
     
     case '10Hz_oddball_target'
         h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h.Settings.patternvalue = [300 340]; 
+        h.Settings.patternvalue = [500 540]; 
         h.Settings.patternvaluetarget = 40; % amount to add/substract for targets 
         h = AuditoryAWE_targets(h,'commonsettings');
         
+        % Monaural beats instead? 
+        h.Settings.monaural = 0; 
+        
     case '1Hz_oddball_target'
         h.Settings.df = 1; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h.Settings.patternvalue = [300 340]; 
+        h.Settings.patternvalue = [500 540]; 
         h.Settings.patternvaluetarget = 40; % amount to add/substract for targets 
         h = AuditoryAWE_targets(h,'commonsettings');
+        
+        % Monaural beats instead? 
+        h.Settings.monaural = 0; 
         
     case 'commonsettings'    
         %% TRIALS or CONTINUOUS?
         h.Settings.design = 'continuous';
         % if continuous, how many trials ahead should be in the player schedule?
         % (applies to stimulation via soundcard only)
-        h.Settings.ntrialsahead = 4;  %0 = all trials
+        h.Settings.ntrialsahead = 2;  %0 = all trials
 
         %% Output options
         % save sinwave from all trials as part of stim sequence file
@@ -105,8 +126,6 @@ switch opt
         h.Settings.stimdurtype = 'reg'; % not needed unless 'rand'
         % sampling rate
         h.Settings.fs = 96000; % don't change this
-        % Monaural beats instead? 
-        h.Settings.monaural = 0; 
         % attenuation level in decibels
         h.Settings.atten = 0; 
         % pitch
@@ -195,12 +214,14 @@ switch opt
         h.Settings.std_lead = 0;
 
         % number of minimum sets to randomised together
-        h.Settings.n_set = 1; % 1 = use min set size
+        h.Settings.n_set = []; % 1 = use min set size
 
         % min number of oddballs within each CP condition
-        h.Settings.n_odd = [1]; % overrides h.Settings.totdur
+        h.Settings.n_odd = 7; % overrides h.Settings.totdur
         % min number of oddballs per randomised set, per CP
         h.Settings.n_odd_set = [1]; % overrides h.Settings.totdur
+        % randomise sets?
+        h.Settings.rand_set = 0; 
 
         %% RESPONSE PARAMETERS
         % record responses during experiment? 0 or 1
