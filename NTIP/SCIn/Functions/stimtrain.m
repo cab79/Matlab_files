@@ -36,7 +36,7 @@ switch h.Settings.stimcontrol
                         adapt=1;
                         seq=0;
                         for ad = 1:length(h.Settings.adaptive)
-                            atypes{ad} = h.Settings.adaptive(1).type;
+                            atypes{ad} = h.Settings.adaptive(ad).type;
                         end
                     end
                 % Otherwise, using pre-programmed sequence to determine intensity
@@ -46,19 +46,28 @@ switch h.Settings.stimcontrol
                     seq=1;
                 end
                 
-                % set initial values from GUI
-                if ~isfield(h,'inten_mean'); h.inten_mean='0';end
-                if ~isfield(h,'inten_diff'); h.inten_diff='0';end
-                h.inten_mean = str2double(h.inten_mean);
-                h.inten_diff = str2double(h.inten_diff);
-                    
-                % set initial values from Settings if not from GUI
-                if ~any(h.inten_mean) && ~isempty(h.Settings.inten)
-                    h.inten_mean = h.Settings.inten;
+                % set initial values from GUI or settings if not already
+                % defined
+                if ~isfield(h,'inten_mean')
+                    if ~isfield(h,'inten_mean_gui'); 
+                        h.inten_mean=0;
+                    else
+                        h.inten_mean = str2double(h.inten_mean_gui);
+                    end
+                    if ~any(h.inten_mean) && ~isempty(h.Settings.inten)
+                        h.inten_mean = h.Settings.inten;
+                    end
                 end
-                %if ~any(h.inten_diff) && ~isempty(h.Settings.inten_diff)
-                %    h.inten_diff = h.Settings.inten_diff;
-                %end
+                if ~isfield(h,'inten_diff')
+                    if ~isfield(h,'inten_diff_gui'); 
+                        h.inten_diff=0;
+                    else
+                        h.inten_diff = str2double(h.inten_diff_gui);
+                    end
+                    if ~any(h.inten_diff) && ~isempty(h.Settings.inten_diff)
+                        h.inten_diff = h.Settings.inten_diff;
+                    end
+                end
                 
                 % modify according to procedure
                 if thresh
@@ -67,43 +76,71 @@ switch h.Settings.stimcontrol
                     else
                         h.inten = h.inten_mean+h.s.StimulusLevel;
                     end
+                % adaptive trial
                 elseif adapt
-                    % update mean from adaptive procedure.
-                    % do this even if it's a discrim trial
-                    atype = find(strcmp(atypes,'detect'));
-                    if ~isempty(atype) && isfield(h,'s') 
-                        if isfield(h.s.a(atype),'StimulusLevel') % if a level has been determined
-                            h.inten_mean = h.s.a(atype).StimulusLevel;
+                    detect = find(strcmp(atypes,'detect'));
+                    discrim = find(strcmp(atypes,'discrim'));
+                    % if this trial is adaptive
+                    if ~isnan(h.Seq.adapttype(h.i))
+                        % update mean from adaptive procedure.
+                        % do this even if it's a discrim trial
+                        if ~isempty(detect) && isfield(h,'s') 
+                            if isfield(h.s.a(detect),'StimulusLevel') % if a level has been determined
+                                h.inten_mean = h.s.a(detect).StimulusLevel;
+                            end
+                        % or set the adaptive starting level otherwise
+                        elseif ~isfield(h,'s')
+                            h.Settings.adaptive(detect).startinglevel = h.inten_mean;
                         end
-                    end
-                    % update diff from adaptive
-                    % only do this if it's a discrim trial, not a detect trial
-                    atype = find(strcmp(atypes,'discrim'));
-                    if ~isempty(atype) && h.Seq.adapttype(h.i) == atype
-                        if isfield(h,'s')
-                            h.inten_diff = h.s.a(atype).StimulusLevel;
-                        elseif h.inten_diff == 0 % if not set in GUI
-                            h.inten_diff = h.Settings.adaptive(atype).startinglevel;
+                        
+                        % update diff from adaptive
+                        if ~isempty(discrim)
+                            if isfield(h,'s') && length(h.s.a)>=discrim % if a level has been determined
+                                h.inten_diff = h.s.a(discrim).StimulusLevel;
+                            elseif h.inten_diff == 0 % if not set in GUI or settings
+                                h.inten_diff = h.Settings.adaptive(discrim).startinglevel;
+                            end
                         end
-                        % calculate intensity
-                        if h.Seq.signal(h.i)==h.trialstimnum
-                            h.inten = h.inten_mean + h.Settings.adaptive(atype).stepdir * h.inten_diff / 2;
+                    
+                        % only do this if it's a discrim trial, not a detect trial
+                        if h.Seq.adapttype(h.i) == discrim
+                            % calculate intensity
+                            if h.Seq.signal(h.i)==h.trialstimnum
+                                h.inten = h.inten_mean + h.Settings.adaptive(discrim).stepdir * h.inten_diff / 2;
+                            else
+                                h.inten = h.inten_mean - h.Settings.adaptive(discrim).stepdir * h.inten_diff / 2;
+                            end
                         else
-                            h.inten = h.inten_mean - h.Settings.adaptive(atype).stepdir * h.inten_diff / 2;
+                            h.inten = h.inten_mean;
                         end
-                    else
-                        h.inten = h.inten_mean;
+                        
+                    % if adaptive is part of the sequence, but not this trial
+                    elseif isnan(h.Seq.adapttype(h.i))
+                        detect_thresh =  find(h.out.adaptive(:,10)==detect);
+                        discrim_thresh =  find(h.out.adaptive(:,10)==discrim);
+                        if h.Seq.signal(h.i)==1
+                            h.inten = h.out.adaptive(detect_thresh(end),7) - h.out.adaptive(discrim_thresh(end),7) / 2;
+                        else
+                            h.inten = h.out.adaptive(detect_thresh(end),7) + h.out.adaptive(discrim_thresh(end),7) / 2;
+                        end
                     end
-                % Otherwise, using pre-programmed sequence to determine intensity
+                % Otherwise, use sequence to determine intensity
                 else
                     if strcmp(h.Settings.oddballmethod,'intensity')
                         h.inten = h.Settings.oddballvalue;
                     elseif strcmp(h.Settings.oddballmethod,'intensityindex')
-                        h.inten = h.inten(h.Seq.signal(h.i));
+                        % calculate intensity
+                        if h.Seq.signal(h.i)==1
+                            h.inten = h.inten_mean - h.inten_diff / 2;
+                        else
+                            h.inten = h.inten_mean + h.inten_diff / 2;
+                        end
                     end
                 end
                 
-                % set intensity
+                % set max intensity
+                h.inten = min(h.inten,h.Settings.maxinten); 
+                disp(['INTEN = ' num2str(h.inten) ', MEAN = ' num2str(h.inten_mean) ', DIFF = ' num2str(h.inten_diff)]);
                 
                 %Set DACA 
                 Error = ljud_ePut(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, h.inten/100, 0); 
@@ -224,7 +261,7 @@ switch h.Settings.stimcontrol
                     % pulse train instruction
                     %port=2
                     if isempty(h.Settings.p_freq) || h.Settings.p_freq == 0
-                       p_freq = 100; % 0.1 ms delay (DS8R can detect down to 0.01ms)
+                       p_freq = 10000; % 0.1 ms delay (DS8R can detect down to 0.01ms)
                     else
                        p_freq = h.Settings.p_freq; 
                     end
@@ -247,7 +284,7 @@ switch h.Settings.stimcontrol
                     Error_Message(Error)
                     %ljud_GetResult(ljHandle, LJ_ioGET_DIGITAL_BIT, 7, @Value)
                     t2=GetSecs;
-                    disp(['pr: ' num2str(pr) '; train ISI: ' num2str(h.Settings.p_freq) 's;  labjack stimulus: ' num2str(t2-t1)]);
+                    disp(['pulses per stim: ' num2str(pr) ';  labjack stim length: ' num2str(t2-t1)]);
                 end
                 
             case 'stop'

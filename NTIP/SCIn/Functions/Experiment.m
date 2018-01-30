@@ -249,6 +249,14 @@ while h.i<length(h.Seq.signal)
     h = record_response(h,'prev_trial');
 end
 
+%plot figures
+set(groot, 'DefaultFigureVisible', 'on');
+if isfield(h,'f')
+    for f = 1:length(h.f)
+        figure(h.f(f))
+    end
+end
+
 % for continuous sequences
 function h = SeqRun(h)
 Priority(2);
@@ -756,6 +764,7 @@ end
 function h = record_response(h,opt)
 
 % initialise
+h.pressed=0;
 h.pressedlasttrial = 0;
 h.omittedlasttrial = 0;
 h.pressedthistrial = 0;
@@ -902,11 +911,13 @@ end
 % if stimulation requires adaptive tuning to responses
 if isfield(h.Settings,'adaptive')
     if ~isempty(h.Settings.adaptive)
-        if length(h.Settings.adaptive)>1
-            adapttype = h.Seq.adapttype(h.i);
-            h = AdaptStair(h,adapttype);
-        else
-            h = AdaptStair(h);
+        if ~isnan(h.Seq.adapttype(h.i))
+            if length(h.Settings.adaptive)>1
+                adapttype = h.Seq.adapttype(h.i);
+                h = AdaptStair(h,adapttype);
+            else
+                h = AdaptStair(h);
+            end
         end
     end
 end

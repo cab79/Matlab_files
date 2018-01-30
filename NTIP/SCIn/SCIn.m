@@ -380,6 +380,7 @@ else
     
     % change the button text
     set(hObject, 'String', 'Start')
+    
 end
     
 
@@ -562,7 +563,7 @@ function IntensityMean_Callback(hObject, eventdata, h)
 
 % Hints: get(hObject,'String') returns contents of IntensityMean as text
 %        str2double(get(hObject,'String')) returns contents of IntensityMean as a double
-h.inten_mean = get(hObject,'String');
+h.inten_mean_gui = get(hObject,'String');
 guidata(hObject, h)
 
 % --- Executes during object creation, after setting all properties.
@@ -586,7 +587,7 @@ function IntensityDiff_Callback(hObject, eventdata, h)
 
 % Hints: get(hObject,'String') returns contents of IntensityDiff as text
 %        str2double(get(hObject,'String')) returns contents of IntensityDiff as a double
-h.inten_diff = get(hObject,'String');
+h.inten_diff_gui = get(hObject,'String');
 guidata(hObject, h)
 
 % --- Executes during object creation, after setting all properties.

@@ -24,10 +24,8 @@ if isfield(h,'s')
         end
     end
 end
-if create_s
+if create_s || create_a
     s = AdaptStairParameters(h,atype); % see function at the end
-elseif create_a
-    s = AdaptStairParameters(h,atype,s); % see function at the end
 else
     s=h.s;
 end
@@ -89,7 +87,7 @@ if isfield(h.Settings.adaptive(atype),'oddonly')
     end
 end
 
-if (h.pressedlasttrial || h.pressedthistrial) && s.lasttrialrun~=h.i
+if (h.pressed || h.pressedlasttrial || h.pressedthistrial) && s.lasttrialrun~=h.i
     opt = 'responded';
     adaptive=1;
 end
@@ -120,7 +118,7 @@ end
 %end
 
 %% RUN
-disp('Running Adaptive')
+disp(['Running Adaptive: ' h.Settings.adaptive(atype).type])
 
 % only run once per trial
 %if strcmp(opt,'responded')
@@ -133,7 +131,7 @@ disp('Running Adaptive')
 %    s.lasttrialrun = h.i;
 %end
 
-if size(s.a(atype).expplan,1)==s.count_of_n_of_reversals
+if size(s.a(atype).expplan,1)==s.a(atype).count_of_n_of_reversals
     s.a(atype).expplan(end+1,:) = s.a(atype).expplan(end,:);
 end
     
@@ -153,14 +151,23 @@ elseif strcmp(opt,'responded')
         %presstrial=h.i;
         pressbutton = h.out.pressbutton(h.out.presstrial==h.i);
         correctsignal = h.Seq.signal(h.i);
+    elseif h.pressed
+        %presstrial=h.i;
+        pressbutton = h.out.pressbutton(h.out.presstrial==h.i);
+        correctsignal = h.Seq.signal(h.i);
     end
     if ~iscell(pressbutton)
         pressbutton = {pressbutton};
     end
+    if isempty(pressbutton)
+        return
+    end
     resi = find(strcmp(pressbutton(end),h.Settings.buttonopt)); % which button was pressed?
     resfun = h.Settings.adaptive(atype).signalval(resi); %what is meaning of this response?
-
-    if resfun == correctsignal
+    if isempty(resi)
+        return
+    end
+    if resfun == correctsignal && strcmp(h.Settings.adaptive(atype).type,'discrim')
     %s.SubjectAccuracy(s.trial)= EvaluateAnswer(CorrectAnswer,s.feedback,Question);   %evaluing the subject answer (right or wrong)
         s.SubjectAccuracy(s.trial)= 1;
     else
@@ -174,7 +181,15 @@ s.rowofoutput (1, 2) = s.trial;
 s.rowofoutput (1, 3) = s.a(atype).StimulusLevel;
 s.rowofoutput (1, 4) = s.SubjectAccuracy(s.trial);
 % update the count for the up-down motion
-if s.SubjectAccuracy(s.trial) == 1
+go_down=0;go_up=0;
+if strcmp(h.Settings.adaptive(atype).type,'discrim') && s.SubjectAccuracy(s.trial) == 1
+    go_down=1;
+elseif strcmp(h.Settings.adaptive(atype).type,'detect') && resfun == 2
+    go_down=1;
+else
+    go_up=1;
+end
+if go_down
     s.a(atype).n_down = s.a(atype).n_down + 1;
     if s.a(atype).n_down == s.p(atype).down
         s.a(atype).n_down = 0;
@@ -185,19 +200,19 @@ if s.SubjectAccuracy(s.trial) == 1
         if s.a(atype).pos ==1 && s.a(atype).neg == -1
             s.a(atype).count_of_n_of_reversals = s.a(atype).count_of_n_of_reversals + 1;
             % calculate the threshold
-            s.a(atype).blockthresholds(s.n_threshold)=(s.a(atype).StimulusLevel + s.rowofoutput(1, 3))/2;
+            s.a(atype).blockthresholds(s.a(atype).n_threshold)=s.a(atype).StimulusLevel;
             s.a(atype).n_threshold = s.a(atype).n_threshold + 1;
             s.a(atype).actualstep = s.a(atype).expplan(s.a(atype).count_of_n_of_reversals, 2);
             s.a(atype).pos = s.a(atype).trend;
             s.a(atype).neg = s.a(atype).trend;
         end
-        if s.a(atype).isstep == 1
+        if s.p(atype).isstep == 1
             s.a(atype).StimulusLevel = s.a(atype).StimulusLevel - s.a(atype).actualstep;
         else
             s.a(atype).StimulusLevel = s.a(atype).StimulusLevel / s.a(atype).actualstep;
         end
     end
-else
+elseif go_up
     %error(['stopped at mintrialcount: ' num2str(s.mintrialcount)])
     s.a(atype).neg = -1;
     s.a(atype).trend = -1;
@@ -207,13 +222,13 @@ else
     if s.a(atype).pos ==1 && s.a(atype).neg == -1
         s.a(atype).count_of_n_of_reversals = s.a(atype).count_of_n_of_reversals + 1;
         % calculate the threshold
-        s.a(atype).blockthresholds(s.a(atype).n_threshold)=(s.a(atype).StimulusLevel + s.rowofoutput(1, 3))/2;
+        s.a(atype).blockthresholds(s.a(atype).n_threshold)=s.a(atype).StimulusLevel;
         s.a(atype).n_threshold = s.a(atype).n_threshold + 1;
         s.a(atype).actualstep = s.a(atype).expplan(s.a(atype).count_of_n_of_reversals, 2);
         s.a(atype).pos = s.a(atype).trend;
         s.a(atype).neg = s.a(atype).trend;
     end
-    if s.a(atype).isstep == 1
+    if s.p(atype).isstep == 1
         s.a(atype).StimulusLevel = s.a(atype).StimulusLevel + s.a(atype).actualstep;
     else
         s.a(atype).StimulusLevel = s.a(atype).StimulusLevel * s.a(atype).actualstep;
@@ -234,14 +249,14 @@ disp(['nreversals = ' num2str(s.a(atype).count_of_n_of_reversals)]);
 disp(['next level = ' num2str(s.a(atype).StimulusLevel)]);
 
 % threshold for the block
-if length(s.a(atype).blockthresholds)>=s.a(atype).reversalForthresh
-    switch s.a(atype).thresholdtype
+if length(s.a(atype).blockthresholds)>=s.p(atype).reversalForthresh
+    switch s.p(atype).thresholdtype
         case 'Arithmetic'
-            s.a(atype).expthresholds(s.block)=mean(s.a(atype).blockthresholds(end-(s.a(atype).reversalForthresh-1):end));
+            s.a(atype).expthresholds(s.block)=mean(s.a(atype).blockthresholds(end-(s.p(atype).reversalForthresh-1):end));
         case 'Geometric'
-            s.a(atype).expthresholds(s.block)=prod(s.a(atype).blockthresholds(end-(s.a(atype).reversalForthresh-1):end))^(1/length(s.a(atype).blockthresholds(end-(s.a(atype).reversalForthresh-1):end)));
+            s.a(atype).expthresholds(s.block)=prod(s.a(atype).blockthresholds(end-(s.p(atype).reversalForthresh-1):end))^(1/length(s.a(atype).blockthresholds(end-(s.p(atype).reversalForthresh-1):end)));
         case 'Median'
-            s.a(atype).expthresholds(s.block)=median(s.a(atype).blockthresholds(end-(s.a(atype).reversalForthresh-1):end));
+            s.a(atype).expthresholds(s.block)=median(s.a(atype).blockthresholds(end-(s.p(atype).reversalForthresh-1):end));
         otherwise
             disp('Unknown calculation type.')
     end
@@ -264,13 +279,43 @@ h.out.adaptive = s.out.adaptive;
 %fprintf ('\nBLOCK ENDED\n');
 %pause(2)
 
+%% plot
+ind = find(h.out.adaptive(:,10)==atype & ~isnan(h.out.adaptive(:,7)));
+if ~isempty(ind)
+    select_ind = ind(end-(min(h.Settings.adaptive(atype).av_thresh,length(ind)))+1,end);
+    thresh = h.out.adaptive(ind,7);
+    av_thresh = mean(thresh);
 
-function s = AdaptStairParameters(h,atype,varargin)
+    % does fig handle exist?
+    fig = isfield(h,'f');
+    if fig
+        fig = fig && length(h.f)>=atype
+    end
+    if fig
+        eval(['fig = ishandle(h.f(' num2str(atype) '));']);
+    end
+    
+    if ~fig
+        set(groot, 'DefaultFigureVisible', 'off');
+        eval(['h.f(' num2str(atype) ')=figure']);
+    else
+        eval(['set(groot, ''CurrentFigure'', h.f(' num2str(atype) '));']);
+        %eval(['figure(h.f' num2str(atype) ');']);
+    end
+    hold on
+    scatter(length(thresh),thresh(end),'b');
+    scatter(length(thresh),av_thresh,'r');
+    hold off
+end
+   
+function s = AdaptStairParameters(h,atype)
 
-if nargin>2
-    s = varargin{1};
+if isfield(h,'s')
+    s = h.s;
 else
     s=struct;
+    s.out.adaptive = [];
+    s.trial = 1;
 end
 
 s.p(atype).up=h.Settings.adaptive(atype).updown(1);
@@ -296,7 +341,12 @@ end
 %s.NameStepSize='Factor';
 
 % if this is the first run, do some setup
-if ~isfield(s.a(atype),'count_of_n_of_reversals')
+if ~isfield(s,'a') || length(s.a)<atype
+    setup = 1;
+else
+    setup=0;
+end
+if setup
     if length(s.p(atype).reversals) ~= length(s.p(atype).stepsize)
         error('The number of s.reversals and the number of steps must be identical.');
     end
@@ -314,7 +364,6 @@ if ~isfield(s.a(atype),'count_of_n_of_reversals')
     % here I define the variable 'row of output' that contains all the output values of the
     % function. In the current function the output is updated at the end of the while loop
     % this are the values and the labels
-    s.out.adaptive = [];
     s.a(atype).rowofoutput = zeros(1, 6);
     s.a(atype).expthresholds = zeros(1, 1);
 
@@ -323,8 +372,7 @@ if ~isfield(s.a(atype),'count_of_n_of_reversals')
     %pause(1)
     % indexes for the while loop
     s.a(atype).count_of_n_of_reversals = 0;
-    s.trial = 1;
-    s.a(atype).blockthresholds = zeros(length(s.a(atype).reversalForthresh), 1);
+    s.a(atype).blockthresholds = zeros(length(s.p(atype).reversalForthresh), 1);
     s.a(atype).n_threshold = 1;
     % variable for the up-s.down
     s.a(atype).n_down = 0;

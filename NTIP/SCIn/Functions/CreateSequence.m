@@ -45,7 +45,7 @@ end
 if nCP==0
     mult=1;
 else
-    mult = probs./repmat(gd,1,size(probs,2)); % multiplier is the min number of repetitions of each option (row) for each column (CP)
+    mult = probs./repmat(gd,1,size(probs,2)); % multiplier is the min number of repetitions of each option (column) for each row (CP)
 end
 
 % adjust for minimum number of oddballs per set
@@ -74,19 +74,23 @@ num_sets=0;
 if isfield(h.Settings,'totdur')
     num_sets = ceil(h.Settings.totdur/totdur);
 end
-try
-    num_sets = max(num_sets,max(ceil(h.Settings.n_odd./min(mult))));
-catch
-    num_sets = max(num_sets,max(ceil(h.Settings.n_odd./min(mult'))));
+if isempty(h.Settings.n_set)
+    try
+        num_sets = h.Settings.n_odd./min(mult);
+    catch
+        num_sets = h.Settings.n_odd./min(mult');
+    end
+else
+    num_sets = h.Settings.n_set;
 end
 
-h.totdur = num_sets*totdur; % modified duration
+h.totdur = sum(max(dursum,h.Settings.trialdur) * sum(num_sets*mult));% total duration of one set of all stim types
 
 %% create sequence sets
 
 % create non-randomised indices of a single set, separating each CP
 % condition
-setx = []; setnum=0;
+setx = []; cpx=[]; setnum=0;
 if nCP>0
     for cp = 1:nCP
         setind{cp} = [];
@@ -96,7 +100,7 @@ if nCP>0
 
         % create a different randomised list (block) for each repeat of the set
         randind{cp} = [];
-        for s = 1:num_sets
+        for s = 1:num_sets(cp)
 
             % find sequence in which oddball trials are apart by at least nX standards
             nX = h.Settings.sep_odd(cp);
@@ -146,18 +150,19 @@ if nCP>0
                 end
             end
 
-            disp(['SETUP SEQUENCE: CP ' num2str(cp) '/' num2str(nCP) ', Set ' num2str(s) '/' num2str(num_sets) ' complete']);
+            disp(['SETUP SEQUENCE: CP ' num2str(cp) '/' num2str(nCP) ', Set ' num2str(s) '/' num2str(num_sets(cp)) ' complete']);
 
             randind{cp}{s} = [setind{cp}(1:nR) candidate];
             setnum = setnum+1;
-            setx = [setx setnum*ones(1,length(candidate))]; % not currently used, but planned to use to randomise sets.
+            setx = [setx setnum*ones(1,length(candidate))];
+            cpx = [cpx cp*ones(1,length(candidate))]; 
         end
 
         % for roving oddball, each oddball stimulus is a persistent change in the
         % stimulus characteristic (until the next oddball when it changes back).
         % Hence, the stimulus types need updating here to be consistent with this:
         
-        for s = 1:num_sets
+        for s = 1:num_sets(cp)
             if strcmp(h.Settings.oddballtype,'roving')
                 for i = 1:length(randind{cp}{s})
                     if i==1; 
@@ -239,11 +244,15 @@ if nCP>0
 
         % make condition numbers distinct for different CP conditions
         if cp>1
-            for s = 1:num_sets
+            for s = 1:num_sets(cp)
                 % find max value of previous CP condition
                 maxval = max(condnum{cp-1}{s});
                 % add this value to the condnum
-                condnum{cp}{s}(2:end) = condnum{cp}{s}(2:end)+maxval; % keep first value as 0
+                if strcmp(h.Settings.oddballtype,'classical')
+                    condnum{cp}{s} = condnum{cp}{s}+maxval; 
+                elseif strcmp(h.Settings.oddballtype,'roving')
+                    condnum{cp}{s}(2:end) = condnum{cp}{s}(2:end)+maxval; % keep first value as 0
+                end
             end
         end
     end
@@ -261,30 +270,57 @@ if ~isfield(h.Seq,'signal')
     h.Seq.blocks=[];
     
     %randomise sets
-    if h.Settings.rand_set 
-        us = unique(setx);
+    if any(h.Settings.rand_set)
+        if length(h.Settings.rand_set)>1
+            % get set indices to randomise
+            setrand = find(ismember(cpx,find(h.Settings.rand_set)));
+        else
+            setrand = 1:length(setx);
+        end
+        % get set indices not beign randomised
+        setnorand = 1:length(setx);
+        setnorand(setrand)=[];
+        
+        % create set index
+        us = unique(setx(setrand));
+        us_pos = ismember(unique(setx),us);
+        usnr = unique(setx(setnorand));
+        usnr_pos = ismember(unique(setx),usnr);
         randus = us(randperm(length(us)));
+        randnorand(us_pos) = randus;
+        randnorand(usnr_pos) = usnr;
         setx_ind = [];
-        for s = 1:length(randus)
-            setx_ind = [setx_ind setx(setx==randus(s))];
+        for s = 1:length(randnorand)
+            setx_ind = [setx_ind setx(setx==randnorand(s))];
         end
     else
         setx_ind=setx;
     end
     
-    if nCP>0
+    %if nCP>0
         cps=0;
         for cp = 1:nCP
-            for s = 1:num_sets
+            for s = 1:num_sets(cp)
                 cps=cps+1;
                 h.Seq.signal(setx_ind==cps) = stimtype{cp}{s}; % type of signal for each trial: intensity, pitch, duration or channel
                 %h.Seq.pattern = ; % type of temporal pattern of the signal within each trial
                 h.Seq.condnum(setx_ind==cps) = condnum{cp}{s};
-                %h.Seq.changedist = design(3,:);
-                if strcmp(h.Settings.blockopt,'cond')
+                
+                % if we are working on a cp condition whose sets are
+                % randomised, balance the conds between blocks:
+                randcp = ismember(cp,find(h.Settings.rand_set));
+                nrandcp = length(randcp);
+                if any(randcp)
+                    if strcmp(h.Settings.blockopt,'cond')
+                        h.Seq.blocks(setx_ind==cps) = cp*ones(1,length(stimtype{cp}{s}));
+                    elseif strcmp(h.Settings.blockopt,'divide')
+                        bv = s+(nCP-nrandcp); % block value
+                        h.Seq.blocks(setx_ind==cps) = bv*ones(1,length(stimtype{cp}{s}));
+                    end
+                % otherwise assign block value according to CP value
+                % not ideal - current only works if non-rand CP==1
+                else
                     h.Seq.blocks(setx_ind==cps) = cp*ones(1,length(stimtype{cp}{s}));
-                elseif strcmp(h.Settings.blockopt,'divide')
-                    h.Seq.blocks(setx_ind==cps) = s*ones(1,length(stimtype{cp}{s}));
                 end
             end
         end
@@ -292,15 +328,15 @@ if ~isfield(h.Seq,'signal')
         h.Seq.blocks = h.Seq.blocks(blockind);
         h.Seq.signal = h.Seq.signal(blockind);
         h.Seq.condnum = h.Seq.condnum(blockind);
-    else
-        h.Seq.signal = ones(1,num_sets); % type of signal for each trial: intensity, pitch, duration or channel
-        %h.Seq.pattern = ; % type of temporal pattern of the signal within each trial
-        h.Seq.condnum = ones(1,num_sets);
-        %h.Seq.changedist = design(3,:);
-        if strcmp(h.Settings.blockopt,'cond')
-            h.Seq.blocks = ones(1,num_sets);
-        end
-    end
+    %else
+    %    h.Seq.signal = ones(1,num_sets); % type of signal for each trial: intensity, pitch, duration or channel
+    %    %h.Seq.pattern = ; % type of temporal pattern of the signal within each trial
+    %    h.Seq.condnum = ones(1,num_sets);
+    %    %h.Seq.changedist = design(3,:);
+    %    if strcmp(h.Settings.blockopt,'cond')
+    %        h.Seq.blocks = ones(1,num_sets);
+    %    end
+    %end
     
     % create all trials if design is continuous
     if isfield(h.Settings,'stimcontrol') && strcmp(h.Settings.design,'continuous') && h.Settings.savesinwave
@@ -315,12 +351,30 @@ end
 %% create Adaptive type order
 
 if isfield(h.Settings,'adaptive')
-    if length(h.Settings.adaptive)>1 && isfield(h.Settings.adaptive_general,'order')
+    if length(h.Settings.adaptive)>1 && isfield(h.Settings,'adaptive_general')
         
-        % get trial/order information from settings 
-        order = h.Settings.adaptive_general.order;
+        % Create order of runs
+        if strcmp(h.Settings.adaptive_general.seqtype,'alt')
+            order = repmat(h.Settings.adaptive_general.adapttypes,1,h.Settings.adaptive(1).nRuns);
+        elseif strcmp(h.Settings.adaptive_general.seqtype,'rand')
+            order=[];
+            nRuns=[h.Settings.adaptive.nRuns];
+            bs=h.Settings.adaptive_general.seqrandblocksize;
+            num_blocks = sum(nRuns)/bs;
+            for nb=1:num_blocks
+                bi = bs*(nb-1)+1:bs*nb;
+                runs = round(([nRuns(1)/sum(nRuns),nRuns(2)/sum(nRuns)] * bs));
+                order_bi=[];
+                for i = 1:length(h.Settings.adaptive_general.adapttypes)
+                    order_bi = [order_bi h.Settings.adaptive_general.adapttypes(i)*ones(1,runs(i))];
+                end
+                order(bi) = order_bi(randperm(length(order_bi)));
+            end
+        end
+        
+        % Create trial order
         uorder = unique(order)';
-        for i = 1:length(unique)
+        for i = 1:length(uorder)
             ntype(i) = h.Settings.adaptive(i).trialsperrun;
         end
         
@@ -330,12 +384,31 @@ if isfield(h.Settings,'adaptive')
             aseq = [aseq order(i)*ones(1,ntype(order(i)))];
         end
         
-        % add to Seq
-        h.Seq.adapttype = aseq;
+        % get condition numbers and their indices
+        condval=[];
+        if isfield(h.Settings.adaptive_general.selectcond,'cp') % use cp condition
+            for cpi = 1:length(h.Settings.adaptive_general.selectcond.cp)
+                condval = [condval unique(condnum{h.Settings.adaptive_general.selectcond.cp(cpi)}{1})];
+            end
+        end
+        if ~isempty(condval)
+            condind = find(ismember(h.Seq.condnum,condval));
+        else
+            condind = 1:length(h.Seq.condnum);
+        end
         
         % check Seq.signal is long enough
-        if length(h.Seq.signal)<h.Seq.adapttype
+        if length(h.Seq.signal)<length(condind)
             error('sequence is not long enough for this number of adaptive trials')
         end
+        if length(aseq)<length(condind)
+            error('number of adaptive trials is not long enough for this sequence')
+        end
+        
+        % add to Seq
+        h.Seq.adapttype = nan(1,length(h.Seq.condnum));
+        h.Seq.adapttype(condind) = aseq(1:length(condind));
+        
     end
+    hold on; plot(h.Seq.adapttype,'r')
 end
