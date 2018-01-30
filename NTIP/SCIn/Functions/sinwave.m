@@ -443,9 +443,9 @@ for tr = trials
     
     h.mwav = attenute_sound(h.mwav,h.inten_atten);
     
-    %if isfield(h,'mon')
-    %    h.mon = ratio*h.mon;
-    %end
+    if isfield(h,'mon')
+        h.mon = ratio*h.mon;
+    end
     
     %if size(h.mwav,3)>1
     %    if isfield(h.Settings,'stimdurtype')
