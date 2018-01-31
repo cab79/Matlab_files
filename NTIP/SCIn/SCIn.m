@@ -381,6 +381,11 @@ else
     % change the button text
     set(hObject, 'String', 'Start')
     
+    try
+        global spt1
+        fclose(spt1);
+    end
+    
 end
     
 
