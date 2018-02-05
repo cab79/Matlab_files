@@ -38,8 +38,8 @@ freqsrange = [6:1:14]; % example of keeping freq resolution high (2Hz) for TF an
 %freqsrange = [0 4; 4 8; 8 13; 13 30; 30 40]; % example of choosing canonical windows for Freq analysis
 
 % moving average window (in trials)
-mov_avg_trials = 100;
-mov_avg_trials_step = 100;
+mov_avg_trials = 50;
+mov_avg_trials_step = 10;
 
 % Bootstraps repetitions (for coherence analysis only)
 bootrep = 50;
@@ -236,8 +236,8 @@ for g = 1:length(subjects)
                             if mov_avg_trials
                                 nAvg = floor((size(inddatasing,3)/mov_avg_trials_step)-(mov_avg_trials/mov_avg_trials_step))+1;
                                 for ma = 1:nAvg
-                                    st_ind = (ma-1)*mov_avg_trials_step+1;
-                                    inddatamavg(:,:,ma) = squeeze(nanmean(inddatasing(:,:,st_ind:st_ind+mov_avg_trials-1,:),3));
+                                    st_ind = mamov_avg_trials_step
+                                    inddatamavg(:,:,ma) = squeeze(nanmean(inddatasing(:,:,ma:ma+mov_avg_trials-1,:),3));
                                 end
                             end
                             act_freq = FTEEG2.freq;
@@ -354,7 +354,7 @@ save([select TFmethod savenametype '_data.mat'],'-v7.3');
 load([select TFmethod savenametype '_data.mat']);
 % settings
 freqselect = 10;
-abs_rel = 2;
+abs_rel = 0;
 condselect = 1;%[1:9];
 exclchan = [29 30];
 %block_reorder = 1:8; % no reordering
@@ -398,21 +398,14 @@ for g = 1:length(subjects)
         %% calculate mean ratios or subtractions (of one freq compared to all others)
         % for each filetype
         reldat=meandat;
-        relmovdat=movmeandat;
         for f = 1:length(meandat)
             for fi = 1:length(act_freq)
                 fni = 1:length(act_freq)
                 fni(fi)=[];
                 if abs_rel==1 % use substraction of meaned data
                     reldat{f}(:,fi) = meandat{f}(:,fi)-mean(meandat{f}(:,fni),2);
-                    if mov_avg_trials
-                        relmovdat{f}(:,fi,:) = movmeandat{f}(:,fi,:)-mean(movmeandat{f}(:,fni,:),2);
-                    end
                 elseif abs_rel==2 % use mean of ratios
                     reldat{f}(:,fi) = mean(repmat(meandat{f}(:,fi),1,length(fni))./meandat{f}(:,fni),2);
-                    if mov_avg_trials
-                        relmovdat{f}(:,fi,:) = mean(repmat(movmeandat{f}(:,fi,:),1,length(fni))./movmeandat{f}(:,fni,:),2);
-                    end
                 end
             end
         end
@@ -475,7 +468,7 @@ for g = 1:length(subjects)
         cplot={};
         minlen = inf;
         for f = 1:length(filetypes)
-            cplot{f} = squeeze(mean(relmovdat{f}(maxele,fn,:),1));
+            cplot{f} = squeeze(mean(movmeandat{f}(maxele,fn,:),1));
             minlen = min(minlen,length(cplot{f}));
         end
         % equate lengths

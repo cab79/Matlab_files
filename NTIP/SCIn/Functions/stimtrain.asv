@@ -56,7 +56,7 @@ switch h.Settings.stimcontrol
                     if ~any(h.inten_mean) && ~isempty(h.Settings.inten)
                         h.inten_mean = h.Settings.inten;
                     end
-                    h.inten_mean_start = h.inten_mean;
+                    h.inten_mean = 
                 end
                 if ~isfield(h,'inten_diff')
                     if ~isfield(h,'inten_diff_gui'); 
@@ -67,7 +67,6 @@ switch h.Settings.stimcontrol
                     if ~any(h.inten_diff) && ~isempty(h.Settings.inten_diff)
                         h.inten_diff = h.Settings.inten_diff;
                     end
-                    h.inten_diff_start = h.inten_diff;
                 end
                 
                 % modify according to procedure
@@ -88,9 +87,6 @@ switch h.Settings.stimcontrol
                         if ~isempty(detect) && isfield(h,'s') 
                             if isfield(h.s.a(detect),'StimulusLevel') % if a level has been determined
                                 h.inten_mean = h.s.a(detect).StimulusLevel;
-                                if isempty(h.inten_mean)
-                                    h.inten_mean = h.inten_mean_start;
-                                end
                             end
                         % or set the adaptive starting level otherwise
                         elseif ~isfield(h,'s')
@@ -101,8 +97,7 @@ switch h.Settings.stimcontrol
                         if ~isempty(discrim)
                             if isfield(h,'s') && length(h.s.a)>=discrim % if a level has been determined
                                 h.inten_diff = h.s.a(discrim).StimulusLevel;
-                            end
-                            if h.inten_diff == 0 || isempty(h.inten_diff) % if not set in GUI or settings
+                            elseif h.inten_diff == 0 % if not set in GUI or settings
                                 h.inten_diff = h.Settings.adaptive(discrim).startinglevel;
                             end
                         end

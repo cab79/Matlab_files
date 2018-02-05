@@ -289,7 +289,7 @@ if ~isempty(ind)
     % does fig handle exist?
     fig = isfield(h,'f');
     if fig
-        fig = fig && length(h.f)>=atype
+        fig = fig && length(h.f)>=atype;
     end
     if fig
         eval(['fig = ishandle(h.f(' num2str(atype) '));']);
@@ -297,7 +297,7 @@ if ~isempty(ind)
     
     if ~fig
         set(groot, 'DefaultFigureVisible', 'off');
-        eval(['h.f(' num2str(atype) ')=figure']);
+        eval(['h.f(' num2str(atype) ')=figure;']);
     else
         eval(['set(groot, ''CurrentFigure'', h.f(' num2str(atype) '));']);
         %eval(['figure(h.f' num2str(atype) ');']);
@@ -341,7 +341,7 @@ end
 %s.NameStepSize='Factor';
 
 % if this is the first run, do some setup
-if ~isfield(s,'a') || length(s.a)<atype
+if ~isfield(s,'a') || length(s.a)<atype || isempty(s.a(atype).StimulusLevel)
     setup = 1;
 else
     setup=0;

@@ -4,17 +4,17 @@
 
 clear all
 % path to ICA processed data
-filepath = 'Y:\Marie Shorrock\NTIP\Pilot_Tim_Auditory\Preprocessed';
+filepath = 'C:\Data\NTIP\Preprocessed';
 cd(filepath);
 % file suffix common to all files needing furter processing
-files = dir('*GUI_ICA.set');
+files = dir('*_epoched.set');
 % path to chanlocs file
 %load('Y:\Marie Shorrock\NTIP\Pilot_Tim_Auditory\chanlocs.mat');
 
-ALLEEG_save = 1; % 1= save multiple ERPs from one file; 2 = save one ERP from multiple files
+ALLEEG_save = 0; % 1= save multiple ERPs from one file; 2 = save one ERP from multiple files
 
 % baseline range
-basebin = [-0.2 -0.1];
+basebin = [-0.2 0];
 % stimulus markers to include in analysis
 stimtypes = {'S  1','S  2','S  3','S  4','S  5','S  6','S  7','S  8' 'S  9'};
 
@@ -49,7 +49,7 @@ for f = files_ana
     %end
    
     % save .set
-    sname = [C{1} '_' C{2} '_cleaned.set'];
+    sname = [C{1} '_' C{2} '_' C{3} '_cleaned.set'];
     EEG = pop_saveset(EEG,'filename',sname,'filepath',filepath); 
 
     % Also save each condition ('stimtype') in a separate EEG structure (EEGLAB

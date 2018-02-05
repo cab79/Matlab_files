@@ -21,7 +21,7 @@ for f = 1:length(parts)
     else
         filename = files.name;
         fprintf('\nProcessing %s.\n\n', filename);
-        EEG = pop_loadbv(filepath,filename);
+        EEG = pop_loadbv_CAB(filepath,filename); % CAB version changes filesnames to those on disk
     end
 
     EEG = eeg_checkset(EEG);

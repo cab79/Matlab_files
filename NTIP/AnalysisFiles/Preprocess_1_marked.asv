@@ -148,7 +148,7 @@ if Settings.ICA
         EEG = pop_runica(EEG, 'extended',1,'interupt','on','pca',numcomp);
 
         % SAVE
-        sname = [C{1} '_' C{2} '_' C{3} '_ICA.set'];
+        sname = [C{1} '_' C{2} '_' C{2} '_ICA.set'];
         EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath);
 
     end

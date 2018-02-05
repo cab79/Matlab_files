@@ -67,6 +67,9 @@ switch opt
     %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
     %intensity
     h.Settings.inten = []; % value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.maxinten = 200;
+    %intensity
+    h.Settings.inten_diff = []; % value between 2 and 1000mA for Digitimer DS8R
     % Tactile: number of pulses per trial
     h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
     % Tactile: within-trial frequency (Hz) 
@@ -1049,7 +1052,7 @@ case 'Adapt_overtrials_rand'
     h.Settings.adaptive(1).type = 'detect';
     h.Settings.adaptive(1).updown = [1 1];
     % how many of each to run?
-    h.Settings.adaptive(1).nRuns = 150;
+    h.Settings.adaptive(1).nRuns = 200;
     % max number of thresh estimates to average over to get overall estimate
     h.Settings.adaptive(1).av_thresh = 24;
     % number of trials each run
@@ -1078,7 +1081,7 @@ case 'Adapt_overtrials_rand'
     % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
     %h.Settings.adaptive.resptrials = 4;
     % number of reversals to average over to calculate threshold.
-    h.Settings.adaptive(1).reversalForthresh = 6;
+    h.Settings.adaptive(1).reversalForthresh = 2;
     % use mean from the first X responses of each type (high and low)
     %h.Settings.adaptive(1).getmeanfromresponses = 6;
     % maximum amount to adjust the mean if their responses are very
@@ -1091,7 +1094,7 @@ case 'Adapt_overtrials_rand'
     h.Settings.adaptive(2).type = 'discrim';
     h.Settings.adaptive(2).updown = [1 2];
     % how many of each to run?
-    h.Settings.adaptive(2).nRuns = 96;
+    h.Settings.adaptive(2).nRuns = 200;
     % max number of thresh estimates to average over to get overall estimate
     h.Settings.adaptive(2).av_thresh = 24;
     % number of trials each run
@@ -1120,7 +1123,7 @@ case 'Adapt_overtrials_rand'
     % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
     %h.Settings.adaptive.resptrials = 4;
     % number of reversals to average over to calculate threshold.
-    h.Settings.adaptive(2).reversalForthresh = 6;
+    h.Settings.adaptive(2).reversalForthresh = 2;
     % use mean from the first X responses of each type (high and low)
     %h.Settings.adaptive(2).getmeanfromresponses = 6;
     % maximum amount to adjust the mean if their responses are very

@@ -24,7 +24,8 @@ else
 end
 
 cfg.toi          = intimes;
-cfg.taper       = 'hanning';
+cfg.taper       = 'dpss';
+cfg.tapsmofrq    = 2;
 cfg.t_ftimwin    = ncycles./cfg.foi;  % cycles per time window
 %cfg.method     = 'wavelet';                
 %cfg.width      = 1;  
