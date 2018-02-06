@@ -1,10 +1,12 @@
 %% PREPROCESSING
+%MODS:
+% generic names for sname lname to run in any order, as functions.
+
 % 1. filter, epoch, baseline correction, rereference
 % 2. reject chans/trials
 % 3. perform ICA decomposition for later rejection of eye movement and
 % other noise artefact
 
-% Altered from Chris' original 'Preprocess' script 
 %%
 
 %clear all
@@ -27,6 +29,7 @@ filterset = [5 15]; % FILTER SETTINGS - INCLUSIVE
 notch_on = 0;
 Settings.ICA = 0;
 Settings.FTrej = 0;
+Settings.combinefiles = 1;
 %addpath(genpath('Y:\Marie Shorrock\NTIP\Pilot_Tim_Auditory\Supplementary data'));
 
 files_ana = 1:length(files);
@@ -42,7 +45,7 @@ for f = files_ana
     EEG = pop_loadset('filename',orig_file,'filepath',origpath);
     
     %ADD CHANNEL LOCATIONS 
-    EEG=pop_chanedit(EEG, 'lookup','C:\\Data\\Matlab\\eeglab13_6_5b\\plugins\\dipfit2.3\\standard_BESA\\standard-10-5-cap385.elp');
+    %EEG=pop_chanedit(EEG, 'lookup','C:\Data\Matlab\eeglab13_6_5b\plugins\dipfit2.3\standard_BESA\standard-10-5-cap385.elp');
     
     % EXCLUDE FC2 BEFORE INTERPOLATION
     chanexcl = [];   
@@ -88,7 +91,6 @@ for f = files_ana
     % FILTER
     if filterset(1)>0; EEG = pop_eegfiltnew( EEG, filterset(1), 0, [], 0);end
     if filterset(2)>0; EEG = pop_eegfiltnew( EEG, 0, filterset(2), [], 0);end
-   
     
     % EPOCH
     %create epochs 
@@ -107,20 +109,45 @@ for f = files_ana
     
 end
 
-if Settings.FTrej
-    % NOISY TRIAL AND CHANNEL REJECTION USING FIELDTRIP
+%% combine data files
+if Settings.combinefiles
+    clear OUTEEG
     for f = files_ana
         orig_file = files(f).name;
         [pth nme ext] = fileparts(orig_file); 
         C = strsplit(nme,'_');
         lname = [C{1} '_' C{2} '_' C{3} '_epoched.set'];
         EEG = pop_loadset('filename',lname,'filepath',anapath);
+    
+        if exist('OUTEEG','var')
+            OUTEEG = pop_mergeset(OUTEEG, EEG);
+        else
+            OUTEEG = EEG;
+        end
+        OUTEEG.fileinfo(f).nbtrials = EEG.nbtrials;
+        OUTEEG.fileinfo(f).epochs = EEG.epochs;
+        clear EEG
+    end
+    EEG=OUTEEG;
+    % SAVE
+    sname = [C{1} '_combined.set'];
+    EEG = eeg_checkset( EEG );
+    EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath);
+end
 
+if Settings.FTrej
+    % NOISY TRIAL AND CHANNEL REJECTION USING FIELDTRIP
+    for f = files_ana
+        orig_file = files(f).name;
+        [pth nme ext] = fileparts(orig_file); 
+        C = strsplit(nme,'_');
+        lname = [C{1} '_combined.set'];
+        EEG = pop_loadset('filename',lname,'filepath',anapath);
 
         % strategy - only remove a very small number of very bad trials / chans
         % before ICA - do further cleaning after ICA
-        EEG = FTrejman(EEG,[20 30]); % high freq to identify noise not related to eye movement
-        EEG = FTrejman(EEG,[0 5]); % low freq to identify eye movement
+        [EEG,rejtrial,rejchan] = FTrejman(EEG,[20 30]); % high freq to identify noise not related to eye movement
+        [EEG,rejtrial,rejchan] = FTrejman(EEG,[0 5]); % low freq to identify eye movement
 
         %EEG = pop_eegplot(EEG);
 

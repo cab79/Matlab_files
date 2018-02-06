@@ -81,11 +81,11 @@ switch opt
         h.Settings.design = 'continuous';
         % if continuous, how many trials ahead should be in the player schedule?
         % (applies to stimulation via soundcard only)
-        h.Settings.ntrialsahead = 2;  %0 = all trials
+        h.Settings.ntrialsahead = 0;  %0 = all trials
 
         %% Output options
         % save sinwave from all trials as part of stim sequence file
-        h.Settings.savesinwave = 0;
+        h.Settings.savesinwave = 1;
 
         %% EQUIPMENT CONTROL
         % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
@@ -217,7 +217,7 @@ switch opt
         h.Settings.n_set = []; % 1 = use min set size
 
         % min number of oddballs within each CP condition
-        h.Settings.n_odd = 14; % overrides h.Settings.totdur
+        h.Settings.n_odd = 7; % overrides h.Settings.totdur
         % min number of oddballs per randomised set, per CP
         h.Settings.n_odd_set = [1]; % overrides h.Settings.totdur
         % randomise sets?

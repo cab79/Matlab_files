@@ -1,4 +1,4 @@
-function EEG = FTrejman(EEG,filterset,varargin)
+function [EEG,rejtrial,rejchan] = FTrejman(EEG,filterset,varargin)
 %convert to FT and manually remove chan and trial condidering a particular freq
 
 if ~isempty(varargin)
