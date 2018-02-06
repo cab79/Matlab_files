@@ -1,0 +1,15 @@
+% This simple script identifies files for conversion to EEGLAB format for a
+% specific study and sets some parameters for the conversion. It calls the generic function
+% "import_eeglab" to do the actual conversion.
+
+%% SETUP
+dbstop if error % optional instruction to stop at a breakpoint if there is an error - useful for debugging
+S.loadpath = 'C:\Data\NTIP\Raw'; %where the raw input data is stored
+S.savepath = 'C:\Data\NTIP\Raw'; %where the .set output files will go
+S.inputfileext = 'vhdr'; % file extension of input data: supports vhdr (Brainvisi
+S.outputfileprefix = ''; % suffix to add to output file, if needed
+S.outputfilesuffix = ''; % suffix to add to output file, if needed
+S.chanexcl = [31,32]; % exclude channels
+
+%% RUN
+import_eeglab(S)
