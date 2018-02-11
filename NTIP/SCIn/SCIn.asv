@@ -364,7 +364,7 @@ end
 
 h.Seq = A.seq;
 h.Settings = A.settings;
-h.SeqName = A.filename;
+h.SeqName = h.filename;
 if ~isfield(h,'startblock')
     h.startblock = '1';
 end
@@ -684,15 +684,9 @@ h.mode.setup = get(hObject,'Value');
 if h.mode.setup
     set(h.SettingsOpt,'Enable','on');
     set(h.Options,'Enable','on');
-    set(h.CreateSeq,'Enable','on');
-    set(h.SaveSeq,'Enable','on');
-    set(h.CreateRand,'Enable','on');
 else
     set(h.SettingsOpt,'Enable','off');
     set(h.Options,'Enable','off');
-    set(h.CreateSeq,'Enable','off');
-    set(h.SaveSeq,'Enable','off');
-    set(h.CreateRand,'Enable','off');
 end
 guidata(hObject, h)
 
@@ -714,9 +708,6 @@ if h.mode.runseq
     set(h.runrandseq,'value',0);
     h.mode.runrandseq = 0;
     h.mode.setup = 0;
-    set(h.CreateSeq,'Enable','off');
-    set(h.SaveSeq,'Enable','off');
-    set(h.CreateRand,'Enable','off');
 else
     set(h.SeqOpt,'Enable','off');
 end
@@ -739,9 +730,6 @@ if h.mode.runrandseq
     set(h.runseq,'value',0);
     h.mode.runseq = 0;
     h.mode.setup = 0;
-    set(h.CreateSeq,'Enable','off');
-    set(h.SaveSeq,'Enable','off');
-    set(h.CreateRand,'Enable','off');
 else
     set(h.RandOpt,'Enable','off');
 end

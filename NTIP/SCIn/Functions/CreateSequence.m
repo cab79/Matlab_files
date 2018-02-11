@@ -28,6 +28,10 @@ end
 
 %% work out parameters of each sequence set (length, number of oddballs, probability of oddballs, etc.)
 
+%if ~isfield(h.Settings,'probdepend')
+%    h.Settings.probdepend = ones(size(h.Settings.oddprob));
+%end
+
 % ensure probs are integers for gcd calculation
 probs = h.Settings.oddprob*1000000;
 
@@ -48,8 +52,8 @@ else
     mult = probs./repmat(gd,1,size(probs,2)); % multiplier is the min number of repetitions of each option (column) for each row (CP)
 end
 
-% adjust for minimum number of oddballs per set
-minmult = ceil(h.Settings.n_odd_set./min(mult'))';
+% adjust for minimum number of oddballs per set, with a min of 1
+minmult = ceil(h.Settings.n_odd_set./max(min(mult'),1))';
 mult = mult.* repmat(minmult,1,size(mult,2));
 
 % increase set size
@@ -67,26 +71,30 @@ if iscell(stimdur)
 else
     dursum = sum(stimdur,2);
 end
-totdur = sum(max(dursum,h.Settings.trialdur) .* mult(:));% total duration of one set of all stim types
+totdur = sum(max(dursum,h.Settings.trialdur) .* mult(mult>0));% total duration of one set of all stim types
 
 % calculate number of sets that can provide at least h.Settings.totdur of stimulation AND n_odd oddballs per CP
 num_sets=0;
 if isfield(h.Settings,'totdur')
     num_sets = ceil(h.Settings.totdur/totdur);
 end
-if isempty(h.Settings.n_set)
+if isempty(h.Settings.n_set) && ~isempty(h.Settings.n_odd)
     try
         num_sets = h.Settings.n_odd./min(mult);
     catch
         num_sets = h.Settings.n_odd./min(mult');
     end
-else
+elseif ~isempty(h.Settings.n_set)
     num_sets = h.Settings.n_set;
 end
 
 h.totdur = sum(max(dursum,h.Settings.trialdur) * sum(num_sets*mult));% total duration of one set of all stim types
 
 %% create sequence sets
+
+%if ~isfield(h.Settings,'rand_within_set')
+%    h.Settings.rand_within_set = 1;
+%end
 
 % create non-randomised indices of a single set, separating each CP
 % condition
@@ -153,6 +161,9 @@ if nCP>0
             disp(['SETUP SEQUENCE: CP ' num2str(cp) '/' num2str(nCP) ', Set ' num2str(s) '/' num2str(num_sets(cp)) ' complete']);
 
             randind{cp}{s} = [setind{cp}(1:nR) candidate];
+            %if length(h.Settings.rand_within_set)>1
+            %    if h.Settings.rand_within_set(cp)
+            %end
             setnum = setnum+1;
             setx = [setx setnum*ones(1,length(candidate))];
             cpx = [cpx cp*ones(1,length(candidate))]; 
@@ -251,12 +262,19 @@ if nCP>0
         if cp>1
             for s = 1:num_sets(cp)
                 % find max value of previous CP condition
-                maxval = max(condnum{cp-1}{s});
-                % add this value to the condnum
-                if strcmp(h.Settings.oddballtype,'classical')
-                    condnum{cp}{s} = condnum{cp}{s}+maxval; 
-                elseif strcmp(h.Settings.oddballtype,'roving')
-                    condnum{cp}{s}(2:end) = condnum{cp}{s}(2:end)+maxval; % keep first value as 0
+                maxval = max([condnum{cp-1}{:}]);
+                % find min value of current CP condition
+                minval = min([condnum{cp}{:}]);
+                % is current value too low?
+                if minval<=maxval
+                    % gat value to add on
+                    valadd = maxval-minval+1;
+                    % add this value to the condnum
+                    if strcmp(h.Settings.oddballtype,'classical')
+                        condnum{cp}{s} = condnum{cp}{s}+valadd; 
+                    elseif strcmp(h.Settings.oddballtype,'roving')
+                        condnum{cp}{s}(2:end) = condnum{cp}{s}(2:end)+valadd; % keep first value as 0
+                    end
                 end
             end
         end
@@ -325,7 +343,12 @@ if ~isfield(h.Seq,'signal')
                 % otherwise assign block value according to CP value
                 % not ideal - current only works if non-rand CP==1
                 else
-                    h.Seq.blocks(setx_ind==cps) = cp*ones(1,length(stimtype{cp}{s}));
+                    if strcmp(h.Settings.blockopt,'cond')
+                        h.Seq.blocks(setx_ind==cps) = cp*ones(1,length(stimtype{cp}{s}));
+                    elseif strcmp(h.Settings.blockopt,'divide')
+                        bv = 1; % block value
+                        h.Seq.blocks(setx_ind==cps) = bv*ones(1,length(stimtype{cp}{s}));
+                    end
                 end
             end
         end
