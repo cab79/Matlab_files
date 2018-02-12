@@ -115,7 +115,7 @@ switch opt
     % buttonpress options: key: keyboard inputs. Blank for no button press
     h.Settings.buttontype='key';
     % range of keyboard presses indicating a recordable response
-    h.Settings.buttonopt = {'DownArrow'}; 
+    h.Settings.buttonopt = {'UpArrow','DownArrow'}; 
     
     %% THRESHOLDING
     % starting level and step size
