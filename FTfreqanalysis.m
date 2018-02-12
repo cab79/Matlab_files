@@ -32,20 +32,3 @@ cfg.t_ftimwin    = ncycles./cfg.foi;  % cycles per time window
 cfg.keeptrials = 'yes';
 %cfg.precision = 'single';
 EEG = ft_freqanalysis(cfg,EEG); 
-
-
-if strcmp(select,'TF')
-    %% baseline normalisation
-    cfg=[];
-    cfg.baseline     = [basetimewin(1) basetimewin(end)];
-    cfg.baselinetype = 'db';
-    EEG = ft_freqbaseline(cfg, EEG);
-end
-
-% remove baseline from average (baseline already
-% removed from single trials
-%baseidx = dsearchn(EEG.time',cfg.baseline')';
-%meanVals = repmat(nanmean(inddata(:,baseidx(1):baseidx(2),:), 2), [1 size(inddata,2) 1]);
-%inddata = inddata-meanVals;
-%meanVals = repmat(nanmean(evdata(:,baseidx(1):baseidx(2),:), 2), [1 size(evdata,2) 1]);
-%evdata = evdata-meanVals;

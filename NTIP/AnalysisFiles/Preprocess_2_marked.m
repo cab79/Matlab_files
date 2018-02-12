@@ -7,11 +7,9 @@ clear all
 filepath = 'C:\Data\NTIP\Preprocessed';
 cd(filepath);
 % file suffix common to all files needing furter processing
-files = dir('*_epoched.set');
+files = dir('*_combined.set');
 % path to chanlocs file
 %load('Y:\Marie Shorrock\NTIP\Pilot_Tim_Auditory\chanlocs.mat');
-
-ALLEEG_save = 0; % 1= save multiple ERPs from one file; 2 = save one ERP from multiple files
 
 % baseline range
 basebin = [-0.2 0];
@@ -49,45 +47,25 @@ for f = files_ana
     %end
    
     % save .set
-    sname = [C{1} '_' C{2} '_' C{3} '_cleaned.set'];
+    sname = [C{1} '_cleaned.set'];
     EEG = pop_saveset(EEG,'filename',sname,'filepath',filepath); 
 
-    % Also save each condition ('stimtype') in a separate EEG structure (EEGLAB
-    % format), all inside one big structure called ALLEEG
-    % This can be used for checking data quality later (use "Plot_ALLEEG.m", but is not used for
-    % any further processing.
-    if ALLEEG_save
-        EEGall=EEG;
-        if ALLEEG_save==1
-            ALLEEG=struct;
-        end
-        for st = 1:length(stimtypes)
-            if any(strcmp({EEGall.event.type},stimtypes{st}))
-                EEG = pop_selectevent(EEGall,'type',stimtypes{st});
-                if ALLEEG_save==1
-                    if st==1
-                        ALLEEG = EEG; 
-                    else 
-                        ALLEEG(st)=EEG;
-                    end
-                end
-            end
-        end
-        if ALLEEG_save==1
-            sname = [C{1} '_' C{2} '_ALLEEG.mat'];
-            save(sname,'ALLEEG');
-        end
-
-        if ALLEEG_save==2
-            if f==files_ana(1)
-                ALLEEG = EEG; 
-            else 
-                ALLEEG(length(ALLEEG)+1)=EEG;
-            end
-        end
-    end
 end
-if ALLEEG_save==2
-    sname = ['Allfiles_nochange_ALLEEG.mat'];
-    save(sname,'ALLEEG');
+
+% separate files
+for f = files_ana
+    orig_file = files(f).name;
+    [pth nme ext] = fileparts(orig_file); 
+    C = strsplit(nme,'_');
+    lname = [C{1} '_cleaned.set'];
+    INEEG = pop_loadset('filename',lname,'filepath',filepath);
+    [sfiles,ia,ib] = unique({INEEG.epoch.file});
+    for s = 1:length(sfiles)
+        ind = find(ib==s);
+        EEG = pop_select(INEEG,'trial',ind);
+        
+        % save .set
+        sname = [sfiles{s} '_cleaned.set'];
+        pop_saveset(EEG,'filename',sname,'filepath',filepath); 
+    end
 end

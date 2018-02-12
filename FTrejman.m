@@ -31,6 +31,9 @@ FT = ft_rejectvisual(cfg, FT);
 
 if strcmp(format,'EEGLAB')
     EEG = eeg_interp(EEG, rejchan);
+    if length(EEG.chanlocs)>EEG.nbchan
+        EEG.chanlocs(rejchan)=[];
+    end
     EEG = pop_select(EEG, 'notrial', rejtrial);
 elseif strcmp(format,'SPM')
     EEG = badchannels(EEG, rejchan, 1);

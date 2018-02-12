@@ -1,6 +1,7 @@
 %% PREPROCESSING
 %MODS:
 % generic names for sname lname to run in any order, as functions.
+% add markers to selected files (baselines) but not others
 
 % 1. filter, epoch, baseline correction, rereference
 % 2. reject chans/trials
@@ -24,28 +25,38 @@ files = dir('*.set');
 cd(anapath);
 
 % SET SOME OPTIONS
-timebin = [-0.2 0.3]; % for epoching       
-filterset = [5 15]; % FILTER SETTINGS - INCLUSIVE
-notch_on = 0;
-Settings.ICA = 0;
-Settings.FTrej = 0;
-Settings.combinefiles = 1;
+S.addchanloc = 'C:\Data\Matlab\eeglab13_6_5b\plugins\dipfit2.3\standard_BESA\standard-10-5-cap385.elp'; % add channel locations from this path; or leave as ''
+S.epoch.timebin = [-0.2 0.3]; % for epoching
+S.epoch.addmarker = 1; % set to 1 to add markers if there are none
+S.filter = [5 15]; % FILTER S - INCLUSIVE
+S.notch = 0;
+S.ICA = 0;
+S.FTrej = 0;
+S.combinefiles = 1;
 %addpath(genpath('Y:\Marie Shorrock\NTIP\Pilot_Tim_Auditory\Supplementary data'));
 
 files_ana = 1:length(files);
 trials_ana = 1; fname_ext = '';
 
+subnames={};
 for f = files_ana
     
     orig_file = files(f).name;
     [pth nme ext] = fileparts(orig_file); 
     C = strsplit(nme,'_');
     
+    % collect subject names
+    if ~any(strcmp(subnames,C{1}))
+        subnames = [subnames C{1}];
+    end
+    
     % LOAD DATA
     EEG = pop_loadset('filename',orig_file,'filepath',origpath);
     
     %ADD CHANNEL LOCATIONS 
-    %EEG=pop_chanedit(EEG, 'lookup','C:\Data\Matlab\eeglab13_6_5b\plugins\dipfit2.3\standard_BESA\standard-10-5-cap385.elp');
+    if ~isempty(S.addchanloc) && isempty(EEG.chanlocs(1).theta)
+        EEG=pop_chanedit(EEG, 'lookup',S.addchanloc);
+    end
     
     % EXCLUDE FC2 BEFORE INTERPOLATION
     chanexcl = [];   
@@ -96,6 +107,17 @@ for f = files_ana
     %create epochs 
     EEG = pop_epoch( EEG, {'S  1' 'S  2' 'S  3' 'S  4' 'S  5' 'S  6' 'S  7' 'S  8' 'S  9'}, timebin, 'newname', [C{1} '_' C{2} '_epochs'],'epochinfo', 'yes');
   
+    %add the marker ('M') 
+    Sr = EEG.srate; % sampling rate of data
+    Ndp = Sr*(timebin(2)-timebin(1));% number of data points per epoch
+    Tdp = size(EEG.data,2);% total number of data points in file
+    Mep = floor(Tdp/Ndp);% max possible number of epochs
+    for i = 1:Mep;
+        EEG.event(1,i).type = 'M';
+        EEG.event(1,i).latency = (i-1)*Ndp+1;
+        EEG.event(1,i).urevent = 'M';
+    end
+    
     % LINEAR DETREND
     %for i = 1:EEG.trials, EEG.data(:,:,i) = detrend(EEG.data(:,:,i)')'; end;
     
@@ -107,35 +129,42 @@ for f = files_ana
     EEG = eeg_checkset( EEG );
     EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath); 
     
+    
 end
 
 %% combine data files
-if Settings.combinefiles
+if S.combinefiles
     clear OUTEEG
-    for f = files_ana
-        orig_file = files(f).name;
-        [pth nme ext] = fileparts(orig_file); 
-        C = strsplit(nme,'_');
-        lname = [C{1} '_' C{2} '_' C{3} '_epoched.set'];
-        EEG = pop_loadset('filename',lname,'filepath',anapath);
-    
-        if exist('OUTEEG','var')
-            OUTEEG = pop_mergeset(OUTEEG, EEG);
-        else
-            OUTEEG = EEG;
+    for s = 1:length(subnames)
+        subfiles = dir([subnames{s} '*_epoched.set']);
+        for f = 1:length(subfiles)
+            orig_file = subfiles(f).name;
+            [pth nme ext] = fileparts(orig_file); 
+            C = strsplit(nme,'_');
+            lname = [C{1} '_' C{2} '_' C{3} '_epoched.set'];
+            EEG = pop_loadset('filename',lname,'filepath',anapath);
+            [EEG.epoch(:).file] = deal([C{1} '_' C{2} '_' C{3}]);
+            if exist('OUTEEG','var')
+                OUTEEG = pop_mergeset(OUTEEG, EEG);
+            else
+                OUTEEG = EEG;
+                OUTEEG.fileinfo = [];
+            end
+            OUTEEG.fileinfo = [OUTEEG.fileinfo,{EEG.epoch.file}];
+            clear EEG
         end
-        OUTEEG.fileinfo(f).nbtrials = EEG.nbtrials;
-        OUTEEG.fileinfo(f).epochs = EEG.epochs;
-        clear EEG
+        EEG=OUTEEG;
+        %temp=num2cell(EEG.fileinfo);
+        [EEG.epoch.file] = deal(EEG.fileinfo{:});
+        clear OUTEEG
+        % SAVE
+        sname = [C{1} '_combined.set'];
+        EEG = eeg_checkset( EEG );
+        EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath);
     end
-    EEG=OUTEEG;
-    % SAVE
-    sname = [C{1} '_combined.set'];
-    EEG = eeg_checkset( EEG );
-    EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath);
 end
 
-if Settings.FTrej
+if S.FTrej
     % NOISY TRIAL AND CHANNEL REJECTION USING FIELDTRIP
     for f = files_ana
         orig_file = files(f).name;
@@ -151,12 +180,12 @@ if Settings.FTrej
 
         %EEG = pop_eegplot(EEG);
 
-        sname = [C{1} '_' C{2} '_' C{3} '_manrej.set'];
+        sname = [C{1} '_manrej.set'];
         EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath); 
     end
 end
 
-if Settings.ICA
+if S.ICA
     % prepare data for ICA
     for f = files_ana
         orig_file = files(f).name;
@@ -175,7 +204,7 @@ if Settings.ICA
         EEG = pop_runica(EEG, 'extended',1,'interupt','on','pca',numcomp);
 
         % SAVE
-        sname = [C{1} '_' C{2} '_' C{3} '_ICA.set'];
+        sname = [C{1} '_ICA.set'];
         EEG = pop_saveset(EEG,'filename',sname,'filepath',anapath);
 
     end
