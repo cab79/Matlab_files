@@ -71,7 +71,9 @@ for g = 1:length(S.groups)
         for a = 1:length(S.sessions)
             for b = 1:length(S.blocks)
                 for c = 1:length(S.conds)
-                    file = dir(fullfile(S.filepath,['*' subj '*' S.sessions{a} '*' S.blocks{b} '*' S.conds{c} '*' S.loadext]));
+                    genname = ['*' subj '*' S.sessions{a} '*' S.blocks{b} '*' S.conds{c} '*' S.loadext];
+                    genname = strrep(genname,'**','*');
+                    file = dir(fullfile(S.filepath,genname));
                     if length(file)~=1
                         error('File names are not uniquely specified')
                     else

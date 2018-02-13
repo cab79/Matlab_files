@@ -1,7 +1,16 @@
 clear all
 dbstop if error % optional instruction to stop at a breakpoint if there is an error - useful for debugging
 
-%% FOLDER AND FILENAME DEFINITIONS
+%% 1. ADD TOOLBOXES TO MATLAB PATH
+eeglab = 'C:\EEGLABtraining2018\eeglab14_1_1b'; % path to eeglab toolbox
+fieldtrip = 'C:\EEGLABtraining2018\fieldtrip-20180212'; % path to fieldtrip toolbox
+batchfun = 'C:\EEGLABtraining2018\EEGLABworkshops2018';
+
+addpath(genpath(eeglab));
+addpath(fieldtrip); ft_defaults;
+addpath(genpath(batchfun));
+
+%% 2. FOLDER AND FILENAME DEFINITIONS
 
 % FILE NAMING
 % Name the input files as <study name>_<participant ID>_<sessions name_<block name>_<condition name>
@@ -17,8 +26,8 @@ S.fnameparts = {'study','subject','block','event'}; % parts of the input filenam
 S.subjects = {'P1'}; % either a single subject, or leave blank to process all subjects in folder
 S.sessions = {};
 S.blocks = {'ECA','ECB'}; % blocks to load (each a separate file) - empty means all of them, or not defined
-S.conds = {'_1_','_1O_','_10_','_10O_','_1RS_','_1ORS_','_10RS_','_10ORS_'}; % eventitions to load (each a separate file) - empty means all of them, or not defined
-S.datfile = 'C:\Data\NTIP\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+S.conds = {'_1.','_1O.','_10.','_10O.','_1RS.','_1ORS.','_10RS.','_10ORS.'}; % eventitions to load (each a separate file) - empty means all of them, or not defined
+S.datfile = 'C:\EEGLABtraining2018\Data\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
 %% 1. DATA IMPORT
