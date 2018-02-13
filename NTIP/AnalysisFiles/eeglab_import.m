@@ -27,6 +27,9 @@ for f = 1:length(S.filelist)
             EEG = pop_loadbv_CAB(S.rawpath,filename); % CAB version changes filesnames to be the same as those on disk
         case 'cnt' % Neuroscan
             EEG = pop_loadcnt(fullfile(S.rawpath,filename));
+        case 'mff'
+            % requires toolbox: mffimport2.0 (Srivas Chennu)
+            EEG = pop_readegimff(fullfile(S.rawpath,filename));
     end
     EEG = eeg_checkset(EEG);
 

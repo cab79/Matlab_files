@@ -121,6 +121,7 @@ switch opt
     % starting level and step size
     h.Settings.threshold.startinglevel = 0; % for intensity)
     h.Settings.threshold.step = 2;
+    h.Settings.threshold.signalval = [2 1]; % 2 = carrying on increasing; 1 = decrease
     
 case 'Adapt_eachtrial'
     % presents two intensities on each trial, with the response indicating

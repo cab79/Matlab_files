@@ -28,7 +28,7 @@ save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time t
 
 % SETTINGS
 load(fullfile(S.setpath,'S'))
-S.loadext = 'vhdr'; % file extension of input data: supports 'vhdr' (Brainvision), 'cnt' (Neuroscan)
+S.loadext = 'vhdr'; % file extension of input data: supports 'vhdr' (Brainvision), 'cnt' (Neuroscan), 'mff' (EGI - requires mffimport2.0 toolbox)
 S.saveprefix = ''; % prefix to add to output file, if needed
 S.savesuffix = ''; % suffix to add to output file, if needed
 S.chan.excl = [32]; % exclude channels, or leave empty as []

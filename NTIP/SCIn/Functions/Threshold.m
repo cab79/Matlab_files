@@ -45,6 +45,7 @@ if ~isempty(h.out.presstrial)
         %presstrial=trls_pressed(end);
         pressbutton = h.out.pressbutton(end);
         resi = find(strcmp(pressbutton(end),h.Settings.buttonopt)); % which button was pressed?
+        resfun = h.Settings.threshold.signalval(resi); %what is meaning of this response?
     end
 else
     % only run once per trial if NOT pressed
@@ -55,7 +56,7 @@ else
     end
 end
 disp('Running Threshold')
-if resi
+if resi && resfun==1
 %s.SubjectAccuracy(s.adaptive.trial)= EvaluateAnswer(CorrectAnswer,s.feedback,Question);   %evaluing the subject answer (right or wrong)
     s.change= -1;
 else
