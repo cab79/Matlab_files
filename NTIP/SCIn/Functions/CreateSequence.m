@@ -88,7 +88,7 @@ elseif ~isempty(h.Settings.n_set)
     num_sets = h.Settings.n_set;
 end
 
-h.totdur = sum(max(dursum,h.Settings.trialdur) * sum(num_sets*mult));% total duration of one set of all stim types
+h.Seq.totdur = sum(max(dursum,h.Settings.trialdur) * sum(num_sets*mult));% total duration of one set of all stim types
 
 %% create sequence sets
 

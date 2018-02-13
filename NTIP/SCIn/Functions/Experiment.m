@@ -204,7 +204,7 @@ while h.i<length(h.Seq.signal)
             h = stimtrain(h,opt); % stimulus train
             for i = 1:h.Settings.nstim_trial
                 if strcmp(h.Settings.stimcontrol,'LJTick-DAQ');
-                    opt = 'setDAC';
+                    opt = 'set';
                     h.trialstimnum = i;
                     h = stimtrain(h,opt); % intensity via DAC
                 end
@@ -287,8 +287,11 @@ if h.Settings.ntrialsahead
         h.trialdur = h.totalsamples/h.Settings.fs;
     else
         try
-            h.trialdur = h.totdur;
+            h.trialdur = h.Seq.totdur;
         catch
+            h.trialdur = sum(h.Settings.stimdur)*length(h.Seq.signal);
+        end
+        if isempty(h.trialdur)
             h.trialdur = sum(h.Settings.stimdur)*length(h.Seq.signal);
         end
     end
@@ -497,6 +500,10 @@ while (h.ct-h.st)<h.trialdur
         try
             global spt1
             fclose(spt1);
+        end
+        try
+            global spt
+            fclose(spt);
         end
        
         

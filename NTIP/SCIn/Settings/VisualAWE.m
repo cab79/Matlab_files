@@ -33,7 +33,7 @@ switch opt
         %% EQUIPMENT CONTROL
         % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
         h.Settings.record_EEG='daq';
-        %h.Settings.EEGport = 'COM3'; % only needed for 'serial' EEG triggers
+        %h.Settings.spt1_port = 'COM3'; % only needed for 'serial' EEG triggers
         h.Settings.EEGMarkPattern = 1; % mark EEG for every change in stimulus pattern (0 = start of trial only)
         h.Settings.labjack=0; % Use labjack for controlling any equipment?
         h.Settings.stimcontrol='PsychPortAudio'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
@@ -43,12 +43,12 @@ switch opt
         %% BLOCKING/RUN OPTIONS
         % 'divide' = equally divide trials by nblocks; 
         % 'cond' = separate block for each condition
-        h.Settings.blockopt = 'cond';
+        h.Settings.blockopt = 'divide';
         % further options for 'divide':
             % number of blocks (containing multiple conditions)
-        %    h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
+            h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
             %distribute conditions equally among blocks
-        %    h.Settings.distblocks = 1;
+            h.Settings.distblocks = 1;
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
         % cell array
@@ -59,11 +59,11 @@ switch opt
         %% Condition-independent stimulus parameters - can be superceded by condition-dependent parameters
         h.Settings.wavetype = 'square';
         % duration of stimulus sequence in seconds
-        h.Settings.totdur = 300; 
+        h.Settings.totdur = []; 
         % duration of trial in seconds
         h.Settings.trialdur = 0; % if 0, consecutive stimuli will occur with no gap
         % duration of stimulus in seconds
-        h.Settings.stimdur = 0.4; % modified by oddball settings
+        h.Settings.stimdur = 0.8; % modified by oddball settings
         % Pattern type method: intensity, pitch/freq. Not supported: channel, duration
         h.Settings.patternmethod = '';
         % 'rand' or 'reg' spacing?
@@ -81,10 +81,10 @@ switch opt
 
         %% Condition-dependent stimulus parameters
         % Condition method: intensity, pitch, channel
-        h.Settings.conditionmethod = '';
-        h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
+        h.Settings.conditionmethod = {'intensity'};
+        h.Settings.conditionvalue = [0 10 50 90];% Rows: methods. Columns: each stimtype
         % Oddball method: intensity, pitch, channel
-        h.Settings.oddballmethod = ''; % can use same type for pattern only if oddball intensity is adaptive
+        h.Settings.oddballmethod = 'duration'; % can use same type for pattern only if oddball intensity is adaptive
         % Odball value: DURATION DEVIANTS
         % i.e. all possible duration options and their probability
         % In general, each row is a different stim type, with columns providing
@@ -94,30 +94,48 @@ switch opt
             % right column = 2nd inten/pitch
         % and the temporal pattern is defined by fc (from either fpitch or finten)
         sd = h.Settings.stimdur;
-        h.Settings.oddballvalue = [];
+        h.Settings.oddballvalue = [
+            sd
+            sd
+            sd
+            sd
+            ];
 
         %% SEQUENCE
-        h.Settings.oddprob = [];
+        h.Settings.oddprob = [
+            1 0 0 0
+            0 1 0 0
+            0 0 1 0
+            0 0 0 1
+            ];
 
-        h.Settings.oddballtype = ''; % options: 'roving', 'classical'
+        h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
 
         % index of oddball value that are standards
         h.Settings.standardind = 1; % does not apply to 'roving oddball' design
         h.Settings.oddind = 2; % does not apply to 'roving oddball' design
 
-        % keep oddball trials apart by at least sep_odd standards
-        h.Settings.sep_odd = 2;
+        %  keep oddball trials apart by at least sep_odd standards
+        h.Settings.sep_odd = [0 0 0 0];%[0 0 0 0 0];
+        
+        % for sep_odd, which indices of h.Settings.oddballvalue to consider
+        % each time? (each list will be separated separately)
+        h.Settings.sep_odd_ind = {};
 
         % for each set, ensure a number of leading standards 
-        h.Settings.std_lead = 0;
+        h.Settings.std_lead = [0 0 0 0];%[0 0 0 0 0];
 
         % number of minimum sets to randomised together
-        h.Settings.n_set = 1; % 1 = use min set size
+        h.Settings.n_set = [1 1 1 1];%[1 1 1 1 1]; % 1 = use min set size
 
         % min number of oddballs within each CP condition
-        h.Settings.n_odd = [1]; % overrides h.Settings.totdur
+        h.Settings.n_odd = [10 10 10 10];%[300 20 20 20 20]; % overrides h.Settings.totdur
         % min number of oddballs per randomised set, per CP
-        h.Settings.n_odd_set = [1]; % overrides h.Settings.totdur
+        h.Settings.n_odd_set = [10 10 10 10];%[300 20 20 20 20]; % overrides h.Settings.totdur
+        % randomise sets?
+        h.Settings.rand_set = [0 0 0 0];%[0 1 1 1 1]; 
+        % randomise within sets?
+        %h.Settings.rand_within_set = 1;%[0 1 1 1 1]; 
 
         %% RESPONSE PARAMETERS
         % record responses during experiment? 0 or 1
@@ -138,6 +156,12 @@ switch opt
 
         % number of trials of plot
         h.Settings.plottrials=0;
+        
+        %% add in electrical stimulation
+        %h.Settings.stimcontrol='serial'; % sets to using spt and spt1
+        %h.Settings.spt_port = ''; % port number for RS232 to set intensity
+        %h.Settings.spt1_port = ''; % port number for Arduino trigger
+        %h.Settings.record_EEG=''; % Don't use this - will mark EEG anyway when using stimcontrol
 
 end
 

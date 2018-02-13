@@ -36,7 +36,6 @@ switch opt
                     Error = ljud_ePut(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, 0, 0); 
                     Error_Message(Error)
                 end
-
             end
         catch
             choice = questdlg('Labjack not connected. Stop or continue?', ...

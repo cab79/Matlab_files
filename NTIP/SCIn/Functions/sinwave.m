@@ -292,6 +292,11 @@ for tr = trials
             if df; mwav{i}(chan(2),:) = useinten *sin(2*pi*(usefreq+df_freq)*t{i} + phadd(2) + 2*pi*(usefreq+df_freq)/h.Settings.fs);end
             temp_sin{i} = mwav{i};
         elseif strcmp(h.Settings.wavetype,'square')
+            if isfield(h,'dutycycle')
+                if h.dutycycle>0
+                    useinten = str2double(h.dutycycle);
+                end
+            end
             mwav{i}(chan(1),:) = square(2*pi*(usefreq)*t{i} + phadd(1) + 2*pi*usefreq/h.Settings.fs,useinten);
             temp_sin{i}(chan(1),:) = sin(2*pi*(usefreq)*t{i} + phadd(1) + 2*pi*usefreq/h.Settings.fs); % for phase estimation
         end

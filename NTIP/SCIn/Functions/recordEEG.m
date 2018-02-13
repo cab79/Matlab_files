@@ -32,7 +32,7 @@ switch opt
                 h.BV.status = 0;
                 
             elseif strcmp(h.Settings.record_EEG,'serial')
-                opt = 'EEG';
+                opt = 'spt1';
                 open_serial(h,opt);
             elseif strcmp(h.Settings.record_EEG,'daq')
                 %% Using Data Acquisition Toolbox to write 8 lines of digital output data
