@@ -113,7 +113,7 @@ s.expthresholds=0;
 if ~isempty(s.out.threshold)
     presstrialsall = find(s.out.threshold(:,4)==-1);
     if any(presstrialsall)
-        s.expthresholds = mean(s.out.threshold(presstrialsall-1,3));
+        s.expthresholds = s.out.threshold(presstrialsall(end)-1,3);
         fprintf('Threshold on this trial equal to %1.3f\n', s.expthresholds);
     end
 end
@@ -121,8 +121,13 @@ s.rowofoutput (1, 5) = s.expthresholds;
 
 % UPDATE THE GLOBAL OUTPUT VARIABLE
 s.out.threshold = [s.out.threshold; s.rowofoutput];
-if size(s.out.threshold,1)>2
-    fprintf('Threshold over last 3 trials equal to %1.3f\n', nanmean(s.out.threshold(end-2:end,5)));
+presstrialsall = find(s.out.threshold(:,4)==-1);
+if length(presstrialsall)>2 && presstrialsall(end)<s.trial-2
+    try
+        fprintf('Threshold over last 3 trials equal to %1.3f\n', nanmean(s.out.threshold(presstrialsall(end-2:end)+1,5)));
+    catch
+        fprintf('Threshold over last 3 trials equal to %1.3f\n', mean(s.out.threshold(presstrialsall(end-2:end)+1,5)));
+    end
 end
 h.s =s;
 h.out.threshold = s.out.threshold;

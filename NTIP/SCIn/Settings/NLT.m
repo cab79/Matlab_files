@@ -1017,9 +1017,9 @@ case 'Adapt_overtrials_rand'
     % number of sets to randomise together
     h.Settings.n_set = []; % Leave blank to calculate automatically; or one nunmber per CP condition
     % min number of oddballs within each CP condition
-    h.Settings.n_odd = [72, 36, 36, 36]; % overrides h.Settings.totdur
+    h.Settings.n_odd = [144, 36, 72, 36]; % overrides h.Settings.totdur
     % min number of oddballs per randomised set, per CP
-    h.Settings.n_odd_set = [24, 12, 12, 12]; % overrides h.Settings.totdur
+    h.Settings.n_odd_set = [144, 12, 12, 12]; % overrides h.Settings.totdur
     % randomise sets?
     h.Settings.rand_set = [0 1 1 1]; 
     
@@ -1053,7 +1053,7 @@ case 'Adapt_overtrials_rand'
     h.Settings.adaptive(1).type = 'detect';
     h.Settings.adaptive(1).updown = [1 1];
     % how many of each to run?
-    h.Settings.adaptive(1).nRuns = 200;
+    h.Settings.adaptive(1).nRuns = 400;
     % max number of thresh estimates to average over to get overall estimate
     h.Settings.adaptive(1).av_thresh = 24;
     % number of trials each run
