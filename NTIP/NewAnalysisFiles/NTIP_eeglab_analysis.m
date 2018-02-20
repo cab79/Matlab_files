@@ -64,8 +64,6 @@ S.epoch.addmarker = 1; % set to 1 to add markers if the above are not present: w
 S.epoch.timewin = [-0.2 0.3]; % peri-marker time window
 S.epoch.detrend = 0;
 S.epoch.rmbase = 0;
-S.epoch.separate = {[1],[2],[3:6]}; % index of markers to separate into files
-S.epoch.separate_suffix = {'base','entrain','erp'}; % index of markers to separate into files
 S.FTrej = {[0 5]}; % high freq to identify noise, low freq to identify eye movement
 S.ICA = 0;
 S.combinefiles = 1;
@@ -78,6 +76,7 @@ save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time t
 % path to ICA processed data
 load(fullfile(S.setpath,'S'))
 S.loadext = 'combined.set';
+S.sessions={};S.blocks={};S.conds={};
 S.ICAremove = 1; % remove ICA components (0 if already removed from data, 1 if selected but not removed)
 S.detrend = 1;
 S.rmbase = 1;
@@ -85,6 +84,8 @@ S.basewin = [-0.2 0]; % baseline window
 S.FTrej = {[]};
 S.reref = 1;
 S.separatefiles = 1;
+S.separate = {[1],[2],[3:6]}; % index of markers to separate into files
+S.separate_suffix = {'base','entrain','erp'}; % index of markers to separate into files
 % RUN
 S=eeglab_preprocess_afterICA(S)
 save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable

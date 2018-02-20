@@ -65,7 +65,7 @@ end
 if S.separatefiles
     % GET FILE LIST
     S.filepath = S.setpath;
-    S.loadext=['combined_' sname_ext];;
+    S.loadext=['combined_' sname_ext];
     S = getfilelist(S);
 
     for f = length(S.filelist)
@@ -74,11 +74,31 @@ if S.separatefiles
         [sfiles,ia,ib] = unique({INEEG.epoch.file});
         for s = 1:length(sfiles)
             ind = find(ib==s);
-            EEG = pop_select(INEEG,'trial',ind);
+            EEGsep1 = pop_select(INEEG,'trial',ind);
+            
+            % SEPARATE INTO FILES ACCORDING TO MARKER TYPE AND SAVE
+            if ~isempty(S.separate)
+                nfiles = length(S.separate);
+                INEEGsep1 =EEGsep1; 
+                allmarkers = {INEEGsep1.epoch.eventtype};
+                for n = 1:nfiles
+                    selectmarkers = S.epoch.markers(S.separate{n});
+                    markerindex = find(ismember(allmarkers,selectmarkers));
+                    EEG = pop_select(INEEGsep1,'trial',markerindex);
 
-            % save .set
-            sname = [sfiles{s} '_cleaned.set'];
-            pop_saveset(EEG,'filename',sname,'filepath',S.setpath); 
+                    % save .set
+                    sname = [sfiles{s} '_' S.separate_suffix{n} '_' sname_ext];
+                    pop_saveset(EEG,'filename',sname,'filepath',S.setpath); 
+                end
+            else
+                % save as one file
+                sname = [sfiles{s} '_cleaned.set'];
+                EEG=EEGsep1;
+                pop_saveset(EEG,'filename',sname,'filepath',S.setpath);
+            end 
         end
+         
     end
+    
+    
 end
