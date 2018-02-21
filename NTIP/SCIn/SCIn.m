@@ -11,7 +11,7 @@ function varargout = SCIn(varargin)
 %
 % Begin initialization code - DO NOT EDIT
 %dbstop if error
-
+dbclear if error
 
 global d
 try
@@ -401,10 +401,10 @@ if get(hObject, 'Value') == get(hObject, 'Max')
         h.subID = inputdlg(prompt,'Subject ID',1,{'test'});
         h.subID = h.subID{:};
     end
-    runinfo.seqname = h.SeqName;
-    t_start = datestr(now,30);
-    fname = ['runinfo_' h.subID '_startblock' h.startblock '_' t_start];
-    save(fullfile(d.root,d.out,fname),'runinfo');
+    %runinfo.seqname = h.SeqName;
+    %t_start = datestr(now,30);
+    %fname = ['runinfo_' h.subID '_startblock' h.startblock '_' t_start];
+    %save(fullfile(d.root,d.out,fname),'runinfo');
 
     % disable all GUI components except the toggle buttons
     %set(h.ExptOpt, 'Enable', 'off')

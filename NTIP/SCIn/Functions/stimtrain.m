@@ -19,8 +19,24 @@ switch h.Settings.stimcontrol
         end
         
         switch opt
-            case 'set'
+            case 'setup'
+                % if GUI is set to intensity > 0, check this is not
+                % accidental
+                if isfield(h,'inten_mean_gui'); 
+                    inten_mean = str2double(h.inten_mean_gui);
+                    if inten_mean>0
+                        choice = questdlg(['Is ' num2str(inten_mean) ' the correct starting intensity?'], ...
+                        'Intensity', ...
+                        'Yes','No','Yes');
+                        % Handle response
+                        switch choice
+                            case 'No'
+                                error('wrong intensity set in GUI')
+                        end
+                    end
+                end
                 
+            case 'set'
                 h=set_tactile_intensity(h);
                 
                 %Set DACA 

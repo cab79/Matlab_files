@@ -245,8 +245,8 @@ s.rowofoutput (1, 6) = s.a(atype).actualstep;
 s.trial = s.trial + 1;
 
 %disp(['length_blockthresh = ' num2str(length(s.blockthresholds))]);
-disp(['nreversals = ' num2str(s.a(atype).count_of_n_of_reversals)]);
-disp(['next level = ' num2str(s.a(atype).StimulusLevel)]);
+%disp(['nreversals = ' num2str(s.a(atype).count_of_n_of_reversals)]);
+%disp(['next level = ' num2str(s.a(atype).StimulusLevel)]);
 
 % threshold for the block
 if length(s.a(atype).blockthresholds)>=s.p(atype).reversalForthresh

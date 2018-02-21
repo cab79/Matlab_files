@@ -64,8 +64,7 @@ switch opt
             end
         end
         
-        h.out.Settings = h.Settings;
-        h.out.SeqName = h.SeqName;
+        h.out.Sett
     
     case 'start'
         
