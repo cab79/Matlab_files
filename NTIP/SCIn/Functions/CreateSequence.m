@@ -343,15 +343,27 @@ if ~isfield(h.Seq,'signal')
                 % otherwise assign block value according to CP value
                 % not ideal - current only works if non-rand CP==1
                 else
+                    nrand = length(h.Settings.rand_set);
                     if strcmp(h.Settings.blockopt,'cond')
                         h.Seq.blocks(setx_ind==cps) = cp*ones(1,length(stimtype{cp}{s}));
                     elseif strcmp(h.Settings.blockopt,'divide')
-                        bv = 1; % block value
-                        h.Seq.blocks(setx_ind==cps) = bv*ones(1,length(stimtype{cp}{s}));
+                        if cp==1
+                            bv = 1; % block value
+                            h.Seq.blocks(setx_ind==cps) = bv*ones(1,length(stimtype{cp}{s}));
+                        elseif cp==nCP
+                            bv = 1000; % block value
+                            h.Seq.blocks(setx_ind==cps) = bv*ones(1,length(stimtype{cp}{s}));
+                        end
                     end
                 end
             end
         end
+        % correct max block number
+        blockuni=unique(h.Seq.blocks);
+        if length(blockuni)>1
+            h.Seq.blocks(h.Seq.blocks==max(h.Seq.blocks)) = blockuni(end-1)+1;
+        end
+        
         [~,blockind] = sort(h.Seq.blocks);
         h.Seq.blocks = h.Seq.blocks(blockind);
         h.Seq.signal = h.Seq.signal(blockind);

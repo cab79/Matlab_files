@@ -10,6 +10,8 @@ for d = 1:length(D)
             A=load(fullfile('C:\Data\Matlab\Matlab_files\NTIP\SCIn\Sequences', D(d).Output(op).SeqName));
             D(d).Output(op).Settings = A.settings;
         end
+        
+        S.accuracy.buttons = D(d).Output.Settings.buttonopt;
 
         if S.accuracy.on
             % create presssignal 
@@ -24,12 +26,47 @@ for d = 1:length(D)
             % compare to actual signal
             D(d).Processed(op).correct = double(D(d).Sequence.signal==D(d).Processed(op).presssignal);
             D(d).Processed(op).correct(isnan(D(d).Processed(op).presssignal)) = nan;
-
-            % split into conditions
+            
+            condnum={};
             conds = unique(D(d).Sequence.condnum);
-            for i = 1:length(conds)
-                D(d).Processed(op).condcorrect{i} = D(d).Processed(op).correct(D(d).Sequence.condnum==conds(i)); 
-                D(d).Processed(op).condcorrectfract(i) = nansum(D(d).Processed(op).condcorrect{i})/sum(~isnan(D(d).Processed(op).condcorrect{i}));
+            if ~isempty(S.trialmax)
+                for tm = 1:length(S.trialmax)
+                    trialmax = S.trialmax{tm};
+                    % reduce the number of trials per condition-pair to S.trialmax
+                    
+                    for i = 1:length(conds)/2
+                        ind = (i-1)*2+1:(i-1)*2+2; % condition pair indices
+                        trialind = find(ismember(D(d).Sequence.condnum,conds(ind)));
+                        trialind_new = trialind(1:min(trialmax,length(trialind)));
+                        condnum_orig{tm} = D(d).Sequence.condnum;
+                        condnum{tm}(trialind) = nan;
+                        condnum{tm}(trialind_new) = condnum_orig{tm}(trialind_new);
+                    end
+                end
+            else
+                condnum{1} = D(d).Sequence.condnum;
+            end
+
+            % for each version of condnum (diff number of trials in each)
+            for cn = 1:length(condnum)
+                % split into conditions
+                condsuni = unique(condnum{cn});
+                condsuni = condsuni(~isnan(condsuni));
+                
+                D(d).Processed(op).condcorrectfract{cn} = nan(1,length(conds));
+                for i = 1:length(condsuni)
+                    D(d).Processed(op).condcorrect{cn}{condsuni(i)} = D(d).Processed(op).correct(condnum{cn}==condsuni(i)); 
+                    D(d).Processed(op).condcorrectfract{cn}(condsuni(i)) = nansum(D(d).Processed(op).condcorrect{cn}{condsuni(i)})/sum(~isnan(D(d).Processed(op).condcorrect{cn}{condsuni(i)}));
+                end
+
+                % split into blocks
+                blocks = unique(D(d).Sequence.blocks);
+                for i = 1:length(condsuni)
+                    for b = 1:length(blocks)
+                        D(d).Processed(op).blockcondcorrect{cn}{condsuni(i)}{b} = D(d).Processed(op).correct(condnum{cn}==condsuni(i) & D(d).Sequence.blocks==blocks(b)); 
+                        D(d).Processed(op).blockcondcorrectfract{cn}{condsuni(i)}{b} = nansum(D(d).Processed(op).blockcondcorrect{cn}{condsuni(i)}{b})/sum(~isnan(D(d).Processed(op).blockcondcorrect{cn}{condsuni(i)}{b}));
+                    end
+                end
             end
         end
     end

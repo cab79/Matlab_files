@@ -40,17 +40,16 @@ switch h.Settings.stimcontrol
                 h=set_tactile_intensity(h);
                 
                 %Set DACA 
-                Error = ljud_ePut(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, h.inten/100, 0); 
-                Error_Message(Error)
+                try
+                    Error = ljud_ePut(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, h.inten/100, 0); 
+                    Error_Message(Error)
+                catch% to use DAC0 port
+                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_DAC, 0, 0.00, 0,0);
+                    Error_Message(Error)
+                    Error = ljud_GoOne(h.ljHandle);
+                    Error_Message(Error)
+                end
 
-                % to use DAC0 port
-                %Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_DAC, 0, 0.00, 0,0);
-                %Error_Message(Error)
-                
-                %Error = ljud_GoOne(h.ljHandle);
-                %Error_Message(Error)
-                
-                
                 %voltage = 80;
                 %current = h.inten*100;
                 %time = 50/1e6 * h.Settings.npulses_train;

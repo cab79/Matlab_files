@@ -164,6 +164,23 @@ h.i=0;
 
 while h.i<length(h.Seq.signal)
     
+    % new trial
+    h.i=h.i+1;
+    
+    % if running Adaptive, should this trial be run?
+    if isfield(h.Settings,'adaptive')
+        if ~isempty(h.Settings.adaptive)
+            if ~isnan(h.Seq.adapttype(h.i+1))
+                if isfield(h,'s') 
+                    if ~ismember(h.Seq.adapttype(h.i),h.s.atypes)
+                        disp(['Skipping trial ' num2str(h.i) ' as adaptive threshold found']);
+                        continue
+                    end
+                end
+            end
+        end
+    end
+    
     % record previous start time to calculate ISI
     if isfield(h,'st')
         h.st_prev = h.st; 
@@ -188,7 +205,6 @@ while h.i<length(h.Seq.signal)
     end
     
     t=toc/60;
-    h.i=h.i+1;
     disp(['Block ' num2str(h.Seq.blocks(h.i)) '/' num2str(max(h.Seq.blocks)) ', Trial' num2str(h.i) '. Elapsed time is ' num2str(t) ' mins. ISI is ' num2str(isi) ' s']);
     
     % D188 - set output channel

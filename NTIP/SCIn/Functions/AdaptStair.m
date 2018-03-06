@@ -1,5 +1,5 @@
 function h = AdaptStair(h,varargin)
-
+dbstop if error
 % Each type will calculate their respective thresholds/levels independently
 % by using information across blocks of the same type, and will use values from the blocks of the other type.
 
@@ -176,7 +176,7 @@ elseif strcmp(opt,'responded')
 end
 
 % UPDATE THE ROWOFOUTPUT
-s.rowofoutput (1, 1) = s.block;
+s.rowofoutput (1, 1) = h.i; % was: s.block
 s.rowofoutput (1, 2) = s.trial;
 s.rowofoutput (1, 3) = s.a(atype).StimulusLevel;
 s.rowofoutput (1, 4) = s.SubjectAccuracy(s.trial);
@@ -268,24 +268,50 @@ s.rowofoutput (1, 7) = s.a(atype).expthresholds(s.block);
 s.rowofoutput (1, 8) = resfun; % the actual response meaning
 s.rowofoutput (1, 9) = h.inten; % absolute stimulus intensity
 s.rowofoutput (1, 10) = atype; % absolute stimulus intensity
-
+s.rowofoutput (1, 11) = nan; % mean of moving averages - populated later if trend ends
 
 % UPDATE THE GLOBAL OUTPUT VARIABLE
 s.out.adaptive = [s.out.adaptive; s.rowofoutput];
+
+% get indices for plotting etc.
+ind = find(s.out.adaptive(:,10)==atype & ~isnan(s.out.adaptive(:,7)));
+
+% create moving averages
+av_para = h.Settings.adaptive(atype).av_thresh;
+if ~isempty(ind)
+    select_ind = ind(end-(min(max(av_para),length(ind)))+1:end);
+    thresh = s.out.adaptive(select_ind,7);
+end
+av_thresh=[];
+if ~isempty(ind) && length(thresh)>=max(av_para)
+    for av = 1:length(av_para)
+        av_thresh(av) = mean(thresh((end-av_para(av)+1):end,1));
+    end
+end
+
+% DECIDE WHETHER TO CONTINUE WITH THIS ADAPT TYPE OR TERMINATE
+if ~isempty(ind) && ~isempty(av_thresh)
+    trend = [];
+    for av = 1:length(av_para)-1
+        trend(av) = (av_thresh(av)-av_thresh(av+1));
+    end
+    if ~all(trend>0) && ~all(trend<0)
+        s.out.adaptive(end, 11) = mean(av_thresh);
+        s.atypes(find(s.atypes==atype)) = [];
+    end
+end
 h.s =s;
 h.out.adaptive = s.out.adaptive;
+
 %fprintf('Press return to continue\n');
 %pause
 %fprintf ('\nBLOCK ENDED\n');
 %pause(2)
 
-%% plot
-ind = find(h.out.adaptive(:,10)==atype & ~isnan(h.out.adaptive(:,7)));
-if ~isempty(ind)
-    select_ind = ind(end-(min(h.Settings.adaptive(atype).av_thresh,length(ind)))+1,end);
-    thresh = h.out.adaptive(ind,7);
-    av_thresh = mean(thresh);
 
+%% plot
+if ~isempty(ind)
+    col = {'r','m','y'};
     % does fig handle exist?
     fig = isfield(h,'f');
     if fig
@@ -304,7 +330,12 @@ if ~isempty(ind)
     end
     hold on
     scatter(length(thresh),thresh(end),'b');
-    scatter(length(thresh),av_thresh,'r');
+    if length(ind)>max(av_para)
+        for av = 1:length(av_para)
+            scatter(length(thresh),av_thresh(av),col{av});
+        end
+        scatter(length(thresh),h.out.adaptive(end,11),'k','filled');
+    end
     hold off
 end
    
@@ -316,6 +347,7 @@ else
     s=struct;
     s.out.adaptive = [];
     s.trial = 1;
+    s.atypes = h.Settings.adaptive_general.adapttypes; % adaptive types to run to start with (can be modified later)
 end
 
 s.p(atype).up=h.Settings.adaptive(atype).updown(1);

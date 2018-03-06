@@ -5,7 +5,7 @@ switch opt
     case 'setoptions'
         
     % settings options
-    h.SettingsOptions = {'Ascend','Adapt_eachtrial','Adapt_overtrials','Adapt_overtrials_rand','NLT_classical','NLT_classical_adaptive'};
+    h.SettingsOptions = {'Ascend','Adaptive','NLT_classical','NLT_classical_adaptive'};
     
     case 'Ascend'
 
@@ -123,145 +123,7 @@ switch opt
     h.Settings.threshold.step = 2;
     h.Settings.threshold.signalval = [2 1]; % 2 = carrying on increasing; 1 = decrease
     
-case 'Adapt_eachtrial'
-    % presents two intensities on each trial, with the response indicating
-    % whether it was the first or second that was greater.
-    
-    % set general options
-    h = setgeneral(h);
-    
-    % FILENAME OF SEQUENCE CREATION FUNCTION (without .m)
-    h.SeqFun = 'CreateSequence';
-    
-    %% TRIALS or CONTINUOUS?
-    h.Settings.design = 'trials';
-    % if continuous, how many trials ahead should be in the player schedule?
-    % (applied to stimulation via soundcard only)
-    h.Settings.ntrialsahead = 0;  %0 = all trials
-    
-    %% EXPERIMENTAL CONDIITIONS
-    % name the settings that define orthogonal condtions at a different row
-    h.Settings.conds = {};
-    
-    %% Output options
-    % save sinwave from all trials as part of stim sequence file
-    %h.Settings.savesinwave = 0;
-    
-    %% BLOCKING/RUN OPTIONS
-    % 'divide' = equally divide trials by nblocks; 
-    % 'cond' = separate block for each condition
-    h.Settings.blockopt = 'cond';
-    % further options for 'divide':
-        % number of blocks (containing multiple conditions)
-    %    h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
-        %distribute conditions equally among blocks
-    %    h.Settings.distblocks = 1;
-    % options to start sequence at beginning of every run
-    % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
-    % cell array
-    h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
-    % names of any audiofiles
-    h.Settings.audiofile = {};
-    
-    %% Condition-independent stimulus parameters - can be superceded by condition-dependent parameters
-    % duration of stimulus sequence in seconds
-    h.Settings.totdur = 0; 
-    % duration of trial in seconds
-    h.Settings.trialdur = 5; % if 0, consecutive stimuli will occur with no gap
-    % duration of stimulus in seconds
-    h.Settings.stimdur = 0; % modified by oddball settings
-    % Pattern type method: intensity, pitch. Not supported: channel, duration
-    h.Settings.patternmethod = '';
-    h.Settings.patternvalue = []; % leave empty to product values from baseintensity and adaptive
-    % 'rand' or 'reg' spacing?
-    h.Settings.stimdurtype = 'reg'; % not needed unless 'rand'
-    % Binarual beats frequency: creates right ear frequency of f0+df
-    %h.Settings.df = 0; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-    % Monaural beats instead? 
-    %h.Settings.monaural = 0; 
-    % attenuation level in decibels
-    %h.Settings.atten = -30; 
-    % pitch
-    %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
-    %intensity
-    h.Settings.inten = []; % value between 2 and 1000mA for Digitimer DS8R
-    % Tactile: number of pulses per trial
-    h.Settings.nstim_trial = 2; % set to zero to be determined by stimdur
-    % Tactile: within-trial frequency (Hz) 
-    h.Settings.t_freq=1; 
-    
-    %% CHANGING STIMULUS INTENSITY EVERY X PULSES
-    % REFER TO "TIMER STOP": https://labjack.com/support/ud/df-lj-app-guide/10.5
-    
-    %% Condition-dependent stimulus parameters
-    % Condition method: intensity, pitch, channel
-    h.Settings.conditionmethod = {};
-    h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
-    % Oddball method: intensity, pitch, channel
-    h.Settings.oddballmethod = 'intensity'; % can use same type for pattern only if oddball intensity is adaptive
-    h.Settings.oddballvalue = []; % leave blank if determined from GUI
-    h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
-
-    %% SEQUENCE
-    % Change probablity (CP): each condition is in rows
-    h.Settings.oddprob = [
-        % standard (left) vs oddball (right)
-        0.5 0.5
-        ];
-    % index of row of oddprob that are standards and oddballs
-    h.Settings.standardind = 1; 
-    h.Settings.oddind = 2; 
-    % keep oddball trials apart by at least sep_odd standards
-    h.Settings.sep_odd = [0]; % for each CP condition
-    % for sep_odd, which indices of h.Settings.oddballvalue to consider
-    % each time? (each list will be considered separately)
-    h.Settings.sep_odd_ind = {};
-    % for each set, ensure a number of leading standards 
-    h.Settings.std_lead = [0]; % for each CP condition
-    % min number of oddballs within each CP condition
-    h.Settings.n_odd = [30]; % overrides h.Settings.totdur
-    % number of minimum sets to randomise together
-    h.Settings.n_set = [1]; % 1 = use min set size, for each CP condition
-    % min number of oddballs per randomised set, per CP and per oddball
-    % type
-    h.Settings.n_odd_set = [30]; % overrides h.Settings.totdur
-    % randomise sets?
-    h.Settings.rand_set = 0; 
-    
-    %% RESPONSE PARAMETERS
-    % record responses during experiment? 0 or 1
-    h.Settings.record_response = 1;
-    % how to record responses?
-    h.Settings.record_response_type = {'thistrial','previoustrial'}; %options: 'all','thistrial','previoustrial'
-    % buttonpress options: key: keyboard inputs. Blank for no button press
-    h.Settings.buttontype='key';
-    % range of keyboard presses indicating a recordable response
-    h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
-    
-    %% ADAPTIVE
-    % adaptive staircase: meanings of the buttonopt
-    h.Settings.adaptive.buttonfun = {'LeftArrow','RightArrow'}; 
-    % adaptive staircase: corresponding signal values that would signify a
-    % correct answer
-    h.Settings.adaptive.signalval = [2 1];
-    % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
-    h.Settings.steptype = 0;
-    % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
-    h.Settings.stepdir = -1;
-    % starting level of adaptive staircase
-    h.Settings.adaptive.startinglevel = 10; % should be a DIFFERENCE value; for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100); for tactile in mA
-    % adapt to omissions of response (not suitable for 2AFC tasks, so set to 0)
-    h.Settings.adaptive.omit = 0; % 1 = omission is incorrect; 2 = omission is correct
-    % which trials (or oddballs if oddonly selected) to start adaptive procedure if there is an omission?
-    h.Settings.adaptive.startomit = 0;
-    % adapt on every trial or only just before an oddball?
-    %h.Settings.adaptive.oddonly = 1;
-    % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
-    %h.Settings.adaptive.resptrials = 4;
-    % number of reversals to average over to calculate threshold.
-    h.Settings.reversalForthresh = 6;
-    
-case 'Adapt_overtrials'
+case 'Adaptive'
 
     % set general options
     h = setgeneral(h);
@@ -286,10 +148,10 @@ case 'Adapt_overtrials'
     %% BLOCKING/RUN OPTIONS
     % 'divide' = equally divide trials by nblocks; 
     % 'cond' = separate block for each condition
-    h.Settings.blockopt = 'cond';
+    h.Settings.blockopt = 'divide';
     % further options for 'divide':
         % number of blocks (containing multiple conditions)
-    %    h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
+        %h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
         %distribute conditions equally among blocks
     %    h.Settings.distblocks = 1;
     % options to start sequence at beginning of every run
@@ -303,12 +165,12 @@ case 'Adapt_overtrials'
     % duration of stimulus sequence in seconds
     h.Settings.totdur = 0; 
     % duration of trial in seconds
-    h.Settings.trialdur = 3; % if 0, consecutive stimuli will occur with no gap
+    h.Settings.trialdur = 2; % if 0, consecutive stimuli will occur with no gap
     % duration of stimulus in seconds
     h.Settings.stimdur = 0; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
     h.Settings.patternmethod = '';
-    h.Settings.patternvalue = []; % leave empty to product values from baseintensity and adaptive
+    h.Settings.patternvalue = []; % one per stimdur
     % 'rand' or 'reg' spacing?
     h.Settings.stimdurtype = 'reg'; % not needed unless 'rand'
     % Binarual beats frequency: creates right ear frequency of f0+df
@@ -321,13 +183,14 @@ case 'Adapt_overtrials'
     %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
     %intensity
     h.Settings.inten = []; % value between 2 and 1000mA for Digitimer DS8R
-    %intensity difference
     h.Settings.inten_diff = []; % value between 0 and 1000mA for Digitimer DS8R
+    h.Settings.maxinten = 200; % max output value for safety purposes. Value between 2 and 1000mA for Digitimer DS8R
     % Tactile: number of pulses per trial
     h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
     % Tactile: within-trial frequency (Hz) 
     h.Settings.t_freq=[]; 
     
+    
     %% CHANGING STIMULUS INTENSITY EVERY X PULSES
     % REFER TO "TIMER STOP": https://labjack.com/support/ud/df-lj-app-guide/10.5
     
@@ -335,9 +198,9 @@ case 'Adapt_overtrials'
     % Condition method: intensity, pitch, channel
     h.Settings.conditionmethod = {};
     h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
-    % Oddball method: intensity, pitch, channel
-    h.Settings.oddballmethod = 'intensity'; % can use same type for pattern only if oddball intensity is adaptive
-    h.Settings.oddballvalue = []; % leave blank if determined from GUI
+    % Oddball method: intensity, intensityindex, pitch, channel
+    h.Settings.oddballmethod = 'intensityindex'; % can use same type for pattern only if oddball intensity is adaptive
+    h.Settings.oddballvalue = {[1 2]}; % values to go into h.Seq.signal. One per oddprob row, or leave blank if determined from GUI
     h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
 
     %% SEQUENCE
@@ -346,241 +209,42 @@ case 'Adapt_overtrials'
         % standard (left) vs oddball (right)
         0.5 0.5
         ];
-    % index of row of oddprob that are standards and oddballs
+    % index of row of oddprob that are standards and oddballs. Can be
+    % overridden by h.Settings.oddballvalue if using intensityindex
     h.Settings.standardind = 1; 
     h.Settings.oddind = 2; 
     % keep oddball trials apart by at least sep_odd standards
     h.Settings.sep_odd = [0]; % for each CP condition
     % for sep_odd, which indices of h.Settings.oddballvalue to consider
     % each time? (each list will be considered separately)
-    h.Settings.sep_odd_ind = {};
+    h.Settings.sep_odd_ind = {[1 2]};
     % for each set, ensure a number of leading standards 
     h.Settings.std_lead = [0]; % for each CP condition
+    % number of sets to randomise together
+    h.Settings.n_set = []; % Leave blank to calculate automatically; or one nunmber per CP condition
     % min number of oddballs within each CP condition
-    h.Settings.n_odd = [96]; % overrides h.Settings.totdur
-    % number of minimum sets to randomise together
-    h.Settings.n_set = [16]; % 1 = use min set size, for each CP condition
-    % min number of oddballs per randomised set, per CP and per oddball
-    % type
-    h.Settings.n_odd_set = [6]; % overrides h.Settings.totdur
+    h.Settings.n_odd = [1000*12]; % overrides h.Settings.totdur
+    % min number of oddballs per randomised set, per CP
+    h.Settings.n_odd_set = [1000*12]; % overrides h.Settings.totdur
     % randomise sets?
-    h.Settings.rand_set = 0; 
+    h.Settings.rand_set = [0]; 
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1
     h.Settings.record_response = 1;
     % how to record responses?
-    h.Settings.record_response_type = {'thistrial','previoustrial'}; %options: 'all','thistrial','previoustrial'
-    % buttonpress options: key: keyboard inputs. Blank for no button press
-    h.Settings.buttontype='key';
-    % range of keyboard presses indicating a recordable response
-    h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
-    
-    %% ADAPTIVE: General
-    % which ones to run? (i.e. indices of h.Settings.adaptive)
-    h.Settings.adaptive_general.adapttypes = [1 2];
-    % alternate or randomise runs over types? Alt must have equal number of
-    % runs for each adapttype
-    h.Settings.adaptive_general.seqtype = 'alt'; % 'alt' or 'rand'
-    
-    %% ADAPTIVE 1
-    h.Settings.adaptive(1).type = 'detect';
-    h.Settings.adaptive(1).updown = [1 1];
-    % how many of each to run?
-    h.Settings.adaptive(1).nRuns = 8;
-    % max number of thresh estimates to average over to get overall estimate
-    h.Settings.adaptive(1).av_thresh = 24;
-    % number of trials each run
-    h.Settings.adaptive(1).trialsperrun = 12;
-    % adaptive staircase: meanings of the buttonopt
-    h.Settings.adaptive(1).buttonfun = {'LeftArrow','RightArrow'}; 
-    % adaptive staircase: corresponding signal values that would signify a
-    % correct answer
-    h.Settings.adaptive(1).signalval = [1 2];
-    % number of reversals
-    h.Settings.adaptive(1).reversals = [4;8;12];
-    % stepsize
-    h.Settings.adaptive(1).stepsize = [4;2;1];
-    % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
-    h.Settings.adaptive(1).steptype = 1;
-    % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
-    h.Settings.adaptive(1).stepdir = -1;
-    % starting level of adaptive staircase
-    h.Settings.adaptive(1).startinglevel = 0; % should be a value in mA. 
-    % adapt to omissions of response (not suitable for 2AFC tasks, so set to 0)
-    h.Settings.adaptive(1).omit = 0; % 1 = omission is incorrect; 2 = omission is correct
-    % which trials (or oddballs if oddonly selected) to start adaptive procedure if there is an omission?
-    h.Settings.adaptive(1).startomit = 0;
-    % adapt on every trial or only just before an oddball?
-    %h.Settings.adaptive.oddonly = 1;
-    % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
-    %h.Settings.adaptive.resptrials = 4;
-    % number of reversals to average over to calculate threshold.
-    h.Settings.adaptive(1).reversalForthresh = 6;
-    % use mean from the first X responses of each type (high and low)
-    %h.Settings.adaptive(1).getmeanfromresponses = 6;
-    % maximum amount to adjust the mean if their responses are very
-    % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    %h.Settings.adaptive(1).meanadjustmax = 10;
-    % maximum amount - for safety
-    h.Settings.adaptive(1).levelmax = 100; % should be value in mA. 
-    
-    %% ADAPTIVE 2
-    h.Settings.adaptive(2).type = 'discrim';
-    h.Settings.adaptive(2).updown = [1 2];
-    % how many of each to run?
-    h.Settings.adaptive(2).nRuns = 8;
-    % max number of thresh estimates to average over to get overall estimate
-    h.Settings.adaptive(2).av_thresh = 24;
-    % number of trials each run
-    h.Settings.adaptive(2).trialsperrun = 12;
-    % adaptive staircase: meanings of the buttonopt
-    h.Settings.adaptive(2).buttonfun = {'LeftArrow','RightArrow'}; 
-    % adaptive staircase: corresponding signal values that would signify a
-    % correct answer
-    h.Settings.adaptive(2).signalval = [1 2];
-    % reversals
-    h.Settings.adaptive(2).reversals = [4;8;12];
-    % stepsize
-    h.Settings.adaptive(2).stepsize = [2;sqrt(2);sqrt(sqrt(2))];
-    % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
-    h.Settings.adaptive(2).steptype = 0;
-    % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
-    h.Settings.adaptive(2).stepdir = -1;
-    % starting level of adaptive staircase
-    h.Settings.adaptive(2).startinglevel = 4; % should be a DIFFERENCE value in mA. Keep small as it will increase naturally over time.
-    % adapt to omissions of response (not suitable for 2AFC tasks, so set to 0)
-    h.Settings.adaptive(2).omit = 0; % 1 = omission is incorrect; 2 = omission is correct
-    % which trials (or oddballs if oddonly selected) to start adaptive procedure if there is an omission?
-    h.Settings.adaptive(2).startomit = 0;
-    % adapt on every trial or only just before an oddball?
-    %h.Settings.adaptive.oddonly = 1;
-    % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
-    %h.Settings.adaptive.resptrials = 4;
-    % number of reversals to average over to calculate threshold.
-    h.Settings.adaptive(2).reversalForthresh = 6;
-    % use mean from the first X responses of each type (high and low)
-    %h.Settings.adaptive(2).getmeanfromresponses = 6;
-    % maximum amount to adjust the mean if their responses are very
-    % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    %h.Settings.adaptive(2).meanadjustmax = 10;
-    % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(2).levelmax = 30; % should be a DIFFERENCE value in mA. 
-
-case 'Adapt_overtrials_rand'
-
-    % set general options
-    h = setgeneral(h);
-    
-    % FILENAME OF SEQUENCE CREATION FUNCTION (without .m)
-    h.SeqFun = 'CreateSequence';
-    
-    %% TRIALS or CONTINUOUS?
-    h.Settings.design = 'trials';
-    % if continuous, how many trials ahead should be in the player schedule?
-    % (applied to stimulation via soundcard only)
-    h.Settings.ntrialsahead = 0;  %0 = all trials
-    
-    %% EXPERIMENTAL CONDIITIONS
-    % name the settings that define orthogonal condtions at a different row
-    h.Settings.conds = {};
-    
-    %% Output options
-    % save sinwave from all trials as part of stim sequence file
-    %h.Settings.savesinwave = 0;
-    
-    %% BLOCKING/RUN OPTIONS
-    % 'divide' = equally divide trials by nblocks; 
-    % 'cond' = separate block for each condition
-    h.Settings.blockopt = 'cond';
-    % further options for 'divide':
-        % number of blocks (containing multiple conditions)
-    %    h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
-        %distribute conditions equally among blocks
-    %    h.Settings.distblocks = 1;
-    % options to start sequence at beginning of every run
-    % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
-    % cell array
-    h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
-    % names of any audiofiles
-    h.Settings.audiofile = {};
-    
-    %% Condition-independent stimulus parameters - can be superceded by condition-dependent parameters
-    % duration of stimulus sequence in seconds
-    h.Settings.totdur = 0; 
-    % duration of trial in seconds
-    h.Settings.trialdur = 3; % if 0, consecutive stimuli will occur with no gap
-    % duration of stimulus in seconds
-    h.Settings.stimdur = 0; % modified by oddball settings
-    % Pattern type method: intensity, pitch. Not supported: channel, duration
-    h.Settings.patternmethod = '';
-    h.Settings.patternvalue = []; % leave empty to product values from baseintensity and adaptive
-    % 'rand' or 'reg' spacing?
-    h.Settings.stimdurtype = 'reg'; % not needed unless 'rand'
-    % Binarual beats frequency: creates right ear frequency of f0+df
-    %h.Settings.df = 0; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-    % Monaural beats instead? 
-    %h.Settings.monaural = 0; 
-    % attenuation level in decibels
-    %h.Settings.atten = -30; 
-    % pitch
-    %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
-    %intensity
-    h.Settings.inten = []; % value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.record_response_type = {'all'}; %options: 'all','thistrial','previoustrial'
     %intensity difference
-    h.Settings.inten_diff = []; % value between 0 and 1000mA for Digitimer DS8R
-    % Tactile: number of pulses per trial
-    h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
-    % Tactile: within-trial frequency (Hz) 
-    h.Settings.t_freq=[]; 
-    
-    %% CHANGING STIMULUS INTENSITY EVERY X PULSES
-    % REFER TO "TIMER STOP": https://labjack.com/support/ud/df-lj-app-guide/10.5
-    
-    %% Condition-dependent stimulus parameters
-    % Condition method: intensity, pitch, channel
-    h.Settings.conditionmethod = {};
-    h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
-    % Oddball method: intensity, pitch, channel
-    h.Settings.oddballmethod = 'intensity'; % can use same type for pattern only if oddball intensity is adaptive
-    h.Settings.oddballvalue = []; % leave blank if determined from GUI
-    h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
-
-    %% SEQUENCE
-    % Change probablity (CP): each condition is in rows
-    h.Settings.oddprob = [
-        % standard (left) vs oddball (right)
-        0.5 0.5
-        ];
-    % index of row of oddprob that are standards and oddballs
-    h.Settings.standardind = 1; 
-    h.Settings.oddind = 2; 
-    % keep oddball trials apart by at least sep_odd standards
-    h.Settings.sep_odd = [0]; % for each CP condition
-    % for sep_odd, which indices of h.Settings.oddballvalue to consider
-    % each time? (each list will be considered separately)
-    h.Settings.sep_odd_ind = {};
-    % for each set, ensure a number of leading standards 
-    h.Settings.std_lead = [0]; % for each CP condition
-    % min number of oddballs within each CP condition
-    h.Settings.n_odd = [96]; % overrides h.Settings.totdur
-    % number of minimum sets to randomise together
-    h.Settings.n_set = [16]; % 1 = use min set size, for each CP condition
-    % min number of oddballs per randomised set, per CP and per oddball
-    % type
-    h.Settings.n_odd_set = [6]; % overrides h.Settings.totdur
-    % randomise sets?
-    h.Settings.rand_set = 0; 
-    
-    %% RESPONSE PARAMETERS
-    % record responses during experiment? 0 or 1
-    h.Settings.record_response = 1;
-    % how to record responses?
-    h.Settings.record_response_type = {'thistrial','previoustrial'}; %options: 'all','thistrial','previoustrial'
     % buttonpress options: key: keyboard inputs. Blank for no button press
     h.Settings.buttontype='key';
     % range of keyboard presses indicating a recordable response
-    h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
+    h.Settings.buttonopt = {'DownArrow','UpArrow'}; 
+    
+    %% THRESHOLDING
+    % starting level and step size
+    %h.Settings.threshold.startinglevel = 2; % for intensity)
+    %h.Settings.threshold.step = 2;
+    
     
     %% ADAPTIVE: General
     % which ones to run? (i.e. indices of h.Settings.adaptive)
@@ -588,25 +252,28 @@ case 'Adapt_overtrials_rand'
     % alternate or randomise runs over types? Alt must have equal number of
     % runs for each adapttype
     h.Settings.adaptive_general.seqtype = 'rand'; % 'alt' or 'rand'
+    h.Settings.adaptive_general.seqrandblocksize = 12; % should divide the number of trials in a set
+    h.Settings.adaptive_general.selectcond.cp = [1]; % which CP condition to run adaptive on?
     
     %% ADAPTIVE 1
     h.Settings.adaptive(1).type = 'detect';
     h.Settings.adaptive(1).updown = [1 1];
     % how many of each to run?
-    h.Settings.adaptive(1).nRuns = 96;
-    % max number of thresh estimates to average over to get overall estimate
-    h.Settings.adaptive(1).av_thresh = 24;
+    h.Settings.adaptive(1).nRuns = 12*1000;
+    % max number of thresh estimates to average over to get overall
+    % estimate (for plotting only - red line)
+    h.Settings.adaptive(1).av_thresh = [2,4,6];%[50,75,100];
     % number of trials each run
     h.Settings.adaptive(1).trialsperrun = 1;
     % adaptive staircase: meanings of the buttonopt
-    h.Settings.adaptive(1).buttonfun = {'LeftArrow','RightArrow'}; 
+    h.Settings.adaptive(1).buttonfun = {'DownArrow','UpArrow'}; 
     % adaptive staircase: corresponding signal values that would signify a
     % correct answer
     h.Settings.adaptive(1).signalval = [1 2];
     % number of reversals
     h.Settings.adaptive(1).reversals = [4;8;12];
     % stepsize
-    h.Settings.adaptive(1).stepsize = [4;2;1];
+    h.Settings.adaptive(1).stepsize = [4;2;1]*2;
     % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
     h.Settings.adaptive(1).steptype = 1;
     % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
@@ -629,26 +296,26 @@ case 'Adapt_overtrials_rand'
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     %h.Settings.adaptive(1).meanadjustmax = 10;
     % maximum amount - for safety
-    h.Settings.adaptive(1).levelmax = 100; % should be value in mA. 
+    h.Settings.adaptive(1).levelmax = h.Settings.maxinten; % should be value in mA. 
     
     %% ADAPTIVE 2
     h.Settings.adaptive(2).type = 'discrim';
     h.Settings.adaptive(2).updown = [1 2];
     % how many of each to run?
-    h.Settings.adaptive(2).nRuns = 96;
+    h.Settings.adaptive(2).nRuns = 12*1000;
     % max number of thresh estimates to average over to get overall estimate
-    h.Settings.adaptive(2).av_thresh = 24;
+    h.Settings.adaptive(2).av_thresh = [2,4,6];%[50,75,100];
     % number of trials each run
     h.Settings.adaptive(2).trialsperrun = 1;
     % adaptive staircase: meanings of the buttonopt
-    h.Settings.adaptive(2).buttonfun = {'LeftArrow','RightArrow'}; 
+    h.Settings.adaptive(2).buttonfun = {'DownArrow','UpArrow'}; 
     % adaptive staircase: corresponding signal values that would signify a
     % correct answer
     h.Settings.adaptive(2).signalval = [1 2];
     % reversals
     h.Settings.adaptive(2).reversals = [4;8;12];
     % stepsize
-    h.Settings.adaptive(2).stepsize = [2;sqrt(2);sqrt(sqrt(2))];
+    h.Settings.adaptive(2).stepsize = [2;sqrt(2);sqrt(sqrt(2))]*2;
     % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
     h.Settings.adaptive(2).steptype = 0;
     % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
@@ -671,7 +338,7 @@ case 'Adapt_overtrials_rand'
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     %h.Settings.adaptive(2).meanadjustmax = 10;
     % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(2).levelmax = 30; % should be a DIFFERENCE value in mA. 
+    h.Settings.adaptive(2).levelmax = 50; % should be a DIFFERENCE value in mA. 
     
     case 'NLT_roving'
 
@@ -956,7 +623,7 @@ case 'Adapt_overtrials_rand'
     % duration of stimulus sequence in seconds
     h.Settings.totdur = 0; 
     % duration of trial in seconds
-    h.Settings.trialdur = 3; % if 0, consecutive stimuli will occur with no gap
+    h.Settings.trialdur = 2; % if 0, consecutive stimuli will occur with no gap
     % duration of stimulus in seconds
     h.Settings.stimdur = 0; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
@@ -991,7 +658,7 @@ case 'Adapt_overtrials_rand'
     h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
     % Oddball method: intensity, intensityindex, pitch, channel
     h.Settings.oddballmethod = 'intensityindex'; % can use same type for pattern only if oddball intensity is adaptive
-    h.Settings.oddballvalue = {[1 2], [1 2], [1 2], [2 1]}; % values to go into h.Seq.signal. One per oddprob row, or leave blank if determined from GUI
+    h.Settings.oddballvalue = {[1 2], [1 2], [1 2], [2 1], [1 2]}; % values to go into h.Seq.signal. One per oddprob row, or leave blank if determined from GUI
     h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
 
     %% SEQUENCE
@@ -1002,26 +669,27 @@ case 'Adapt_overtrials_rand'
         0.8 0.2
         0.5 0.5
         0.8 0.2
+        0.5 0.5
         ];
     % index of row of oddprob that are standards and oddballs. Can be
     % overridden by h.Settings.oddballvalue if using intensityindex
     h.Settings.standardind = 1; 
     h.Settings.oddind = 2; 
     % keep oddball trials apart by at least sep_odd standards
-    h.Settings.sep_odd = [0 2 0 2]; % for each CP condition
+    h.Settings.sep_odd = [0 2 0 2 0]; % for each CP condition
     % for sep_odd, which indices of h.Settings.oddballvalue to consider
     % each time? (each list will be considered separately)
-    h.Settings.sep_odd_ind = {[1 2],[1 2],[1 2],[1 2]};
+    h.Settings.sep_odd_ind = {[1 2],[1 2],[1 2],[1 2],[1 2]};
     % for each set, ensure a number of leading standards 
-    h.Settings.std_lead = [0 0 0 0]; % for each CP condition
+    h.Settings.std_lead = [0 0 0 0 0]; % for each CP condition
     % number of sets to randomise together
     h.Settings.n_set = []; % Leave blank to calculate automatically; or one nunmber per CP condition
     % min number of oddballs within each CP condition
-    h.Settings.n_odd = [144, 36, 72, 36]; % overrides h.Settings.totdur
+    h.Settings.n_odd = [96, 12, 30, 12, 96]; % overrides h.Settings.totdur
     % min number of oddballs per randomised set, per CP
-    h.Settings.n_odd_set = [144, 12, 12, 12]; % overrides h.Settings.totdur
+    h.Settings.n_odd_set = [96, 4, 10, 4, 96]; % overrides h.Settings.totdur
     % randomise sets?
-    h.Settings.rand_set = [0 1 1 1]; 
+    h.Settings.rand_set = [0 1 1 1 0]; 
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1
@@ -1032,7 +700,7 @@ case 'Adapt_overtrials_rand'
     % buttonpress options: key: keyboard inputs. Blank for no button press
     h.Settings.buttontype='key';
     % range of keyboard presses indicating a recordable response
-    h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
+    h.Settings.buttonopt = {'DownArrow','UpArrow'}; 
     
     %% THRESHOLDING
     % starting level and step size
@@ -1047,19 +715,20 @@ case 'Adapt_overtrials_rand'
     % runs for each adapttype
     h.Settings.adaptive_general.seqtype = 'rand'; % 'alt' or 'rand'
     h.Settings.adaptive_general.seqrandblocksize = 12; % should divide the number of trials in a set
-    h.Settings.adaptive_general.selectcond.cp = [1 3]; % which CP condition to run adaptive on?
+    h.Settings.adaptive_general.selectcond.cp = [1 5]; % which CP condition to run adaptive on?
     
     %% ADAPTIVE 1
     h.Settings.adaptive(1).type = 'detect';
     h.Settings.adaptive(1).updown = [1 1];
     % how many of each to run?
     h.Settings.adaptive(1).nRuns = 400;
-    % max number of thresh estimates to average over to get overall estimate
+    % max number of thresh estimates to average over to get overall
+    % estimate (for plotting only - red line)
     h.Settings.adaptive(1).av_thresh = 24;
     % number of trials each run
     h.Settings.adaptive(1).trialsperrun = 1;
     % adaptive staircase: meanings of the buttonopt
-    h.Settings.adaptive(1).buttonfun = {'LeftArrow','RightArrow'}; 
+    h.Settings.adaptive(1).buttonfun = {'DownArrow','UpArrow'}; 
     % adaptive staircase: corresponding signal values that would signify a
     % correct answer
     h.Settings.adaptive(1).signalval = [1 2];
@@ -1082,7 +751,7 @@ case 'Adapt_overtrials_rand'
     % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
     %h.Settings.adaptive.resptrials = 4;
     % number of reversals to average over to calculate threshold.
-    h.Settings.adaptive(1).reversalForthresh = 2;
+    h.Settings.adaptive(1).reversalForthresh = 6;
     % use mean from the first X responses of each type (high and low)
     %h.Settings.adaptive(1).getmeanfromresponses = 6;
     % maximum amount to adjust the mean if their responses are very
@@ -1095,13 +764,13 @@ case 'Adapt_overtrials_rand'
     h.Settings.adaptive(2).type = 'discrim';
     h.Settings.adaptive(2).updown = [1 2];
     % how many of each to run?
-    h.Settings.adaptive(2).nRuns = 200;
+    h.Settings.adaptive(2).nRuns = 400;
     % max number of thresh estimates to average over to get overall estimate
     h.Settings.adaptive(2).av_thresh = 24;
     % number of trials each run
     h.Settings.adaptive(2).trialsperrun = 1;
     % adaptive staircase: meanings of the buttonopt
-    h.Settings.adaptive(2).buttonfun = {'LeftArrow','RightArrow'}; 
+    h.Settings.adaptive(2).buttonfun = {'DownArrow','UpArrow'}; 
     % adaptive staircase: corresponding signal values that would signify a
     % correct answer
     h.Settings.adaptive(2).signalval = [1 2];
@@ -1124,14 +793,14 @@ case 'Adapt_overtrials_rand'
     % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
     %h.Settings.adaptive.resptrials = 4;
     % number of reversals to average over to calculate threshold.
-    h.Settings.adaptive(2).reversalForthresh = 2;
+    h.Settings.adaptive(2).reversalForthresh = 6;
     % use mean from the first X responses of each type (high and low)
     %h.Settings.adaptive(2).getmeanfromresponses = 6;
     % maximum amount to adjust the mean if their responses are very
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     %h.Settings.adaptive(2).meanadjustmax = 10;
     % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(2).levelmax = 30; % should be a DIFFERENCE value in mA. 
+    h.Settings.adaptive(2).levelmax = 50; % should be a DIFFERENCE value in mA. 
     
     case 'Complex'
 
