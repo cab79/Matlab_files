@@ -282,15 +282,17 @@ if ~isempty(ind)
     select_ind = ind(end-(min(max(av_para),length(ind)))+1:end);
     thresh = s.out.adaptive(select_ind,7);
 end
-av_thresh=[];
-if ~isempty(ind) && length(thresh)>=max(av_para)
+av_thresh=nan(1,length(av_para));
+if ~isempty(ind) 
     for av = 1:length(av_para)
-        av_thresh(av) = mean(thresh((end-av_para(av)+1):end,1));
+        if length(thresh)>=av_para(av)
+            av_thresh(av) = mean(thresh((end-av_para(av)+1):end,1));
+        end
     end
 end
 
 % DECIDE WHETHER TO CONTINUE WITH THIS ADAPT TYPE OR TERMINATE
-if ~isempty(ind) && ~isempty(av_thresh)
+if ~isempty(ind) && ~any(isnan(av_thresh))
     trend = [];
     for av = 1:length(av_para)-1
         trend(av) = (av_thresh(av)-av_thresh(av+1));
@@ -329,12 +331,15 @@ if ~isempty(ind)
         %eval(['figure(h.f' num2str(atype) ');']);
     end
     hold on
-    scatter(length(thresh),thresh(end),'b');
-    if length(ind)>max(av_para)
-        for av = 1:length(av_para)
-            scatter(length(thresh),av_thresh(av),col{av});
+    scatter(length(ind),thresh(end),'b');
+    for av = 1:length(av_para)
+        if length(ind)>av_para(av)
+            scatter(length(ind),av_thresh(av),col{av});
         end
-        scatter(length(thresh),h.out.adaptive(end,11),'k','filled');
+    end
+    if ~isnan(h.out.adaptive(end,11))
+        scatter(length(ind),h.out.adaptive(end,11),'k','filled');
+        title([h.Settings.adaptive(atype).type ': ' num2str(h.out.adaptive(end,11))])
     end
     hold off
 end

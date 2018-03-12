@@ -121,7 +121,7 @@ switch opt
     % starting level and step size
     h.Settings.threshold.startinglevel = 0; % for intensity)
     h.Settings.threshold.step = 2;
-    h.Settings.threshold.signalval = [2 1]; % 2 = carrying on increasing; 1 = decrease
+    h.Settings.threshold.signalval = [1 2]; % 2 = carrying on increasing; 1 = decrease
     
 case 'Adaptive'
 
@@ -223,9 +223,9 @@ case 'Adaptive'
     % number of sets to randomise together
     h.Settings.n_set = []; % Leave blank to calculate automatically; or one nunmber per CP condition
     % min number of oddballs within each CP condition
-    h.Settings.n_odd = [1000*12]; % overrides h.Settings.totdur
+    h.Settings.n_odd = [100*12]; % overrides h.Settings.totdur
     % min number of oddballs per randomised set, per CP
-    h.Settings.n_odd_set = [1000*12]; % overrides h.Settings.totdur
+    h.Settings.n_odd_set = [100*12]; % overrides h.Settings.totdur
     % randomise sets?
     h.Settings.rand_set = [0]; 
     
@@ -259,10 +259,10 @@ case 'Adaptive'
     h.Settings.adaptive(1).type = 'detect';
     h.Settings.adaptive(1).updown = [1 1];
     % how many of each to run?
-    h.Settings.adaptive(1).nRuns = 12*1000;
+    h.Settings.adaptive(1).nRuns = 12*100;
     % max number of thresh estimates to average over to get overall
     % estimate (for plotting only - red line)
-    h.Settings.adaptive(1).av_thresh = [2,4,6];%[50,75,100];
+    h.Settings.adaptive(1).av_thresh = [50,75,100];
     % number of trials each run
     h.Settings.adaptive(1).trialsperrun = 1;
     % adaptive staircase: meanings of the buttonopt
@@ -302,9 +302,9 @@ case 'Adaptive'
     h.Settings.adaptive(2).type = 'discrim';
     h.Settings.adaptive(2).updown = [1 2];
     % how many of each to run?
-    h.Settings.adaptive(2).nRuns = 12*1000;
+    h.Settings.adaptive(2).nRuns = 12*100;
     % max number of thresh estimates to average over to get overall estimate
-    h.Settings.adaptive(2).av_thresh = [2,4,6];%[50,75,100];
+    h.Settings.adaptive(2).av_thresh = [50,75,100];
     % number of trials each run
     h.Settings.adaptive(2).trialsperrun = 1;
     % adaptive staircase: meanings of the buttonopt
@@ -315,7 +315,7 @@ case 'Adaptive'
     % reversals
     h.Settings.adaptive(2).reversals = [4;8;12];
     % stepsize
-    h.Settings.adaptive(2).stepsize = [2;sqrt(2);sqrt(sqrt(2))]*2;
+    h.Settings.adaptive(2).stepsize = [2;sqrt(2);sqrt(sqrt(2))];
     % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
     h.Settings.adaptive(2).steptype = 0;
     % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
@@ -338,7 +338,7 @@ case 'Adaptive'
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     %h.Settings.adaptive(2).meanadjustmax = 10;
     % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(2).levelmax = 50; % should be a DIFFERENCE value in mA. 
+    h.Settings.adaptive(2).levelmax = 200; % should be a DIFFERENCE value in mA. 
     
     case 'NLT_roving'
 
@@ -502,7 +502,7 @@ case 'Adaptive'
     % duration of stimulus sequence in seconds
     h.Settings.totdur = 0; 
     % duration of trial in seconds
-    h.Settings.trialdur = 3; % if 0, consecutive stimuli will occur with no gap
+    h.Settings.trialdur = 2; % if 0, consecutive stimuli will occur with no gap
     % duration of stimulus in seconds
     h.Settings.stimdur = 0; % modified by oddball settings
     % Pattern type method: intensity, pitch. Not supported: channel, duration
@@ -519,11 +519,14 @@ case 'Adaptive'
     % pitch
     %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
     %intensity
-    h.Settings.inten = []; % value between 2 and 1000mA for Digitimer DS8R. leave blank if determined from GUI, threshold or adaptive
+    h.Settings.inten = []; % value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.inten_diff = []; % value between 0 and 1000mA for Digitimer DS8R
+    h.Settings.maxinten = 200; % max output value for safety purposes. Value between 2 and 1000mA for Digitimer DS8R
     % Tactile: number of pulses per trial
     h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
     % Tactile: within-trial frequency (Hz) 
-    h.Settings.t_freq=0; 
+    h.Settings.t_freq=[]; 
+    
     
     %% CHANGING STIMULUS INTENSITY EVERY X PULSES
     % REFER TO "TIMER STOP": https://labjack.com/support/ud/df-lj-app-guide/10.5
@@ -557,29 +560,29 @@ case 'Adaptive'
     % for each set, ensure a number of leading standards 
     h.Settings.std_lead = [0 0 0]; % for each CP condition
     % number of sets to randomise together
-    h.Settings.n_set = [3 3 3]; % 1 = use min set size, for each CP condition
+    h.Settings.n_set = []; % Leave blank to calculate automatically; or one nunmber per CP condition
     % min number of oddballs within each CP condition
-    h.Settings.n_odd = [36, 36, 36]; % overrides h.Settings.totdur
+    h.Settings.n_odd = [12, 30, 12]; % overrides h.Settings.totdur
     % min number of oddballs per randomised set, per CP
-    h.Settings.n_odd_set = [12, 12, 12]; % overrides h.Settings.totdur
+    h.Settings.n_odd_set = [4, 10, 4]; % overrides h.Settings.totdur
     % randomise sets?
-    h.Settings.rand_set = 1; 
+    h.Settings.rand_set = [1 1 1]; 
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1
     h.Settings.record_response = 1;
     % how to record responses?
     h.Settings.record_response_type = {'all'}; %options: 'all','thistrial','previoustrial'
+    %intensity difference
     % buttonpress options: key: keyboard inputs. Blank for no button press
     h.Settings.buttontype='key';
     % range of keyboard presses indicating a recordable response
-    h.Settings.buttonopt = {'LeftArrow','RightArrow'}; 
+    h.Settings.buttonopt = {'DownArrow','UpArrow'}; 
     
     %% THRESHOLDING
     % starting level and step size
     %h.Settings.threshold.startinglevel = 2; % for intensity)
     %h.Settings.threshold.step = 2;
-    
     
     case 'NLT_classical_adaptive'
 
@@ -937,3 +940,7 @@ h.Settings.labjack_timer=1; % must use if there are a large number of pulses (e.
 
 % Audio sampling rate 
 h.Settings.fs = 96000; % don't change this
+
+
+    % stimulate responses?
+    h.Settings.simulate_response = 0;

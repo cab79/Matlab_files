@@ -157,6 +157,7 @@ switch opt
 end
 
 function h = SeqLoop(h)
+global d
 Priority(2);
 tic
 
@@ -170,20 +171,23 @@ while h.i<length(h.Seq.signal)
     % if running Adaptive, should this trial be run?
     if isfield(h.Settings,'adaptive')
         if ~isempty(h.Settings.adaptive)
-            if ~isnan(h.Seq.adapttype(h.i+1))
-                if isfield(h,'s') 
-                    if ~ismember(h.Seq.adapttype(h.i),h.s.atypes)
-                        disp(['Skipping trial ' num2str(h.i) ' as adaptive threshold found']);
-                        continue
+            if h.i<length(h.Seq.adapttype)
+                if ~isnan(h.Seq.adapttype(h.i+1))
+                    if isfield(h,'s') 
+                        if ~ismember(h.Seq.adapttype(h.i),h.s.atypes)
+                            disp(['Skipping trial ' num2str(h.i) ' as adaptive threshold found']);
+                            continue
+                        end
                     end
                 end
+            else
+                [~,seqname,~] = fileparts(h.SeqName);
+                fname = ['Output_' h.subID '_' seqname '_startblock' num2str(h.startblock) '_' h.t_start '.mat'];
+                out = h.out;
+                save(fullfile(d.root,d.out,fname),'out');
+                continue;
             end
         end
-    end
-    
-    % record previous start time to calculate ISI
-    if isfield(h,'st')
-        h.st_prev = h.st; 
     end
     
     % ensure stop button is not pressed already
@@ -193,19 +197,6 @@ while h.i<length(h.Seq.signal)
         break
     end
     
-    % start time of trial
-    h.st = GetSecs;
-    h.ct=h.st;
-    
-    % calculate ISI
-    if isfield(h,'st_prev')
-        isi = h.st-h.st_prev;
-    else
-        isi = 0;
-    end
-    
-    t=toc/60;
-    disp(['Block ' num2str(h.Seq.blocks(h.i)) '/' num2str(max(h.Seq.blocks)) ', Trial' num2str(h.i) '. Elapsed time is ' num2str(t) ' mins. ISI is ' num2str(isi) ' s']);
     
     % D188 - set output channel
     if isfield(h,'D188')
@@ -216,13 +207,22 @@ while h.i<length(h.Seq.signal)
         %end
     end
     
+    % record previous start time to calculate ISI
+    if isfield(h,'st')
+        h.st_prev = h.st; 
+    end
+    
+    % start time of trial
+    h.st = GetSecs;
+    h.ct=h.st;
+    
     % send stimulus
     if isfield(h.Settings,'stimcontrol')
         if ~isempty(h.Settings.stimcontrol)
             opt = 'create';
             h = stimtrain(h,opt); % stimulus train
             for i = 1:h.Settings.nstim_trial
-                if strcmp(h.Settings.stimcontrol,'LJTick-DAQ');
+                if strcmp(h.Settings.stimcontrol,'LJTick-DAQ')
                     opt = 'set';
                     h.trialstimnum = i;
                     h = stimtrain(h,opt); % intensity via DAC
@@ -239,8 +239,27 @@ while h.i<length(h.Seq.signal)
         end
     end
     
+    % update start time of trial
+    h.st = GetSecs;
+    h.ct=h.st;
+    
     % record stimulus timing
     h.out.stimtime{h.i} = GetSecs;
+    
+    % start time of trial
+    h.st = GetSecs;
+    h.ct=h.st;
+    
+    % calculate ISI
+    if isfield(h,'st_prev')
+        isi = h.st-h.st_prev;
+    else
+        isi = 0;
+    end
+    
+    t=toc/60;
+    disp(['Block ' num2str(h.Seq.blocks(h.i)) '/' num2str(max(h.Seq.blocks)) ', Trial' num2str(h.i) '. Elapsed time is ' num2str(t) ' mins. ISI is ' num2str(isi) ' s']);
+    
     
     % STIM marker on EEG
     if isfield(h.Settings,'record_EEG')
@@ -876,12 +895,25 @@ switch opt
             if ~isempty(h.Settings.buttontype)
                 if h.Settings.record_response
                     [h.pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck;
-                    if h.pressed
+                    if h.Settings.simulate_response && isempty(find(h.out.presstrial==h.i))
+                        disp('WARNING: RESPONSES BEING SIMULATED - DO NOT USE STIMULATOR ON A PARTICIPANT');
+                        recordresp=1;
+                        h.pressed = 1;
+                        firstPress = 0;
+                        firstRelease = 0;
+                        lastPress = 0;
+                        lastRelease = 0;
+                        ind=randperm(length(h.Settings.buttonopt));
+                        fpress = h.Settings.buttonopt(ind(1));
+                        lpress = fpress;
+                    elseif h.pressed
                         recordresp=1;
                         fpress = KbName(firstPress);
                         lpress = KbName(lastPress);
                         firstPress = firstPress(firstPress>0);
                         lastPress = lastPress(lastPress>0);
+                    end
+                    if h.pressed
                         % if button options are specified
                         if isfield(h.Settings,'buttonopt')
                             if ~isempty(h.Settings.buttonopt) && (~isempty(fpress) || ~isempty(lpress))
