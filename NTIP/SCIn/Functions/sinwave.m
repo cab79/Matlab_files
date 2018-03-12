@@ -135,7 +135,7 @@ for tr = trials
             end
         elseif adaptive || threshold
             if isfield(h,'s')
-                varlevel = h.s.StimulusLevel;
+                varlevel = h.s.a(h.Seq.adapttype(h.i)).StimulusLevel;
             else
                 if adaptive
                     varlevel = h.Settings.adaptive.startinglevel;

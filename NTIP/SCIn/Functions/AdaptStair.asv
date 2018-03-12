@@ -26,7 +26,6 @@ if isfield(h,'s')
 end
 if create_s || create_a
     s = AdaptStairParameters(h,atype); % see function at the end
-    h.s=s;
 else
     s=h.s;
 end
@@ -123,8 +122,9 @@ end
 % only run once per trial
 %if strcmp(opt,'responded')
     if ~(s.lasttrialrun == h.i)
-        %disp(['i = : ' num2str(h.i)])
-        %disp(['s.lasttrialrun = : ' num2str(s.lasttrialrun)])
+        disp(['Running Adaptive: ' h.Settings.adaptive(atype).type])
+        disp(['i = : ' num2str(h.i)])
+        disp(['s.lasttrialrun = : ' num2str(s.lasttrialrun)])
         s.lasttrialrun = h.i;
     else
         return
@@ -138,9 +138,9 @@ if size(s.a(atype).expplan,1)==s.a(atype).count_of_n_of_reversals
 end
     
 % evaluate the subject's response
+resi=[];
 if strcmp(opt,'omitted')
     s.SubjectAccuracy(s.trial)= 0;
-    resfun = 0;
 elseif strcmp(opt,'responded')
     if h.pressedsinceoddball 
         %presstrial=trls_pressed(end);
@@ -178,7 +178,9 @@ elseif strcmp(opt,'responded')
     end
 end
 
-disp(['Running Adaptive: ' h.Settings.adaptive(atype).type])
+if isempty(resi)
+    return
+end
 % UPDATE THE ROWOFOUTPUT
 s.rowofoutput (1, 1) = h.i; % was: s.block
 s.rowofoutput (1, 2) = s.trial;
