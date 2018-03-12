@@ -9,6 +9,9 @@ end
 if ~isfield(h.Settings,'nstim_trial')
     h.Settings.nstim_trial = 1;
 end
+if ~isfield(h.Settings,'simulate_response')
+    h.Settings.simulate_response=0;
+end
 
 switch opt
     

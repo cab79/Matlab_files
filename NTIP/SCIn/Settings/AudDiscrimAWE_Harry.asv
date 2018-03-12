@@ -153,13 +153,13 @@ h.Settings.sep_odd_ind = {[1 2]};
 % for each set, ensure a number of leading standards 
 h.Settings.std_lead = 0;
 % number of minimum sets to randomised together
-h.Settings.n_set = []; % 1 = use min set size
+h.Settings.n_set = 1; % 1 = use min set size
 % min number of oddballs within each CP condition
-h.Settings.n_odd = [60]; % overrides h.Settings.totdur
+h.Settings.n_odd = [1]; % overrides h.Settings.totdur
 % min number of oddballs per randomised set, per CP
-h.Settings.n_odd_set = [10]; % overrides h.Settings.totdur
+h.Settings.n_odd_set = [1]; % overrides h.Settings.totdur
 % randomise sets?
-h.Settings.rand_set = [1]; 
+h.Settings.rand_set = [1 1 1]; 
 
 %% RESPONSE PARAMETERS
 % record responses during experiment? 0 or 1
@@ -175,15 +175,25 @@ h.Settings.adaptive_general.adapttypes = [1];
 % alternate or randomise runs over types? Alt must have equal number of
 % runs for each adapttype
 h.Settings.adaptive_general.seqtype = 'rand'; % 'alt' or 'rand'
-h.Settings.adaptive_general.seqrandblocksize = 10; % should divide the number of trials in a set
+h.Settings.adaptive_general.seqrandblocksize = 12; % should divide the number of trials in a set
 h.Settings.adaptive_general.selectcond.cp = [1]; % which CP condition to run adaptive on?
 
 %% ADAPTIVE
-
+% adaptive staircase: meanings of the buttonopt
+h.Settings.adaptive.buttonfun = {'LeftArrow','RightArrow'}; 
+% adaptive staircase: corresponding signal values that would signify a
+% correct answer
+h.Settings.adaptive.signalval = [1 2];
+% starting level of adaptive staircase
+h.Settings.adaptive.startinglevel = max(h.Settings.oddballvalue)-min(h.Settings.oddballvalue); % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100)
+% adapt to omissions of response (not suitable for 2AFC tasks!!)
+h.Settings.adaptive.omit = 1; % 1 = omission is incorrect; 2 = omission is correct
+% which trials (or oddballs if oddonly selected) to start adaptive procedure if there is an omission?
+h.Settings.adaptive.startomit = 2;
 % adapt on every trial or only just before an oddball?
-h.Settings.adaptive(1).oddonly = 1;
+h.Settings.adaptive.oddonly = 1;
 % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
-h.Settings.adaptive(1).resptrials = 4;
+h.Settings.adaptive.resptrials = 4;
 
 
     h.Settings.adaptive(1).type = 'discrim';

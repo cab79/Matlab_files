@@ -452,7 +452,8 @@ if isfield(h.Settings,'adaptive')
         % add to Seq
         h.Seq.adapttype = nan(1,length(h.Seq.condnum));
         h.Seq.adapttype(condind) = aseq(1:length(condind));
-        
+    else
+        h.Seq.adapttype = ones(1,length(h.Seq.condnum));
     end
     hold on; plot(h.Seq.adapttype,'r')
 end
