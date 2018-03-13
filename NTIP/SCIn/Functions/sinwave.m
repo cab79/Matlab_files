@@ -191,7 +191,7 @@ for tr = trials
     if isfield(h.Settings,'patternmethod')
         if strcmp(h.Settings.patternmethod,'intensity') % intensity changes
             intenpattern=1;
-            if ~strcmp(conditionmethod,'intensity') % then already defined
+            if ~any(strcmp(h.Settings.conditionmethod,'intensity')) % then already defined
                 h.inten = h.Settings.patternvalue;
             end
         end

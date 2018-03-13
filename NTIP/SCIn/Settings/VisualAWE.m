@@ -43,12 +43,12 @@ switch opt
         %% BLOCKING/RUN OPTIONS
         % 'divide' = equally divide trials by nblocks; 
         % 'cond' = separate block for each condition
-        h.Settings.blockopt = 'divide';
+        h.Settings.blockopt = '';
         % further options for 'divide':
             % number of blocks (containing multiple conditions)
-            h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
+            %h.Settings.nblocks = 1; % must integer-divide each value in h.Settings.cond_rep_init
             %distribute conditions equally among blocks
-            h.Settings.distblocks = 1;
+            %h.Settings.distblocks = 1;
         % options to start sequence at beginning of every run
         % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
         % cell array
@@ -82,7 +82,7 @@ switch opt
         %% Condition-dependent stimulus parameters
         % Condition method: intensity, pitch, channel
         h.Settings.conditionmethod = {'intensity'};
-        h.Settings.conditionvalue = [0 10 50 90];% Rows: methods. Columns: each stimtype
+        h.Settings.conditionvalue = [5 10 20 50];% Rows: methods. Columns: each stimtype
         % Oddball method: intensity, pitch, channel
         h.Settings.oddballmethod = 'duration'; % can use same type for pattern only if oddball intensity is adaptive
         % Odball value: DURATION DEVIANTS

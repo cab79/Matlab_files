@@ -355,9 +355,9 @@ if ~isfield(h.Seq,'signal')
                         elseif cp==nCP
                             bv = 1000; % block value
                             h.Seq.blocks(setx_ind==cps) = bv*ones(1,length(stimtype{cp}{s}));
-                        else
-                            h.Seq.blocks(setx_ind==cps) = ones(1,length(stimtype{cp}{s}));
                         end
+                    else
+                        h.Seq.blocks(setx_ind==cps) = ones(1,length(stimtype{cp}{s}));
                     end
                 end
             end
