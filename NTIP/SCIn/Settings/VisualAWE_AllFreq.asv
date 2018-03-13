@@ -31,11 +31,11 @@ switch opt
         h.Settings.design = 'continuous';
         % if continuous, how many trials ahead should be in the player schedule?
         % (applies to stimulation via soundcard only)
-        h.Settings.ntrialsahead = 0;  %0 = all trials
+        h.Settings.ntrialsahead = 2;  %0 = all trials
 
         %% Output options
         % save sinwave from all trials as part of stim sequence file
-        h.Settings.savesinwave = 1;
+        h.Settings.savesinwave = 0;
 
         %% EQUIPMENT CONTROL
         % record EEG, NS: netstation, BV: brainvision, 'serial': serial port
@@ -89,14 +89,14 @@ switch opt
         %% Condition-dependent stimulus parameters
         % Condition method: intensity, pitch, channel
         sd = h.Settings.stimdur;
-        h.Settings.conditionmethod = {'intensity','pitch','phase'};
+        h.Settings.conditionmethod = {'intensity','pitch',};
         h.Settings.conditionvalue = {
-            [0 0], [h.Settings.f0 h.Settings.f0], [1 1]
-            [h.Settings.inten h.Settings.inten], [h.Settings.f0 h.Settings.f0], [1 1]
-            [h.Settings.inten 0], [1/(sd*10) 1/(sd*10)], [0 0]
-            [h.Settings.inten 0], [1/(sd*10) 1/(sd*10)], [0 0]
-            [h.Settings.inten 0], [1/(sd*10) 1/(sd*10)], [0 0]
-            [h.Settings.inten 0], [1/(sd*10) 1/(sd*10)], [0 0]
+            [0 0], [h.Settings.f0 h.Settings.f0]
+            [h.Settings.inten h.Settings.inten], [h.Settings.f0 h.Settings.f0]
+            [h.Settings.inten 0], [1/sd*2 1/sd*2]
+            [h.Settings.inten 0], [1/sd*2 1/sd*2]
+            [h.Settings.inten 0], [1/sd*2 1/sd*2]
+            [h.Settings.inten 0], [1/sd*2 1/sd*2]
                                     };% Rows: methods. Columns: each stimtype
         % Oddball method: intensity, pitch, channel
         h.Settings.oddballmethod = 'duration'; % can use same type for pattern only if oddball intensity is adaptive

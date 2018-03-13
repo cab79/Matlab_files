@@ -20,6 +20,14 @@ if ~isfield(h.Settings,'wavetype')
 elseif isempty(h.Settings.wavetype)
     h.Settings.wavetype = 'sin';
 end
+% set default to phase alignment
+if ~isfield(h.Settings,'alignphase')
+    h.alignphase = 1;
+elseif isempty(h.Settings.alignphase)
+    h.alignphase = 1;
+else
+    h.alignphase = 0;
+end
 
 % select channels
 if isfield(h.Settings,'stimchan')
@@ -103,6 +111,13 @@ for tr = trials
                             h.inten = h.Settings.conditionvalue{h.Seq.signal(tr),i};
                         else
                             h.inten = h.Settings.conditionvalue(i,h.Seq.signal(tr));
+                        end
+                    end
+                    if strcmp(conditionmethod,'phase')
+                        if iscell(h.Settings.conditionvalue)
+                            h.alignphase = h.Settings.conditionvalue{h.Seq.signal(tr),i};
+                        else
+                            h.alignphase = h.Settings.conditionvalue(i,h.Seq.signal(tr));
                         end
                     end
                 end
@@ -250,15 +265,19 @@ for tr = trials
         t{i} = transpose((1:h.dur(i)*h.Settings.fs)/h.Settings.fs);
         
         % start phase to add to stim
-        try
-            if i==1 % use previous trial's end phase
-                phadd = h.iphase(:,tr-1,1,end); % phase at end of previous stim
-                phadd = phadd+(h.iphase(:,tr-1,2,end)<0).*(pi-2*h.iphase(:,tr-1,1,end)); % adjust when slope of sinwave is negative, which gives wrong phase values
-            else
-                phadd = h.iphase(:,tr,1,i-1); % phase at end of previous stim
-                phadd = phadd+(h.iphase(:,tr,2,i-1)<0).*(pi-2*h.iphase(:,tr,1,i-1)); % adjust when slope of sinwave is negative, which gives wrong phase values    
+        if h.alignphase
+            try
+                if i==1 % use previous trial's end phase
+                    phadd = h.iphase(:,tr-1,1,end); % phase at end of previous stim
+                    phadd = phadd+(h.iphase(:,tr-1,2,end)<0).*(pi-2*h.iphase(:,tr-1,1,end)); % adjust when slope of sinwave is negative, which gives wrong phase values
+                else
+                    phadd = h.iphase(:,tr,1,i-1); % phase at end of previous stim
+                    phadd = phadd+(h.iphase(:,tr,2,i-1)<0).*(pi-2*h.iphase(:,tr,1,i-1)); % adjust when slope of sinwave is negative, which gives wrong phase values    
+                end
+            catch
+                phadd = zeros(length(chan),1);
             end
-        catch
+        else
             phadd = zeros(length(chan),1);
         end
         
