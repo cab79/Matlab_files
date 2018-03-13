@@ -31,11 +31,11 @@ switch opt
         h.Settings.design = 'continuous';
         % if continuous, how many trials ahead should be in the player schedule?
         % (applies to stimulation via soundcard only)
-        h.Settings.ntrialsahead = 2;  %0 = all trials
+        h.Settings.ntrialsahead = 0;  %0 = all trials
 
         %% Output options
         % save sinwave from all trials as part of stim sequence file
-        h.Settings.savesinwave = 0;
+        h.Settings.savesinwave = 1;
 
         %% EQUIPMENT CONTROL
         % record EEG, NS: netstation, BV: brainvision, 'serial': serial port

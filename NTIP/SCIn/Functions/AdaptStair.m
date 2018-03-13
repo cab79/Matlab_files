@@ -282,28 +282,30 @@ ind = find(s.out.adaptive(:,10)==atype & ~isnan(s.out.adaptive(:,7)));
 
 % create moving averages
 av_para = h.Settings.adaptive(atype).av_thresh;
-if ~isempty(ind)
-    select_ind = ind(end-(min(max(av_para),length(ind)))+1:end);
-    thresh = s.out.adaptive(select_ind,7);
-end
-av_thresh=nan(1,length(av_para));
-if ~isempty(ind) 
-    for av = 1:length(av_para)
-        if length(thresh)>=av_para(av)
-            av_thresh(av) = mean(thresh((end-av_para(av)+1):end,1));
+if ~isempty(av_para)
+    if ~isempty(ind)
+        select_ind = ind(end-(min(max(av_para),length(ind)))+1:end);
+        thresh = s.out.adaptive(select_ind,7);
+    end
+    av_thresh=nan(1,length(av_para));
+    if ~isempty(ind) 
+        for av = 1:length(av_para)
+            if length(thresh)>=av_para(av)
+                av_thresh(av) = mean(thresh((end-av_para(av)+1):end,1));
+            end
         end
     end
-end
 
-% DECIDE WHETHER TO CONTINUE WITH THIS ADAPT TYPE OR TERMINATE
-if ~isempty(ind) && ~any(isnan(av_thresh))
-    trend = [];
-    for av = 1:length(av_para)-1
-        trend(av) = (av_thresh(av)-av_thresh(av+1));
-    end
-    if ~all(trend>0) && ~all(trend<0)
-        s.out.adaptive(end, 11) = mean(av_thresh);
-        s.atypes(find(s.atypes==atype)) = [];
+    % DECIDE WHETHER TO CONTINUE WITH THIS ADAPT TYPE OR TERMINATE
+    if ~isempty(ind) && ~any(isnan(av_thresh))
+        trend = [];
+        for av = 1:length(av_para)-1
+            trend(av) = (av_thresh(av)-av_thresh(av+1));
+        end
+        if ~all(trend>0) && ~all(trend<0)
+            s.out.adaptive(end, 11) = mean(av_thresh);
+            s.atypes(find(s.atypes==atype)) = [];
+        end
     end
 end
 h.s =s;
@@ -316,7 +318,7 @@ h.out.adaptive = s.out.adaptive;
 
 
 %% plot
-if ~isempty(ind)
+if ~isempty(ind) && ~isempty(av_para)
     col = {'r','m','y'};
     % does fig handle exist?
     fig = isfield(h,'f');

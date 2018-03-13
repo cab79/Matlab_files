@@ -12,20 +12,20 @@ switch opt
     h.SettingsOptions = {'No_Entrain_VolDiscrim','10Hz_Entrain_VolDiscrim','40Hz_Entrain_VolDiscrim','No_Entrain_PitchDiscrim','10Hz_Entrain_PitchDiscrim','40Hz_Entrain_PitchDiscrim'};
     
     case 'No_Entrain_PitchDiscrim'
-    % set general options
-    h = setgeneral(h);
     % Binarual beats frequency: creates right ear frequency of f0+df
     h.Settings.df = 0; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
     h.Settings.oddballmethod = 'pitch'; % can use same type for pattern only if oddball intensity is adaptive
     h.Settings.oddballvalue = [200 400];
-    
-    case '10Hz_Entrain_PitchDiscrim'
     % set general options
     h = setgeneral(h);
+    
+    case '10Hz_Entrain_PitchDiscrim'
     % Binarual beats frequency: creates right ear frequency of f0+df
     h.Settings.df = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
     h.Settings.oddballmethod = 'pitch'; % can use same type for pattern only if oddball intensity is adaptive
     h.Settings.oddballvalue = [200 400];
+    % set general options
+    h = setgeneral(h);
     
     case '40Hz_Entrain_PitchDiscrim'
     % Binarual beats frequency: creates right ear frequency of f0+df
@@ -183,7 +183,7 @@ h.Settings.adaptive_general.selectcond.cp = [1]; % which CP condition to run ada
 % adapt on every trial or only just before an oddball?
 h.Settings.adaptive(1).oddonly = 1;
 % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
-h.Settings.adaptive(1).resptrials = 4;
+h.Settings.adaptive(1).resptrials = 6;
 
 
     h.Settings.adaptive(1).type = 'discrim';
@@ -191,7 +191,7 @@ h.Settings.adaptive(1).resptrials = 4;
     % how many of each to run?
     h.Settings.adaptive(1).nRuns = 400;
     % max number of thresh estimates to average over to get overall estimate
-    h.Settings.adaptive(1).av_thresh = 24;
+    h.Settings.adaptive(1).av_thresh = [];
     % number of trials each run
     h.Settings.adaptive(1).trialsperrun = 1;
     % adaptive staircase: meanings of the buttonopt
@@ -225,7 +225,7 @@ h.Settings.adaptive(1).resptrials = 4;
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     %h.Settings.adaptive(1).meanadjustmax = 10;
     % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(1).levelmax = 50; % should be a DIFFERENCE value in mA. 
+    h.Settings.adaptive(1).levelmax = max(h.Settings.oddballvalue)-min(h.Settings.oddballvalue); % should be a DIFFERENCE value in mA. 
 
 % number of trials of plot
 h.Settings.plottrials=0;
