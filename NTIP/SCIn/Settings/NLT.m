@@ -803,7 +803,7 @@ case 'Adaptive'
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     %h.Settings.adaptive(2).meanadjustmax = 10;
     % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(2).levelmax = 50; % should be a DIFFERENCE value in mA. 
+    h.Settings.adaptive(2).levelmax = 30; % should be a DIFFERENCE value in mA. 
     
     case 'Complex'
 
