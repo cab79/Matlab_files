@@ -330,7 +330,7 @@ for tr = trials
             peak = useinten*ones(h.dur*h.Settings.fs,1);
             trough = zeros((h.Settings.trialdur*h.Settings.fs)-length(rise)-length(fall)-length(peak),1);
             
-            mwav{i}(chan(1),:) = [rise;peak;fall;trough];
+            mwav{i}(chan(1),:) x= [rise;peak;fall;trough];
         end
         
         % instantaneous phase and direction at end of stim

@@ -1,4 +1,4 @@
-function h = VisualAWE_AllFreq(h,opt)
+function h = PressureTest(h,opt)
 
 % FILENAME OF SEQUENCE CREATION FUNCTION (without .m)
 h.SeqFun = 'CreateSequence';
@@ -8,24 +8,12 @@ switch opt
     case 'setoptions'
         
     % settings options
-    h.SettingsOptions = {'1Hz','7Hz','10Hz','23Hz'};
+    h.SettingsOptions = {'test'};
     
-    case '1Hz'
+    case 'test'
         h.Settings.f0 = 1; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h = VisualAWE_AllFreq(h,'commonsettings');
+        h = PressureTEst(h,'commonsettings');
     
-    case '7Hz'
-        h.Settings.f0 = 7; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h = VisualAWE_AllFreq(h,'commonsettings');
-    
-    case '10Hz'
-        h.Settings.f0 = 10; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h = VisualAWE_AllFreq(h,'commonsettings');
-    
-    case '23Hz'
-        h.Settings.f0 = 23; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-        h = VisualAWE_AllFreq(h,'commonsettings');
-        
     case 'commonsettings'    
         %% TRIALS or CONTINUOUS?
         h.Settings.design = 'continuous';
