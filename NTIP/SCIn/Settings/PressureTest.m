@@ -31,8 +31,10 @@ switch opt
         h.Settings.EEGMarkPattern = 0; % mark EEG for every change in stimulus pattern (0 = start of trial only)
         h.Settings.labjack=1; % Use labjack for controlling any equipment?
         h.Settings.stimcontrol='labjack'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
+        h.Settings.DAC_multiply = 1; % multiply DAC output by this (e.g. to get mA on DS8R)
         h.Settings.nrchannels = 1; % total number of channels, e.g. on sound card
-        h.Settings.stimchan = [1]; % channels on stimulator to use
+        h.Settings.stimchan = 0; % channels on stimulator to use
+        h.Settings.stimchanforLJ=0;
 
         %% BLOCKING/RUN OPTIONS
         % 'divide' = equally divide trials by nblocks; 
@@ -80,7 +82,7 @@ switch opt
         h.Settings.conditionmethod = {};
         h.Settings.conditionvalue = {};% Rows: methods. Columns: each stimtype
         % Oddball method: intensity, pitch, channel
-        h.Settings.oddballmethod = ''; % can use same type for pattern only if oddball intensity is adaptive
+        h.Settings.oddballmethod = 'intensity'; % can use same type for pattern only if oddball intensity is adaptive
         % Odball value: DURATION DEVIANTS
         % i.e. all possible duration options and their probability
         % In general, each row is a different stim type, with columns providing
@@ -89,10 +91,10 @@ switch opt
             % left column = 1st inten/pitch
             % right column = 2nd inten/pitch
         % and the temporal pattern is defined by fc (from either fpitch or finten)
-        h.Settings.oddballvalue = {};
+        h.Settings.oddballvalue = {1 3};
 
         %% SEQUENCE
-        h.Settings.oddprob = [];
+        h.Settings.oddprob = [0.5 0.5];
 
         h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
 
@@ -114,9 +116,9 @@ switch opt
         h.Settings.n_set = [1];%[1 1 1 1 1]; % 1 = use min set size
 
         % min number of oddballs within each CP condition
-        h.Settings.n_odd = [0];%[300 20 20 20 20]; % overrides h.Settings.totdur
+        h.Settings.n_odd = [5];%[300 20 20 20 20]; % overrides h.Settings.totdur
         % min number of oddballs per randomised set, per CP
-        h.Settings.n_odd_set = [0];%[300 20 20 20 20]; % overrides h.Settings.totdur
+        h.Settings.n_odd_set = [5];%[300 20 20 20 20]; % overrides h.Settings.totdur
         % randomise sets?
         h.Settings.rand_set = [0];%[0 1 1 1 1]; 
         % randomise within sets?

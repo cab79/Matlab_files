@@ -1,5 +1,5 @@
 function h = Experiment(h,opt)
-%dbstop if error
+dbstop if error
 % GUI handle name
 h.GUIhname = findall(0, 'Type', 'figure', 'Tag', 'SCIn');
 
@@ -222,12 +222,16 @@ while h.i<length(h.Seq.signal)
     % send stimulus
     if isfield(h.Settings,'stimcontrol')
         if ~isempty(h.Settings.stimcontrol)
-            opt = 'create';
-            h = stimtrain(h,opt); % stimulus train
+            if strcmp(h.Settings.stimcontrol,'PsychPortAudio') || strcmp(h.Settings.stimcontrol,'audioplayer');
+                opt = 'create';
+                h = stimtrain(h,opt); % stimulus train
+            end
             for i = 1:h.Settings.nstim_trial
-                if strcmp(h.Settings.stimcontrol,'LJTick-DAQ')
-                    opt = 'set';
+                if strcmp(h.Settings.stimcontrol,'LJTick-DAQ') || strcmp(h.Settings.stimcontrol,'labjack')
                     h.trialstimnum = i;
+                    opt = 'calc';
+                    h = stimtrain(h,opt); 
+                    opt = 'set';
                     h = stimtrain(h,opt); % intensity via DAC
                 end
                 opt = 'start';
@@ -303,24 +307,35 @@ function h = SeqRun(h)
 Priority(2);
 tic
 
+h.out.stimseq_record = nan(size(h.Seq.stimseq));
+
 % send stimulus
 if isfield(h.Settings,'stimcontrol')
     if ~isempty(h.Settings.stimcontrol)
-        if h.Settings.ntrialsahead
-            opt = 'create';
-            h = stimtrain(h,opt); % stimulus train
-        end
-        if strcmp(h.Settings.stimcontrol,'LJTick-DAQ');
-            opt = 'setDAC';
+        if strcmp(h.Settings.stimcontrol,'LJTick-DAQ') || strcmp(h.Settings.stimcontrol,'labjack');
+            % pressure stim: calc new intensity, create new trials, do
+            % initial setting
+            if h.Settings.ntrialsahead
+                opt = 'create';
+                h = stimtrain(h,opt); 
+            end
+            opt = 'set';
             h = stimtrain(h,opt); % intensity via DAC
+            h.laststimload=GetSecs;
+        elseif strcmp(h.Settings.stimcontrol,'PsychPortAudio') || strcmp(h.Settings.stimcontrol,'audioplayer');
+            if h.Settings.ntrialsahead
+                opt = 'create';
+                h = stimtrain(h,opt); 
+            end
+            opt = 'start';
+            h = stimtrain(h,opt); % stimulus train
+            h.laststimload=GetSecs;
+            opt = 'getsample';
+            h = stimtrain(h,opt);
         end
-        opt = 'start';
-        h = stimtrain(h,opt); % stimulus train
-        h.laststimload=GetSecs;
-        opt = 'getsample';
-        h = stimtrain(h,opt);
     end
 end
+
 
 % trial duration
 if h.Settings.ntrialsahead
@@ -410,7 +425,9 @@ while (h.ct-h.st)<h.trialdur
             break; 
         end
     end
-    
+    if ~isfield(h,'disableGUI')
+        pause(0.001);
+    end
     try
         px = get(GUIh.PauseResume, 'Value');
     catch
@@ -515,6 +532,9 @@ while (h.ct-h.st)<h.trialdur
 
     % get GUI data for start/stop
     %GUIh = guihandles(h.GUIhname);
+    if ~isfield(h,'disableGUI')
+        pause(0.001);
+    end
     try
         sx = ~get(GUIh.StartStop, 'Value');
     catch
@@ -646,12 +666,17 @@ if isfield(h.Settings,'stimcontrol')
     if ~isempty(h.Settings.stimcontrol)
         opt = 'getsample';
         h = stimtrain(h,opt);
+        if strcmp(h.Settings.stimcontrol,'LJTick-DAQ') || strcmp(h.Settings.stimcontrol,'labjack');
+            % pressure stim: set intensity if 
+            opt = 'set';
+            h = stimtrain(h,opt); % intensity via DAC
+        end
     end
 end
-nowtime = GetSecs;
 %disp([num2str(h.currentsample) ' / ' num2str(h.totalsamples)])
 
 % mark EEG when pattern changes occur mid-trial
+h.ct = GetSecs;
 if isfield(h.Settings,'record_EEG')
     if h.Settings.record_EEG
         if h.Settings.EEGMarkPattern
@@ -671,7 +696,7 @@ if isfield(h.Settings,'record_EEG')
 
             % has the first time been exceeded?
             if ~isempty(h.imark{h.i})
-                if h.marktime{h.i}(h.imark{h.i}(1))<nowtime
+                if h.marktime{h.i}(h.imark{h.i}(1))<h.ct
                     % STIM marker on EEG
                     opt = 'mark';
                     h = recordEEG(h,opt);
@@ -714,7 +739,7 @@ if h.Settings.ntrialsahead>1
         end
     end
 end
-if nowtime>=proj_end
+if h.ct>=proj_end
     newtrial = 1;
 end
 
@@ -724,7 +749,7 @@ if newtrial
     %catch
     %    disp(['Currentsample error: ' num2str(h.currentsample - h.Seq.trialend(1))])
     %end
-    %disp(['Current time error: ' num2str(nowtime - proj_end)])
+    %disp(['Current time error: ' num2str(h.ct - proj_end)])
     
     % record first and last responses on previous trial
     h = record_response(h,'prev_trial');
@@ -742,7 +767,7 @@ if newtrial
     %end
     
     % record stimulus timing
-    h.out.stimtime{h.i} = nowtime;
+    h.out.stimtime{h.i} = h.ct;
     
     % ISI
     try
@@ -782,11 +807,16 @@ if newtrial
     % send stimulus
     if isfield(h.Settings,'stimcontrol') && h.i<=length(h.Seq.signal)-h.Settings.ntrialsahead && h.Settings.ntrialsahead
         if ~isempty(h.Settings.stimcontrol)
-            opt = 'create';
-            h = stimtrain(h,opt); % stimulus train
-            opt = 'start';
-            h = stimtrain(h,opt); % stimulus train
-            h.laststimload = GetSecs;
+            if strcmp(h.Settings.stimcontrol,'PsychPortAudio') || strcmp(h.Settings.stimcontrol,'audioplayer');
+                opt = 'create';
+                h = stimtrain(h,opt);
+                opt = 'start';
+                h = stimtrain(h,opt); % stimulus train
+                h.laststimload = GetSecs;
+            elseif strcmp(h.Settings.stimcontrol,'LJTick-DAQ') || strcmp(h.Settings.stimcontrol,'labjack');
+                opt = 'create';
+                h = stimtrain(h,opt); 
+            end
         end
     end
     

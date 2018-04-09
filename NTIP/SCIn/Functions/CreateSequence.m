@@ -385,8 +385,10 @@ if ~isfield(h.Seq,'signal')
     % create all trials if design is continuous
     if isfield(h.Settings,'stimcontrol') && strcmp(h.Settings.design,'continuous') && h.Settings.savesinwave
         if ~isempty(h.Settings.stimcontrol)
-            opt = 'create';
-            h = stimtrain(h,opt);
+            %if ~strcmp(h.Settings.stimcontrol,'labjack')
+                opt = 'create';
+                h = stimtrain(h,opt);
+            %end
         end
     end
     figure;plot(h.Seq.condnum)

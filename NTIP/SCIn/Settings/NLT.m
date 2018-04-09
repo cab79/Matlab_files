@@ -925,6 +925,7 @@ h.Settings.serial = 'COM1';
 h.Settings.labjack=1; % Use labjack for controlling any equipment?
 h.Settings.stimcontrol='LJTick-DAQ'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
 h.Settings.labjack_DACport = 4;
+h.Settings.DAC_multiply = 0.01; % multiply DAC output by this (e.g. to get mA on DS8R)
 h.Settings.stimchan = [6]; h.Settings.stimchanforLJ = 1;
 h.Settings.nrchannels = 1; % total number of channels, e.g. on sound card
 % channels on stimulator to use; use differenr rows for different pairs

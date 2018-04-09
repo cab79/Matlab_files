@@ -4,6 +4,12 @@ switch h.Settings.stimcontrol
 
     case {'labjack','LJTick-DAQ'}
         
+        switch opt
+            case 'create'
+                h=trial(h,'set&construct');
+                return
+        end
+        
         if ~isfield(h,'ljHandle')
             try
                 h.ljHandle = get(h.ljhandle, 'Value');
@@ -35,16 +41,43 @@ switch h.Settings.stimcontrol
                         end
                     end
                 end
+            
+            case 'create'
+                h=trial(h,'set&construct');
                 
+            case 'calc'
+                h=trial(h,'set');
+                
+            case 'getsample'
+                h.currentsample = round((h.ct-h.out.stimtime{1})*h.Settings.fs);
+            
             case 'set'
-                h=set_tactile_intensity(h);
+                
+                % if selecting the intensity from a time sample of a
+                % waveform
+                if strcmp(h.Settings.design,'continuous')
+                    if isfield(h,'currentsample')
+                        h.inten = h.Seq.stimseq(h.currentsample);
+                        h.out.stimseq_record(h.currentsample) = h.inten;
+                    else
+                        h.inten = 0;
+                    end
+                end
+                
                 
                 %Set DACA 
-                try
-                    Error = ljud_ePut(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, h.inten/100, 0); 
-                    Error_Message(Error)
-                catch% to use DAC0 port
-                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_DAC, 0, 0.00, 0,0);
+                if strcmp(h.Settings.stimcontrol,'LJTick-DAQ')
+                    try
+                        Error = ljud_ePut(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, h.inten*h.Settings.DAC_multiply, 0); 
+                        Error_Message(Error)
+                    catch% to use DAC0 port
+                        Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_DAC, 0, h.inten*h.Settings.DAC_multiply, 0,0);
+                        Error_Message(Error)
+                        Error = ljud_GoOne(h.ljHandle);
+                        Error_Message(Error)
+                    end
+                elseif strcmp(h.Settings.stimcontrol,'labjack')
+                    Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_DAC, 0, h.inten*h.Settings.DAC_multiply, 0,0);
                     Error_Message(Error)
                     Error = ljud_GoOne(h.ljHandle);
                     Error_Message(Error)
@@ -188,14 +221,23 @@ switch h.Settings.stimcontrol
                 try
                     Error = ljud_ePut(h.ljHandle, LJ_ioTDAC_COMMUNICATION, LJ_chTDAC_UPDATE_DACA, 0, 0); 
                     Error_Message(Error)
+                catch
+                    try
+                        Error = ljud_AddRequest(h.ljHandle, LJ_ioPUT_DAC, 0, 0, 0,0);
+                        Error_Message(Error)
+                        Error = ljud_GoOne(h.ljHandle);
+                        Error_Message(Error)
+                    end
                 end
                 
-                if h.Settings.labjack_timer
-                    Error = ljud_AddRequest (h.ljHandle,  LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, port, 0, 0);
-                    Error_Message(Error)
-                    %Execute the requests. 
-                    Error = ljud_GoOne(h.ljHandle);
-                    Error_Message(Error)
+                if isfield(h.Settings,'labjack_timer')
+                    if h.Settings.labjack_timer
+                        Error = ljud_AddRequest (h.ljHandle,  LJ_ioPUT_CONFIG, LJ_chTIMER_COUNTER_PIN_OFFSET, port, 0, 0);
+                        Error_Message(Error)
+                        %Execute the requests. 
+                        Error = ljud_GoOne(h.ljHandle);
+                        Error_Message(Error)
+                    end
                 end
                 
         end
@@ -208,7 +250,7 @@ switch h.Settings.stimcontrol
                 opt = 'spt';
                 open_serial(h,opt);
             case 'set'
-                h=set_tactile_intensity(h);
+                h=trial(h,'set');
                 global spt
                 if (h.inten~=0 && h.inten<=255)
                     fprintf(spt,'%s', h.inten);
@@ -230,14 +272,14 @@ switch h.Settings.stimcontrol
         
         switch opt
             case 'run'
-                h=sinwave(h);
+                h=trial(h,'set&construct');
                 h.Seq.aud = audioplayer(h.Seq.stimseq', h.Settings.fs);
                 play(h.Seq.aud);
                 %sound(h.Seq.stimseq', h.Settings.fs, 16);
                 %pause(0.2)
             
             case 'create'
-                h=sinwave(h);
+                h=trial(h,'set&construct');
                 h.Seq.aud = audioplayer(h.Seq.stimseq', h.Settings.fs);
             
             case 'start'
@@ -271,7 +313,7 @@ switch h.Settings.stimcontrol
                 end
                 
             case 'create' 
-                h=sinwave(h);
+                h=trial(h,'set&construct');
                 %if strcmp(h.Settings.design,'trials')
                 %    PsychPortAudio('FillBuffer', h.pahandle, h.Seq.stimseq);
                 %    
@@ -303,130 +345,3 @@ switch h.Settings.stimcontrol
         end
 end
 
-function h=set_tactile_intensity(h)
-
-% if THRESHOLD
-if isfield(h.Settings,'threshold')
-    if ~isempty(h.Settings.threshold)
-        thresh=1;
-        adapt=0;
-        seq=0;
-    end
-% if ADAPTIVE
-elseif isfield(h.Settings,'adaptive')
-    if ~isempty(h.Settings.adaptive)
-        thresh=0;
-        adapt=1;
-        seq=0;
-        for ad = 1:length(h.Settings.adaptive)
-            atypes{ad} = h.Settings.adaptive(ad).type;
-        end
-    end
-% Otherwise, using pre-programmed sequence to determine intensity
-else
-    thresh=0;
-    adapt=0;
-    seq=1;
-end
-
-% set initial values from GUI or settings if not already
-% defined
-if ~isfield(h,'inten_mean')
-    if ~isfield(h,'inten_mean_gui'); 
-        h.inten_mean=0;
-    else
-        h.inten_mean = str2double(h.inten_mean_gui);
-    end
-    if ~any(h.inten_mean) && ~isempty(h.Settings.inten)
-        h.inten_mean = h.Settings.inten;
-    end
-    h.inten_mean_start = h.inten_mean;
-end
-if ~isfield(h,'inten_diff')
-    if ~isfield(h,'inten_diff_gui'); 
-        h.inten_diff=0;
-    else
-        h.inten_diff = str2double(h.inten_diff_gui);
-    end
-    if ~any(h.inten_diff) && ~isempty(h.Settings.inten_diff)
-        h.inten_diff = h.Settings.inten_diff;
-    end
-    h.inten_diff_start = h.inten_diff;
-end
-
-% modify according to procedure
-if thresh
-    if ~isfield(h,'s')
-        h.inten = h.inten_mean+h.Settings.threshold.startinglevel;
-    else
-        h.inten = h.inten_mean+h.s.StimulusLevel;
-    end
-% adaptive trial
-elseif adapt
-    detect = find(strcmp(atypes,'detect'));
-    discrim = find(strcmp(atypes,'discrim'));
-    % if this trial is adaptive
-    if ~isnan(h.Seq.adapttype(h.i))
-        % update mean from adaptive procedure.
-        % do this even if it's a discrim trial
-        if ~isempty(detect) && isfield(h,'s') 
-            if isfield(h.s.a(detect),'StimulusLevel') % if a level has been determined
-                h.inten_mean = h.s.a(detect).StimulusLevel;
-                if isempty(h.inten_mean)
-                    h.inten_mean = h.inten_mean_start;
-                end
-            end
-        % or set the adaptive starting level otherwise
-        elseif ~isfield(h,'s')
-            h.Settings.adaptive(detect).startinglevel = h.inten_mean;
-        end
-
-        % update diff from adaptive
-        if ~isempty(discrim)
-            if isfield(h,'s') && length(h.s.a)>=discrim % if a level has been determined
-                h.inten_diff = h.s.a(discrim).StimulusLevel;
-            end
-            if h.inten_diff == 0 || isempty(h.inten_diff) % if not set in GUI or settings
-                h.inten_diff = h.Settings.adaptive(discrim).startinglevel;
-            end
-        end
-
-        % only do this if it's a discrim trial, not a detect trial
-        if h.Seq.adapttype(h.i) == discrim
-            % calculate intensity
-            if h.Seq.signal(h.i)==h.trialstimnum
-                h.inten = h.inten_mean + h.Settings.adaptive(discrim).stepdir * h.inten_diff / 2;
-            else
-                h.inten = h.inten_mean - h.Settings.adaptive(discrim).stepdir * h.inten_diff / 2;
-            end
-        else
-            h.inten = h.inten_mean;
-        end
-
-    % if adaptive is part of the sequence, but not this trial
-    elseif isnan(h.Seq.adapttype(h.i))
-        detect_thresh =  find(h.out.adaptive(:,10)==detect);
-        discrim_thresh =  find(h.out.adaptive(:,10)==discrim);
-        if h.Seq.signal(h.i)==1
-            h.inten = h.out.adaptive(detect_thresh(end),7) - h.out.adaptive(discrim_thresh(end),7) / 2;
-        else
-            h.inten = h.out.adaptive(detect_thresh(end),7) + h.out.adaptive(discrim_thresh(end),7) / 2;
-        end
-    end
-% Otherwise, use sequence to determine intensity
-else
-    if strcmp(h.Settings.oddballmethod,'intensity')
-        h.inten = h.Settings.oddballvalue;
-    elseif strcmp(h.Settings.oddballmethod,'intensityindex')
-        % calculate intensity
-        if h.Seq.signal(h.i)==1
-            h.inten = h.inten_mean - h.inten_diff / 2;
-        else
-            h.inten = h.inten_mean + h.inten_diff / 2;
-        end
-    end
-end
-
-% set max intensity
-h.inten = min(h.inten,h.Settings.maxinten); 
-disp(['INTEN = ' num2str(h.inten) ', MEAN = ' num2str(h.inten_mean) ', DIFF = ' num2str(h.inten_diff)]);
