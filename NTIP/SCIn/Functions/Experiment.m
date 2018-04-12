@@ -12,6 +12,9 @@ end
 if ~isfield(h.Settings,'simulate_response')
     h.Settings.simulate_response=0;
 end
+if ~isfield(h.Settings,'pauseeachblock')
+    h.Settings.pauseeachblock=1;
+end
 
 switch opt
     
@@ -589,7 +592,7 @@ while (h.ct-h.st)<h.trialdur
         end
     end
 
-    if h.i~=length(h.Seq.signal)
+    if h.i~=length(h.Seq.signal) && h.Settings.pauseeachblock
         % next trial is in a new block, pause here
         if h.Seq.blocks(h.i+1)>h.Seq.blocks(h.i)
             

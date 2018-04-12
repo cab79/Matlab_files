@@ -20,6 +20,11 @@ if isempty(S.conds)
 end
 S.subjects_in = S.subjects;
 
+% if no prefix specified
+if ~isfield(S,'loadprefix')
+    S.loadprefix = '';
+end
+
 % load participant info and identify the relevant columns
 [~,~,pdata] = xlsread(S.datfile);
 grp_col = find(strcmp(pdata(1,:),'Group'));
@@ -84,7 +89,7 @@ for g = 1:length(S.groups)
         for a = 1:length(S.sessions)
             for b = 1:length(S.blocks)
                 for c = 1:length(S.conds)
-                    genname = ['*' subj '*' S.sessions{a} '*' S.blocks{b} '*' S.conds{c} '*' sname_ext '*' S.loadext];
+                    genname = [S.loadprefix '*' subj '*' S.sessions{a} '*' S.blocks{b} '*' S.conds{c} '*' sname_ext '*' S.loadext];
                     genname = strrep(genname,'*****','*');
                     genname = strrep(genname,'****','*');
                     genname = strrep(genname,'***','*');

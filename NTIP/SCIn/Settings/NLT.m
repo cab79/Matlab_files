@@ -42,6 +42,7 @@ switch opt
     % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
     % cell array
     h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
+    h.Settings.pauseeachblock = 0; % pause after every block?
     % names of any audiofiles
     h.Settings.audiofile = {};
     
@@ -158,6 +159,7 @@ case 'Adaptive'
     % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
     % cell array
     h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
+    h.Settings.pauseeachblock = 0; % pause after every block?
     % names of any audiofiles
     h.Settings.audiofile = {};
     
@@ -338,7 +340,7 @@ case 'Adaptive'
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     %h.Settings.adaptive(2).meanadjustmax = 10;
     % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(2).levelmax = 200; % should be a DIFFERENCE value in mA. 
+    h.Settings.adaptive(2).levelmax = 50; % should be a DIFFERENCE value in mA. 
     
     case 'NLT_roving'
 
@@ -375,6 +377,7 @@ case 'Adaptive'
     % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
     % cell array
     h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
+    h.Settings.pauseeachblock = 0; % pause after every block?
     % names of any audiofiles
     h.Settings.audiofile = {};
     
@@ -495,6 +498,7 @@ case 'Adaptive'
     % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
     % cell array
     h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
+    h.Settings.pauseeachblock = 0; % pause after every block?
     % names of any audiofiles
     h.Settings.audiofile = {};
     
@@ -619,6 +623,7 @@ case 'Adaptive'
     % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
     % cell array
     h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
+    h.Settings.pauseeachblock = 0; % pause after every block?
     % names of any audiofiles
     h.Settings.audiofile = {};
     
@@ -840,6 +845,7 @@ case 'Adaptive'
     % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
     % cell array
     h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
+    h.Settings.pauseeachblock = 0; % pause after every block?
     % names of any audiofiles
     h.Settings.audiofile = {};
     

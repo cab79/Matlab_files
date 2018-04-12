@@ -92,6 +92,15 @@ end
 if ~isfield(D,'pronto')
     D.pronto = 0;
 end
+if ~isfield(D,'imgpref')
+    D.imgpref = '';
+end
+if ~isfield(D,'imgsuff')
+    D.imgsuff = '';
+end
+if ~isfield(D,'maskfile')
+    D.maskfile = '';
+end
 
 if D.para==1
     paraname = '_spm';
@@ -242,6 +251,17 @@ if isfield(D,'grp_list')
         Ngrp(gd) = length(Nsub(:,gd));
    end
    SubInd = SubInd(D.grp_list,:); 
+end
+
+ImgList={};
+if isfield(D,'imglist_columnheaders')
+    if ~isempty(D.imglist_columnheaders) && isempty(D.imglist)
+        for ch = 1:length(D.imglist_columnheaders)
+            ImgList(:,ch) = pdata(2:end,find(strcmp(pdata(1,:),D.imglist_columnheaders{ch})));
+        end
+        inum = cellfun(@isnumeric,ImgList);
+        ImgList(inum) = cellfun(@num2str,ImgList(inum),'Uniformoutput',0);
+    end
 end
 
 % select parametric or non-parametric analyses and the range of models
@@ -396,7 +416,7 @@ elseif D.para==2
 elseif D.pronto
     matlabbatch{1}.prt.data.dir_name = {D.spm_path};
     if isfactorial
-        generic.mod_name = 'eeg';
+        generic.mod_name = 'mod1';
         generic.TR = 0.0001;
         generic.design.new_design.unit = 0; % scans
         generic.design.new_design.multi_conds = {''};
@@ -499,6 +519,16 @@ for gd = 1:length(Ngrp)
             else
                 subdir = D.data_path;
                 subfile = D.imglist(gs,:)';
+            end
+            
+            if ~isempty(ImgList)
+                D.imglist = ImgList(SubInd{g,gd}(s),:)';
+            end
+            if ~isempty(D.imgpref)
+                D.imglist = strcat(D.imgpref,D.imglist);
+            end
+            if ~isempty(D.imgsuff)
+                D.imglist = strcat(D.imglist,D.imgsuff);
             end
 
             subimg = cell(1,1);
@@ -654,7 +684,7 @@ for gd = 1:length(Ngrp)
                 elseif D.para==2
                     matlabbatch{1}.spm.tools.snpm.des.Corr.P(gs,1) = scans;
                 elseif D.pronto
-                    matlabbatch{1}.prt.data.group(g).select.modality.mod_name = 'eeg';
+                    matlabbatch{1}.prt.data.group(g).select.modality.mod_name = 'mod1';
                     matlabbatch{1}.prt.data.group(g).select.modality.subjects(s,1) = scans;
                 end
             end
@@ -753,6 +783,8 @@ if ~isempty(D.time_ana)
         spm_eeg_mask(S)
     %end
     masking.em = {[maskfile  ',1']};
+elseif ~isempty(D.maskfile)
+    masking.em = {[D.maskfile  ',1']};
 else
     masking.em = {''};
 end
@@ -771,30 +803,28 @@ if D.pronto
         end
         ROIname = [num2str(D.time_ana(1)) '_' num2str(D.time_ana(2)) '_step' num2str(D.timewin) '.img'];
         ROIfile = fullfile(D.mask_path,ROIname);
-        %if ~exist(ROIfile,'file')
-            V=spm_vol(maskfile);
-            Y = spm_read_vols(V);
-            Nt=size(Y,3);
-            for i = 1:size(winr,1)
-                begsample = V.mat\[0 0 winr(i,1) 1]';
-                begsample = begsample(3);
-                endsample = V.mat\[0 0 winr(i,2) 1]';
-                endsample = endsample(3);
-                if any([begsample endsample] < 0) || any([begsample endsample] > Nt)
-                    error('The window is out of limits for the image.');
-                end
-                [junk,begsample] = min(abs(begsample-(1:Nt)));
-                [junk,endsample] = min(abs(endsample-(1:Nt)));
-                Y(: , :, begsample:endsample)  = i;
-                if i==1
-                    Y(: , :, 1:(begsample-1))   = 0;
-                elseif i==size(winr,1)
-                    Y(: , :, (endsample+1):end) = 0;
-                end
+        V=spm_vol(maskfile);
+        Y = spm_read_vols(V);
+        Nt=size(Y,3);
+        for i = 1:size(winr,1)
+            begsample = V.mat\[0 0 winr(i,1) 1]';
+            begsample = begsample(3);
+            endsample = V.mat\[0 0 winr(i,2) 1]';
+            endsample = endsample(3);
+            if any([begsample endsample] < 0) || any([begsample endsample] > Nt)
+                error('The window is out of limits for the image.');
             end
-            V.fname=ROIfile;
-            spm_write_vol(V,Y);
-        %end
+            [junk,begsample] = min(abs(begsample-(1:Nt)));
+            [junk,endsample] = min(abs(endsample-(1:Nt)));
+            Y(: , :, begsample:endsample)  = i;
+            if i==1
+                Y(: , :, 1:(begsample-1))   = 0;
+            elseif i==size(winr,1)
+                Y(: , :, (endsample+1):end) = 0;
+            end
+        end
+        V.fname=ROIfile;
+        spm_write_vol(V,Y);
     end
 end
 
@@ -828,7 +858,7 @@ elseif D.para==2
         matlabbatch{1}.spm.tools.snpm.des.Corr.globalc.g_omit = 1;
     end
 elseif D.pronto
-    matlabbatch{1}.prt.data.mask.mod_name = 'eeg';
+    matlabbatch{1}.prt.data.mask.mod_name = 'mod1';
     matlabbatch{1}.prt.data.mask.fmask = masking.em;
 end
 
@@ -907,7 +937,7 @@ elseif D.pronto
         matlabbatch{2}.prt.fs.modality.atlasroi{1,1}   = [ROIfile ',1'];
     end
     matlabbatch{2}.prt.fs.infile = {fullfile(D.spm_path,'PRT.mat')};
-    matlabbatch{2}.prt.fs.modality.mod_name = 'eeg';
+    matlabbatch{2}.prt.fs.modality.mod_name = 'mod1';
     matlabbatch{2}.prt.fs.modality.conditions = [];
     if isfactorial
         matlabbatch{2}.prt.fs.modality.conditions.all_cond = 1;
