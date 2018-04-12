@@ -162,6 +162,7 @@ switch opt
     
 end
 
+% loop for discrete trials
 function h = SeqLoop(h)
 global d
 Priority(2);
@@ -221,6 +222,9 @@ while h.i<length(h.Seq.signal)
     % start time of trial
     h.st = GetSecs;
     h.ct=h.st;
+    
+    % projected time at end of trial
+    h.out.projend{h.i} = h.ct+h.Settings.trialdur;
     
     % send stimulus
     if isfield(h.Settings,'stimcontrol')
@@ -592,9 +596,9 @@ while (h.ct-h.st)<h.trialdur
         end
     end
 
-    if h.i~=length(h.Seq.signal) && h.Settings.pauseeachblock
+    if h.i~=length(h.Seq.signal) 
         % next trial is in a new block, pause here
-        if h.Seq.blocks(h.i+1)>h.Seq.blocks(h.i)
+        if h.Seq.blocks(h.i+1)>h.Seq.blocks(h.i) && h.Settings.pauseeachblock
             
             % Mark EEG
             if isfield(h.Settings,'record_EEG')

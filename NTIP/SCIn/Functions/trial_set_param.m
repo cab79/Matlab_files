@@ -134,6 +134,15 @@ switch h.Settings.stimcontrol
                 h.totdur = h.Settings.totdur; 
             end
         end
+        
+        % thresholding
+        if h.seqtype.thresh && ~h.seqtype.oddball
+            if ~isfield(h,'s')
+                h.varlevel = h.Settings.threshold.startinglevel;
+            else
+                h.varlevel = h.s.StimulusLevel;
+            end
+        end
 
         % condition method
         if isfield(h.Settings,'conditionmethod')
@@ -192,19 +201,19 @@ switch h.Settings.stimcontrol
                 end
             elseif h.seqtype.adapt || h.seqtype.thresh
                 if isfield(h,'s')
-                    varlevel = h.s.a(h.Seq.adapttype(h.i)).StimulusLevel;
+                    h.varlevel = h.s.a(h.Seq.adapttype(h.i)).StimulusLevel;
                 else
                     if h.seqtype.adapt
-                        varlevel = h.Settings.adaptive.startinglevel;
+                        h.varlevel = h.Settings.adaptive.startinglevel;
                     else
-                        varlevel = h.Settings.threshold.startinglevel;
+                        h.varlevel = h.Settings.threshold.startinglevel;
                     end  
                 end
                 if strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq')
-                    h.freq = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+varlevel)]; % create new pitch pair
+                    h.freq = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+h.varlevel)]; % create new pitch pair
                     h.freq = h.freq(h.Seq.signal(h.tr));
                 elseif strcmp(h.Settings.oddballmethod,'intensity')
-                    h.inten = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+varlevel)]; % create new pitch pair
+                    h.inten = [h.Settings.oddballvalue(1), (h.Settings.oddballvalue(1)+h.varlevel)]; % create new pitch pair
                     h.inten = h.inten(h.Seq.signal(h.tr));
                 elseif strcmp(h.Settings.oddballmethod,'duration') && (strcmp(h.Settings.patternmethod,'pitch') || strcmp(h.Settings.patternmethod,'freq'))
                     if iscell(h.Settings.oddballvalue)
@@ -212,7 +221,7 @@ switch h.Settings.stimcontrol
                     else
                         h.dur = h.Settings.oddballvalue(h.Seq.signal(h.tr),:);
                     end
-                    h.freq = [h.Settings.patternvalue(1), (h.Settings.patternvalue(1)+varlevel)]; % create new pitch pair
+                    h.freq = [h.Settings.patternvalue(1), (h.Settings.patternvalue(1)+h.varlevel)]; % create new pitch pair
                 end
             end
         end

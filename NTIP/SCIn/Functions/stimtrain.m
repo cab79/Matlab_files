@@ -90,9 +90,6 @@ switch h.Settings.stimcontrol
                
                 
             case 'start'
-                
-                % projected time at end of trial
-                h.out.projend{h.i} = h.ct+h.Settings.trialdur;
 
                 if h.Settings.labjack_timer && ~isempty(h.Settings.p_freq)
                     if h.Settings.p_freq>=h.LJfreqtable(1,1)

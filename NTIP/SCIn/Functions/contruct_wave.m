@@ -258,14 +258,18 @@ if isfield(h.Settings,'attenchan')
         else
             inten_atten = h.Settings.atten; 
         end
-        if ~adaptive && ~threshold
+        if ~h.seqtype.adapt && ~h.seqtype.thresh
             h.inten_atten = inten_atten;
-        elseif (adaptive || threshold) && oddball
+        elseif (h.seqtype.adapt || h.seqtype.thresh) && h.seqtype.oddball
             if strcmp(h.Settings.oddballmethod,'intensity')
-                h.inten_atten = [inten_atten, (inten_atten+varlevel)];
+                h.inten_atten = [inten_atten, (inten_atten+h.varlevel)];
                 h.inten_atten = h.inten_atten(h.Seq.signal(tr));
             else
-                h.inten_atten = inten_atten+varlevel;
+                h.inten_atten = inten_atten+h.varlevel;
+            end
+        elseif h.seqtype.thresh
+            if strcmp(h.Settings.threshold.type,'intensity')
+                h.inten_atten = inten_atten+h.varlevel;
             end
         end
     else
