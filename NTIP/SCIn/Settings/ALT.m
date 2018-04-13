@@ -65,8 +65,8 @@ switch opt
     % pitch
     %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
     %intensity
-    h.Settings.inten = 1; % value between 0 and 1 for audio
-    h.Settings.maxinten = 1;
+    h.Settings.inten = 0; % value in dB
+    h.Settings.maxinten = 0; % value in dB
     %intensity
     h.Settings.inten_diff = []; % value between 2 and 1000mA for Digitimer DS8R
     % Tactile: number of pulses per trial
@@ -121,7 +121,8 @@ switch opt
     h.Settings.threshold.type = 'intensity'; % for intensity
     h.Settings.threshold.startinglevel = h.Settings.atten-60; % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100) 
     h.Settings.threshold.step = 5;
-    h.Settings.threshold.signalval = [1 2]; % 2 = carrying on increasing; 1 = decrease
+    h.Settings.threshold.signalval = [1 2]; % 1 = carrying on increasing; 2 = decrease
+    h.Settings.threshold.maxinten = 0; % 0 is the max
     
 case 'Adaptive'
 
@@ -181,13 +182,13 @@ case 'Adaptive'
     % pitch
     %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
     %intensity
-    h.Settings.inten = []; % value between 2 and 1000mA for Digitimer DS8R
-    h.Settings.inten_diff = []; % value between 0 and 1000mA for Digitimer DS8R
-    h.Settings.maxinten = 1; % max output value for safety purposes. Value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.inten = 0;
+    h.Settings.inten_diff = []; % 
+    %h.Settings.maxinten = 0; % max output in dB
     % Tactile: number of pulses per trial
-    h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
+    %h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
     % Tactile: within-trial frequency (Hz) 
-    h.Settings.t_freq=[]; 
+    %h.Settings.t_freq=[]; 
     
     
     %% CHANGING STIMULUS INTENSITY EVERY X PULSES
@@ -198,7 +199,7 @@ case 'Adaptive'
     h.Settings.conditionmethod = {};
     h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
     % Oddball method: intensity, intensityindex, pitch, channel
-    h.Settings.oddballmethod = 'intensityindex'; % can use same type for pattern only if oddball intensity is adaptive
+    h.Settings.oddballmethod = 'intensity'; % can use same type for pattern only if oddball intensity is adaptive
     h.Settings.oddballvalue = {[1 2]}; % values to go into h.Seq.signal. One per oddprob row, or leave blank if determined from GUI
     h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
 
@@ -239,15 +240,10 @@ case 'Adaptive'
     % range of keyboard presses indicating a recordable response
     h.Settings.buttonopt = {'DownArrow','UpArrow'}; 
     
-    %% THRESHOLDING
-    % starting level and step size
-    %h.Settings.threshold.startinglevel = 2; % for intensity)
-    %h.Settings.threshold.step = 2;
-    
     
     %% ADAPTIVE: General
     % which ones to run? (i.e. indices of h.Settings.adaptive)
-    h.Settings.adaptive_general.adapttypes = [1 2];
+    h.Settings.adaptive_general.adapttypes = [1];
     % alternate or randomise runs over types? Alt must have equal number of
     % runs for each adapttype
     h.Settings.adaptive_general.seqtype = 'rand'; % 'alt' or 'rand'
@@ -255,12 +251,11 @@ case 'Adaptive'
     h.Settings.adaptive_general.selectcond.cp = [1]; % which CP condition to run adaptive on?
     
     %% ADAPTIVE 1
-    h.Settings.adaptive(1).type = 'detect';
-    h.Settings.adaptive(1).updown = [1 1];
+    h.Settings.adaptive(1).type = 'discrim';
+    h.Settings.adaptive(1).updown = [1 2];
     % how many of each to run?
     h.Settings.adaptive(1).nRuns = 12*100;
-    % max number of thresh estimates to average over to get overall
-    % estimate (for plotting only - red line)
+    % max number of thresh estimates to average over to get overall estimate
     h.Settings.adaptive(1).av_thresh = [50,75,100];
     % number of trials each run
     h.Settings.adaptive(1).trialsperrun = 1;
@@ -268,17 +263,17 @@ case 'Adaptive'
     h.Settings.adaptive(1).buttonfun = {'DownArrow','UpArrow'}; 
     % adaptive staircase: corresponding signal values that would signify a
     % correct answer
-    h.Settings.adaptive(1).signalval = [1 2];
-    % number of reversals
+    h.Settings.adaptive(1).signalval = [2 1];
+    % reversals
     h.Settings.adaptive(1).reversals = [4;8;12];
     % stepsize
-    h.Settings.adaptive(1).stepsize = [4;2;1]*2;
+    h.Settings.adaptive(1).stepsize = [2;sqrt(2);sqrt(sqrt(2))];
     % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
-    h.Settings.adaptive(1).steptype = 1;
+    h.Settings.adaptive(1).steptype = 0;
     % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
     h.Settings.adaptive(1).stepdir = -1;
     % starting level of adaptive staircase
-    h.Settings.adaptive(1).startinglevel = 0; % should be a value in mA. 
+    h.Settings.adaptive(1).startinglevel = -5; % should be a DIFFERENCE value in dB. Keep small as it will increase naturally over time.
     % adapt to omissions of response (not suitable for 2AFC tasks, so set to 0)
     h.Settings.adaptive(1).omit = 0; % 1 = omission is incorrect; 2 = omission is correct
     % which trials (or oddballs if oddonly selected) to start adaptive procedure if there is an omission?
@@ -294,50 +289,8 @@ case 'Adaptive'
     % maximum amount to adjust the mean if their responses are very
     % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
     %h.Settings.adaptive(1).meanadjustmax = 10;
-    % maximum amount - for safety
-    h.Settings.adaptive(1).levelmax = h.Settings.maxinten; % should be value in mA. 
-    
-    %% ADAPTIVE 2
-    h.Settings.adaptive(2).type = 'discrim';
-    h.Settings.adaptive(2).updown = [1 2];
-    % how many of each to run?
-    h.Settings.adaptive(2).nRuns = 12*100;
-    % max number of thresh estimates to average over to get overall estimate
-    h.Settings.adaptive(2).av_thresh = [50,75,100];
-    % number of trials each run
-    h.Settings.adaptive(2).trialsperrun = 1;
-    % adaptive staircase: meanings of the buttonopt
-    h.Settings.adaptive(2).buttonfun = {'DownArrow','UpArrow'}; 
-    % adaptive staircase: corresponding signal values that would signify a
-    % correct answer
-    h.Settings.adaptive(2).signalval = [1 2];
-    % reversals
-    h.Settings.adaptive(2).reversals = [4;8;12];
-    % stepsize
-    h.Settings.adaptive(2).stepsize = [2;sqrt(2);sqrt(sqrt(2))];
-    % steptype 0 = multiple/divide by stepsize; steptype 1 = add/subtract
-    h.Settings.adaptive(2).steptype = 0;
-    % stepdir -1 = level decreases intensity; stepdir 1 = level increases intensity
-    h.Settings.adaptive(2).stepdir = -1;
-    % starting level of adaptive staircase
-    h.Settings.adaptive(2).startinglevel = 4; % should be a DIFFERENCE value in mA. Keep small as it will increase naturally over time.
-    % adapt to omissions of response (not suitable for 2AFC tasks, so set to 0)
-    h.Settings.adaptive(2).omit = 0; % 1 = omission is incorrect; 2 = omission is correct
-    % which trials (or oddballs if oddonly selected) to start adaptive procedure if there is an omission?
-    h.Settings.adaptive(2).startomit = 0;
-    % adapt on every trial or only just before an oddball?
-    %h.Settings.adaptive.oddonly = 1;
-    % max number of trials after oddball that subject must respond (otherwise counts as omitted response)
-    %h.Settings.adaptive.resptrials = 4;
-    % number of reversals to average over to calculate threshold.
-    h.Settings.adaptive(2).reversalForthresh = 6;
-    % use mean from the first X responses of each type (high and low)
-    %h.Settings.adaptive(2).getmeanfromresponses = 6;
-    % maximum amount to adjust the mean if their responses are very
-    % incorrect (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    %h.Settings.adaptive(2).meanadjustmax = 10;
     % maximum amount of the difference value (should be a small fraction, e.g. 1/5th, of the stimulus intensity)
-    h.Settings.adaptive(2).levelmax = 50; % should be a DIFFERENCE value in mA. 
+    h.Settings.adaptive(1).levelmax = -50; % should be a DIFFERENCE value in dB. 
     
     
     case 'ALT_classical'
@@ -398,13 +351,13 @@ case 'Adaptive'
     % pitch
     %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
     %intensity
-    h.Settings.inten = []; % value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.inten = 0; % value between 2 and 1000mA for Digitimer DS8R
     h.Settings.inten_diff = []; % value between 0 and 1000mA for Digitimer DS8R
-    h.Settings.maxinten = 1; % max output value for safety purposes. Value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.maxinten = 0; % max output value for safety purposes. Value between 2 and 1000mA for Digitimer DS8R
     % Tactile: number of pulses per trial
-    h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
+    %h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
     % Tactile: within-trial frequency (Hz) 
-    h.Settings.t_freq=[]; 
+    %h.Settings.t_freq=[]; 
     
     
     %% CHANGING STIMULUS INTENSITY EVERY X PULSES
@@ -498,7 +451,8 @@ h.Settings.stimdur = 0.5; % modified by oddball settings
 % pitch
 h.Settings.f0 = 500; 
 %intensity
-h.Settings.inten = 1; % value between 0 and 1
+h.Settings.inten = 0; % value between 0 and 1, or if decibels value of <=0
+h.Settings.inten_type = 'dB'; % either 'dB' or 'abs'
 h.Settings.df = 0;
 % Audio sampling rate 
 h.Settings.fs = 96000; % don't change this

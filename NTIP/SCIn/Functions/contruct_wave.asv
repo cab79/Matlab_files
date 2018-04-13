@@ -1,4 +1,4 @@
-function h = contruct_wave(h)
+function h = contruct_wave(h);
 % CONSTRUCT WAVEFORM
 
 % set default to sin wave
@@ -105,11 +105,9 @@ for i = 1:length(h.dur)
     % construction of mwav{i}
     if strcmp(h.Settings.wavetype,'sin')
         
-        % are we using decibels? If so, set to 1 so that volume is adjusted
-        % later
-        if strcmp(h.Settings.inten_type,'dB') % decibels scale
-            useinten=1;
-        end
+        % are we using decibels?
+        if h.inten<=0 % decibels scale
+            
         
         mwav{i}(h.chan(1),:) = useinten *sin(2*pi*(usefreq)*t{i} + phadd(1) + 2*pi*usefreq/h.Settings.fs);
         if df; mwav{i}(h.chan(2),:) = useinten *sin(2*pi*(usefreq+df_freq)*t{i} + phadd(2) + 2*pi*(usefreq+df_freq)/h.Settings.fs);end
@@ -254,9 +252,6 @@ end
 % DIGITAL SOUNDS HAVE A MAXIMUM DYNAMIC RANGE OF 96 dB FOR AT 16 BITS
 % RESOLUTION:
 %       20*log10(2^16)=96.33
-if ~isfield(h,'varlevel')
-    h.varlevel=0;
-end
 if isfield(h.Settings,'attenchan')
     if any(ismember(h.chan,h.Settings.attenchan))
         if isfield(h,'vol_atten')
@@ -269,15 +264,15 @@ if isfield(h.Settings,'attenchan')
             inten_atten = h.Settings.atten; 
         end
         if ~h.seqtype.adapt && ~h.seqtype.thresh
-            h.inten_atten = inten_atten+h.varlevel;
-        elseif (h.seqtype.adapt || h.seqtype.thresh) && h.seqtype.oddball && strcmp(h.Settings.inten_type,'dB')
+            h.inten_atten = inten_atten;
+        elseif (h.seqtype.adapt || h.seqtype.thresh) && h.seqtype.oddball
             if strcmp(h.Settings.oddballmethod,'intensity')
                 h.inten_atten = [inten_atten, (inten_atten+h.varlevel)];
-                h.inten_atten = h.inten_atten(h.Seq.signal(h.tr));
+                h.inten_atten = h.inten_atten(h.Seq.signal(tr));
             else
                 h.inten_atten = inten_atten+h.varlevel;
             end
-        elseif h.seqtype.thresh && strcmp(h.Settings.inten_type,'dB')
+        elseif h.seqtype.thresh
             if strcmp(h.Settings.threshold.type,'intensity')
                 h.inten_atten = inten_atten+h.varlevel;
             end
@@ -293,13 +288,44 @@ if h.inten_atten
     h.mwav = attenute_sound(h.mwav,h.inten_atten);
 end
 
-if strcmp(h.Settings.inten_type,'dB')
-    h.inten_out = h.inten+h.inten_atten;
-else
-    h.inten_out = h.inten;
-end
+%if isfield(h,'mon')
+%    h.mon = ratio*h.mon;
+%end
 
-
+%if size(h.mwav,3)>1
+%    if isfield(h.Settings,'stimdurtype')
+%        if strcmp(h.Settings.stimdurtype,'rand')
+%            h.dur = h.dur(randperm(length(h.dur)));
+%        end
+%    end
+%    % create mask for temporal patterns
+%    mask = [];
+%    for i = 1:size(h.mwav,3)
+%        mask = [mask; i*ones(round(h.dur(i)*h.Settings.fs),1)]; 
+%    end
+%    % splice them together
+%    tempall = [];
+%    tempall2 = [];
+%    for i = 1:size(h.mwav,3)
+%        temp = h.mwav(:,mask==i,i);
+%        temp2 = h.mwav_orig(:,mask==i,i);
+%        if isfield(h,'mon'); tempm = h.mon(:,mask==i,i);end
+%        % apply tapering
+%        if isfield(h.Settings,'Tukey')
+%            if h.Settings.Tukeytype==1
+%                temp = temp.*repmat(tukeywin(size(temp,2),h.Settings.Tukey)',size(temp,1),1);
+%                if isfield(h,'mon'); tempm = tempm.*repmat(tukeywin(size(tempm,2),h.Settings.Tukey)',size(tempm,1),1);end;
+%            end
+%        end
+%        tempall(:,mask==i) = temp;
+%        tempall2(:,mask==i) = temp2;
+%        if isfield(h,'mon'); tempallm(:,mask==i) = tempm;end
+%    end
+%    h.mwav=tempall;
+%    h.mwav_orig=tempall2;
+%    if isfield(h,'mon');h.mon=tempallm;end
+%    
+%end
 if isfield(h.Settings,'Tukey')
     if h.Settings.Tukeytype==2
         h.mwav = h.mwav.*repmat(tukeywin(size(h.mwav,2),h.Settings.Tukey)',size(h.mwav,1),1);

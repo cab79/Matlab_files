@@ -206,14 +206,8 @@ switch h.Settings.stimcontrol
                 end
                 if strcmp(h.Settings.oddballmethod,'channel')
                     h.chan=oddval;
-                elseif strcmp(h.Settings.oddballmethod,'intensity') && strcmp(h.Settings.inten_type,'abs') && h.inten_diff==0
+                elseif strcmp(h.Settings.oddballmethod,'intensity') && strcmp(h.Settings.inten_type,'abs') && strcmp(h.Settings.inten_type,'abs')
                     h.inten = oddval;
-                elseif strcmp(h.Settings.oddballmethod,'intensityindex') && strcmp(h.Settings.inten_type,'dB') && h.inten_diff~=0
-                    if h.Seq.signal(h.i)==1
-                        h.varlevel = h.inten_diff;
-                    else
-                        h.varlevel = 0;
-                    end
                 elseif strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq')
                     h.freq = oddval;
                 elseif strcmp(h.Settings.oddballmethod,'duration')

@@ -55,6 +55,9 @@ else
         return
     end
 end
+if isempty(resi)
+    return
+end
 disp('Running Threshold')
 if resi && resfun==1
 %s.SubjectAccuracy(s.adaptive.trial)= EvaluateAnswer(CorrectAnswer,s.feedback,Question);   %evaluing the subject answer (right or wrong)
@@ -100,7 +103,7 @@ if isfield(h,'baseinten')
 else
     baseinten = 0; 
 end
-s.actStimulusLevel = baseinten+inten_atten+s.StimulusLevel;
+s.actStimulusLevel = min(h.Settings.threshold.maxinten,baseinten+inten_atten+s.StimulusLevel);
 
 % UPDATE THE ROWOFOUTPUT
 s.trial = s.trial + 1;

@@ -238,7 +238,11 @@ elseif go_up
         s.a(atype).StimulusLevel = s.a(atype).StimulusLevel * s.a(atype).actualstep;
     end
     if isfield(h.Settings.adaptive(atype),'levelmax')
-        s.a(atype).StimulusLevel = min(s.a(atype).StimulusLevel,h.Settings.adaptive(atype).levelmax);
+        if h.Settings.adaptive(atype).levelmax>0
+            s.a(atype).StimulusLevel = min(s.a(atype).StimulusLevel,h.Settings.adaptive(atype).levelmax);
+        else
+            s.a(atype).StimulusLevel = max(s.a(atype).StimulusLevel,h.Settings.adaptive(atype).levelmax);
+        end
     end
 end
 
