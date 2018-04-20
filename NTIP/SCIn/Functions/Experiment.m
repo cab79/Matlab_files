@@ -55,16 +55,20 @@ switch opt
         %end
         
         % setup stim control
-        if isfield(h.Settings,'stimcontrol')
-            if ~isempty(h.Settings.stimcontrol)
-                opt = 'setup';
-                h = stimtrain(h,opt);
+        if isfield(h.Settings.stim,'control')
+            h.icontrol = find(~cellfun(@isempty,{h.Settings.stim(:).control}));
+            if ~isempty(h.icontrol)
+                for i = 1:length(h.icontrol)
+                    h.trialstimnum = i;
+                    opt = 'setup';
+                    h = stimtrain(h,opt);
+                end
             end
         end
         
         % create all trials if design is continuous
-        if isfield(h.Settings,'stimcontrol') && strcmp(h.Settings.design,'continuous') && ~isfield(h.Seq,'stimseq')
-            if ~isempty(h.Settings.stimcontrol)
+        if isfield(h.Settings.stim,'control') && strcmp(h.Settings.design,'continuous') && ~isfield(h.Seq,'stimseq')
+            if ~isempty({h.Settings.stim(:).control})
                 opt = 'create';
                 h = stimtrain(h,opt);
             end
@@ -76,7 +80,7 @@ switch opt
     case 'start'
         
         % create output structure
-        allout = cell(1,length(h.Seq.signal));
+        allout = cell(1,size(h.Seq.signal,2));
         h.out.stimtime = allout;
         
         % note time that experiment started
@@ -154,8 +158,8 @@ switch opt
         end
         
     case {'pause','resume','stop'}
-        if isfield(h.Settings,'stimcontrol')
-            if ~isempty(h.Settings.stimcontrol)
+        if isfield(h.Settings.stim,'control')
+            if ~isempty({h.Settings.stim(:).control})
                 h = stimtrain(h,opt); % stimulus train
             end
         end
@@ -170,7 +174,7 @@ tic
 
 h.i=0;
 
-while h.i<length(h.Seq.signal)
+while h.i<size(h.Seq.signal,2)
     
     % new trial
     h.i=h.i+1;
@@ -206,13 +210,13 @@ while h.i<length(h.Seq.signal)
     
     
     % D188 - set output channel
-    if isfield(h,'D188')
-        %if h.Settings.D188
-            opt = 'setchan';
-            h.D188.chan = h.Seq.signal(h.i);
-            h = D188(h,opt);
-        %end
-    end
+    %if isfield(h,'D188')
+    %    %if h.Settings.D188
+    %        opt = 'setchan';
+    %        h.D188.chan = h.Seq.signal(h.i);
+    %        h = D188(h,opt);
+    %    %end
+    %end
     
     % record previous start time to calculate ISI
     if isfield(h,'st')
@@ -227,15 +231,14 @@ while h.i<length(h.Seq.signal)
     h.out.projend{h.i} = h.ct+h.Settings.trialdur;
     
     % send stimulus
-    if isfield(h.Settings,'stimcontrol')
-        if ~isempty(h.Settings.stimcontrol)
-            if strcmp(h.Settings.stimcontrol,'PsychPortAudio') || strcmp(h.Settings.stimcontrol,'audioplayer');
-                opt = 'create';
-                h = stimtrain(h,opt); % stimulus train
-            end
+    if isfield(h.Settings.stim,'control')
+        if ~isempty({h.Settings.stim(:).control})
             for i = 1:h.Settings.nstim_trial
-                if strcmp(h.Settings.stimcontrol,'LJTick-DAQ') || strcmp(h.Settings.stimcontrol,'labjack')
-                    h.trialstimnum = i;
+                h.trialstimnum = i;
+                if strcmp(h.Settings.stim(i).control,'PsychPortAudio') || strcmp(h.Settings.stim(i).control,'audioplayer');
+                    opt = 'create';
+                    h = stimtrain(h,opt); % stimulus train
+                elseif strcmp(h.Settings.stim(i).control,'LJTick-DAQ') || strcmp(h.Settings.stim(i).control,'labjack')
                     opt = 'calc';
                     h = stimtrain(h,opt); 
                     opt = 'set';
@@ -246,7 +249,7 @@ while h.i<length(h.Seq.signal)
                 
                 % wait
                 if h.Settings.nstim_trial>1 && i~=h.Settings.nstim_trial
-                    WaitSecs(0.5/h.Settings.t_freq)
+                    WaitSecs(h.Settings.wait(i))
                 end
                 
             end
@@ -317,9 +320,9 @@ tic
 h.out.stimseq_record = nan(size(h.Seq.stimseq));
 
 % send stimulus
-if isfield(h.Settings,'stimcontrol')
-    if ~isempty(h.Settings.stimcontrol)
-        if strcmp(h.Settings.stimcontrol,'LJTick-DAQ') || strcmp(h.Settings.stimcontrol,'labjack');
+if isfield(h.Settings.stim,'control')
+    if ~isempty({h.Settings.stim(:).control})
+        if strcmp(h.Settings.stim.control,'LJTick-DAQ') || strcmp(h.Settings.stim.control,'labjack');
             % pressure stim: calc new intensity, create new trials, do
             % initial setting
             if h.Settings.ntrialsahead
@@ -329,7 +332,7 @@ if isfield(h.Settings,'stimcontrol')
             opt = 'set';
             h = stimtrain(h,opt); % intensity via DAC
             h.laststimload=GetSecs;
-        elseif strcmp(h.Settings.stimcontrol,'PsychPortAudio') || strcmp(h.Settings.stimcontrol,'audioplayer');
+        elseif strcmp(h.Settings.stim.control,'PsychPortAudio') || strcmp(h.Settings.stim.control,'audioplayer');
             if h.Settings.ntrialsahead
                 opt = 'create';
                 h = stimtrain(h,opt); 
@@ -352,10 +355,10 @@ if h.Settings.ntrialsahead
         try
             h.trialdur = h.Seq.totdur;
         catch
-            h.trialdur = sum(h.Settings.stimdur)*length(h.Seq.signal);
+            h.trialdur = sum([h.Settings.stim(:).dur])*size(h.Seq.signal,2);
         end
         if isempty(h.trialdur)
-            h.trialdur = sum(h.Settings.stimdur)*length(h.Seq.signal);
+            h.trialdur = sum([h.Settings.stim(:).dur])*size(h.Seq.signal,2);
         end
     end
 else
@@ -372,8 +375,8 @@ h.savedRT=0;
 h.savedi=0;
 h.i=1;
 h.out.stimtime{h.i} = h.st;
-h.marktime = cell(1,length(h.Seq.signal));
-disp(['Block ' num2str(h.Seq.blocks(h.i)) '/' num2str(max(h.Seq.blocks)) ', Trial ' num2str(h.i) '/' num2str(length(h.Seq.signal)) '.']);
+h.marktime = cell(1,size(h.Seq.signal,2));
+disp(['Block ' num2str(h.Seq.blocks(h.i)) '/' num2str(max(h.Seq.blocks)) ', Trial ' num2str(h.i) '/' num2str(size(h.Seq.signal,2)) '.']);
 h = waitingloop(h);
 
 function h = waitingloop(h)
@@ -413,7 +416,7 @@ while (h.ct-h.st)<h.trialdur
     %trial. Increases accuracy of EEG markers.
     %if h.Settings.increase_isi_accuracy
         t1=GetSecs;
-        if h.i>1 && h.i<length(h.Seq.signal)
+        if h.i>1 && h.i<size(h.Seq.signal,2)
             if h.out.projend{h.i}>t1+0.1
                 continue
             end
@@ -446,8 +449,8 @@ while (h.ct-h.st)<h.trialdur
     while px
         
         % pause stimulus
-        if isfield(h.Settings,'stimcontrol')
-            if ~isempty(h.Settings.stimcontrol)
+        if isfield(h.Settings.stim,'control')
+            if ~isempty({h.Settings.stim(:).control})
                 opt = 'pause';
                 h = stimtrain(h,opt);
             end
@@ -498,8 +501,8 @@ while (h.ct-h.st)<h.trialdur
             end
             
             % resume stimulus
-            if isfield(h.Settings,'stimcontrol')
-                if ~isempty(h.Settings.stimcontrol)
+            if isfield(h.Settings.stim,'control')
+                if ~isempty({h.Settings.stim(:).control})
                     opt = 'resume';
                     h = stimtrain(h,opt);
                 end
@@ -514,7 +517,7 @@ while (h.ct-h.st)<h.trialdur
                     try
                         h.trialdur = h.totdur - (GetSecs-h.st);
                     catch
-                        h.trialdur = sum(h.Settings.stimdur)*length(h.Seq.signal) - (GetSecs-h.st);
+                        h.trialdur = sum([h.Settings.stim(:).dur])*size(h.Seq.signal,2) - (GetSecs-h.st);
                     end
                 end
             else
@@ -553,8 +556,8 @@ while (h.ct-h.st)<h.trialdur
     while sx
         
         % stop stimulus
-        if isfield(h.Settings,'stimcontrol')
-            if ~isempty(h.Settings.stimcontrol)
+        if isfield(h.Settings.stim,'control')
+            if ~isempty({h.Settings.stim(:).control})
                 opt = 'stop';
                 h = stimtrain(h,opt);
             end
@@ -596,7 +599,7 @@ while (h.ct-h.st)<h.trialdur
         end
     end
 
-    if h.i~=length(h.Seq.signal) 
+    if h.i~=size(h.Seq.signal,2) 
         % next trial is in a new block, pause here
         if h.Seq.blocks(h.i+1)>h.Seq.blocks(h.i) && h.Settings.pauseeachblock
             
@@ -669,11 +672,11 @@ end
 
 function h = ContFun(h)
 % find current sample of stim
-if isfield(h.Settings,'stimcontrol')
-    if ~isempty(h.Settings.stimcontrol)
+if isfield(h.Settings.stim,'control')
+    if ~isempty(h.Settings.stim.control)
         opt = 'getsample';
         h = stimtrain(h,opt);
-        if strcmp(h.Settings.stimcontrol,'LJTick-DAQ') || strcmp(h.Settings.stimcontrol,'labjack');
+        if strcmp(h.Settings.stim.control,'LJTick-DAQ') || strcmp(h.Settings.stim.control,'labjack');
             % pressure stim: set intensity if 
             opt = 'set';
             h = stimtrain(h,opt); % intensity via DAC
@@ -794,13 +797,13 @@ if newtrial
     end
     
     % D188 - set output channel
-    if isfield(h,'D188')
-        %if h.Settings.D188
-            opt = 'setchan';
-            h.D188.chan = h.Seq.signal(h.i);
-            h = D188(h,opt);
-        %end
-    end
+    %if isfield(h,'D188')
+    %    %if h.Settings.D188
+    %        opt = 'setchan';
+    %        h.D188.chan = h.Seq.signal(h.i);
+    %        h = D188(h,opt);
+    %    %end
+    %end
     
     % STIM marker on EEG
     if isfield(h.Settings,'record_EEG')
@@ -812,15 +815,15 @@ if newtrial
     
     % add next n trials to the buffer (unless buffer full)
     % send stimulus
-    if isfield(h.Settings,'stimcontrol') && h.i<=length(h.Seq.signal)-h.Settings.ntrialsahead && h.Settings.ntrialsahead
-        if ~isempty(h.Settings.stimcontrol)
-            if strcmp(h.Settings.stimcontrol,'PsychPortAudio') || strcmp(h.Settings.stimcontrol,'audioplayer');
+    if isfield(h.Settings.stim,'control') && h.i<=size(h.Seq.signal,2)-h.Settings.ntrialsahead && h.Settings.ntrialsahead
+        if ~isempty({h.Settings.stim.control})
+            if strcmp(h.Settings.stim.control,'PsychPortAudio') || strcmp(h.Settings.stim.control,'audioplayer');
                 opt = 'create';
                 h = stimtrain(h,opt);
                 opt = 'start';
                 h = stimtrain(h,opt); % stimulus train
                 h.laststimload = GetSecs;
-            elseif strcmp(h.Settings.stimcontrol,'LJTick-DAQ') || strcmp(h.Settings.stimcontrol,'labjack');
+            elseif strcmp(h.Settings.stim.control,'LJTick-DAQ') || strcmp(h.Settings.stim.control,'labjack');
                 opt = 'create';
                 h = stimtrain(h,opt); 
             end
@@ -833,7 +836,7 @@ if newtrial
     %    tot = h.totalsamples/h.Settings.fs/60;
     %    disp(['Trial ' num2str(h.i) '. Elapsed time is ' num2str(t) '/' num2str(tot) ' mins. ISI is ' num2str(isi) ' s. Onset discrepency: ' num2str(h.out.discrep{h.i})]);
     %catch
-        disp(['Block ' num2str(h.Seq.blocks(h.i)) '/' num2str(max(h.Seq.blocks)) ', Trial ' num2str(h.i) '/' num2str(length(h.Seq.signal)) '. Channel ' num2str(h.Seq.signal(h.i)) '. Last ISI was ' num2str(h.out.isi{h.i-1}) ' s. ']);
+        disp(['Block ' num2str(h.Seq.blocks(h.i)) '/' num2str(max(h.Seq.blocks)) ', Trial ' num2str(h.i) '/' num2str(size(h.Seq.signal,2)) '. Signal ' num2str(h.Seq.signal(:,h.i)) '. Last ISI was ' num2str(h.out.isi{h.i-1}) ' s. ']);
     end
     
     %if num2str(h.out.isi{h.i-1})<0.9

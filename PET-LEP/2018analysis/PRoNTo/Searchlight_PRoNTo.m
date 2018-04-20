@@ -11,30 +11,73 @@ opt.searchtype = '3Dspace'; opt.R = 10;
 opt.parallel = 1;
 opt.i_model = 1; % Model index to use
 opt.loadF = 1; % load all features
-opt.savImg = 0;
-opt.plot = 0;
-opt.permStat = 0; % permutations
+opt.savImg = 1;
+opt.permStat = 10; % permutations
 
 switch anatype
     case 'group'
         %% RUN
         prt_in = fullfile(Din,'PRT.mat');
-        [SLres,Pout,XYZ] = crc_parSL(prt_in,opt);
+        [SLres,Pout,XYZ,D] = crc_parSL(prt_in,opt);
+        % Results structure for classification & regression
+        %   Classification:
+        % stats.con_mat: Confusion matrix (nClasses x nClasses matrix, pred x true)
+        % stats.acc:     Accuracy (scalar)
+        % stats.b_acc:   Balanced accuracy (nClasses x 1 vector)
+        % stats.c_acc:   Accuracy by class (nClasses x 1 vector)
+        % stats.c_pv:    Predictive value for each class (nClasses x 1 vector)
+        % stats.acc_lb:  \_ Lower/upper 5% confidence interval bounds for a
+        % stats.acc_ub:  /  binomial distribution using Wilson's 'score interval'
+        %
+        %   Regression:
+        % stats.mse:     Mean square error between test and prediction
+        % stats.corr:    Correlation between test and prediction
+        % stats.r2:      Squared correlation
         
         %% PLOT
         figure
-        if ~exist('XYZ','var')
-            XYZ=XYZmm;
+        switch opt.searchtype
+            case 'time'
+                if ~exist('XYZ','var')
+                    XYZ=XYZmm;
+                end
+                acc = [SLres(:).acc];
+                acc_lb = [SLres(:).acc_lb];
+                acc_ub = [SLres(:).acc_ub];
+                plot(XYZ(3,:),acc(1:size(XYZ,2)),'k');hold on
+                plot(XYZ(3,:),acc_lb(1:size(XYZ,2)),'--');
+                plot(XYZ(3,:),acc_ub(1:size(XYZ,2)),'--');hold off
+                title(['Searchlight over time'])
+                xlabel('Time (ms)')
+                ylabel('Accuracy')
+            case '3Dspace'
+                % TO DO,
+                % - when the p-value is available, save it as an image too!
+                % - maybe add other stuff to image or leave options
+                if opt.savImg
+                    switch PRTw.model(i_model).input.type
+                        case 'classification'
+                            % save acc/bacc/cacc only,
+                            Pout = save_classif_images(D.Vmsk,D.pth,D.PRTw,SLres,D.DIM,D.nVx,D.i_model,D.R,D.lVx);
+                        case 'regression'
+                            % save mse, corr, r2
+                            Pout = save_regression_images(D.Vmsk,D.pth,D.PRTw,SLres,D.DIM,D.nVx,D.i_model,D.R,D.lVx);
+                        otherwise
+                            fprintf('\nUnknown model type!\n')
+                            Pout{1} = [];
+                    end
+                end
+
+                %if ploton
+                %    acc = [SLres(:).acc];
+                %    acc_lb = [SLres(:).acc_lb];
+                %    acc_ub = [SLres(:).acc_ub];
+                %    plot(XYZ(3,:),acc); hold on
+                %    plot(XYZ(3,:),acc_lb,'--')
+                %    plot(XYZ(3,:),acc_ub,'--')
+                %    hold off
+                %end
         end
-        acc = [SLres(:).acc];
-        acc_lb = [SLres(:).acc_lb];
-        acc_ub = [SLres(:).acc_ub];
-        plot(XYZ(3,:),acc(1:size(XYZ,2)),'k');hold on
-        plot(XYZ(3,:),acc_lb(1:size(XYZ,2)),'--');
-        plot(XYZ(3,:),acc_ub(1:size(XYZ,2)),'--');hold off
-        title(['Searchlight over time'])
-        xlabel('Time (ms)')
-        ylabel('Accuracy')
 
     case 'subject'
         %% RUN

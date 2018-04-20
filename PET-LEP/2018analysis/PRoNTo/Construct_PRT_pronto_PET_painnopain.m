@@ -32,7 +32,7 @@ D.anapref = ''; %directory prefix for this specific analysis
 D.subdirpref = ''; % generic prefix
 D.subdirsuff = '\PET'; % generic suffix
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier='_gpc_noperm'; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_gpc_bothgrp_noperm'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [2];
@@ -63,7 +63,7 @@ D.cond_list =  [
               1 
               2
               ];
-D.grp_list = [1]; 
+D.grp_list = [1 2]; 
 % factors and statistical model
 D.factors = {'Scan','Subject'}; % must include a subject factor at the end; Group factor must be first if being used
 D.factortype = {'w','s'}; % w = within, s = subject, g = subject group

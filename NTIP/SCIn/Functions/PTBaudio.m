@@ -20,7 +20,7 @@ if ~isfield(h,'Fs') || isempty(h.Fs) || ~Fsset
     h.Fs = h.Settings.fs;
 end
 if ~isfield(h,'Nc') || isempty(h.Nc) || ~Ncset
-    h.Nc = h.Settings.nrchannels;
+    h.Nc = h.Settings.stim(h.trialstimnum).nrchannels;
 end
 
 %configure soundcard

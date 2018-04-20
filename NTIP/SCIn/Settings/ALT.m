@@ -119,7 +119,7 @@ switch opt
     %% THRESHOLDING
     % starting level and step size
     h.Settings.threshold.type = 'intensity'; % for intensity
-    h.Settings.threshold.startinglevel = h.Settings.atten-60; % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100) 
+    h.Settings.threshold.startinglevel = h.Settings.atten-100; % for intensity, in dB (e.g. 10); for pitch, in Hz (e.g. 100) 
     h.Settings.threshold.step = 5;
     h.Settings.threshold.signalval = [1 2]; % 1 = carrying on increasing; 2 = decrease
     h.Settings.threshold.maxinten = 0; % 0 is the max
@@ -447,7 +447,7 @@ h.Settings.nrchannels = 2; % total number of channels, e.g. on sound card
 %% AUDIO
 
 % duration of stimulus in seconds
-h.Settings.stimdur = 0.5; % modified by oddball settings
+h.Settings.stimdur = 0.3; % modified by oddball settings
 % pitch
 h.Settings.f0 = 500; 
 %intensity

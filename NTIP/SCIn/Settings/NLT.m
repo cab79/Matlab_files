@@ -5,7 +5,7 @@ switch opt
     case 'setoptions'
         
     % settings options
-    h.SettingsOptions = {'Ascend','Adaptive','NLT_classical','NLT_classical_adaptive'};
+    h.SettingsOptions = {'Ascend','Adaptive','NLT_classical','NLT_assoc'};
     
     case 'Ascend'
 
@@ -588,6 +588,194 @@ case 'Adaptive'
     %h.Settings.threshold.startinglevel = 2; % for intensity)
     %h.Settings.threshold.step = 2;
     
+    case 'NLT_assoc'
+
+    % set general options
+    h = setgeneral(h);
+    
+    % FILENAME OF SEQUENCE CREATION FUNCTION (without .m)
+    h.SeqFun = 'CreateSequence';
+    
+    %% TRIALS or CONTINUOUS?
+    h.Settings.design = 'trials';
+    % if continuous, how many trials ahead should be in the player schedule?
+    % (applied to stimulation via soundcard only)
+    h.Settings.ntrialsahead = 0;  %0 = all trials
+    
+    %% EXPERIMENTAL CONDIITIONS
+    % name the settings that define orthogonal conditions at a different row
+    h.Settings.conds = {'oddprob'};
+    
+    %% Output options
+    % save sinwave from all trials as part of stim sequence file
+    %h.Settings.savesinwave = 0;
+    
+    %% BLOCKING/RUN OPTIONS
+    % 'divide' = equally divide trials by nblocks; 
+    % 'cond' = separate block for each condition
+    h.Settings.blockopt = 'cond';
+    % further options for 'divide':
+        % number of blocks (containing multiple conditions)
+    %    h.Settings.nblocks = 2; % must integer-divide each value in h.Settings.cond_rep_init
+        %distribute conditions equally among blocks
+    %    h.Settings.distblocks = 1;
+    % options to start sequence at beginning of every run
+    % 'msgbox', 'labjack', 'buttonpress', 'audio' - can have more than one in
+    % cell array
+    h.Settings.blockstart = {'buttonpress'}; % audio,labjack,audio
+    h.Settings.pauseeachblock = 0; % pause after every block?
+    % names of any audiofiles
+    h.Settings.audiofile = {};
+    
+    %% Condition-independent stimulus parameters - can be superceded by condition-dependent parameters
+    % duration of stimulus sequence in seconds
+    h.Settings.totdur = 0; 
+    % duration of trial in seconds
+    h.Settings.trialdur = 2; % if 0, consecutive stimuli will occur with no gap
+    % Tactile: number of pulses per trial
+    h.Settings.nstim_trial = 2; % set to zero to be determined by stimdur
+    % Tactile: within-trial frequency (Hz) 
+    h.Settings.wait=[1 0]; % one value per nstim 
+    
+    %% first stimulus: audio
+    % duration of stimulus in seconds
+    h.Settings.stim(1).dur = 0.3; % modified by oddball settings
+    % Pattern type method: intensity, pitch. Not supported: channel, duration
+    h.Settings.stim(1).patternmethod = '';
+    h.Settings.stim(1).patternvalue = []; % one per stimdur
+    % 'rand' or 'reg' spacing?
+    h.Settings.stim(1).durtype = 'reg'; % not needed unless 'rand'
+    h.Settings.stim(1).inten = 0; % value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.stim(1).inten_diff = []; % value between 0 and 1000mA for Digitimer DS8R
+    h.Settings.stim(1).maxinten = 0; % max output value for safety purposes. Value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.stim(1).f0 = 500; % pitch
+    h.Settings.stim(1).inten_type = 'dB'; % either 'dB' or 'abs'
+    h.Settings.stim(1).df = 0;
+    h.Settings.stim(1).atten = 0; % attenuation level in decibels
+    h.Settings.stim(1).attenchan = [1 2]; % apply attenuation (e.g. during thresholding) to these chans
+    h.Settings.stim(1).control='PsychPortAudio'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
+    %h.Settings.labjack_DACport = 0;
+    %h.Settings.DAC_multiply = 0; % multiply DAC output by this (e.g. to get mA on DS8R)
+    h.Settings.stim(1).chan = [1 2]; 
+    %h.Settings.stimchanforLJ = 0;
+    h.Settings.stim(1).nrchannels = 2; % total number of channels, e.g. on sound card
+
+    %% second stimulus: tactile
+    % duration of stimulus in seconds
+    h.Settings.stim(2).dur = 0; % modified by oddball settings
+    % Pattern type method: intensity, pitch. Not supported: channel, duration
+    h.Settings.stim(2).patternmethod = '';
+    h.Settings.stim(2).patternvalue = []; % one per stimdur
+    % 'rand' or 'reg' spacing?
+    h.Settings.stim(2).durtype = 'reg'; % not needed unless 'rand'
+    h.Settings.stim(2).inten = []; % value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.stim(2).inten_diff = []; % value between 0 and 1000mA for Digitimer DS8R
+    h.Settings.stim(2).maxinten = 200; % max output value for safety purposes. Value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.stim(2).control='LJTick-DAQ'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
+    h.Settings.stim(2).chan = [6]; h.Settings.stim(2).chanforLJ = 1;
+    h.Settings.stim(2).nrchannels = 1; % total number of channels, e.g. on sound card
+    % Tactile: number of pulses in a train
+    h.Settings.stim(2).npulses_train = 1; % set to zero to be determined by stimdur
+    % Tactile: within-train frequency (Hz)
+    h.Settings.stim(2).p_freq=[];
+    % Use timer to control frequency of labjack outputs? Otherwise uses software timing.
+    h.Settings.stim(2).labjack_timer=1; % must use if there are a large number of pulses (e.g. >4)
+    
+    %% CHANGING STIMULUS INTENSITY EVERY X PULSES
+    % REFER TO "TIMER STOP": https://labjack.com/support/ud/df-lj-app-guide/10.5
+    
+    %% Condition-dependent stimulus parameters
+    % Condition method: intensity, pitch, channel
+    h.Settings.conditionmethod = {};
+    h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
+    % Oddball method: intensity, intensityindex, pitch, channel
+    h.Settings.oddballmethod = 'intensityindex'; % can use same type for pattern only if oddball intensity is adaptive
+    h.Settings.oddballvalue = {[1 2], [1 2], [1 2], [1 2], [2 1], [1 2], [1 2], [1 2], [1 2], [2 1], [1 2], [1 2], [1 2], [1 2], [2 1]}; % values to go into h.Seq.signal. One per oddprob row, or leave blank if determined from GUI
+    h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
+
+    %% SEQUENCE
+    % Change probablity (CP): each condition is in rows
+    h.Settings.oddprob = [
+        % standard (left) vs oddball (right)
+        0.8 0.2
+        0.5 0.5
+        0.5 0.5
+        0.5 0.5
+        0.8 0.2
+        0.8 0.2
+        0.5 0.5
+        0.5 0.5
+        0.5 0.5
+        0.8 0.2
+        0.8 0.2
+        0.5 0.5
+        0.5 0.5
+        0.5 0.5
+        0.8 0.2
+        ];
+    % index of row of oddprob that are standards and oddballs. Can be
+    % overridden by h.Settings.oddballvalue if using intensityindex
+    h.Settings.standardind = 1; 
+    h.Settings.oddind = 2; 
+    % keep oddball trials apart by at least sep_odd standards
+    h.Settings.sep_odd = [2 0 0 0 2 2 0 0 0 2 2 0 0 0 2]; % for each CP condition
+    % for sep_odd, which indices of h.Settings.oddballvalue to consider
+    % each time? (each list will be considered separately)
+    h.Settings.sep_odd_ind = {[1 2],[1 2],[1 2],[1 2],[1 2],[1 2],[1 2],[1 2],[1 2],[1 2],[1 2],[1 2],[1 2],[1 2],[1 2]};
+    % for each set, ensure a number of leading standards 
+    h.Settings.std_lead = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]; % for each CP condition
+    % number of sets to randomise together
+    h.Settings.n_set = []; % Leave blank to calculate automatically; or one nunmber per CP condition
+    % min number of oddballs within each CP condition
+    h.Settings.n_odd = [2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 6, 6]; % overrides h.Settings.totdur
+    % min number of oddballs per randomised set, per CP
+    h.Settings.n_odd_set = h.Settings.n_odd; % overrides h.Settings.totdur
+    % randomise sets?
+    h.Settings.rand_set = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]; 
+    % condition numbers
+    h.Settings.condnum = [
+        1 2
+        3 4
+        3 4
+        3 4
+        5 6
+        1 2
+        3 4
+        3 4
+        3 4
+        5 6
+        1 2
+        3 4
+        3 4
+        3 4
+        5 6
+        ]; 
+    
+    %% associative learning experiments
+    % stimulus types to pair: column 1 - stimtype 1 (number = level), etc.
+    h.Settings.assoc.pairing = {
+        [1 1], [2 2]; %pairing 1
+        [1 2], [2 1]; %pairing 2
+        }
+    % for each condnum, which pair to use?
+    h.Settings.assoc.pair = [1 2 1 2 2 1];
+    
+    %% RESPONSE PARAMETERS
+    % record responses during experiment? 0 or 1
+    h.Settings.record_response = 1;
+    % how to record responses?
+    h.Settings.record_response_type = {'all'}; %options: 'all','thistrial','previoustrial'
+    %intensity difference
+    % buttonpress options: key: keyboard inputs. Blank for no button press
+    h.Settings.buttontype='key';
+    % range of keyboard presses indicating a recordable response
+    h.Settings.buttonopt = {'DownArrow','UpArrow'}; 
+    
+    %% THRESHOLDING
+    % starting level and step size
+    %h.Settings.threshold.startinglevel = 2; % for intensity)
+    %h.Settings.threshold.step = 2;
+    
     case 'NLT_classical_adaptive'
 
     % set general options
@@ -929,21 +1117,8 @@ h.Settings.serial = 'COM1';
 %h.Settings.EEGport = 'COM3'; % only needed for 'serial' EEG triggers
 %h.Settings.EEGMarkPattern = 1; % mark EEG for every change in stimulus pattern (0 = start of trial only)
 h.Settings.labjack=1; % Use labjack for controlling any equipment?
-h.Settings.stimcontrol='LJTick-DAQ'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
 h.Settings.labjack_DACport = 4;
 h.Settings.DAC_multiply = 0.01; % multiply DAC output by this (e.g. to get mA on DS8R)
-h.Settings.stimchan = [6]; h.Settings.stimchanforLJ = 1;
-h.Settings.nrchannels = 1; % total number of channels, e.g. on sound card
-% channels on stimulator to use; use differenr rows for different pairs
-% (e.g. for different conditions). If labjack, this can refer to output
-% port(s).
-
-% Tactile: number of pulses in a train
-h.Settings.npulses_train = 1; % set to zero to be determined by stimdur
-% Tactile: within-train frequency (Hz)
-h.Settings.p_freq=[];
-% Use timer to control frequency of labjack outputs? Otherwise uses software timing.
-h.Settings.labjack_timer=1; % must use if there are a large number of pulses (e.g. >4)
 
 % Audio sampling rate 
 h.Settings.fs = 96000; % don't change this

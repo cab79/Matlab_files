@@ -1,5 +1,6 @@
 %---select data to load---%
 %select = 'TF'; TFmethod = '-FT'; % or, '-EL'
+addpath('C:\Data\Matlab\Matlab_files');
 close all
 clear all
 select = 'ERP'; TFmethod = '';
@@ -10,7 +11,7 @@ savenametype='';
 for i = use_etype
     savenametype = [savenametype '_' eventtypes{1,i}(end)];
 end
-load([select TFmethod savenametype '_data.mat'])
+load([select TFmethod savenametype '_data_base0.mat'])
 
 %---settings---%
 anatype = {'evoked', 'induced','itc'}; anaDAT=1; % 1:evoked, 2:induced, 3: ITC

@@ -1,9 +1,11 @@
 function h = CreateSequence(h)
-
+dbstop if error
 disp('Creating sequence...');
 h.Seq =struct;
 
-%% define orthgonal conditions
+%% define orthgonal conditions (CURRENTLY HAS NO IMPACT ON REST OF THE FUNCTION)
+% e.g. ensuring that condition levels and oddball levels are orthogonal, if
+% needed
 conds = [];
 ncond = 0;
 nonprobcond = [];
@@ -21,7 +23,7 @@ if isfield(h.Settings,'conds')
         end
         eval(['allcond = allcomb(' allcondind(1:end-1) ');']);
         allcond = 1:i;
-        probcond = find(strcmp(conds,h.Settings.oddprob));
+        probcond = find(strcmp(conds,'oddprob'));
         nonprobcond = allcond; nonprobcond(probcond) = [];
     end
 end
@@ -64,7 +66,7 @@ mult = mult.* repmat(minmult,1,size(mult,2));
 if strcmp(h.Settings.oddballmethod,'duration')
     stimdur = h.Settings.oddballvalue;
 else
-    stimdur = h.Settings.stimdur;
+    stimdur = [h.Settings.stim(:).dur];
 end
 if iscell(stimdur)
     dursum = cellfun(@sum,stimdur);
@@ -259,7 +261,12 @@ if nCP>0
         end
 
         % make condition numbers distinct for different CP conditions
-        if cp>1
+        if isfield(h.Settings,'condnum')
+            ucon = unique(condnum{cp}{s});
+            for i = 1:length(ucon)
+                condnum{cp}{s}(condnum{cp}{s}==ucon(i)) = h.Settings.condnum(cp,ucon(i));
+            end
+        elseif cp>1
             for s = 1:num_sets(cp)
                 % find max value of previous CP condition
                 maxval = max([condnum{cp-1}{:}]);
@@ -368,6 +375,17 @@ if ~isfield(h.Seq,'signal')
             h.Seq.blocks(h.Seq.blocks==max(h.Seq.blocks)) = blockuni(end-1)+1;
         end
         
+        % make block nums monotonic without changing their order
+        blockuni=unique(h.Seq.blocks);
+        blockunistable=unique(h.Seq.blocks,'stable');
+        for b = 1:length(blockuni)
+            block_ind{b} = find(h.Seq.blocks==blockunistable(b));
+        end
+        for b = 1:length(blockuni)
+            h.Seq.blocks(block_ind{b}) = blockuni(b);
+        end
+        
+        % sort (if needed)
         [~,blockind] = sort(h.Seq.blocks);
         h.Seq.blocks = h.Seq.blocks(blockind);
         h.Seq.signal = h.Seq.signal(blockind);
@@ -458,4 +476,8 @@ if isfield(h.Settings,'adaptive')
         h.Seq.adapttype = ones(1,length(h.Seq.condnum));
     end
     hold on; plot(h.Seq.adapttype,'r')
+end
+
+if isfield(h.Settings,'assoc')
+    h = CreateAssociative(h);
 end

@@ -615,11 +615,14 @@ for gd = 1:length(Ngrp)
                 if D.useIDfile==1
                     % check averaged files exist; if not then create them.
                     %fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
-                    condlist = D.regress_contrast
-                    %if isempty(fnames)
+                    condlist = D.regress_contrast;
+                    if length(D.imglist)>1
                         fname = factor_img(subdir,D.imglist,condlist,scanname,D.fileoptype,D.znorm);
                         %fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
-                    %end
+                    else
+                        fname = dir(fullfile(subdir,D.imglist{:}));
+                        fname = fullfile(subdir,fname.name);
+                    end
                     for i=1%:length(fnames)
                         subimg{i,1} = [fname ',1'];
                     end
@@ -700,13 +703,15 @@ if ~isempty(D.cov_names)
             covdat = pdata(2:end,cov_col);
 
             % convert categorical (char) covariate data to numbers
-            if ~isnumeric(covdat{2,1})
+            if all(cellfun(@ischar,covdat))
                 covtype = unique(covdat);
                 Ncovtype = length(covtype);
                 for c = 1:Ncovtype
                     cov_idx = cellfun(@(x) any(strcmp(covtype(c),x)), covdat, 'UniformOutput', 0);
                     covdat(cell2mat(cov_idx)) = {[c]};
                 end
+            elseif any(cellfun(@ischar,covdat))
+                covdat(cellfun(@ischar,covdat)) = repmat({NaN},sum(cellfun(@ischar,covdat)),1);
             end
 
             covdat = [covdat{:}]';
@@ -791,6 +796,7 @@ end
 
 % specify ROI atlas
 if D.pronto
+    ROIfile='';
     if ~isempty(D.timewin) && ~isempty(D.time_ana)
         % create window range
         winr=[];
@@ -825,6 +831,8 @@ if D.pronto
         end
         V.fname=ROIfile;
         spm_write_vol(V,Y);
+    elseif isfield(D,'ROIfile')
+        ROIfile = D.ROIfile;
     end
 end
 
@@ -933,7 +941,7 @@ elseif D.pronto
     matlabbatch{2}.prt.fs.modality.voxels=[];
     matlabbatch{2}.prt.fs.modality.voxels.all_voxels = 1;
     matlabbatch{2}.prt.fs.modality.atlasroi{1, 1} = '';
-    if D.timewin
+    if ~isempty(ROIfile)
         matlabbatch{2}.prt.fs.modality.atlasroi{1,1}   = [ROIfile ',1'];
     end
     matlabbatch{2}.prt.fs.infile = {fullfile(D.spm_path,'PRT.mat')};
@@ -1131,7 +1139,7 @@ elseif D.pronto
     matlabbatch{5}.prt.weights.model_name = matlabbatch{3}.prt.model.model_name;
     matlabbatch{5}.prt.weights.img_name = '';
     matlabbatch{5}.prt.weights.build_wpr=[];
-    if D.timewin
+    if ~isempty(ROIfile)
         matlabbatch{5}.prt.weights.build_wpr.atl_name{1,1} = ROIfile;  
     else
         matlabbatch{5}.prt.weights.build_wpr.no_atl = 0;
@@ -1179,7 +1187,9 @@ if D.pronto
             cfg_util('initcfg');
             prt_batch
         end
-        cfg_util('run', run(n).matlabbatch);
+        jid = cfg_util('initjob', run(n).matlabbatch)
+        cfg_util('run', jid);
+        cfg_util('deljob', jid);
         close all
     end
     %end

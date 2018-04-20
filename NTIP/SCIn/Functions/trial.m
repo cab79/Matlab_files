@@ -47,10 +47,10 @@ if isfield(h.Settings,'oddballmethod')
 end
 
 % select channels
-if isfield(h.Settings,'stimchan')
-    h.chan = h.Settings.stimchan;
+if isfield(h.Settings.stim,'chan')
+    h.chan = h.Settings.stim(h.trialstimnum).chan;
 else
-    h.chan = 1:h.Settings.nrchannels; % use all channels by default
+    h.chan = 1:h.Settings.stim(h.trialstimnum).nrchannels; % use all channels by default
 end
 
 % find trial(s) for which to create wave
@@ -62,7 +62,7 @@ elseif strcmp(h.Settings.design,'continuous')
     elseif h.Settings.ntrialsahead>0 && ~isfield(h,'i') % buffer needs pre-filling prior to experiment starting
         h.trials = 1:h.Settings.ntrialsahead;
     else
-        h.trials = 1:length(h.Seq.signal); % otherwise concatenate all trials
+        h.trials = 1:size(h.Seq.signal,2); % otherwise concatenate all trials
     end
 end 
 
@@ -94,13 +94,15 @@ for tr = h.trials
             h = trial_set_param(h);
             h = contruct_wave(h);
     end
-    if ~isfield(h,'inten_mean') 
-        h.inten_mean=[];
+    %if ~isfield(h,'inten_mean') 
+    %    h.inten_mean=[];
+    %end
+    %if ~isfield(h,'inten_diff') 
+    %    h.inten_diff=[];
+    %end
+    try
+        disp(['STIMTYPE = ' num2str(h.trialstimnum) ', INTEN = ' num2str(h.inten_out) ', MEAN = ' num2str(h.inten_mean) ', DIFF = ' num2str(h.inten_diff)]);
     end
-    if ~isfield(h,'inten_diff') 
-        h.inten_diff=[];
-    end
-    disp(['INTEN = ' num2str(h.inten_out) ', MEAN = ' num2str(h.inten_mean) ', DIFF = ' num2str(h.inten_diff)]);
     
 end
 

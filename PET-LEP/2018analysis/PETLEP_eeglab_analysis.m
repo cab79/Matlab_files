@@ -26,7 +26,7 @@ S.setpath = 'C:\Data\PET-LEP\Preprocessed'; % folder to save processed .set data
 S.freqpath = 'C:\Data\PET-LEP\Frequency'; % folder to save processed .set data
 S.erppath = 'C:\Data\PET-LEP\ERP'; % folder to save processed .set data
 S.fnameparts = {'subject'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
-S.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+S.subjects = {'P35'}; % either a single subject, or leave blank to process all subjects in folder
 S.sessions = {};
 S.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
 S.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
@@ -82,8 +82,8 @@ save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time t
 % for removal and saved that file (with the same name, i.e. ..._ICA.set)
 load(fullfile(S.setpath,'S'))
 S.loadext = 'set';
-%S.subjects = {'S03','S10','S18','P06','P08','P14','P25','P31','P35'}; % either a single subject, or leave blank to process all subjects in folder
-S.subjects = {};
+S.subjects = {'S18','P06','P08','P35'}; % either a single subject, or leave blank to process all subjects in folder
+%S.subjects = {};
 S.ICAremove = 1; % remove ICA components (0 if already removed from data, 1 if selected but not removed)
 S.detrend = 1;
 S.rmbase = 1;
@@ -102,7 +102,7 @@ save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time t
 S.setpath = 'C:\Data\PET-LEP\Preprocessed\cleaned'; % folder to save processed .set data
 % data
 S.loadext = 'set';% generic file suffix
-S.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+S.subjects = {'S18','P06','P08','P35'}; % either a single subject, or leave blank to process all subjects in folder
 % general settings
 S.basewin = [-4 -3.5]; % baseline window
 S.rmbase = 0; % remove baseline prior to frequency/ERP

@@ -16,7 +16,7 @@ if ~isfield(h,'trialtype')
     h.trialtype.intenpattern = 0;
 end
 if ~isfield(h,'freq')
-    h.freq = h.Settings.f0;
+    h.freq = h.Settings.stim(h.trialstimnum).f0;
 end
 
 if isfield(h.Settings,'df') && length(h.chan)==2 % if freq is different in two channels
@@ -28,10 +28,10 @@ if isfield(h.Settings,'df') && length(h.chan)==2 % if freq is different in two c
             df_freq = str2double(h.entrainfreq);
         end
         if df_freq==0 || isnan(df_freq)
-            df_freq=h.Settings.df;
+            df_freq=h.Settings.stim(h.trialstimnum).df;
         end
     else
-        df_freq=h.Settings.df;
+        df_freq=h.Settings.stim(h.trialstimnum).df;
     end
 else
     df=0;
@@ -42,13 +42,13 @@ rs = 1:length(h.dur);
 if ~isfield(h,'resp_probe')
     h.resp_probe=0;
 end
-if isfield(h.Settings,'stimdurtype') && ~h.resp_probe
-    if strcmp(h.Settings.stimdurtype,'rand')
+if isfield(h.Settings.stim(h.trialstimnum),'durtype') && ~h.resp_probe
+    if strcmp(h.Settings.stim(h.trialstimnum).durtype,'rand')
         rs = randperm(length(h.Settings.stimrandind));
         h.dur(h.Settings.stimrandind) = h.dur(h.Settings.stimrandind(rs));
-        if strcmp(h.Settings.patternmethod,'intensity')
+        if strcmp(h.Settings.stim(h.trialstimnum).patternmethod,'intensity')
             h.inten(h.Settings.stimrandind) = h.inten(h.Settings.stimrandind(rs));
-        elseif strcmp(h.Settings.patternmethod,'pitch') || strcmp(h.Settings.patternmethod,'freq')
+        elseif strcmp(h.Settings.stim(h.trialstimnum).patternmethod,'pitch') || strcmp(h.Settings.stim(h.trialstimnum).patternmethod,'freq')
             h.freq(h.Settings.stimrandind) = h.freq(h.Settings.stimrandind(rs));
         end
     end
@@ -79,8 +79,8 @@ for i = 1:length(h.dur)
     end
 
     % initialise
-    mwav{i}=zeros(h.Settings.nrchannels,length(t{i}));
-    temp_sin{i}=zeros(h.Settings.nrchannels,length(t{i}));
+    mwav{i}=zeros(h.Settings.stim(h.trialstimnum).nrchannels,length(t{i}));
+    temp_sin{i}=zeros(h.Settings.stim(h.trialstimnum).nrchannels,length(t{i}));
 
     % pitch/inten-specific 
     if h.trialtype.freqpattern
@@ -107,7 +107,7 @@ for i = 1:length(h.dur)
         
         % are we using decibels? If so, set to 1 so that volume is adjusted
         % later
-        if strcmp(h.Settings.inten_type,'dB') % decibels scale
+        if strcmp(h.Settings.stim(h.trialstimnum).inten_type,'dB') % decibels scale
             useinten=1;
         end
         
@@ -258,7 +258,7 @@ if ~isfield(h,'varlevel')
     h.varlevel=0;
 end
 if isfield(h.Settings,'attenchan')
-    if any(ismember(h.chan,h.Settings.attenchan))
+    if any(ismember(h.chan,h.Settings.stim(h.trialstimnum).attenchan))
         if isfield(h,'vol_atten')
             try
                 inten_atten = str2double(get(h.vol_atten,'string'));
@@ -266,18 +266,18 @@ if isfield(h.Settings,'attenchan')
                 inten_atten = str2double(h.vol_atten);
             end
         else
-            inten_atten = h.Settings.atten; 
+            inten_atten = h.Settings.stim(h.trialstimnum).atten; 
         end
         if ~h.seqtype.adapt && ~h.seqtype.thresh
             h.inten_atten = inten_atten+h.varlevel;
-        elseif (h.seqtype.adapt || h.seqtype.thresh) && h.seqtype.oddball && strcmp(h.Settings.inten_type,'dB')
+        elseif (h.seqtype.adapt || h.seqtype.thresh) && h.seqtype.oddball && strcmp(h.Settings.stim(h.trialstimnum).inten_type,'dB')
             if strcmp(h.Settings.oddballmethod,'intensity')
                 h.inten_atten = [inten_atten, (inten_atten+h.varlevel)];
-                h.inten_atten = h.inten_atten(h.Seq.signal(h.tr));
+                h.inten_atten = h.inten_atten(h.Seq.signal(h.trialstimnum,h.tr));
             else
                 h.inten_atten = inten_atten+h.varlevel;
             end
-        elseif h.seqtype.thresh && strcmp(h.Settings.inten_type,'dB')
+        elseif h.seqtype.thresh && strcmp(h.Settings.stim(h.trialstimnum).inten_type,'dB')
             if strcmp(h.Settings.threshold.type,'intensity')
                 h.inten_atten = inten_atten+h.varlevel;
             end
@@ -293,7 +293,7 @@ if h.inten_atten
     h.mwav = attenute_sound(h.mwav,h.inten_atten);
 end
 
-if strcmp(h.Settings.inten_type,'dB')
+if strcmp(h.Settings.stim(h.trialstimnum).inten_type,'dB')
     h.inten_out = h.inten+h.inten_atten;
 else
     h.inten_out = h.inten;

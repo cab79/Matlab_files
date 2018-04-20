@@ -33,7 +33,7 @@ switch opt
         h.Settings.stimcontrol='labjack'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
         h.Settings.DAC_multiply = 1; % multiply DAC output by this (e.g. to get mA on DS8R)
         h.Settings.nrchannels = 1; % total number of channels, e.g. on sound card
-        h.Settings.stimchan = 0; % channels on stimulator to use
+        h.Settings.stimchan = 1; % channels on stimulator to use
         h.Settings.stimchanforLJ=0;
 
         %% BLOCKING/RUN OPTIONS
@@ -57,6 +57,7 @@ switch opt
         h.Settings.alignphase = 0;
         %intensity
         h.Settings.inten = 3; % value between 0 and 1
+        h.Settings.inten_type = 'abs';
         % duration of stimulus sequence in seconds
         h.Settings.totdur = []; 
         % duration of trial in seconds
@@ -91,7 +92,7 @@ switch opt
             % left column = 1st inten/pitch
             % right column = 2nd inten/pitch
         % and the temporal pattern is defined by fc (from either fpitch or finten)
-        h.Settings.oddballvalue = {1 3};
+        h.Settings.oddballvalue = {1 1.5};
 
         %% SEQUENCE
         h.Settings.oddprob = [0.5 0.5];

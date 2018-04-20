@@ -39,7 +39,7 @@ Subs = [];
 gn=0;
 for g = unique([pdata{2:end,grp_col}])
     gn=gn+1;
-    inc_idx = find(cellfun(@(x) x==1, pdata(2:end,inc_col), 'UniformOutput', 1));
+    inc_idx = find(cellfun(@(x) x>0, pdata(2:end,inc_col), 'UniformOutput', 1));
     grp_idx = find(cellfun(@(x) x==g, pdata(2:end,grp_col), 'UniformOutput', 1));
     SubInd{gn,1} = intersect(inc_idx,grp_idx);
     Nsub(gn,1) = length(SubInd{gn,1});
