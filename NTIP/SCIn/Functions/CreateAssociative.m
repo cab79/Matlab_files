@@ -26,20 +26,44 @@ for b = 1:length(blockuni)
         randval = randval(randperm(length(randval)));
         h.Seq.signal(1,cond_ind{b}{c}) = randval(1:length(cond_ind{b}{c}));
         
-        % then decide which pairing to use
+        % then decide which pairing to use.
+        % Depending on the probability during this block, one pairing may
+        % be more likely than another
         pair_idx = h.Settings.assoc.pair(conduni(c));
         
-        % finally, decide actual stim according to which cue it is
+        % for the number of unique values in each cell of
+        % h.Settings.assoc.pairing (i.e. the number of stimulus outcomes
+        % per pairing/cue), create a randomised sequence according to a
+        % certain probability.
+        % need to be balanced across different cue types.
+        
+        %initialise index
+        cuestim_idx = nan(1,length(cond_ind{b}{c}));
+        %for each cue type, get index of each type 
+        cuetype = unique(h.Seq.signal(1,cond_ind{b}{c}));
+        for ct = 1:length(cuetype)
+            cue_idx{ct} = find(h.Seq.signal(1,cond_ind{b}{c})==cuetype(ct));
+            % get number of stims per stimtype and cuetype
+            stim_num{ct} = round(h.Settings.assoc.probstim * length(cue_idx{ct}));
+            stim_idx{ct} = [];
+            for i = 1:length(stim_num{ct})
+                stim_idx{ct} = [stim_idx{ct} i*ones(1,stim_num{ct}(i))];
+            end
+            stim_idx{ct} = stim_idx{ct}(randperm(length(stim_idx{ct})));
+            cuestim_idx(cue_idx{ct}) = stim_idx{ct};
+        end
+        
+        % finally, decide actual stim according to which cue it is (i.e.
+        % first row of signal)
         for t = 1:length(cond_ind{b}{c})
-            % randomly distribute the two different possible 
-            h.Seq.signal(2,cond_ind{b}{c}(t)) = h.Settings.assoc.pairing{pair_idx,h.Seq.signal(1,cond_ind{b}{c}(t))}(2);
+            h.Seq.signal(2,cond_ind{b}{c}(t)) = h.Settings.assoc.pairing{pair_idx,h.Seq.signal(1,cond_ind{b}{c}(t))}(cuestim_idx(t));
         end
         
     end
     
     % diagnostics for debugging
-    if 0
-        for p = 1:2
+    if 1
+        for p = 1:4 % for each value of signal (in either row)
             for st = 1:2
                 num_stimtype{b}(p,st) = length(find(h.Seq.signal(st,block_ind{b})==p));
             end

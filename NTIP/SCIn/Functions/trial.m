@@ -94,14 +94,10 @@ for tr = h.trials
             h = trial_set_param(h);
             h = contruct_wave(h);
     end
-    %if ~isfield(h,'inten_mean') 
-    %    h.inten_mean=[];
-    %end
-    %if ~isfield(h,'inten_diff') 
-    %    h.inten_diff=[];
-    %end
     try
         disp(['STIMTYPE = ' num2str(h.trialstimnum) ', INTEN = ' num2str(h.inten_out) ', MEAN = ' num2str(h.inten_mean) ', DIFF = ' num2str(h.inten_diff)]);
+    catch
+        disp(['STIMTYPE = ' num2str(h.trialstimnum) ', INTEN = ' num2str(h.inten_out)]);
     end
     
 end

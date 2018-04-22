@@ -5,6 +5,7 @@ dbstop if error
 
 adaptive=0;
 opt='';
+stim=h.Settings.adaptive_general.stim;
 
 % find out whether there is more than one type of adaptive in this sequence
 if nargin>1
@@ -47,7 +48,7 @@ if isfield(h.Settings.adaptive(atype),'oddonly')
 
         % only continue if next trial (that can be modified! i.e. h.i+h.Settings.ntrialsahead-1) is an oddball
         try
-            if h.i+h.Settings.ntrialsahead-1 < length(h.Seq.signal)
+            if h.i+h.Settings.ntrialsahead-1 < size(h.Seq.signal,2)
                 all_odd_ind = horzcat(h.Seq.odd_ind{:});
                 %if any(ismember(all_odd_ind,h.Seq.condnum(h.i+h.Settings.ntrialsahead-1+1)))
                 %    disp(['next (modifiable) trial is an oddball: trial ' num2str(h.i+h.Settings.ntrialsahead-1+1) ', condnum ' num2str(h.Seq.condnum(h.i+h.Settings.ntrialsahead-1+1))])
@@ -63,7 +64,7 @@ if isfield(h.Settings.adaptive(atype),'oddonly')
         end
 
         % any responses over previous trials of this stimtype?
-        notthis = find(h.Seq.signal~=h.Seq.signal(h.i)); % trials that are not this stimtype
+        notthis = find(h.Seq.signal(stim,:)~=h.Seq.signal(stim,h.i)); % trials that are not this stimtype
         prevnotthis = notthis(notthis<h.i);% previous trials that were not this stimtype
         lastnotthis = max(prevnotthis); % last trial
         trls = lastnotthis+1:max(lastnotthis+h.Settings.adaptive(atype).resptrials,h.i); % count to h.i or the max number of allowed trials
@@ -145,19 +146,19 @@ elseif strcmp(opt,'responded')
     if h.pressedsinceoddball 
         %presstrial=trls_pressed(end);
         pressbutton = h.out.pressbutton(h.out.presstrial==trls_pressed(end));
-        correctsignal = h.Seq.signal(trls_pressed(end));
+        correctsignal = h.Seq.signal(stim,trls_pressed(end));
     elseif h.pressedlasttrial
         %presstrial=h.i;
         pressbutton = h.out.lastpressbutton{h.i};
-        correctsignal = h.Seq.signal(h.i);
+        correctsignal = h.Seq.signal(stim,h.i);
     elseif h.pressedthistrial
         %presstrial=h.i;
         pressbutton = h.out.pressbutton(h.out.presstrial==h.i);
-        correctsignal = h.Seq.signal(h.i);
+        correctsignal = h.Seq.signal(stim,h.i);
     elseif h.pressed
         %presstrial=h.i;
         pressbutton = h.out.pressbutton(h.out.presstrial==h.i);
-        correctsignal = h.Seq.signal(h.i);
+        correctsignal = h.Seq.signal(stim,h.i);
     end
     if ~iscell(pressbutton)
         pressbutton = {pressbutton};

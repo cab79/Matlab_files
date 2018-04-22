@@ -2,7 +2,7 @@ function h = trial_set_param(h)
 
 switch h.Settings.stim(h.trialstimnum).control
     
-    case {'LJTick-DAQ','labjack'};
+    case {'LJTick-DAQ','labjack'}
 
         if ~isfield(h.Settings.stim,'inten_diff')
             h.Settings.stim(h.trialstimnum).inten_diff = 0;
@@ -18,7 +18,7 @@ switch h.Settings.stim(h.trialstimnum).control
             set_inten_mean = 1;
         end
         if set_inten_mean
-            if ~isfield(h,'inten_mean_gui'); 
+            if ~isfield(h,'inten_mean_gui')
                 h.inten_mean=0;
             else
                 h.inten_mean = str2double(h.inten_mean_gui);
@@ -35,7 +35,7 @@ switch h.Settings.stim(h.trialstimnum).control
             set_inten_diff = 1;
         end
         if set_inten_diff
-            if ~isfield(h,'inten_diff_gui'); 
+            if ~isfield(h,'inten_diff_gui')
                 h.inten_diff=0;
             else
                 h.inten_diff = str2double(h.inten_diff_gui);
@@ -117,7 +117,7 @@ switch h.Settings.stim(h.trialstimnum).control
                 else
                     h.inten = h.Settings.oddballvalue(h.Seq.signal(h.trialstimnum,h.tr),:);
                 end
-            elseif strcmp(h.Settings.oddballmethod,'intensityindex')
+            elseif strcmp(h.Settings.oddballmethod,'index')
                 % calculate intensity
                 if h.Seq.signal(h.trialstimnum,h.i)==1
                     h.inten = h.inten_mean - h.inten_diff / 2;
@@ -140,17 +140,18 @@ switch h.Settings.stim(h.trialstimnum).control
         h.inten = h.Settings.stim(h.trialstimnum).inten;
         h.freq = h.Settings.stim(h.trialstimnum).f0;
         h.dur = h.Settings.stim(h.trialstimnum).dur; 
+        h.varlevel = 0;
         % if calculating all trials, requires totdur:
         if strcmp(h.Settings.design,'continuous') && ~isfield(h,'totdur') % Use calculated duration by default.
             if isfield(h.Settings,'totdur')
                 h.totdur = h.Settings.totdur; 
             end
         end
-        if ~isfield(h.Settings,'inten_type')
+        if ~isfield(h.Settings.stim(h.trialstimnum),'inten_type')
             h.Settings.stim(h.trialstimnum).inten_type = 'abs';
         end
         if ~isfield(h,'inten_diff')
-            if ~isfield(h,'aud_diff_gui'); 
+            if ~isfield(h,'aud_diff_gui')
                 h.inten_diff=0;
             else
                 h.inten_diff = str2double(h.aud_diff_gui);
@@ -220,18 +221,22 @@ switch h.Settings.stim(h.trialstimnum).control
                     h.chan=oddval;
                 elseif strcmp(h.Settings.oddballmethod,'intensity') && strcmp(h.Settings.stim(h.trialstimnum).inten_type,'abs') && h.inten_diff==0
                     h.inten = oddval;
-                elseif strcmp(h.Settings.oddballmethod,'intensityindex') && strcmp(h.Settings.stim(h.trialstimnum).inten_type,'dB') && h.inten_diff~=0
-                    if h.Seq.signal(h.trialstimnum,h.i)==1
-                        h.varlevel = h.inten_diff;
+                elseif strcmp(h.Settings.oddballmethod,'index') && strcmp(h.Settings.stim(h.trialstimnum).inten_type,'dB') && h.inten_diff~=0 && strcmp(h.Settings.stim(h.trialstimnum).patternmethod,'intensity') && isempty(h.Settings.stim(h.trialstimnum).patternvalue)
+                    if isfield(h.Settings.assoc,'intenstim')
+                        h.varlevel = h.Settings.assoc.intenstim(h.Seq.signal(h.trialstimnum,h.i)) * h.inten_diff/2;
                     else
-                        h.varlevel = 0;
+                        if h.Seq.signal(h.trialstimnum,h.i)==1
+                            h.varlevel = h.inten_diff/2;
+                        else
+                            h.varlevel = -h.inten_diff/2;
+                        end
                     end
                 elseif strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq')
                     h.freq = oddval;
                 elseif strcmp(h.Settings.oddballmethod,'duration')
                     h.dur = oddval;
                 end
-            elseif h.seqtype.adapt || h.seqtype.thresh
+            elseif (h.seqtype.adapt && h.Settings.adaptive_general.stim==h.trialstimnum) || h.seqtype.thresh
                 if isfield(h,'s')
                     h.varlevel = h.s.a(h.Seq.adapttype(h.i)).StimulusLevel;
                 else
@@ -266,11 +271,15 @@ switch h.Settings.stim(h.trialstimnum).control
                 if ~((h.seqtype.adapt || h.seqtype.thresh) && (strcmp(h.Settings.oddballmethod,'pitch') || strcmp(h.Settings.oddballmethod,'freq'))) && ~(~isempty(strcmp(h.Settings.conditionmethod,'pitch')) || ~isempty(strcmp(h.Settings.conditionmethod,'freq'))) % pitch already defined above in this case
                     if isnumeric(h.Settings.stim(h.trialstimnum).patternvalue)
                         h.freq = h.Settings.stim(h.trialstimnum).patternvalue;
-                    elseif iscell(h.Settings.stim(h.trialstimnum).patternvalue)
-                        nDur = length(h.dur);
-                        nPit = cellfun(@length,h.Settings.stim(h.trialstimnum).patternvalue);
-                        h.freq = h.Settings.stim(h.trialstimnum).patternvalue{nPit==nDur};
+                    elseif iscell(h.Settings.stim(h.trialstimnum).patternvalue) && strcmp(h.Settings.oddballmethod,'index')
+                        h.freq = h.Settings.stim(h.trialstimnum).patternvalue{h.Seq.signal(h.trialstimnum,h.i)};
                     end
+                    % OLD CODE: NOT NEEDED?
+                    %elseif iscell(h.Settings.stim(h.trialstimnum).patternvalue)
+                    %    nDur = length(h.dur);
+                    %    nPit = cellfun(@length,h.Settings.stim(h.trialstimnum).patternvalue);
+                    %    h.freq = h.Settings.stim(h.trialstimnum).patternvalue{nPit==nDur};
+                    %end
                 end
             end
         end
@@ -287,7 +296,7 @@ switch h.Settings.stim(h.trialstimnum).control
         %apply intensity pattern?
         h.trialtype.intenpattern=0;
         if isfield(h.Settings.stim(h.trialstimnum),'patternmethod')
-            if strcmp(h.Settings.stim(h.trialstimnum).patternmethod,'intensity') % intensity changes
+            if strcmp(h.Settings.stim(h.trialstimnum).patternmethod,'intensity') && ~isempty(h.Settings.stim(h.trialstimnum).patternvalue) % intensity changes
                 h.trialtype.intenpattern=1;
                 if ~any(strcmp(h.Settings.conditionmethod,'intensity')) % then already defined
                     h.inten = h.Settings.stim(h.trialstimnum).patternvalue;
@@ -305,4 +314,5 @@ switch h.Settings.stim(h.trialstimnum).control
                 end
             end
         end
+        
 end
