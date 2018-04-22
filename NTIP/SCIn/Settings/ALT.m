@@ -51,30 +51,28 @@ switch opt
     h.Settings.totdur = 0; 
     % duration of trial in seconds
     h.Settings.trialdur = 2; % if 0, consecutive stimuli will occur with no gap
-    % Pattern type method: intensity, pitch. Not supported: channel, duration
-    h.Settings.patternmethod = '';
-    h.Settings.patternvalue = []; % one per stimdur
-    % 'rand' or 'reg' spacing?
-    h.Settings.stimdurtype = 'reg'; % not needed unless 'rand'
-    % Binarual beats frequency: creates right ear frequency of f0+df
-    %h.Settings.df = 0; % 10Hz = alpha. Other options: 1Hz, 25Hz, 40Hz.
-    % Monaural beats instead? 
-    %h.Settings.monaural = 0; 
-    % attenuation level in decibels
-    %h.Settings.atten = -30; 
-    % pitch
-    %h.Settings.f0 = 200; % Left ear carrier frequency (pitch)
-    %intensity
-    h.Settings.inten = 0; % value in dB
-    h.Settings.maxinten = 0; % value in dB
-    %intensity
-    h.Settings.inten_diff = []; % value between 2 and 1000mA for Digitimer DS8R
-    % Tactile: number of pulses per trial
-    %h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
-    % Tactile: within-trial frequency (Hz) 
-    %h.Settings.t_freq=[]; 
+    h.Settings.nstim_trial = 1; % set to zero to be determined by stimdur
+    h.Settings.wait=0; % within-trial frequency (Hz); one value per nstim 
     
-   
+    %% first stimulus: audio
+    % duration of stimulus in seconds
+    h.Settings.stim(1).dur = 0.3; % modified by oddball settings
+    h.Settings.stim(1).patternmethod = '';% Pattern type method: intensity, pitch. Not supported: channel, duration
+    h.Settings.stim(1).patternvalue = {}; % one per stimdur in each cell; one cell per oddball value
+    h.Settings.stim(1).durtype = 'reg'; % not needed unless 'rand'
+    h.Settings.stim(1).inten = 0; % value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.stim(1).inten_diff = []; % value between 0 and 1000mA for Digitimer DS8R
+    h.Settings.stim(1).maxinten = 0; % max output value for safety purposes. Value between 2 and 1000mA for Digitimer DS8R
+    h.Settings.stim(1).f0 = 500; % pitch
+    h.Settings.stim(1).inten_type = 'dB'; % either 'dB' or 'abs'
+    h.Settings.stim(1).df = 0;
+    h.Settings.stim(1).atten = 0; % attenuation level in decibels OR cell with variable and multiplier
+    h.Settings.stim(1).attenchan = [1 2]; % apply attenuation (e.g. during thresholding) to these chans
+    h.Settings.stim(1).control='PsychPortAudio'; % How to control stimulator? Options: PsychPortAudio, audioplayer, labjack, spt
+    h.Settings.stim(1).chan = [1 2]; 
+    h.Settings.stim(1).nrchannels = 2; % total number of channels, e.g. on sound card
+    h.Settings.stim(1).Tukey = 0.25; % Apply Tukey window?
+    h.Settings.stim(1).Tukeytype = 2; % 1 = apply to each tone within pattern; 2 = apply to whole pattern
     
     %% CHANGING STIMULUS INTENSITY EVERY X PULSES
     % REFER TO "TIMER STOP": https://labjack.com/support/ud/df-lj-app-guide/10.5
@@ -91,22 +89,6 @@ switch opt
     
     %% SEQUENCE
     h.Settings.ntrials = 500;
-    % Change probablity (CP): each condition is in rows
-    %h.Settings.oddprob = [
-        % standard (left) vs oddball (right)=
-    %    ];
-    % index of row of oddprob that are standards and oddballs
-    %h.Settings.standardind = 1; % does not apply to 'roving oddball' design
-    % keep oddball trials apart by at least sep_odd standards
-    %h.Settings.sep_odd = [2 1]; % for each CP condition
-    % for each set, ensure a number of leading standards 
-    %h.Settings.std_lead = [0 0]; % for each CP condition
-    % number of minimum sets to randomise together
-    %h.Settings.n_set = [1 1]; % 1 = use min set size, for each CP condition
-    % min number of oddballs within each CP condition
-    %h.Settings.n_odd = [20, 20]; % overrides h.Settings.totdur
-    % min number of oddballs per randomised set, per CP
-    %h.Settings.n_odd_set = [5, 5]; % overrides h.Settings.totdur
     
     %% RESPONSE PARAMETERS
     % record responses during experiment? 0 or 1
