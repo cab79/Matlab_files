@@ -55,7 +55,7 @@ switch anatype
                 % - when the p-value is available, save it as an image too!
                 % - maybe add other stuff to image or leave options
                 if opt.savImg
-                    switch PRTw.model(i_model).input.type
+                    switch D.PRTw.model(D.i_model).input.type
                         case 'classification'
                             % save acc/bacc/cacc only,
                             Pout = save_classif_images(D.Vmsk,D.pth,D.PRTw,SLres,D.DIM,D.nVx,D.i_model,D.R,D.lVx);
