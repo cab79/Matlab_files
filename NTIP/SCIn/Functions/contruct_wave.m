@@ -154,9 +154,9 @@ for i = 1:length(h.dur)
     %end
 
     % apply tapering on each part of the stim pattern?
-    if isfield(h.Settings,'Tukey')
-        if h.Settings.Tukeytype==1
-            mwav{i} = mwav{i}.*repmat(tukeywin(size(mwav{i},2),h.Settings.Tukey)',size(mwav{i},1),1);
+    if isfield(h.Settings.stim(h.trialstimnum),'Tukey')
+        if h.Settings.stim(h.trialstimnum).Tukeytype==1
+            mwav{i} = mwav{i}.*repmat(tukeywin(size(mwav{i},2),h.Settings.stim(h.trialstimnum).Tukey)',size(mwav{i},1),1);
         end
     end
 
@@ -257,22 +257,46 @@ end
 if ~isfield(h,'varlevel')
     h.varlevel=0;
 end
-if isfield(h.Settings,'attenchan')
+inten_atten=0;
+if isfield(h.Settings.stim(h.trialstimnum),'attenchan')
     if any(ismember(h.chan,h.Settings.stim(h.trialstimnum).attenchan))
+        
+        % overall attenuation from GUI
         if isfield(h,'vol_atten')
             try
                 inten_atten = str2double(get(h.vol_atten,'string'));
             catch
                 inten_atten = str2double(h.vol_atten);
             end
-        else
-            inten_atten = h.Settings.stim(h.trialstimnum).atten; 
         end
+        
+        % overall attentuation from settings/sequence
+        if iscell(h.Settings.stim(h.trialstimnum).atten)
+            if strcmp(h.Settings.stim(h.trialstimnum).atten{1},'inten_diff')
+                if ~h.seqtype.adapt && ~h.seqtype.thresh
+                    inten_atten = inten_atten + h.inten_diff * h.Settings.stim(h.trialstimnum).atten{2};
+                else
+                    if isfield(h,'s')
+                        inten_atten = h.s.a(strcmp({h.Settings.adaptive(:).type}, 'discrim')).StimulusLevel;
+                    else
+                        if h.seqtype.adapt
+                            inten_atten = h.Settings.adaptive.startinglevel;
+                        else
+                            inten_atten = h.Settings.threshold.startinglevel;
+                        end  
+                    end
+                end
+            end
+        else % use numeric value from settings
+            inten_atten = inten_atten + h.Settings.stim(h.trialstimnum).atten; 
+        end
+        
+        % stim-specific attentuation from sequence
         if ~h.seqtype.adapt && ~h.seqtype.thresh
             h.inten_atten = inten_atten+h.varlevel;
         elseif (h.seqtype.adapt || h.seqtype.thresh) && h.seqtype.oddball && strcmp(h.Settings.stim(h.trialstimnum).inten_type,'dB')
             if strcmp(h.Settings.oddballmethod,'intensity')
-                h.inten_atten = [inten_atten, (inten_atten+h.varlevel)];
+                h.inten_atten = [inten_atten-h.varlevel/2, (inten_atten+h.varlevel/2)];
                 h.inten_atten = h.inten_atten(h.Seq.signal(h.trialstimnum,h.tr));
             else
                 h.inten_atten = inten_atten+h.varlevel;
@@ -300,10 +324,10 @@ else
 end
 
 
-if isfield(h.Settings,'Tukey')
-    if h.Settings.Tukeytype==2
-        h.mwav = h.mwav.*repmat(tukeywin(size(h.mwav,2),h.Settings.Tukey)',size(h.mwav,1),1);
-        if isfield(h,'mon');h.mon = h.mon.*repmat(tukeywin(size(h.mon,2),h.Settings.Tukey)',size(h.mon,1),1);end
+if isfield(h.Settings.stim(h.trialstimnum),'Tukey')
+    if h.Settings.stim(h.trialstimnum).Tukeytype==2
+        h.mwav = h.mwav.*repmat(tukeywin(size(h.mwav,2),h.Settings.stim(h.trialstimnum).Tukey)',size(h.mwav,1),1);
+        if isfield(h,'mon');h.mon = h.mon.*repmat(tukeywin(size(h.mon,2),h.Settings.stim(h.trialstimnum).Tukey)',size(h.mon,1),1);end
     end
 end
 

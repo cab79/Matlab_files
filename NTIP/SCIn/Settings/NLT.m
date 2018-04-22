@@ -200,8 +200,8 @@ case 'Adaptive'
     % Condition method: intensity, pitch, channel
     h.Settings.conditionmethod = {};
     h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
-    % Oddball method: intensity, intensityindex, pitch, channel
-    h.Settings.oddballmethod = 'intensityindex'; % can use same type for pattern only if oddball intensity is adaptive
+    % Oddball method: intensity, index, pitch, channel
+    h.Settings.oddballmethod = 'index'; % can use same type for pattern only if oddball intensity is adaptive
     h.Settings.oddballvalue = {[1 2]}; % values to go into h.Seq.signal. One per oddprob row, or leave blank if determined from GUI
     h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
 
@@ -212,7 +212,7 @@ case 'Adaptive'
         0.5 0.5
         ];
     % index of row of oddprob that are standards and oddballs. Can be
-    % overridden by h.Settings.oddballvalue if using intensityindex
+    % overridden by h.Settings.oddballvalue if using index
     h.Settings.standardind = 1; 
     h.Settings.oddind = 2; 
     % keep oddball trials apart by at least sep_odd standards
@@ -539,8 +539,8 @@ case 'Adaptive'
     % Condition method: intensity, pitch, channel
     h.Settings.conditionmethod = {};
     h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
-    % Oddball method: intensity, intensityindex, pitch, channel
-    h.Settings.oddballmethod = 'intensityindex'; % can use same type for pattern only if oddball intensity is adaptive
+    % Oddball method: intensity, index, pitch, channel
+    h.Settings.oddballmethod = 'index'; % can use same type for pattern only if oddball intensity is adaptive
     h.Settings.oddballvalue = {[1 2], [1 2], [2 1]}; % values to go into h.Seq.signal. One per oddprob row, or leave blank if determined from GUI
     h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
 
@@ -553,7 +553,7 @@ case 'Adaptive'
         0.8 0.2
         ];
     % index of row of oddprob that are standards and oddballs. Can be
-    % overridden by h.Settings.oddballvalue if using intensityindex
+    % overridden by h.Settings.oddballvalue if using index
     h.Settings.standardind = 1; 
     h.Settings.oddind = 2; 
     % keep oddball trials apart by at least sep_odd standards
@@ -688,8 +688,8 @@ case 'Adaptive'
     % Condition method: intensity, pitch, channel
     h.Settings.conditionmethod = {};
     h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
-    % Oddball method: intensity, intensityindex, pitch, channel
-    h.Settings.oddballmethod = 'intensityindex'; % can use same type for pattern only if oddball intensity is adaptive
+    % Oddball method: intensity, index, pitch, channel
+    h.Settings.oddballmethod = 'index'; % can use same type for pattern only if oddball intensity is adaptive
     h.Settings.oddballvalue = {[1 2], [1 2], [1 2], [1 2], [2 1], [1 2], [1 2], [1 2], [1 2], [2 1], [1 2], [1 2], [1 2], [1 2], [2 1]}; % values to go into h.Seq.signal. One per oddprob row, or leave blank if determined from GUI
     h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
 
@@ -714,7 +714,7 @@ case 'Adaptive'
         0.8 0.2
         ];
     % index of row of oddprob that are standards and oddballs. Can be
-    % overridden by h.Settings.oddballvalue if using intensityindex
+    % overridden by h.Settings.oddballvalue if using index
     h.Settings.standardind = 1; 
     h.Settings.oddind = 2; 
     % keep oddball trials apart by at least sep_odd standards
@@ -852,8 +852,8 @@ case 'Adaptive'
     % Condition method: intensity, pitch, channel
     h.Settings.conditionmethod = {};
     h.Settings.conditionvalue = [];% Rows: methods. Columns: each stimtype
-    % Oddball method: intensity, intensityindex, pitch, channel
-    h.Settings.oddballmethod = 'intensityindex'; % can use same type for pattern only if oddball intensity is adaptive
+    % Oddball method: intensity, index, pitch, channel
+    h.Settings.oddballmethod = 'index'; % can use same type for pattern only if oddball intensity is adaptive
     h.Settings.oddballvalue = {[1 2], [1 2], [1 2], [2 1], [1 2]}; % values to go into h.Seq.signal. One per oddprob row, or leave blank if determined from GUI
     h.Settings.oddballtype = 'classical'; % options: 'roving', 'classical'
 
@@ -868,7 +868,7 @@ case 'Adaptive'
         0.5 0.5
         ];
     % index of row of oddprob that are standards and oddballs. Can be
-    % overridden by h.Settings.oddballvalue if using intensityindex
+    % overridden by h.Settings.oddballvalue if using index
     h.Settings.standardind = 1; 
     h.Settings.oddind = 2; 
     % keep oddball trials apart by at least sep_odd standards

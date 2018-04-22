@@ -237,35 +237,27 @@ while h.i<size(h.Seq.signal,2)
                 h.trialstimnum = i;
                 if strcmp(h.Settings.stim(i).control,'PsychPortAudio') || strcmp(h.Settings.stim(i).control,'audioplayer');
                     opt = 'create';
-                    h = stimtrain(h,opt); % stimulus train
+                    h = stimtrain(h,opt); 
                 elseif strcmp(h.Settings.stim(i).control,'LJTick-DAQ') || strcmp(h.Settings.stim(i).control,'labjack')
                     opt = 'calc';
                     h = stimtrain(h,opt); 
                     opt = 'set';
-                    h = stimtrain(h,opt); % intensity via DAC
+                    h = stimtrain(h,opt); 
                 end
                 opt = 'start';
-                h = stimtrain(h,opt); % stimulus train
+                h = stimtrain(h,opt);
                 
                 % wait
                 if h.Settings.nstim_trial>1 && i~=h.Settings.nstim_trial
-                    WaitSecs(h.Settings.wait(i))
+                    WaitSecs(h.Settings.wait(i));
                 end
                 
             end
         end
     end
     
-    % update start time of trial
-    h.st = GetSecs;
-    h.ct=h.st;
-    
-    % record stimulus timing
+    % record stimulus timing (of last stimulus in trial)
     h.out.stimtime{h.i} = GetSecs;
-    
-    % start time of trial
-    h.st = GetSecs;
-    h.ct=h.st;
     
     % calculate ISI
     if isfield(h,'st_prev')
