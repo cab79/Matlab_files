@@ -1,1 +1,0 @@
-root='C:\Matlab_files\NTIP\SCIn';root='C:\Matlab_files\NTIP\SCIn';

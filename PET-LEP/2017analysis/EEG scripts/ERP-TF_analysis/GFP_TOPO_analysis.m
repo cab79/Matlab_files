@@ -11,7 +11,7 @@ savenametype='';
 for i = use_etype
     savenametype = [savenametype '_' eventtypes{1,i}(end)];
 end
-load([select TFmethod savenametype '_data_base0.mat'])
+load([select TFmethod savenametype '_data_base3500.mat'])
 
 %---settings---%
 anatype = {'evoked', 'induced','itc'}; anaDAT=1; % 1:evoked, 2:induced, 3: ITC

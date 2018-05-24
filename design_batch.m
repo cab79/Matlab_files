@@ -101,6 +101,9 @@ end
 if ~isfield(D,'maskfile')
     D.maskfile = '';
 end
+if ~isfield(D,'transform')
+    D.transform = '';
+end
 
 if D.para==1
     paraname = '_spm';
@@ -587,7 +590,7 @@ for gd = 1:length(Ngrp)
                             condlist = D.cond_list(:,find(find(wfactind)==wnum));
                         end
                         if isempty(fnames) || D.overwrite
-                            factor_img(subdir,D.imglist,condlist,scanname,D.fileoptype,D.znorm);
+                            factor_img(subdir,D.imglist,condlist,scanname,D.fileoptype,D.znorm,D.transform);
                             fnames = dir(fullfile(subdir, [scanname '*' D.fileoptype '*' scanname_ext '*']));
                         end
                         for i=1:length(fnames)
@@ -616,8 +619,8 @@ for gd = 1:length(Ngrp)
                     % check averaged files exist; if not then create them.
                     %fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
                     condlist = D.regress_contrast;
-                    if length(D.imglist)>1
-                        fname = factor_img(subdir,D.imglist,condlist,scanname,D.fileoptype,D.znorm);
+                    if length(D.imglist)>1 || ~isempty(D.transform)
+                        fname = factor_img(subdir,D.imglist,condlist,scanname,D.fileoptype,D.znorm,D.transform);
                         %fnames = dir(fullfile(subdir, ['*' scanname scanname_ext '*']));
                     else
                         fname = dir(fullfile(subdir,D.imglist{:}));

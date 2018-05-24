@@ -10,7 +10,7 @@ grplist = [1]; sublist_side = {'R'}; sublist_grp = {'all'};
 el = length(chanlocs);
 
 timebin = [-3.5 2];
-basebin = [-0.5 0];
+basebin = [-3.5 -3];
 eventtypes = {'S  1','S  2'}; use_etype = [1 2]; no_cond = length(use_etype);
 
 %select = 'TF'; TFmethod = '-FT'; % or, '-EL'

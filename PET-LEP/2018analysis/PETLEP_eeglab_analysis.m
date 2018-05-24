@@ -20,18 +20,28 @@ addpath(genpath(support_path));
 % For example: EEGstudy_P1_S1_B1_C1.set
 % Any of the elements can be left out. But all must be separated by underscores.
 
-clear S
-S.rawpath = ''; % unprocessed data in original format
-S.setpath = 'C:\Data\PET-LEP\Preprocessed'; % folder to save processed .set data
-S.freqpath = 'C:\Data\PET-LEP\Frequency'; % folder to save processed .set data
-S.erppath = 'C:\Data\PET-LEP\ERP'; % folder to save processed .set data
-S.fnameparts = {'subject'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
-S.subjects = {'P35'}; % either a single subject, or leave blank to process all subjects in folder
-S.sessions = {};
-S.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
-S.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
-S.datfile = 'C:\Data\PET-LEP\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
-save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+S.path.main = 'C:\Data\PET-LEP\';
+if exist(fullfile(S.path.main,'S.mat'),'file')
+    load(fullfile(S.path.main,'S.mat'));
+end
+S.path.raw = [S.path.main 'Raw']; % unprocessed data in original format
+S.path.prep = [S.path.main 'Preprocessed']; % folder to save processed .set data
+S.path.freq = [S.path.main 'Frequency']; % folder to save frequency analyses
+S.path.tf = [S.path.main 'TF']; % folder to save time-frequency analyses
+S.path.erp = [S.path.main 'ERP']; % folder to save ERP analyses
+S.path.datfile = [S.path.main 'Participant_data.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+S.path.locfile = fullfile(eeglab_path,'\plugins\dipfit2.3\standard_BESA\standard-10-5-cap385.elp');
+save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+
+
+% S.fnameparts = {'subject'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
+% S.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+% S.sessions = {};
+% S.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
+% S.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
+% S.datfile = 'C:\Data\PET-LEP\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+% save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+% 
 
 %% 3. DATA IMPORT
 % This identifies files for conversion to EEGLAB format for a
@@ -82,7 +92,7 @@ save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time t
 % for removal and saved that file (with the same name, i.e. ..._ICA.set)
 load(fullfile(S.setpath,'S'))
 S.loadext = 'set';
-S.subjects = {'S18','P06','P08','P35'}; % either a single subject, or leave blank to process all subjects in folder
+S.subjects = {'S09'}; % either a single subject, or leave blank to process all subjects in folder
 %S.subjects = {};
 S.ICAremove = 1; % remove ICA components (0 if already removed from data, 1 if selected but not removed)
 S.detrend = 1;
@@ -130,3 +140,55 @@ S=erp_freq_analysis(S)
 S.analysistype = 'ERP'; %'Freq','TF','Coh','ERP'
 S=erp_freq_analysis(S)
 save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+
+%% GRAND AVERAGE OF ERP/TF/FREQ DATA
+close all
+load(fullfile(S.path.main,'S'))
+S.ga.fname.parts = {'subject','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
+S.ga.study = {};
+S.ga.load.suffix = {'part2_orig_epoched_manrej_ICA_cleaned_ERP'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.ga.fname.ext = {'mat'};% generic file suffix
+S.ga.select.groups = {}; % group index, or leave blank to process all 
+S.ga.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+S.ga.select.sessions = {};
+S.ga.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.ga.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
+S.ga.select.events = 1:2;
+S.ga.select.chans = {[],[29 30]};
+S.ga.select.datatype = 'ERP'; % Options: 'TF','ERP','Freq'. NOT YET TESTED ON Freq or TF DATA - WILL PROBABLY FAIL
+S.ga.select.freqs = 0; % select which freq to actally process
+S.ga.grand_avg.parts = {}; % which file categories to produce separate grand averages? Blank = one GA for all. Options: {'groups','subjects','sessions','blocks','conds'};
+S.ga.grand_avg.weighted = 1; % weighted average according to number of trials
+% RUN
+S=eeg_grand_average(S);
+save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+
+%% GLOBAL FIELD POWER (GFP) ANALYSIS
+% close all
+% load(fullfile(S.setpath,'S.mat'))
+% % Setting for GFP analysis
+% S.GAnorm.commonavg = 1; % subtract common average from each electrode
+% S.GAnorm.gfp = 1; % divide by the mean GFP over time
+% S.baselinecorrectGFP = 1;
+% S.GFPnormtype = 'nonorm'; % Options: {'nonorm', 'GFPnorm', 'GFPpriornorm1','GFPpriornorm2','GFPbase','GFPp1norm'}; GFPnorm=1;
+% S.basewin = [-3.7 -3.2]; % baseline window
+% S.topXpercent = 100;
+% S=gfp_analysis(S);
+% save(fullfile(S.setpath,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+
+
+%% GLOBAL FIELD POWER (GFP) ANALYSIS FOR ERP/TF
+close all
+load(fullfile(S.path.main,'S.mat'))
+S.gfp.select.datatype = 'ERP'; % Options: 'TF','ERP','Freq'. NOT YET TESTED ON Freq or TF DATA - WILL PROBABLY FAIL
+S.gfp.select.events = 1:2;
+% Setting for GFP analysis
+S.gfp.GAnorm.commonavg = 1; % subtract common average from each electrode
+S.gfp.GAnorm.gfp = 1; % divide by the mean GFP over time
+S.gfp.GArmbase = 1; % remove grand avg baseline
+S.gfp.GFPnorm.type = 'lognorm'; % Options: {'nonorm', 'GFPnorm', 'GFPpriornorm1','GFPpriornorm2','GFPbase','GFPp1norm','lognorm'}; 
+S.gfp.epoch.basewin = [-3.7 -3.2]; % baseline window
+S.gfp.select.chans = {[],[29 30]};
+S.gfp.topXpercent = 50;
+S=gfp_analysis(S);
+save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable

@@ -91,7 +91,7 @@ for f = 1:length(files)
     end
 end
 
-for f = 12:length(files)
+for f = 1:length(files)
     fname = files(f).name;
     
     if ~isempty(freqwin)

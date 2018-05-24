@@ -1,7 +1,7 @@
 %% settings
 dbstop if error
 studyname = 'CORE';
-subnum = '022';
+subnum = 'pilot';
 dname = 'C:\Data\CORE_fMRI\SCIn_outputs';
 seq_pref = 'Sequence_';
 out_pref = 'Output_';
@@ -26,6 +26,7 @@ events = {
     'aud_slow_odd_chan2',3,[4]
     'tact_fast_odd_chan2',5,[2]
     'aud_fast_odd_chan2',7,[4]
+    'all_events',[1 3 5 7],[1 2 3 4]
     };
 
 % block names and associated condition numbers
@@ -56,7 +57,11 @@ load(of.name)
 trigtime = out.presstime(out.presstrial==0 & strcmp(out.pressbutton,'7&'));
 
 if length(trigtime)<4
-    error('should be 4 scanner triggers recorded')
+    try
+        trigtime = out.trigtime;
+    catch
+        error('should be 4 scanner triggers recorded')
+    end
 end
 
 scanstart = trigtime(1);

@@ -3,34 +3,52 @@ function S=erp_freq_analysis(S)
 % To be run after data can be cleaned 
 % Before running this, check data quality in EEGLAB
 % Requires Fieldtrip to be in the Matlab path
-
-S.nMarkType = length(S.markers);
-if strcmp(S.analysistype,'ERP')
+S.func = 'tf';
+S.(S.func).nMarkType = length(S.(S.func).epoch.markers);
+if strcmp(S.(S.func).select.datatype,'ERP')
 %    dp = 250;
-    S.nf = 1;
+    S.(S.func).nf = 1;
 %    times = -0.2:0.004:0.796;
-elseif strcmp(S.analysistype,'TF')
+elseif strcmp(S.(S.func).select.datatype,'TF')
 %    dp = 181;
-    S.nf = length(S.freqsrange);
+    S.(S.func).nf = length(S.(S.func).select.freq);
 %    intimes = -0.2:0.004:0.796;
 end
-if strcmp(S.analysistype,'ERP') && S.CSD.apply 
-    load(S.CSD.montage); % path to CSD montage (only needed if using CSD)
+if strcmp(S.(S.func).select.datatype,'ERP') && S.(S.func).CSD.apply 
+    load(S.(S.func).CSD.montage); % path to CSD montage (only needed if using CSD)
 end 
 
 % GET FILE LIST
-S.filepath = S.setpath;
+S.path.file = S.path.prep;
 S = getfilelist(S);
 
-for f = 1:length(S.filelist)
-    file = S.filelist{f};
-    EEG = pop_loadset('filename',file,'filepath',S.setpath);
+for f = 1:length(S.(S.func).filelist)
+    file = S.(S.func).filelist{f};
+    EEG = pop_loadset('filename',file,'filepath',S.path.prep);
 
     % SAVE CHANLOCS FOR PLOTTING LATER (needed for EEGLAB's topoplot function)
-    if f==1
-        if ~exist(fullfile(S.setpath,'chanlocs.mat'),'file')
-            chanlocs = EEG.chanlocs;
-            save(fullfile(S.setpath,'chanlocs.mat'),'chanlocs')
+    %if f==1
+    %    if ~exist(fullfile(S.path.prep,'chanlocs.mat'),'file')
+    %        chanlocs = EEG.chanlocs;
+    %        save(fullfile(S.path.prep,'chanlocs.mat'),'chanlocs')
+    %    end
+    %end
+    
+    % add in any missing chans, fill with nan
+    load(fullfile(S.path.prep,'chanlocs.mat'));
+    labs = {chanlocs.labels};
+    actlabs = {EEG.chanlocs.labels};
+    missing = find(~ismember(labs,actlabs));
+    if ~isempty(missing)
+        for m = 1:length(missing);
+            EEG.chanlocs(missing(m)+1:end+1) = EEG.chanlocs(missing(m):end);
+            EEG.chanlocs(missing(m)) = chanlocs(missing(m));
+            EEG.data(missing(m)+1:end+1,:,:) = EEG.data(missing(m):end,:,:);
+            EEG.data(missing(m),:,:) = nan;
+        end
+        EEG.nbchan = length(EEG.chanlocs);
+        if EEG.nbchan~=length(labs)
+            error('not enough chans')
         end
     end
 
@@ -41,28 +59,32 @@ for f = 1:length(S.filelist)
     end
     
     % remove baseline
-    if S.rmbase
-        EEG = pop_rmbase( EEG, [S.basewin(1)*1000 S.basewin(2)*1000]);
+    if S.(S.func).epoch.rmbase
+        EEG = pop_rmbase( EEG, [S.(S.func).epoch.basewin(1)*1000 S.(S.func).epoch.basewin(2)*1000]);
     end
     
     dsize = size(EEG.data);
-    S.intimes=EEG.times;
+    S.(S.func).intimes=EEG.times;
     %SINGDAT = cell(1);
     
     % prepare for saving
     [pth nme ext] = fileparts(file); 
-    sname_ext = [S.analysistype '.mat'];
+    sname_ext = [S.(S.func).select.datatype '.mat'];
     sname = [nme '_' sname_ext];
     
     % switch to selected analysis
-    switch S.analysistype
+    switch S.(S.func).select.datatype
         case 'ERP'
             EEGall=EEG;
-            for mt = 1:S.nMarkType
-                if S.combinemarkers
-                    EEG = pop_selectevent(EEGall,'type',S.markers);
+            for mt = 1:S.(S.func).nMarkType
+                if S.(S.func).epoch.combinemarkers
+                    EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers);
                 else
-                    EEG = pop_selectevent(EEGall,'type',S.markers{mt});
+                    try
+                        EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers{mt});
+                    catch
+                        continue
+                    end
                 end
                 
                 % convert to Fieldtrip
@@ -76,7 +98,7 @@ for f = 1:length(S.filelist)
                 tldata{mt} = ft_timelockanalysis(cfg,FTEEG);
 
                 % apply CSD
-                if S.CSD.apply
+                if S.(S.func).CSD.apply
                     [ntrial,nchan,nsamp] = size(tldata{mt}.trial);
                     trials = reshape(permute(tldata{mt}.trial,[2 3 1]),nchan,nsamp*ntrial);
                     trials=CSD(trials,G,H); 
@@ -88,10 +110,10 @@ for f = 1:length(S.filelist)
             end
             
             % SAVE
-            if ~exist(S.erppath,'dir')
-                mkdir(S.erppath);
+            if ~exist(S.path.erp,'dir')
+                mkdir(S.path.erp);
             end
-            save(fullfile(S.erppath,sname),'tldata');
+            save(fullfile(S.path.erp,sname),'tldata');
             
         case {'Freq','TF','Coh'}
             
@@ -99,7 +121,7 @@ for f = 1:length(S.filelist)
             FTEEG=convertoft(EEG);
             FTEEG.event=EEG.event;
             
-            if strcmp(S.freqtype,'induced') 
+            if strcmp(S.(S.func).freq.type,'induced') 
                 % timelocked (evoked) data
                 cfg = [];
                 cfg.keeptrials = 'yes';
@@ -118,24 +140,24 @@ for f = 1:length(S.filelist)
             disp(['actual frequencies: ' num2str(act_freq)])
             
             % moving averages over time
-            if S.mov_avg_trials
-                nAvg = floor((size(fdata.powspctrm,1)/S.mov_avg_trials_step)-(S.mov_avg_trials/S.mov_avg_trials_step))+1;
+            if S.(S.func).op.mov_avg_trials
+                nAvg = floor((size(fdata.powspctrm,1)/S.(S.func).op.mov_avg_trials_step)-(S.(S.func).op.mov_avg_trials/S.(S.func).op.mov_avg_trials_step))+1;
                 for ma = 1:nAvg
-                    st_ind = (ma-1)*S.mov_avg_trials_step+1;
-                    fdata.madata(:,:,ma) = squeeze(nanmean(fdata.powspctrm(st_ind:st_ind+S.mov_avg_trials-1,:,:),1));
+                    st_ind = (ma-1)*S.(S.func).op.mov_avg_trials_step+1;
+                    fdata.madata(:,:,ma) = squeeze(nanmean(fdata.powspctrm(st_ind:st_ind+S.(S.func).op.mov_avg_trials-1,:,:),1));
                 end
             end
 
             % COHERENCE (WPLI)
-            if strcmp(S.analysistype,'Coh')
+            if strcmp(S.(S.func).select.datatype,'Coh')
                 % coherence matrices
                 nchan = length(fdata.label);
-                matrix=zeros(size(S.freqsrange,1),nchan,nchan); 
+                matrix=zeros(size(S.(S.func).select.freq,1),nchan,nchan); 
                 coh = zeros(nchan,nchan);
                 cohboot = zeros(nchan,nchan);
 
                 wpli = ft_connectivity_wpli(fdata.crsspctrm,'debias',true,'dojack',false);
-                for c = 1:size(S.freqsrange,1)
+                for c = 1:size(S.(S.func).select.freq,1)
                     fprintf('f %d',c);
                     [M, bstart] = min(abs(fdata.freq-freqlist(c,1)));
                     [M, bend] = min(abs(fdata.freq-freqlist(c,2)));
@@ -145,7 +167,7 @@ for f = 1:length(S.filelist)
                     matrix(c,:,:) = coh;
                 end
 
-                for nboot = 1:S.bootrep
+                for nboot = 1:S.(S.func).freq.bootrep
                     fprintf('nboot %d',nboot);
                     for tr = 1:length(fdata.trial)
                         for ele = 1:size(fdata.trial{tr},1);
@@ -173,33 +195,52 @@ for f = 1:length(S.filelist)
                     clear wpli_boot
                 end
             end
-            freqs = S.freqsrange;
+            freqs = S.(S.func).select.freq;
 
-            if strcmp(S.analysistype,'TF') && ~isempty(S.baselinetype)
+            if strcmp(S.(S.func).select.datatype,'TF') && ~isempty(S.(S.func).freq.basenorm)
                 % remove baseline
-                cfg.baseline     = S.basewin;
-                cfg.baselinetype = S.baselinetype; %'absolute', 'relative', 'relchange', 'normchange' or 'db' (default = 'absolute')
+                cfg.baseline     = S.(S.func).epoch.basewin;
+                cfg.baselinetype = S.(S.func).freq.basenorm; %'absolute', 'relative', 'relchange', 'normchange' or 'db' (default = 'absolute')
                 cfg.parameter    = 'powspctrm';
                 fdata = ft_freqbaseline_CAB(cfg, fdata);
             end
             
             % separate marker types
-            if ~S.combinemarkers
-                events = {FTEEG.event.type};
-                for mt = 1:S.nMarkType
-                    cfg.trials      = find(strcmp(events,S.markers{mt}));
+            if ~S.(S.func).epoch.combinemarkers
+                % get marker occuring at zero latency
+                events={};
+                for m=1:length(EEG.epoch)
+                    events{m} = EEG.epoch(m).eventtype{find([EEG.epoch(m).eventlatency{:}]==0)};
+                end
+                for mt = 1:S.(S.func).nMarkType
+                    cfg.trials      = find(strcmp(events,S.(S.func).epoch.markers{mt}));
                     cfg.avgoverrpt  = 'no';
                     fdatat{mt} = ft_selectdata(cfg, fdata);
                 end
-                fdata=fdatat;
-                clear fdatat;
+            else
+                fdatat = {fdata};
             end
             
-            % SAVE
-            if ~exist(S.freqpath,'dir')
-                mkdir(S.freqpath)
+            if isfield(fdata,'madata')
+                fdatat{1}.madata=fdata.madata;
             end
-            save(fullfile(S.freqpath,sname),'fdata');
+            
+            fdata=fdatat;
+            clear fdatat;
+            % SAVE
+            switch S.(S.func).select.datatype
+                case 'Freq'
+                    if ~exist(S.path.freq,'dir')
+                        mkdir(S.path.freq)
+                    end
+                    save(fullfile(S.path.freq,sname),'fdata');
+                case 'TF'
+                    if ~exist(S.path.tf,'dir')
+                        mkdir(S.path.tf)
+                    end
+                    save(fullfile(S.path.tf,sname),'fdata');
+            end
+                    
     end
     
 end

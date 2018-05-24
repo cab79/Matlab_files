@@ -25,14 +25,22 @@ for d = 1:length(D)
             
             % what are the correct responses?
             D(d).Processed(op).correct_resp = D(d).Sequence.signal(S.signal.target,:);
+            D(d).Processed(op).correct_resp_new = D(d).Processed(op).correct_resp;
             for i = 1:length(S.accuracy.target_resp{1})
-                D(d).Processed(op).correct_resp(D(d).Processed(op).correct_resp==S.accuracy.target_resp{1}(i)) = S.accuracy.target_resp{2}(i);
+                D(d).Processed(op).correct_resp_new(D(d).Processed(op).correct_resp==S.accuracy.target_resp{1}(i)) = S.accuracy.target_resp{2}(i);
             end
-
+            D(d).Processed(op).correct_resp = D(d).Processed(op).correct_resp_new;
+            
             % compare actual responses to correct responses - which were
             % correct?
             D(d).Processed(op).correct = double(D(d).Processed(op).correct_resp==D(d).Processed(op).presssignal);
             D(d).Processed(op).correct(isnan(D(d).Processed(op).presssignal)) = nan;
+            
+            % moving average percent correct over time
+            ma=S.movingavg;
+            for i = 1:length(D(d).Processed(op).correct)
+                D(d).Processed(op).macorrect(i) = 100*sum(D(d).Processed(op).correct(max(1,i-ma+1):i))/length(max(1,i-ma+1):i);
+            end
             
             % create condnum cell which either contains all trials or a
             % subset of trials according to S.trialmax
@@ -66,7 +74,7 @@ for d = 1:length(D)
                 condsuni = condsuni(~isnan(condsuni));
                 D(d).Processed(op).condcorrectfract{cn} = nan(1,length(conds));
                 for i = 1:length(condsuni)
-                    D(d).Processed(op).condcorrect{cn}{condsuni(i)} = D(d).Processed(op).correct(condnum{cn}==condsuni(i)); 
+                    D(d).Processed(op).condcorrect{cn}{condsuni(i)} = D(d).Processed(op).correct(condnum{cn}==condsuni(i) & ismember(D(d).Sequence.signal(S.signal.target,:),S.accuracy.cond_stimtype)); 
                     D(d).Processed(op).numtrials{cn}{condsuni(i)} = sum(~isnan(D(d).Processed(op).condcorrect{cn}{condsuni(i)}));
                     D(d).Processed(op).condcorrectfract{cn}(condsuni(i)) = nansum(D(d).Processed(op).condcorrect{cn}{condsuni(i)})/D(d).Processed(op).numtrials{cn}{condsuni(i)};
                 end
@@ -75,9 +83,42 @@ for d = 1:length(D)
                 blocks = unique(D(d).Sequence.blocks);
                 for i = 1:length(condsuni)
                     for b = 1:length(blocks)
-                        D(d).Processed(op).blockcondcorrect{cn}{condsuni(i)}{b} = D(d).Processed(op).correct(condnum{cn}==condsuni(i) & D(d).Sequence.blocks==blocks(b)); 
+                        D(d).Processed(op).blockcondcorrect{cn}{condsuni(i)}{b} = D(d).Processed(op).correct(condnum{cn}==condsuni(i) & D(d).Sequence.blocks==blocks(b) & ismember(D(d).Sequence.signal(S.signal.target,:),S.accuracy.cond_stimtype)); 
                         D(d).Processed(op).blocknumtrials{cn}{condsuni(i)}{b} = sum(~isnan(D(d).Processed(op).blockcondcorrect{cn}{condsuni(i)}{b}));
                         D(d).Processed(op).blockcondcorrectfract{cn}{condsuni(i)}(b) = nansum(D(d).Processed(op).blockcondcorrect{cn}{condsuni(i)}{b})/D(d).Processed(op).blocknumtrials{cn}{condsuni(i)}{b};
+                        for ii = 1:length(D(d).Processed(op).blockcondcorrect{cn}{condsuni(i)}{b})
+                            D(d).Processed(op).blockcondcorrectmovavg{cn}{condsuni(i)}{b}(ii) = 100*sum(D(d).Processed(op).blockcondcorrect{cn}{condsuni(i)}{b}(max(1,ii-ma+1):ii))/length(max(1,ii-ma+1):ii);;
+                        end
+                    end
+                end
+                
+                
+                % split into blocks before conditions, to get moving average of condition ratio of
+                % percent correct
+                blocks = unique(D(d).Sequence.blocks);
+                for b = 1:length(blocks)
+                    trialidx=find(D(d).Sequence.blocks==blocks(b) & ismember(D(d).Sequence.signal(S.signal.target,:),S.accuracy.cond_stimtype));
+                    D(d).Processed(op).blockcorrect{cn}{b} = D(d).Processed(op).correct(trialidx);
+                    cond = condnum{cn}(trialidx);
+                    % for each trial, get indices of last ma trials
+                    for ii = 1:length(trialidx)
+                        idx=max(1,ii-ma+1):ii;
+                        correcttrials=D(d).Processed(op).blockcorrect{cn}{b}(idx);
+                        condidx=cond(idx);
+                        ucond = unique(condidx);
+                        correct=[];
+                        Ntrials=[];
+                        for ci =1:length(ucond)
+                            % proportion correct, from 0 to 1: correctN / totalN
+                            Ntrials(ci)=length(idx(condidx==ucond(ci)));
+                            correct(ci) = nansum(D(d).Processed(op).blockcorrect{cn}{b}(idx(condidx==ucond(ci))))/Ntrials(ci);
+                        end
+                        if isempty(correct) || length(correct)<2 || any(Ntrials<2); 
+                            D(d).Processed(op).blockcorrectmovavg{cn}{b}(ii) = NaN;
+                        else
+                            % difference in proportion correct ranging from -1 to 1
+                            D(d).Processed(op).blockcorrectmovavg{cn}{b}(ii) = correct(1)-correct(2);
+                        end
                     end
                 end
                 
@@ -97,8 +138,8 @@ for d = 1:length(D)
                     for i = 1:length(cues)
                         for s = 1:length(stims)
                             D(d).Processed(op).stimcuecorrect{cn}{cues(i)}{s} = D(d).Processed(op).correct(D(d).Sequence.signal(S.signal.cue,:)==cues(i) & D(d).Sequence.signal(S.signal.target,:)==stims(s)); 
-                            D(d).Processed(op).stimcuenumtrials{cn}{cues(i)}{s} = sum(~isnan(D(d).Processed(op).stimcondcorrect{cn}{cues(i)}{s}));
-                            D(d).Processed(op).stimcuecorrectfract{cn}{cues(i)}(s) = nansum(D(d).Processed(op).stimcondcorrect{cn}{cues(i)}{s})/D(d).Processed(op).stimcuenumtrials{cn}{cues(i)}{s};
+                            D(d).Processed(op).stimcuenumtrials{cn}{cues(i)}{s} = sum(~isnan(D(d).Processed(op).stimcuecorrect{cn}{cues(i)}{s}));
+                            D(d).Processed(op).stimcuecorrectfract{cn}{cues(i)}(s) = nansum(D(d).Processed(op).stimcuecorrect{cn}{cues(i)}{s})/D(d).Processed(op).stimcuenumtrials{cn}{cues(i)}{s};
                         end
                     end
                 end

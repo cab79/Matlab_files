@@ -1,5 +1,0 @@
-
-
-function [Error ljNumber] = ljud_StringToDoubleAddress(String,HexDot)
-Number = 0;
-[Error ljNumber] = calllib('labjackud','StringToDoubleAddress',String,Number,HexDot);
