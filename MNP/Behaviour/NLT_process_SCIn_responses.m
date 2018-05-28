@@ -69,6 +69,7 @@ MNP_HGF(D,S);
 
 
 %% 5. PLOTS
+%close all
 % PLOT sequence
 if isfield(D(1).Sequence,'adapttype');
     figure;plot(D(1).Sequence.condnum);

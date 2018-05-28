@@ -25,9 +25,11 @@ res  = NaN(n,1);
 %% SOFTMAX
 if strcmp(r.c_obs.model,'RT-soft') || strcmp(r.c_obs.model,'soft')
     % Predictions or posteriors?
-    pop = 1; % Default: predictions
+    %pop = 1; % Default: predictions
     if r.c_obs.predorpost == 2
         pop = 3; % Alternative: posteriors
+    else
+        pop = r.c_obs.predorpost;
     end
 
     % Softmax parameter

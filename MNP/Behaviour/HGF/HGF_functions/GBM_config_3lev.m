@@ -73,8 +73,8 @@ c.logsa_0sa = [NaN,          0,      0];
 c.logal0mu = repmat(log(0.05),1,c.n_alphain);
 c.logal0sa = repmat(1,1,c.n_alphain);
 c.logal1mu = repmat(log(0.05),1,c.n_alphain);
-c.logal1sa = repmat(0,1,c.n_alphain); % fixed
-c.one_alpha =1; % 1 = two alphas are the same. Must fixed variance of al1 prior to reduce complexity.
+c.logal1sa = repmat(1,1,c.n_alphain); % unfixed
+c.one_alpha =0; % 1 = two alphas are the same. Must fix variance of al1 priors to reduce complexity.
 
 %% Gain
 

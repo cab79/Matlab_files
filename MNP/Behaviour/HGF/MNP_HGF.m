@@ -13,7 +13,7 @@ hgf=1;
 sdt=0;
 acc = 0;
 
-prc_config = 'GBM_config_3lev'; obs_config = 'logrt_softmax_binary_soft_config'; nstim=[];
+prc_config = 'GBM_config_3lev'; obs_config = 'logrt_softmax_binary_softmu0_config'; nstim=[];
 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 pdatfile = 'C:\Data\MNP\Pilots\Participant_Data.xlsx';
@@ -39,25 +39,35 @@ for f = files_ana'
 %     u(u==2)=1;
 %     u(2,:)=1;
 %     u=u';
-    
-    % associative learning
-    sig=D(1).Sequence.signal(1:2,:); % second stimulus
-    u(sig(1,:)==sig(2,:)) = 0;
-    u(sig(1,:)~=sig(2,:)) = 1;
-    u(2,:)=1;
-    u=u';
-    
 %     y = D(1).Processed.presssignal; % BINARY response
 %     y(y==1)=1;
 %     y(y==2)=0;
 %     y=y';
+
+%     % associative learning: u indicates pairings
+%     sig=D(1).Sequence.signal(1:2,:); 
+%     u(sig(1,:)==sig(2,:)) = 0;
+%     u(sig(1,:)~=sig(2,:)) = 1;
+%     u(2,:)=1;
+%     u=u';
+%     % associative learning - responses indicate pairings
+%     y=[]
+%     ysig=D(1).Processed.presssignal;
+%     y(ysig(1,:)==sig(1,:)) = 1;
+%     y(ysig(1,:)~=sig(1,:)) = 0;
+%     y(isnan(ysig))=nan;
+%     y=y';
     
-    % associative learning
-    y=[]
-    ysig=D(1).Processed.presssignal;
-    y(ysig(1,:)==sig(1,:)) = 1;
-    y(ysig(1,:)~=sig(1,:)) = 0;
-    y(isnan(ysig))=nan;
+    % associative learning: u indicates outcome and cues
+    sig=D(1).Sequence.signal(1:2,:); 
+    u(1,sig(2,:)==1) = 0; % outcome
+    u(1,sig(2,:)==2) = 1; % outcome
+    u(2,:) = sig(2,:); % outcome types
+    u(3,:) = sig(1,:); % cues
+    u=u';
+    y = D(1).Processed.presssignal; % BINARY response
+    y(y==1)=1;
+    y(y==2)=0;
     y=y';
 
     %% HGF
@@ -68,7 +78,8 @@ for f = files_ana'
     %obs_model = 'tapas_bayes_optimal_binary_config'; %BAYES OPTIMAL
     opt_algo = 'tapas_quasinewton_optim_config';
     
-    sname = [S(1).select.subjects{1, 1} '_bopars.mat'];
+    sname = datestr(now,30);
+    sname = [S(1).select.subjects{1, 1} '_' sname '_bopars.mat'];
     if hgf && exist(fullfile(aname,sname),'file') && overwrite==0
         load(fullfile(aname,sname));
     elseif hgf
