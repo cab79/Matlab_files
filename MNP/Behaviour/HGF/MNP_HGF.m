@@ -1,8 +1,16 @@
 function MNP_HGF(D,S,sim_param)
 
 if isempty(sim_param)
-    
-    sim_param = [-0.0197 1 1 0.09 1 1 0 0 0 1 1 -1.1537 -6.2314 -6.2823 alpha];
+    mu_0=[NaN,0,1];
+    sa_0=[NaN,0.5,1];
+    al0=[0.5 0.5];
+    al1=[0.5 0.5];
+    rho=[NaN 0 0];
+    ka = [NaN,1];
+    om = [NaN,-9,-6];
+    eta0=0;
+    eta1=1;
+    sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1];
 end
 
 dbstop if error
@@ -51,9 +59,6 @@ for f = files_ana'
     %     y=y';
       %end
 
-<<<<<<< HEAD
-    % associative learning: u indicates pairings
-=======
 %     % associative learning: u indicates pairings
 %     sig=D(1).Sequence.signal(1:2,:); 
 %     u(sig(1,:)==sig(2,:)) = 0;
@@ -71,40 +76,18 @@ for f = files_ana'
     %end
     
     % associative learning: u indicates outcome and cues
->>>>>>> 0c713280a38b6b91c43745d4ca3721c8d67e031d
     sig=D(1).Sequence.signal(1:2,:); 
-    u(sig(1,:)==sig(2,:)) = 0;
-    u(sig(1,:)~=sig(2,:)) = 1;
-    u(2,:)=1;
+    u(1,sig(2,:)==1) = 0; % outcome
+    u(1,sig(2,:)==2) = 1; % outcome
+    u(2,:) = sig(2,:); % outcome types
+    u(3,:) = sig(1,:); % cues
     u=u';
-<<<<<<< HEAD
-    % associative learning - responses indicate pairings
-    y=[]
-    ysig=D(1).Processed.presssignal;
-    y(ysig(1,:)==sig(1,:)) = 1;
-    y(ysig(1,:)~=sig(1,:)) = 0;
-    y(isnan(ysig))=nan;
-    y=y';
-    
-%     % associative learning: u indicates outcome and cues
-%     sig=D(1).Sequence.signal(1:2,:); 
-%     u(1,sig(2,:)==1) = 0; % outcome
-%     u(1,sig(2,:)==2) = 1; % outcome
-%     u(2,:) = sig(2,:); % outcome types
-%     u(3,:) = sig(1,:); % cues
-%     u=u';
-%     y = D(1).Processed.presssignal; % BINARY response
-%     y(y==1)=1;
-%     y(y==2)=0;
-%     y=y';
-=======
     if isempty(sim_param)
         y = D(1).Processed.presssignal; % BINARY response
         y(y==1)=1;
         y(y==2)=0;
         y=y';
     end
->>>>>>> 0c713280a38b6b91c43745d4ca3721c8d67e031d
 
     %% HGF
     % prc: perceptual; obs:observation; opt:optimisation

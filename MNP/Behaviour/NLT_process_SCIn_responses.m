@@ -65,8 +65,8 @@ save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time
 save(fullfile(S.path.prep,'D'),'D'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
 %% HGF
-MNP_HGF(D,S);
-
+MNP_HGF(D,S,[]);
+return
 
 %% 5. PLOTS
 %close all
