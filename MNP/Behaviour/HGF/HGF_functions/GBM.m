@@ -200,6 +200,7 @@ for k=2:1:n
             mu(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
             
             %% MOD: need to update this properly
+<<<<<<< HEAD
 %             if u(k,3)==1
 %                 mu0(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
 %                 mu(k,1) = mu0(k,1);
@@ -207,6 +208,18 @@ for k=2:1:n
 %                 mu0(k,1) = (1-muhat(k,1)) *und1 /(muhat(k,1) *und0 +(1 -muhat(k,1)) *und1);
 %                 mu(k,1) = 1-mu0(k,1);
 %             end
+=======
+            if u(k,3)==2
+                mu0(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
+                mu(k,1) = mu0(k,1);
+            elseif u(k,3)==1
+                mu0(k,1) = (1-muhat(k,1)) *und1 /(muhat(k,1) *und0 +(1 -muhat(k,1)) *und1);
+                mu(k,1) = 1-mu0(k,1);
+                
+                % calculate prediction error for mu0 - muhat
+                
+            end
+>>>>>>> 0c713280a38b6b91c43745d4ca3721c8d67e031d
             
             
             %%
@@ -350,7 +363,7 @@ for k=2:1:n
         dau(k) = dau(k-1);
         if exist('g','var')
             g(k,:)=g(k-1,:);
-        end;
+        end
         al(k)  = al(k-1);
     end
 end

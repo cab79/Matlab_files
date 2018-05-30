@@ -1,4 +1,9 @@
-function MNP_HGF(D,S)
+function MNP_HGF(D,S,sim_param)
+
+if isempty(sim_param)
+    
+    sim_param = [-0.0197 1 1 0.09 1 1 0 0 0 1 1 -1.1537 -6.2314 -6.2823 alpha];
+end
 
 dbstop if error
 %addpath('C:\Data\Matlab\Matlab_files\CORE\Experiment');
@@ -39,17 +44,40 @@ for f = files_ana'
 %     u(u==2)=1;
 %     u(2,:)=1;
 %     u=u';
-%     y = D(1).Processed.presssignal; % BINARY response
-%     y(y==1)=1;
-%     y(y==2)=0;
-%     y=y';
+      %if isempty(sim_param)
+    %     y = D(1).Processed.presssignal; % BINARY response
+    %     y(y==1)=1;
+    %     y(y==2)=0;
+    %     y=y';
+      %end
 
+<<<<<<< HEAD
     % associative learning: u indicates pairings
+=======
+%     % associative learning: u indicates pairings
+%     sig=D(1).Sequence.signal(1:2,:); 
+%     u(sig(1,:)==sig(2,:)) = 0;
+%     u(sig(1,:)~=sig(2,:)) = 1;
+%     u(2,:)=1;
+%     u=u';
+    %if isempty(sim_param)
+    %     % associative learning - responses indicate pairings
+    %     y=[]
+    %     ysig=D(1).Processed.presssignal;
+    %     y(ysig(1,:)==sig(1,:)) = 1;
+    %     y(ysig(1,:)~=sig(1,:)) = 0;
+    %     y(isnan(ysig))=nan;
+    %     y=y';
+    %end
+    
+    % associative learning: u indicates outcome and cues
+>>>>>>> 0c713280a38b6b91c43745d4ca3721c8d67e031d
     sig=D(1).Sequence.signal(1:2,:); 
     u(sig(1,:)==sig(2,:)) = 0;
     u(sig(1,:)~=sig(2,:)) = 1;
     u(2,:)=1;
     u=u';
+<<<<<<< HEAD
     % associative learning - responses indicate pairings
     y=[]
     ysig=D(1).Processed.presssignal;
@@ -69,6 +97,14 @@ for f = files_ana'
 %     y(y==1)=1;
 %     y(y==2)=0;
 %     y=y';
+=======
+    if isempty(sim_param)
+        y = D(1).Processed.presssignal; % BINARY response
+        y(y==1)=1;
+        y(y==2)=0;
+        y=y';
+    end
+>>>>>>> 0c713280a38b6b91c43745d4ca3721c8d67e031d
 
     %% HGF
     % prc: perceptual; obs:observation; opt:optimisation
@@ -88,16 +124,22 @@ for f = files_ana'
         else
             nst=nstim;
         end
-        if bayes_opt
+        if ~isempty(sim_param)
+            sim = tapas_simModel_CAB(u(1:nst,:), prc_model, sim_param, [], [], prc_config, []);
+        elseif bayes_opt
             bopars = tapas_fitModel_CAB([], u(1:nst,:), prc_model, obs_model, opt_algo); %BAYES OPTIMAL
         else
             bopars = tapas_fitModel_CAB(y(1:nst,:), u(1:nst,:), prc_model, obs_model, opt_algo);
         end
-        %bopars.conds=condi;
-        save(fullfile(aname,sname),'bopars');
-        % PLOTS
-        tapas_hgf_binary_plotTraj(bopars)
-        %tapas_fit_plotResidualDiagnostics(bopars);
+        
+        if ~isempty(sim_param)
+            save(fullfile(aname,sname),'sim');
+        else
+            save(fullfile(aname,sname),'bopars');
+            % PLOTS
+            tapas_hgf_binary_plotTraj(bopars)
+            %tapas_fit_plotResidualDiagnostics(bopars);
+        end
     end
     
     % PLOTS
