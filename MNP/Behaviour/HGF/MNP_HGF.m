@@ -97,7 +97,7 @@ for f = files_ana'
         elseif bayes_opt
             bopars = tapas_fitModel_CAB([], u(1:nst,:), prc_model, obs_model, opt_algo); %BAYES OPTIMAL
         else
-            bopars = tapas_fitModel_CAB(y(1:nst,:), u(1:nst,:), prc_model, obs_model, opt_algo);
+            bopars = tapas_fitModel_CAB(y(1:nst,:), u(1:nst,:), prc_model, obs_model, opt_algo, S);
         end
         
         if ~isempty(sim_param)

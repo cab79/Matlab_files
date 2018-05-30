@@ -9,7 +9,6 @@ function [traj, infStates] = GBM(r, p, varargin)
 % first, even if the prior is fixed
 
 % PLANNED UPDATES
-% 1. Allow separate evaluation of alpha for targets and non-targets - done
 % 2. Estimate prior expectation (fixed)
 % 3. Prior and alpha variable by block type
 % 4. Prior and alpha variable by trial (Kalman)
@@ -21,9 +20,24 @@ if ~isempty(varargin) && strcmp(varargin{1},'trans')
 end
 
 % Number of levels
-l = r.c_prc.n_priorlevels;
+l = r.c_prc.n_levels;
+try
+    %in = r.c_prc.n_inputs; % num input types / conditions
+    N = r.c_prc.n_targets; % number of stimulus types that can be a target for each condition. For a binary model, N=1, otherwise a categorical model is needed.
+catch
+    %in = 1; 
+    N=1;
+    %l = 100;%(length(p)-3*in-1)/nLevFac;
+    
+    %if l ~= floor(l)
+    %    error('tapas:hgf:UndetNumLevels', 'Cannot determine number of levels');
+    %end
+end
+
 
 % Unpack parameters
+
+%CAB: names and indices
 nme=r.c_prc.pnames;
 idx=r.c_prc.priormusi;
 
@@ -38,6 +52,14 @@ if exist('om','var')
         om(end)=[];
     end
 end
+
+%mu_0 = p(1:l);
+%sa_0 = p(l+1:2*l);
+%al0   = p(nLevFac*l+1:nLevFac*l+in);
+%al1   = p(nLevFac*l+in+1:nLevFac*l+2*in);
+%eta0 = p(nLevFac*l+2*in+1:nLevFac*l+3*in);
+%eta1 = p(nLevFac*l+3*in+1:nLevFac*l+4*in);
+%rb = p(nLevFac*l+4*in+1);
 
 % Add dummy "zeroth" trial
 u = [zeros(1,size(r.u,2)); r.u(:,:)];
@@ -105,8 +127,6 @@ end
 for k=2:1:n
     
     if not(ismember(k-1, r.ign))
-        
-        %% Predictions (from previous trial or fixed parameters)
         
         if strcmp(r.c_prc.priorsource,'hierarchical')
             if strcmp(r.c_prc.priortype,'fixed')

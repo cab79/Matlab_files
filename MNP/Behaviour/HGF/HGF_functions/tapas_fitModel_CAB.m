@@ -165,6 +165,11 @@ if nargin > 4 && ~isempty(varargin{3})
     r.c_opt = eval(varargin{3});
 end
 
+%CAB
+if nargin > 5 && ~isempty(varargin{4})
+    S = varargin{3};
+end
+
 % Replace placeholders in parameter vectors with their calculated values
 r.c_prc.priormus(r.c_prc.priormus==99991) = r.plh.p99991;
 r.c_prc.priorsas(r.c_prc.priorsas==99991) = r.plh.p99991;
