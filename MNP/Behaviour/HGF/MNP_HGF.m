@@ -1,17 +1,4 @@
-function MNP_HGF(D,S,sim_param)
-
-if isempty(sim_param)
-    mu_0=[NaN,0,1];
-    sa_0=[NaN,0.5,1];
-    al0=[0.5 0.5];
-    al1=[0.5 0.5];
-    rho=[NaN 0 0];
-    ka = [NaN,1];
-    om = [NaN,-9,-6];
-    eta0=0;
-    eta1=1;
-    sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1];
-end
+function varargout=MNP_HGF(D,S,sim_param)
 
 dbstop if error
 %addpath('C:\Data\Matlab\Matlab_files\CORE\Experiment');
@@ -25,8 +12,6 @@ overwrite=1;
 hgf=1;
 sdt=0;
 acc = 0;
-
-prc_config = 'GBM_config_3lev'; obs_config = 'logrt_softmax_binary_softmu0_config'; nstim=[];
 
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
 pdatfile = 'C:\Data\MNP\Pilots\Participant_Data.xlsx';
@@ -91,24 +76,24 @@ for f = files_ana'
 
     %% HGF
     % prc: perceptual; obs:observation; opt:optimisation
-    prc_model = prc_config;
+    prc_model = S.prc_config;
     %prc_model = 'tapas_hgf_binary_pu_config';
-    obs_model = obs_config;
+    obs_model = S.obs_config;
     %obs_model = 'tapas_bayes_optimal_binary_config'; %BAYES OPTIMAL
     opt_algo = 'tapas_quasinewton_optim_config';
     
     sname = datestr(now,30);
-    sname = [S(1).select.subjects{1, 1} '_' sname '_bopars.mat'];
     if hgf && exist(fullfile(aname,sname),'file') && overwrite==0
         load(fullfile(aname,sname));
     elseif hgf
-        if isempty(nstim)
+        if isempty(S.nstim)
             nst=length(u);
         else
-            nst=nstim;
+            nst=S.nstim;
         end
         if ~isempty(sim_param)
-            sim = tapas_simModel_CAB(u(1:nst,:), prc_model, sim_param, [], [], prc_config, []);
+            sim = tapas_simModel_CAB(u(1:nst,:), 'GBM', sim_param, [], [], S.prc_config, []);
+            varargout={sim};
         elseif bayes_opt
             bopars = tapas_fitModel_CAB([], u(1:nst,:), prc_model, obs_model, opt_algo); %BAYES OPTIMAL
         else
@@ -116,8 +101,11 @@ for f = files_ana'
         end
         
         if ~isempty(sim_param)
+            sname = [S(1).select.subjects{1, 1} '_' sname '_sim.mat'];
             save(fullfile(aname,sname),'sim');
+            tapas_hgf_binary_plotTraj(sim)
         else
+            sname = [S(1).select.subjects{1, 1} '_' sname '_bopars.mat'];
             save(fullfile(aname,sname),'bopars');
             % PLOTS
             tapas_hgf_binary_plotTraj(bopars)

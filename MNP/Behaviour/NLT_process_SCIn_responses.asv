@@ -65,35 +65,17 @@ save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time
 save(fullfile(S.path.prep,'D'),'D'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
 %% HGF
-
-%prc_config = 'GBM_config_3lev'; obs_config = 'logrt_softmax_binary_softmu0_config'; nstim=[];
-% mu_0=[NaN,0,1];
-% sa_0=[NaN,0.5,1];
-% al0=[0.05 0.05];
-% al1=[0.05 0.05];
-% rho=[NaN 0 0];
-% ka = [NaN,1];
-% om = [NaN,-9,-6];
-% eta0=0;
-% eta1=1;
-% sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1];
-
-S.prc_config = 'GBM_config_SDT_noprior'; S.obs_config = 'logrt_softmax_binary_softmu0_config'; S.nstim=[];
-mu_0=[NaN,0.5];
-sa_0=[NaN,0];
+mu_0=[NaN,0,1];
+sa_0=[NaN,0.5,1];
 al0=[0.05 0.05];
 al1=[0.05 0.05];
-rho=[];
-ka = [];
-om = [];
+rho=[NaN 0 0];
+ka = [NaN,1];
+om = [NaN,-9,-6];
 eta0=0;
 eta1=1;
-rb=0
-
-% run
-sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1 rb];
+sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1];
 sim=MNP_HGF(D,S,sim_param);
-%MNP_HGF(D,S,[]);
 return
 
 %% 5. PLOTS
