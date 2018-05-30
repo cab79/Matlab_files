@@ -16,7 +16,7 @@ function [traj, infStates] = GBM(r, p, varargin)
 % 5. Hierarchical priors
 
 % Transform paramaters back to their native space if needed
-if ~isempty(varargin) && strcmp(varargin{1},'trans');
+if ~isempty(varargin) && strcmp(varargin{1},'trans')
     p = GBM_transp(r, p);
 end
 
