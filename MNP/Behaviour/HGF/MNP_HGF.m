@@ -44,31 +44,31 @@ for f = files_ana'
 %     y(y==2)=0;
 %     y=y';
 
-%     % associative learning: u indicates pairings
-%     sig=D(1).Sequence.signal(1:2,:); 
-%     u(sig(1,:)==sig(2,:)) = 0;
-%     u(sig(1,:)~=sig(2,:)) = 1;
-%     u(2,:)=1;
-%     u=u';
-%     % associative learning - responses indicate pairings
-%     y=[]
-%     ysig=D(1).Processed.presssignal;
-%     y(ysig(1,:)==sig(1,:)) = 1;
-%     y(ysig(1,:)~=sig(1,:)) = 0;
-%     y(isnan(ysig))=nan;
-%     y=y';
-    
-    % associative learning: u indicates outcome and cues
+    % associative learning: u indicates pairings
     sig=D(1).Sequence.signal(1:2,:); 
-    u(1,sig(2,:)==1) = 0; % outcome
-    u(1,sig(2,:)==2) = 1; % outcome
-    u(2,:) = sig(2,:); % outcome types
-    u(3,:) = sig(1,:); % cues
+    u(sig(1,:)==sig(2,:)) = 0;
+    u(sig(1,:)~=sig(2,:)) = 1;
+    u(2,:)=1;
     u=u';
-    y = D(1).Processed.presssignal; % BINARY response
-    y(y==1)=1;
-    y(y==2)=0;
+    % associative learning - responses indicate pairings
+    y=[]
+    ysig=D(1).Processed.presssignal;
+    y(ysig(1,:)==sig(1,:)) = 1;
+    y(ysig(1,:)~=sig(1,:)) = 0;
+    y(isnan(ysig))=nan;
     y=y';
+    
+%     % associative learning: u indicates outcome and cues
+%     sig=D(1).Sequence.signal(1:2,:); 
+%     u(1,sig(2,:)==1) = 0; % outcome
+%     u(1,sig(2,:)==2) = 1; % outcome
+%     u(2,:) = sig(2,:); % outcome types
+%     u(3,:) = sig(1,:); % cues
+%     u=u';
+%     y = D(1).Processed.presssignal; % BINARY response
+%     y(y==1)=1;
+%     y(y==2)=0;
+%     y=y';
 
     %% HGF
     % prc: perceptual; obs:observation; opt:optimisation

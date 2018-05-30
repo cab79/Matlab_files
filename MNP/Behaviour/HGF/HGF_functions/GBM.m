@@ -197,16 +197,16 @@ for k=2:1:n
             end
             
             % ORIGINAL
-            %mu(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
+            mu(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
             
             %% MOD: need to update this properly
-            if u(k,3)==1
-                mu0(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
-                mu(k,1) = mu0(k,1);
-            elseif u(k,3)==2
-                mu0(k,1) = (1-muhat(k,1)) *und1 /(muhat(k,1) *und0 +(1 -muhat(k,1)) *und1);
-                mu(k,1) = 1-mu0(k,1);
-            end
+%             if u(k,3)==1
+%                 mu0(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
+%                 mu(k,1) = mu0(k,1);
+%             elseif u(k,3)==2
+%                 mu0(k,1) = (1-muhat(k,1)) *und1 /(muhat(k,1) *und0 +(1 -muhat(k,1)) *und1);
+%                 mu(k,1) = 1-mu0(k,1);
+%             end
             
             
             %%
