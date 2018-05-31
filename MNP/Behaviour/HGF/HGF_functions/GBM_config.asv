@@ -1,8 +1,7 @@
 function c = GBM_config(S)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Config structure
-c = struct;
-
+c = cell(1,1);
 
     % modelspecs (add these to calling function)
     m=1;
@@ -12,8 +11,9 @@ c = struct;
     S.modelspec{m}.priortype = 'hierarchical'; % constant, hierarchical, state
     S.modelspec{m}.n_priorlevels = 2; % in prior hierarchy
     S.modelspec{m}.priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
+    S.modelspec{m}.respmodel = true; % use variables in response model?
+
     
-%% Model settings
 for m = 1:length(S.modelspec)
     
     % Model name
@@ -28,11 +28,12 @@ for m = 1:length(S.modelspec)
     % Number of target stimuli
     c{m}.n_targets = 1;
 
-    % add modelspecs to config struct
-    for fn = fieldnames(S.modelspec)'
+    %% add modelspecs to config struct
+    for fn = fieldnames(S.modelspec{m})'
        c{m}.(fn{1}) = S.modelspec{m}.(fn{1});
     end
     
+    %% Settings
     switch S.modelspec{m}.likelihood 
         case 'binary'
             % Eta0
@@ -48,16 +49,20 @@ for m = 1:length(S.modelspec)
                 case 'uncertain_unequal'
                     c{m}.logal0mu = log(0.05);
                     c{m}.logal0sa = 1; % unfixed
+                    c{m}.logal0var = true; % this is a variance parameter
                     c{m}.logal1mu = log(0.05);
                     c{m}.logal1sa = 1; % unfixed
+                    c{m}.logal1var = true; % this is a variance parameter
                 case 'uncertain_equal'
                     % only specify al0
                     c{m}.logal0mu = log(0.05);
                     c{m}.logal0sa = 1; % unfixed
+                    c{m}.logal0var = true; % this is a variance parameter
                 case 'certain'
                     % only specify al0
                     c{m}.logal0mu = log(0.05); 
                     c{m}.logal0sa = 0; % fixed
+                    c{m}.logal0var = true; % this is a variance parameter
             end
     end
     
@@ -81,11 +86,13 @@ for m = 1:length(S.modelspec)
                             c{m}.mu_0sa = [NaN, 0, 0];% prior fixed to 0 at k=0 but dynamically updates after that
                             c{m}.logsa_0mu = [NaN, log(0.5), log(1)];
                             c{m}.logsa_0sa = [NaN, 0, 0];
+                            c{m}.logsa_0var = true; % this is a variance parameter
                         case 3
                             c{m}.mu_0mu = [NaN, 0, 1, 1];
                             c{m}.mu_0sa = [NaN, 0, 0, 0];% prior fixed to 0 at k=0 but dynamically updates after that
                             c{m}.logsa_0mu = [NaN, log(0.5), log(1), log(1)];
                             c{m}.logsa_0sa = [NaN, 0, 0, 0];
+                            c{m}.logsa_0var = true; % this is a variance parameter
                     end
 
                 case 'static'
@@ -95,16 +102,19 @@ for m = 1:length(S.modelspec)
                             c{m}.mu_0sa = [NaN, 1];% estimated mean
                             c{m}.logsa_0mu = [NaN, log(0.1)];
                             c{m}.logsa_0sa = [NaN, 0];
+                            c{m}.logsa_0var = true; % this is a variance parameter
                         case 2
                             c{m}.mu_0mu = [NaN, 0.2, 1];
                             c{m}.mu_0sa = [NaN, 1, 0];% estimated mean
                             c{m}.logsa_0mu = [NaN, log(0.1), log(1)];
                             c{m}.logsa_0sa = [NaN, 0, 0];
+                            c{m}.logsa_0var = true; % this is a variance parameter
                         case 3
                             c{m}.mu_0mu = [NaN, 0, 1, 1];
                             c{m}.mu_0sa = [NaN, 1, 0, 0];% estimated mean
                             c{m}.logsa_0mu = [NaN, log(0.1), log(1), log(1)];
                             c{m}.logsa_0sa = [NaN, 0, 0, 0];
+                            c{m}.logsa_0var = true; % this is a variance parameter
                     end
                     
             end
@@ -127,6 +137,7 @@ for m = 1:length(S.modelspec)
             % does not use mu_i+1 (kappa then determines the scaling of x_i+1).
             c{m}.logkamu = [NaN, repmat(log(1), 1, length(c{m}.mu_0mu)-2)];
             c{m}.logkasa = [NaN, repmat(0, 1, length(c{m}.mu_0mu)-2)];
+            c{m}.logkavar = true; % this is a variance parameter
             
         case 'state'
             % PRIOR STATE MODELS
@@ -148,6 +159,7 @@ for m = 1:length(S.modelspec)
             c{m}.mu_0sa = [NaN, 0];% constant mean
             c{m}.logsa_0mu = [NaN, log(0.1)];
             c{m}.logsa_0sa = [NaN, 0];
+            c{m}.logsa_0var = true; % this is a variance parameter
     end
     
     %% Response bias
@@ -157,32 +169,41 @@ for m = 1:length(S.modelspec)
     %% Parameter names
     % only names added here will be estimated
     % second column: 1 if it is a variance parameter
-    c{m}.pnames = {
-        'eta0',0
-        'eta1',0
-        'logal0',1
-        'logal1',1
-        'mu_0',0
-        'logsa_0',1
-        'om',0
-        'rho',0
-        'logka',1
-        'rb',0
-        };
+%     c{m}.pnames = {
+%         'eta0',0
+%         'eta1',0
+%         'logal0',1
+%         'logal1',1
+%         'mu_0',0
+%         'logsa_0',1
+%         'om',0
+%         'rho',0
+%         'logka',1
+%         'rb',0
+%         };
 
     %% Gather prior settings and their indices in vectors
     nparams =[];
     c{m}.priormus=[];
     c{m}.priorsas=[];
     st = [];
-    for pn = 1:length(c{m}.pnames)
-        pname = [c{m}.pnames{pn,1} 'mu'];
-        if ~isfield(c{m},pname)
+    fn=fieldnames(c{m});
+    pn=0;
+    for i = 1:length(fn)
+        if strcmp(fn{i}(end-1:end),'mu')
+            pn=pn+1;
+            c{m}.pnames{pn,1} = fn{i}(1:end-2);
+            eval(['c{m}.priormus = [c{m}.priormus c{m}.' fn{i} '];']);
+            eval(['nparams(pn) = length(c{m}.' fn{i} ');']);
+            if isfield(c{m},[c{m}.pnames{pn,1} 'var'])
+                v
+            end
+            eval(['c{m}.priorsas = [c{m}.priorsas c{m}.' fn{i} '];']);
+        elseif strcmp(fn{i}(end-1:end),'sa')
+            eval(['c{m}.priorsas = [c{m}.priorsas c{m}.' fn{i} '];']);
+        else
             continue
         end
-        eval(['c{m}.priormus = [c{m}.priormus c{m}.' c{m}.pnames{pn,1} 'mu];']);
-        eval(['c{m}.priorsas = [c{m}.priorsas c{m}.' c{m}.pnames{pn,1} 'sa];']);
-        eval(['nparams(pn) = length(c{m}.' c{m}.pnames{pn,1} 'mu);']);
         if isempty(st)
             st = 0;
         else

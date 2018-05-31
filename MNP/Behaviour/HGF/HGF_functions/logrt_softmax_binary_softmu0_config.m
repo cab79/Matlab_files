@@ -19,8 +19,16 @@ function c = logrt_softmax_binary_softmu0_config(r)
 % (either version 3 or, at your option, any later version). For further details, see the file
 % COPYING or <http://www.gnu.org/licenses/>.
 
+% which perceptual models to use?
+if iscell(r.c_prc)
+    pmod = [r.c_prc{:}.respmodel];
+    prc=r.c_prc{pmod};
+else
+    prc=r.c_prc;
+end
+
 % CAB: Number of levels
-l = r.c_prc.n_levels;
+l = prc.n_priorlevels;
 
 % Config structure
 c = struct;

@@ -171,20 +171,22 @@ if nargin > 5 && ~isempty(varargin{4})
 end
 
 % Replace placeholders in parameter vectors with their calculated values
-r.c_prc.priormus(r.c_prc.priormus==99991) = r.plh.p99991;
-r.c_prc.priorsas(r.c_prc.priorsas==99991) = r.plh.p99991;
+for pmod = 1:length(r.c_prc)
+    r.c_prc.priormus(r.c_prc.priormus==99991) = r.plh.p99991;
+    r.c_prc.priorsas(r.c_prc.priorsas==99991) = r.plh.p99991;
 
-r.c_prc.priormus(r.c_prc.priormus==99992) = r.plh.p99992;
-r.c_prc.priorsas(r.c_prc.priorsas==99992) = r.plh.p99992;
+    r.c_prc.priormus(r.c_prc.priormus==99992) = r.plh.p99992;
+    r.c_prc.priorsas(r.c_prc.priorsas==99992) = r.plh.p99992;
 
-r.c_prc.priormus(r.c_prc.priormus==99993) = r.plh.p99993;
-r.c_prc.priorsas(r.c_prc.priorsas==99993) = r.plh.p99993;
+    r.c_prc.priormus(r.c_prc.priormus==99993) = r.plh.p99993;
+    r.c_prc.priorsas(r.c_prc.priorsas==99993) = r.plh.p99993;
 
-r.c_prc.priormus(r.c_prc.priormus==-99993) = -r.plh.p99993;
-r.c_prc.priorsas(r.c_prc.priorsas==-99993) = -r.plh.p99993;
+    r.c_prc.priormus(r.c_prc.priormus==-99993) = -r.plh.p99993;
+    r.c_prc.priorsas(r.c_prc.priorsas==-99993) = -r.plh.p99993;
 
-r.c_prc.priormus(r.c_prc.priormus==99994) = r.plh.p99994;
-r.c_prc.priorsas(r.c_prc.priorsas==99994) = r.plh.p99994;
+    r.c_prc.priormus(r.c_prc.priormus==99994) = r.plh.p99994;
+    r.c_prc.priorsas(r.c_prc.priorsas==99994) = r.plh.p99994;
+end
 
 r = rmfield(r, 'plh');
 

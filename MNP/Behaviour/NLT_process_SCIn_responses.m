@@ -78,7 +78,7 @@ save(fullfile(S.path.prep,'D'),'D'); % saves 'S' - will be overwritten each time
 % eta1=1;
 % sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1];
 
-S.prc_config = 'GBM_config_SDT_noprior'; S.obs_config = 'logrt_softmax_binary_softmu0_config'; S.nstim=[];
+S.prc_config = 'GBM_config'; S.obs_config = 'logrt_softmax_binary_softmu0_config'; S.nstim=[];
 mu_0=[NaN,0.5];
 sa_0=[NaN,0];
 al0=[0.05 0.05];
@@ -92,8 +92,8 @@ rb=0
 
 % run
 sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1 rb];
-sim=MNP_HGF(D,S,sim_param);
-%MNP_HGF(D,S,[]);
+%sim=MNP_HGF(D,S,sim_param);
+MNP_HGF(D,S,[]);
 return
 
 %% 5. PLOTS

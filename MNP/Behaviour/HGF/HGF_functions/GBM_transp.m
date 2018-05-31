@@ -16,7 +16,7 @@ nme=r.c_prc.pnames;
 idx=r.c_prc.priormusi;
 
 for pn=1:length(nme)
-    if nme{pn,2} % if it is a variance parameter
+    if r.c_prc.varparam(pn) % if it is a variance parameter
         pvec(idx{pn}) = exp(ptrans(idx{pn}));
     else
         pvec(idx{pn}) = ptrans(idx{pn});
