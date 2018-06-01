@@ -150,7 +150,7 @@ r.c_opt = tapas_quasinewton_optim_config;
 
 % Override default settings with arguments from the command line
 if nargin > 2 && ~isempty(varargin{1})
-    r.c_prc = eval(varargin{1});
+    r.c_prc = eval(varargin{1}); % runs the config function
 end
 
 if nargin > 3 && ~isempty(varargin{2})

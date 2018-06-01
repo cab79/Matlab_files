@@ -1,4 +1,6 @@
 function [pvec, pstruct] = GBM_transp(r, ptrans)
+% transforms from log values back to native values
+
 % --------------------------------------------------------------------------------------------------
 % Copyright (C) 2012-2015 Christoph Mathys, TNU, UZH & ETHZ
 %
@@ -6,7 +8,6 @@ function [pvec, pstruct] = GBM_transp(r, ptrans)
 % Licence (GPL), version 3. You can redistribute it and/or modify it under the terms of the GPL
 % (either version 3 or, at your option, any later version). For further details, see the file
 % COPYING or <http://www.gnu.org/licenses/>.
-
 
 pvec    = NaN(1,length(ptrans));
 pstruct = struct;
