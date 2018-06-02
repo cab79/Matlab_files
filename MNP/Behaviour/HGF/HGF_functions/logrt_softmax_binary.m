@@ -10,8 +10,15 @@ function [logp, yhat, res] = logrt_softmax_binary(r, infStates, ptrans)
 % (either version 3 or, at your option, any later version). For further details, see the file
 % COPYING or <http://www.gnu.org/licenses/>.
 
+% which perceptual models to use?
+for m=1:r.c_prc.nModels
+    type = r.c_prc.type{m};
+    pmod(m) = [r.c_prc.(type).respmodel];
+end
+
 % CAB: Number of levels
-l = r.c_prc.n_levels;
+l = r.c_prc.(type).n_priorlevels;
+
 
 % Initialize returned log-probabilities, predictions,
 % and residuals as NaNs so that NaN is returned for all

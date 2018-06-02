@@ -64,7 +64,7 @@ for f = files_ana'
     sig=D(1).Sequence.signal(1:2,:); 
     u(1,sig(2,:)==1) = 0; % outcome
     u(1,sig(2,:)==2) = 1; % outcome
-    u(2,:) = sig(2,:); % outcome types
+    u(2,:) = 1;%sig(2,:); % outcome types
     u(3,:) = sig(1,:); % cues
     u=u';
     if isempty(sim_param)

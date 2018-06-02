@@ -7,28 +7,39 @@ c = struct;
     m=1;
     S.modelspec{m}.type = 'AL'; % AL (associative learning), PL (perceptual learning), PR (priming)
     S.modelspec{m}.likelihood = 'binary'; % binary, continuous
+    S.modelspec{m}.likelihood = 'binary'; % binary, continuous
     S.modelspec{m}.inputvar = 'uncertain_unequal'; % uncertain_equal (variance), uncertain_unequal, certain
     S.modelspec{m}.priortype = 'hierarchical'; % constant, hierarchical, state
     S.modelspec{m}.n_priorlevels = 2; % in prior hierarchy
     S.modelspec{m}.priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
     S.modelspec{m}.respmodel = true; % use variables in response model?
 
+
+%% General settings (specific to experimental design but not to the model)
+% Input intervals
+% If input intervals are irregular, the last column of the input
+% matrix u has to contain the interval between inputs k-1 and k
+% in the k-th row, and this flag has to be set to true
+c.irregular_intervals = false;
+% Number of target stimuli
+c.n_targets = 1;
     
-for m = 1:length(S.modelspec)
+%%
+nparams =[];
+c.priormus=[];
+c.priorsas=[];
+c.nModels = length(S.modelspec);
+st = [];
+pn=0;
+for m = 1:c.nModels
     
     type = S.modelspec{m}.type;
     
     % Model name
     c.(type).model = 'GBM';
-
-    %% General settings (specific to experimental design but not to the model)
-    % Input intervals
-    % If input intervals are irregular, the last column of the input
-    % matrix u has to contain the interval between inputs k-1 and k
-    % in the k-th row, and this flag has to be set to true
-    c.(type).irregular_intervals = false;
-    % Number of target stimuli
-    c.(type).n_targets = 1;
+    c.type{m} = type;
+    
+    c.(type).n_priorlevels = S.modelspec{m}.n_priorlevels;
 
     %% add modelspecs to config struct
     for fn = fieldnames(S.modelspec{m})'
@@ -84,38 +95,32 @@ for m = 1:length(S.modelspec)
                 case 'dynamic'
                     switch S.modelspec{m}.n_priorlevels
                         case 2
+                            c.(type).mu_0mu = [NaN, 0];
+                            c.(type).mu_0sa = [NaN, 0];% prior fixed to 0 at k=0 but dynamically updates after that
+                            c.(type).logsa_0mu = [NaN, log(0.5)];
+                            c.(type).logsa_0sa = [NaN, 0];
+                            c.(type).logsa_0var = true; % this is a variance parameter
+                        case 3
                             c.(type).mu_0mu = [NaN, 0, 1];
                             c.(type).mu_0sa = [NaN, 0, 0];% prior fixed to 0 at k=0 but dynamically updates after that
                             c.(type).logsa_0mu = [NaN, log(0.5), log(1)];
                             c.(type).logsa_0sa = [NaN, 0, 0];
                             c.(type).logsa_0var = true; % this is a variance parameter
-                        case 3
-                            c.(type).mu_0mu = [NaN, 0, 1, 1];
-                            c.(type).mu_0sa = [NaN, 0, 0, 0];% prior fixed to 0 at k=0 but dynamically updates after that
-                            c.(type).logsa_0mu = [NaN, log(0.5), log(1), log(1)];
-                            c.(type).logsa_0sa = [NaN, 0, 0, 0];
-                            c.(type).logsa_0var = true; % this is a variance parameter
                     end
 
                 case 'static'
                     switch S.modelspec{m}.n_priorlevels
-                        case 1
+                        case 2
                             c.(type).mu_0mu = [NaN, 0.5];
                             c.(type).mu_0sa = [NaN, 1];% estimated mean
                             c.(type).logsa_0mu = [NaN, log(0.1)];
                             c.(type).logsa_0sa = [NaN, 0];
                             c.(type).logsa_0var = true; % this is a variance parameter
-                        case 2
+                        case 3
                             c.(type).mu_0mu = [NaN, 0.2, 1];
                             c.(type).mu_0sa = [NaN, 1, 0];% estimated mean
                             c.(type).logsa_0mu = [NaN, log(0.1), log(1)];
                             c.(type).logsa_0sa = [NaN, 0, 0];
-                            c.(type).logsa_0var = true; % this is a variance parameter
-                        case 3
-                            c.(type).mu_0mu = [NaN, 0, 1, 1];
-                            c.(type).mu_0sa = [NaN, 1, 0, 0];% estimated mean
-                            c.(type).logsa_0mu = [NaN, log(0.1), log(1), log(1)];
-                            c.(type).logsa_0sa = [NaN, 0, 0, 0];
                             c.(type).logsa_0var = true; % this is a variance parameter
                     end
                     
@@ -185,26 +190,21 @@ for m = 1:length(S.modelspec)
 %         };
 
     %% Gather prior settings and their indices in vectors
-    nparams =[];
-    c.priormus=[];
-    c.(type).priorsas=[];
-    st = [];
-    fn=fieldnames(c{m});
-    pn=0;
+   
+    fn=fieldnames(c.(type));
     for i = 1:length(fn)
         if strcmp(fn{i}(end-1:end),'mu')
             pn=pn+1;
-            c.(type).pnames{pn,1} = fn{i}(1:end-2);
-            eval(['c.(type).priormus = [c.(type).priormus c.(type).' fn{i} '];']);
+            c.pnames{pn,1} = [type '_' fn{i}(1:end-2)];
+            eval(['c.priormus = [c.priormus c.(type).' fn{i} '];']);
             eval(['nparams(pn) = length(c.(type).' fn{i} ');']);
-            if isfield(c{m},[c.(type).pnames{pn,1} 'var'])
-                c.(type).varparam(pn)=1;
+            if isfield(c.(type),[fn{i}(1:end-2) 'var'])
+                c.varparam(pn)=1;
             else
-                c.(type).varparam(pn)=0;
+                c.varparam(pn)=0;
             end
-            eval(['c.(type).priorsas = [c.(type).priorsas c.(type).' fn{i} '];']);
         elseif strcmp(fn{i}(end-1:end),'sa')
-            eval(['c.(type).priorsas = [c.(type).priorsas c.(type).' fn{i} '];']);
+            eval(['c.priorsas = [c.priorsas c.(type).' fn{i} '];']);
         else
             continue
         end
@@ -213,21 +213,21 @@ for m = 1:length(S.modelspec)
         else
             st=sum(nparams(1:pn-1));
         end
-        c.(type).priormusi{pn} = st+1:sum(nparams(1:pn));
+        c.priormusi{pn} = st+1:sum(nparams(1:pn));
     end
 end
 
-    % Check whether we have the right number of priors
-    %expectedLength = 2*c.n_levels+c.n_inputs*4+1;
-    %if length([c.priormus, c.priorsas]) ~= 2*expectedLength;
-    %    error('tapas:hgf:PriorDefNotMatchingLevels', 'Prior definition does not match number of levels.')
-    %end
+% Check whether we have the right number of priors
+%expectedLength = 2*c.n_levels+c.n_inputs*4+1;
+%if length([c.priormus, c.priorsas]) ~= 2*expectedLength;
+%    error('tapas:hgf:PriorDefNotMatchingLevels', 'Prior definition does not match number of levels.')
+%end
 
-    %% Model function handle
-    c.(type).prc_fun = @GBM;
+%% Model function handle
+c.prc_fun = @GBM;
 
-    % Handle to function that transforms perceptual parameters to their native space
-    % from the space they are estimated in
-    c.(type).transp_prc_fun = @GBM_transp;
+% Handle to function that transforms perceptual parameters to their native space
+% from the space they are estimated in
+c.transp_prc_fun = @GBM_transp;
 
 return;

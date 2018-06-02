@@ -8,11 +8,23 @@ c = struct;
     S.modelspec{m}.type = 'AL'; % AL (associative learning), PL (perceptual learning), PR (priming)
     S.modelspec{m}.likelihood = 'binary'; % binary, continuous
     S.modelspec{m}.inputvar = 'uncertain_unequal'; % uncertain_equal (variance), uncertain_unequal, certain
+    S.modelspec{m}.n_inputcond = 1; % Number of conditions with unique input variance
     S.modelspec{m}.priortype = 'hierarchical'; % constant, hierarchical, state
-    S.modelspec{m}.n_priorlevels = 2; % in prior hierarchy
+    S.modelspec{m}.n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
     S.modelspec{m}.priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
     S.modelspec{m}.respmodel = true; % use variables in response model?
 
+
+%% General settings (specific to experimental design but not to the model)
+% Input intervals
+% If input intervals are irregular, the last column of the input
+% matrix u has to contain the interval between inputs k-1 and k
+% in the k-th row, and this flag has to be set to true
+c.irregular_intervals = false;
+% Number of target stimuli
+c.n_targets = 1;
+    
+%%
 nparams =[];
 c.priormus=[];
 c.priorsas=[];
@@ -26,17 +38,6 @@ for m = 1:c.nModels
     % Model name
     c.(type).model = 'GBM';
     c.type{m} = type;
-    
-    c.(type).n_priorlevels = S.modelspec{m}.n_priorlevels;
-
-    %% General settings (specific to experimental design but not to the model)
-    % Input intervals
-    % If input intervals are irregular, the last column of the input
-    % matrix u has to contain the interval between inputs k-1 and k
-    % in the k-th row, and this flag has to be set to true
-    c.(type).irregular_intervals = false;
-    % Number of target stimuli
-    c.(type).n_targets = 1;
 
     %% add modelspecs to config struct
     for fn = fieldnames(S.modelspec{m})'
@@ -57,21 +58,21 @@ for m = 1:c.nModels
             %% Input variance: Alpha
             switch S.modelspec{m}.inputvar
                 case 'uncertain_unequal'
-                    c.(type).logal0mu = log(0.05);
-                    c.(type).logal0sa = 1; % unfixed
+                    c.(type).logal0mu = repmat(log(0.05),1,c.(type).n_inputcond);
+                    c.(type).logal0sa = repmat(1,1,c.(type).n_inputcond); % unfixed
                     c.(type).logal0var = true; % this is a variance parameter
-                    c.(type).logal1mu = log(0.05);
-                    c.(type).logal1sa = 1; % unfixed
+                    c.(type).logal1mu = repmat(log(0.05),1,c.(type).n_inputcond);
+                    c.(type).logal1sa = repmat(1,1,c.(type).n_inputcond); % unfixed
                     c.(type).logal1var = true; % this is a variance parameter
                 case 'uncertain_equal'
                     % only specify al0
-                    c.(type).logal0mu = log(0.05);
-                    c.(type).logal0sa = 1; % unfixed
+                    c.(type).logal0mu = repmat(log(0.05),1,c.(type).n_inputcond);
+                    c.(type).logal0sa = repmat(1,1,c.(type).n_inputcond); % unfixed
                     c.(type).logal0var = true; % this is a variance parameter
                 case 'certain'
                     % only specify al0
-                    c.(type).logal0mu = log(0.05); 
-                    c.(type).logal0sa = 0; % fixed
+                    c.(type).logal0mu = repmat(log(0.05),1,c.(type).n_inputcond); 
+                    c.(type).logal0sa = repmat(0,1,c.(type).n_inputcond); % fixed
                     c.(type).logal0var = true; % this is a variance parameter
             end
     end
@@ -92,38 +93,32 @@ for m = 1:c.nModels
                 case 'dynamic'
                     switch S.modelspec{m}.n_priorlevels
                         case 2
+                            c.(type).mu_0mu = [NaN, 0];
+                            c.(type).mu_0sa = [NaN, 0];% prior fixed to 0 at k=0 but dynamically updates after that
+                            c.(type).logsa_0mu = [NaN, log(0.5)];
+                            c.(type).logsa_0sa = [NaN, 0];
+                            c.(type).logsa_0var = true; % this is a variance parameter
+                        case 3
                             c.(type).mu_0mu = [NaN, 0, 1];
                             c.(type).mu_0sa = [NaN, 0, 0];% prior fixed to 0 at k=0 but dynamically updates after that
                             c.(type).logsa_0mu = [NaN, log(0.5), log(1)];
                             c.(type).logsa_0sa = [NaN, 0, 0];
                             c.(type).logsa_0var = true; % this is a variance parameter
-                        case 3
-                            c.(type).mu_0mu = [NaN, 0, 1, 1];
-                            c.(type).mu_0sa = [NaN, 0, 0, 0];% prior fixed to 0 at k=0 but dynamically updates after that
-                            c.(type).logsa_0mu = [NaN, log(0.5), log(1), log(1)];
-                            c.(type).logsa_0sa = [NaN, 0, 0, 0];
-                            c.(type).logsa_0var = true; % this is a variance parameter
                     end
 
                 case 'static'
                     switch S.modelspec{m}.n_priorlevels
-                        case 1
+                        case 2
                             c.(type).mu_0mu = [NaN, 0.5];
                             c.(type).mu_0sa = [NaN, 1];% estimated mean
                             c.(type).logsa_0mu = [NaN, log(0.1)];
                             c.(type).logsa_0sa = [NaN, 0];
                             c.(type).logsa_0var = true; % this is a variance parameter
-                        case 2
+                        case 3
                             c.(type).mu_0mu = [NaN, 0.2, 1];
                             c.(type).mu_0sa = [NaN, 1, 0];% estimated mean
                             c.(type).logsa_0mu = [NaN, log(0.1), log(1)];
                             c.(type).logsa_0sa = [NaN, 0, 0];
-                            c.(type).logsa_0var = true; % this is a variance parameter
-                        case 3
-                            c.(type).mu_0mu = [NaN, 0, 1, 1];
-                            c.(type).mu_0sa = [NaN, 1, 0, 0];% estimated mean
-                            c.(type).logsa_0mu = [NaN, log(0.1), log(1), log(1)];
-                            c.(type).logsa_0sa = [NaN, 0, 0, 0];
                             c.(type).logsa_0var = true; % this is a variance parameter
                     end
                     
@@ -206,7 +201,6 @@ for m = 1:c.nModels
             else
                 c.varparam(pn)=0;
             end
-            eval(['c.priorsas = [c.priorsas c.(type).' fn{i} '];']);
         elseif strcmp(fn{i}(end-1:end),'sa')
             eval(['c.priorsas = [c.priorsas c.(type).' fn{i} '];']);
         else
