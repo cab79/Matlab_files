@@ -1,4 +1,4 @@
-function [traj, infStates] = GBM(r, pvec, varargin)
+function [traj] = GBM(r, pvec, varargin)
 % GENERAL BINARY (INPUT) MODEL
 
 % NOTES
@@ -114,12 +114,12 @@ for m=1:r.c_prc.nModels
         M.(type).tr.pi(1,2:end) = 1./M.(type).p.sa_0(2:end);
     end
     if isfield(M.(type).p,'g_0')
-        if r.c_prc.(type).one_alpha
-            g  = NaN(n,1); % Kalman gain (optional)
-        else
-            g  = NaN(n,2); % Kalman gain (optional)
-        end
-        g(1,:)  = M.(type).p.g_0; % Kalman gain (optional)
+        %if r.c_prc.(type).one_alpha
+        %    g  = NaN(n,1); % Kalman gain (optional)
+        %else
+            M.(type).tr.g  = NaN(n,2); % Kalman gain (optional)
+        %end
+        M.(type).tr.g(1,:)  = M.(type).p.g_0; % Kalman gain (optional)
         M.(type).p.expom = exp(M.(type).p.om);
     end
 end
@@ -422,7 +422,7 @@ for k=2:1:n
             l=M.(type).l;
             
             % define mu phi
-            v_mu_str = [c.(type).jointrep '(' c.(type).jointrepk ',' c.(type).jointreplev ')'];
+            v_mu_str = ['M.(type).tr.' r.c_prc.(type).jointrep '(' r.c_prc.(type).jointrepk ',' num2str(r.c_prc.(type).jointreplev) ')'];
             eval(['v_mu(m) = ' v_mu_str ';']);
             v_phi(m) = M.(type).p.phi;
             v_mu_phi(m) = v_phi(m)*v_mu(m);
@@ -469,8 +469,6 @@ M.like.tr.xc(1) = [];
 M.like.tr.xchat(1) = [];
 
 for m=1:r.c_prc.nModels
-    type = r.c_prc.type{m};
-    l=M.(type).l;
 
     % Unpack likelihood parameters
     type='like';
@@ -479,6 +477,9 @@ for m=1:r.c_prc.nModels
         p.(pnames{pn}) = M.(type).p.(pnames{pn});
     end
 
+    type = r.c_prc.type{m};
+    l=M.(type).l;
+    
     % Unpack prior parameters
     pnames = fieldnames(M.(type).p);
     for pn=1:length(pnames)
@@ -579,18 +580,18 @@ for m=1:r.c_prc.nModels
     traj.(type).wt   = tr.wt;
 
     % Create matrices for use by the observation model
-    infStates = NaN(n-1,l,11);
-    infStates(:,:,1) = traj.muhat;
-    infStates(:,:,2) = traj.sahat;
-    infStates(:,:,3) = traj.mu;
-    infStates(:,:,4) = traj.sa;
-    infStates(:,:,5) = traj.da;
-    infStates(:,:,6) = traj.epsi;
-    infStates(:,1,7) = traj.dau;
-    infStates(:,1,8) = traj.mu0;
-    infStates(:,1,9) = traj.vj_mu;
-    infStates(:,1,10) = traj.xc;
-    infStates(:,1,11) = traj.xchat;
+%     infStates = NaN(n-1,l,11);
+%     infStates(:,:,1) = traj.muhat;
+%     infStates(:,:,2) = traj.sahat;
+%     infStates(:,:,3) = traj.mu;
+%     infStates(:,:,4) = traj.sa;
+%     infStates(:,:,5) = traj.da;
+%     infStates(:,:,6) = traj.epsi;
+%     infStates(:,1,7) = traj.dau;
+%     infStates(:,1,8) = traj.mu0;
+%     infStates(:,1,9) = traj.vj_mu;
+%     infStates(:,1,10) = traj.xc;
+%     infStates(:,1,11) = traj.xchat;
 end
 
 return;

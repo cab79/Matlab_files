@@ -10,12 +10,16 @@ function [logp, yhat, res] = logrt_softmax_binary(r, ptrans)
 % (either version 3 or, at your option, any later version). For further details, see the file
 % COPYING or <http://www.gnu.org/licenses/>.
 
-l = r.c_prc.(r.c_obs.model).n_priorlevels;
+try
+    l = r.c_prc.(r.c_obs.model).n_priorlevels;
+catch
+    l=1;
+end
 
 % Initialize returned log-probabilities, predictions,
 % and residuals as NaNs so that NaN is returned for all
 % irregualar trials
-n = size(r.traj.(r.c_obs.model).mu,1);
+n = size(r.traj.(r.c_obs.model).(r.c_obs.rep),1);
 reg = ~ismember(1:n,r.irr);
 logp = NaN(n,1);
 yhat = NaN(n,1);

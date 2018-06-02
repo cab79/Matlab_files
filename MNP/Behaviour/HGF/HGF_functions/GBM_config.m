@@ -7,17 +7,20 @@ c = struct;
     S.modelspec.likelihood.type = 'binary'; % binary, continuous
     S.modelspec.likelihood.inputvar = 'uncertain_unequal'; % uncertain_equal (variance), uncertain_unequal, certain
     S.modelspec.likelihood.n_inputcond = 1; % Number of conditions with unique input variance
-    c.modelspec.response.model = 'soft';
-    S.modelspec.response.priormodel = 'AL'; % Which model representations are used for the response model?
-    S.modelspec.response.rep = 'mu0';
+    S.modelspec.response.model = 'soft';
+    S.modelspec.response.priormodel = 'like'; % Which model representations are used for the response model?
+    S.modelspec.response.rep = 'xc';
     modeltype='AL'; % AL (associative learning), PL (perceptual learning), PR (priming)
     S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
     S.modelspec.priormodels.(modeltype).n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
     S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
-    S.modelspec.priormodels.(modeltype).respmodel = false; % use variables in response model?
     modeltype='PR'; % AL (associative learning), PL (perceptual learning), PR (priming)
     S.modelspec.priormodels.(modeltype).priortype = 'state'; % constant, hierarchical, state
-    S.modelspec.priormodels.(modeltype).n_priorlevels = 2; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
+    S.modelspec.priormodels.(modeltype).n_priorlevels = 1; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
+    S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
+    modeltype='PL'; % AL (associative learning), PL (perceptual learning), PR (priming)
+    S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
+    S.modelspec.priormodels.(modeltype).n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
     S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
     
 
@@ -34,9 +37,12 @@ c.n_targets = 1;
 c.nparams =[];
 c.priormus=[];
 c.priorsas=[];
-c.nModels = length(S.modelspec.priormodels);
+c.nModels = length(fieldnames(S.modelspec.priormodels));
 c.modelnames = fieldnames(S.modelspec.priormodels);
 c.n_inputcond = S.modelspec.likelihood.n_inputcond;
+c.response.model = S.modelspec.response.model;
+c.response.priormodel = S.modelspec.response.priormodel;
+c.response.rep = S.modelspec.response.rep;
 c.st = [];
 c.pn=0;
 
@@ -134,10 +140,6 @@ for m = 1:c.nModels
                     end
                     
             end
-            % Format: row vector of length n_levels.
-            % Undefined (therefore NaN) at the first level.
-            c.(type).ommu = [NaN, repmat(-6, 1, length(c.(type).mu_0mu)-1)];
-            c.(type).omsa = [NaN, repmat(4^2, 1, length(c.(type).mu_0mu)-1)];
             
             % Rhos
             % Format: row vector of length n_levels.
@@ -155,6 +157,11 @@ for m = 1:c.nModels
             c.(type).logkasa = [NaN, repmat(0, 1, length(c.(type).mu_0mu)-2)];
             c.(type).logkavar = true; % this is a variance parameter
             
+            % Format: row vector of length n_levels.
+            % Undefined (therefore NaN) at the first level.
+            c.(type).ommu = [NaN, repmat(-6, 1, length(c.(type).mu_0mu)-1)];
+            c.(type).omsa = [NaN, repmat(4^2, 1, length(c.(type).mu_0mu)-1)];
+            
         case 'state'
             % PRIOR STATE MODELS
             % e.g. Kalman Filter or Rascorla-Wagner
@@ -168,6 +175,11 @@ for m = 1:c.nModels
             % Initial Kalman gain
             c.(type).logg_0mu = 0.1;
             c.(type).logg_0sa = 1;
+            
+            % Format: row vector of length n_levels.
+            % Undefined (therefore NaN) at the first level.
+            c.(type).ommu = -6;
+            c.(type).omsa = 4^2;
             
         case 'constant'
             % must be static

@@ -108,7 +108,7 @@ for f = files_ana'
             sname = [S(1).select.subjects{1, 1} '_' sname '_bopars.mat'];
             save(fullfile(aname,sname),'bopars');
             % PLOTS
-            tapas_hgf_binary_plotTraj_CAB(bopars,'AL')
+            tapas_hgf_binary_plotTraj_CAB(bopars)
             %tapas_fit_plotResidualDiagnostics(bopars);
         end
     end

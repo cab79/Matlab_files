@@ -19,14 +19,19 @@ function c = logrt_softmax_binary_softmu0_config(r)
 % (either version 3 or, at your option, any later version). For further details, see the file
 % COPYING or <http://www.gnu.org/licenses/>.
 
-% Perceptual model used
-c.model = r.c_prc.response.priormodel;
-
-% CAB: Number of levels
-l = r.c_prc.(c.model).n_priorlevels;
-
 % Config structure
 c = struct;
+
+% Perceptual model used
+c.model = r.c_prc.response.priormodel;
+c.response.model = r.c_prc.response.model;
+
+% CAB: Number of levels
+try
+    l = r.c_prc.(c.model).n_priorlevels;
+catch
+    l=1;
+end
 
 % Decision based on which representation?
 c.rep = r.c_prc.response.rep; 

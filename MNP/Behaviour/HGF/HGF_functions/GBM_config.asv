@@ -7,11 +7,19 @@ c = struct;
     S.modelspec.likelihood.type = 'binary'; % binary, continuous
     S.modelspec.likelihood.inputvar = 'uncertain_unequal'; % uncertain_equal (variance), uncertain_unequal, certain
     S.modelspec.likelihood.n_inputcond = 1; % Number of conditions with unique input variance
+    S.modelspec.response.model = 'soft';
+    S.modelspec.response.priormodel = 'AL'; % Which model representations are used for the response model?
+    S.modelspec.response.rep = 'mu0';
     modeltype='AL'; % AL (associative learning), PL (perceptual learning), PR (priming)
     S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
     S.modelspec.priormodels.(modeltype).n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
     S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
-    S.modelspec.priormodels.(modeltype).respmodel = true; % use variables in response model?
+    S.modelspec.priormodels.(modeltype).respmodel = false; % use variables in response model?
+    modeltype='PR'; % AL (associative learning), PL (perceptual learning), PR (priming)
+    S.modelspec.priormodels.(modeltype).priortype = 'state'; % constant, hierarchical, state
+    S.modelspec.priormodels.(modeltype).n_priorlevels = 2; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
+    S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
+    
 
 %% General settings (specific to experimental design but not to the model)
 % Input intervals
@@ -23,14 +31,14 @@ c.irregular_intervals = false;
 c.n_targets = 1;
     
 %%
-nparams =[];
+c.nparams =[];
 c.priormus=[];
 c.priorsas=[];
 c.nModels = length(S.modelspec.priormodels);
 c.modelnames = fieldnames(S.modelspec.priormodels);
 c.n_inputcond = S.modelspec.likelihood.n_inputcond;
-st = [];
-pn=0;
+c.st = [];
+c.pn=0;
 
 %% Likelihood function (general)
 switch S.modelspec.likelihood.type 
@@ -65,42 +73,20 @@ switch S.modelspec.likelihood.type
         end
 end
 
-fn=fieldnames(c.(type));
-    for i = 1:length(fn)
-        if strcmp(fn{i}(end-1:end),'mu')
-            pn=pn+1;
-            c.pnames{pn,1} = [type '_' fn{i}(1:end-2)];
-            eval(['c.priormus = [c.priormus c.(type).' fn{i} '];']);
-            eval(['nparams(pn) = length(c.(type).' fn{i} ');']);
-            if isfield(c.(type),[fn{i}(1:end-2) 'var'])
-                c.varparam(pn)=1;
-            else
-                c.varparam(pn)=0;
-            end
-        elseif strcmp(fn{i}(end-1:end),'sa')
-            eval(['c.priorsas = [c.priorsas c.(type).' fn{i} '];']);
-        else
-            continue
-        end
-        if isempty(st)
-            st = 0;
-        else
-            st=sum(nparams(1:pn-1));
-        end
-        c.priormusi{pn} = st+1:sum(nparams(1:pn));
-    end
+type='like';
+c = paramvec(c,type);
 
 %% Prior function
 for m = 1:c.nModels
     
-    type = c.modelnames(m);
+    type = c.modelnames{m};
     
     % Model name
     c.type{m} = type;
 
     %% add modelspecs to config struct
-    for fn = fieldnames(S.modelspec{m})'
-       c.(type).(fn{1}) = S.modelspec{m}.(fn{1});
+    for fn = fieldnames(S.modelspec.priormodels.(type))'
+       c.(type).(fn{1}) = S.modelspec.priormodels.(type).(fn{1});
     end
     
     %% Priors
@@ -221,32 +207,8 @@ for m = 1:c.nModels
 %         'rb',0
 %         };
 
-    %% Gather prior settings and their indices in vectors
-   
-    fn=fieldnames(c.(type));
-    for i = 1:length(fn)
-        if strcmp(fn{i}(end-1:end),'mu')
-            pn=pn+1;
-            c.pnames{pn,1} = [type '_' fn{i}(1:end-2)];
-            eval(['c.priormus = [c.priormus c.(type).' fn{i} '];']);
-            eval(['nparams(pn) = length(c.(type).' fn{i} ');']);
-            if isfield(c.(type),[fn{i}(1:end-2) 'var'])
-                c.varparam(pn)=1;
-            else
-                c.varparam(pn)=0;
-            end
-        elseif strcmp(fn{i}(end-1:end),'sa')
-            eval(['c.priorsas = [c.priorsas c.(type).' fn{i} '];']);
-        else
-            continue
-        end
-        if isempty(st)
-            st = 0;
-        else
-            st=sum(nparams(1:pn-1));
-        end
-        c.priormusi{pn} = st+1:sum(nparams(1:pn));
-    end
+    % Gather prior settings and their indices in vectors
+    c = paramvec(c,type);
 end
 
 % Check whether we have the right number of priors
@@ -265,3 +227,29 @@ c.prc_fun = @GBM;
 c.transp_prc_fun = @GBM_transp;
 
 return;
+
+function c = paramvec(c,type)
+fn=fieldnames(c.(type));
+for i = 1:length(fn)
+    if strcmp(fn{i}(end-1:end),'mu')
+        c.pn=c.pn+1;
+        c.pnames{c.pn,1} = [type '_' fn{i}(1:end-2)];
+        eval(['c.priormus = [c.priormus c.(type).' fn{i} '];']);
+        eval(['c.nparams(c.pn) = length(c.(type).' fn{i} ');']);
+        if isfield(c.(type),[fn{i}(1:end-2) 'var'])
+            c.varparam(c.pn)=1;
+        else
+            c.varparam(c.pn)=0;
+        end
+    elseif strcmp(fn{i}(end-1:end),'sa')
+        eval(['c.priorsas = [c.priorsas c.(type).' fn{i} '];']);
+    else
+        continue
+    end
+    if isempty(c.st)
+        c.st = 0;
+    else
+        c.st=sum(c.nparams(1:c.pn-1));
+    end
+    c.priormusi{c.pn} = c.st+1:sum(c.nparams(1:c.pn));
+end

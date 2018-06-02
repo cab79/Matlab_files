@@ -114,12 +114,12 @@ for m=1:r.c_prc.nModels
         M.(type).tr.pi(1,2:end) = 1./M.(type).p.sa_0(2:end);
     end
     if isfield(M.(type).p,'g_0')
-        if r.c_prc.(type).one_alpha
-            g  = NaN(n,1); % Kalman gain (optional)
-        else
-            g  = NaN(n,2); % Kalman gain (optional)
-        end
-        g(1,:)  = M.(type).p.g_0; % Kalman gain (optional)
+        %if r.c_prc.(type).one_alpha
+        %    g  = NaN(n,1); % Kalman gain (optional)
+        %else
+            M.(type).tr.g  = NaN(n,2); % Kalman gain (optional)
+        %end
+        M.(type).tr.g(1,:)  = M.(type).p.g_0; % Kalman gain (optional)
         M.(type).p.expom = exp(M.(type).p.om);
     end
 end
@@ -211,19 +211,22 @@ for k=2:1:n
                     und0 = exp(-(u(k,1) -p.eta0)^2/(2*p.al0));
                 end
 
-                % ORIGINAL
-                %mu(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
 
-                %% MOD: need to update this properly
-                if u(k,3)==2
-                    tr.mu0(k,1) = tr.muhat(k,1) *und1 /(tr.muhat(k,1) *und1 +(1 -tr.muhat(k,1)) *und0);
-                    tr.mu(k,1) = tr.mu0(k,1);
-                elseif u(k,3)==1
-                    tr.mu0(k,1) = (1-tr.muhat(k,1)) *und1 /(tr.muhat(k,1) *und0 +(1 -tr.muhat(k,1)) *und1);
-                    tr.mu(k,1) = 1-tr.mu0(k,1);
+                
+                if strcmp(type,'AL')
+                    if u(k,3)==2
+                        tr.mu0(k,1) = tr.muhat(k,1) *und1 /(tr.muhat(k,1) *und1 +(1 -tr.muhat(k,1)) *und0);
+                        tr.mu(k,1) = tr.mu0(k,1);
+                    elseif u(k,3)==1
+                        tr.mu0(k,1) = (1-tr.muhat(k,1)) *und1 /(tr.muhat(k,1) *und0 +(1 -tr.muhat(k,1)) *und1);
+                        tr.mu(k,1) = 1-tr.mu0(k,1);
 
-                    % calculate prediction error for mu0 - muhat
+                        % calculate prediction error for mu0 - muhat
 
+                    end
+                elseif strcmp(type,'PL')
+                    tr.mu(k,1) = tr.muhat(k,1) *und1 /(tr.muhat(k,1) *und1 +(1 -tr.muhat(k,1)) *und0);
+                    tr.mu0(k,1) = tr.mu(k,1);
                 end
 
 
@@ -316,6 +319,7 @@ for k=2:1:n
                 tr.g(k) = (tr.g(k-1) +tr.al(k)*p.expom)/(tr.g(k-1) +tr.al(k)*p.expom +1);
                 % Hidden state mean update
                 tr.mu(k,1) = tr.muhat(k,1)+tr.g(k)*tr.dau(k);
+                tr.mu0(k,1) = tr.mu(k,1);
                 tr.pi(k,1) = (1-tr.g(k)) *tr.al(k)*p.expom; 
 
                 % Alternative: separate gain functions for each stimulus type
@@ -379,7 +383,7 @@ for k=2:1:n
 
         % Repack traj
         for tn=1:length(tnames)
-            if isfield(M.(type).tr,tnames{pn})
+            if isfield(M.(type).tr,tnames{tn})
                 M.(type).tr.(tnames{tn}) = tr.(tnames{tn});
             end
         end
@@ -422,7 +426,7 @@ for k=2:1:n
             l=M.(type).l;
             
             % define mu phi
-            v_mu_str = [c.(type).jointrep '(' c.(type).jointrepk ',' c.(type).jointreplev ')'];
+            v_mu_str = ['M.(type).tr.' r.c_prc.(type).jointrep '(' r.c_prc.(type).jointrepk ',' num2str(r.c_prc.(type).jointreplev) ')'];
             eval(['v_mu(m) = ' v_mu_str ';']);
             v_phi(m) = M.(type).p.phi;
             v_mu_phi(m) = v_phi(m)*v_mu(m);
@@ -434,8 +438,8 @@ for k=2:1:n
         M.like.tr.vj_mu(k,1) = sum(v_mu_phi)/vj_phi;
 
         % joint prediction
-        r=exp((p.eta1-M.like.tr.vj_mu(k,1))^2 - (p.eta0-M.like.tr.vj_mu(k,1))^2)/vj_phi^-2;
-        M.like.tr.xchat(k,1) = 1/(1+r);
+        rt=exp((p.eta1-M.like.tr.vj_mu(k,1))^2 - (p.eta0-M.like.tr.vj_mu(k,1))^2)/vj_phi^-2;
+        M.like.tr.xchat(k,1) = 1/(1+rt);
         
         % Likelihood functions: one for each
         % possible signal
@@ -448,7 +452,7 @@ for k=2:1:n
         end
 
         % Update
-        M.like.tr.xc(k,1) = M.like.tr.xchat(k,1) *und1 /(xchat(k,1) *und1 +(1 -M.like.tr.xchat(k,1)) *und0);
+        M.like.tr.xc(k,1) = M.like.tr.xchat(k,1) *und1 /(M.like.tr.xchat(k,1) *und1 +(1 -M.like.tr.xchat(k,1)) *und0);
         
         % Repack like parameters
         type='like';
