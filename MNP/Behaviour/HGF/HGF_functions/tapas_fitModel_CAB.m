@@ -207,8 +207,8 @@ r.p_prc.ptrans = ptrans_prc;
 r.p_obs.ptrans = ptrans_obs;
 
 % Store representations at MAP estimate, response predictions, and residuals
-[r.traj, infStates] = r.c_prc.prc_fun(r, r.p_prc.ptrans, 'trans');
-[dummy, r.optim.yhat, r.optim.res] = r.c_obs.obs_fun(r, infStates, r.p_obs.ptrans);
+[r.traj] = r.c_prc.prc_fun(r, r.p_prc.ptrans, 'trans');
+[dummy, r.optim.yhat, r.optim.res] = r.c_obs.obs_fun(r, r.p_obs.ptrans);
 
 % Calculate autocorrelation of residuals
 res = r.optim.res;
@@ -445,7 +445,7 @@ function [negLogJoint, negLogLl, rval, err] = negLogJoint(r, prc_fun, obs_fun, p
 % the inferred states (according to the perceptual model) that the observation model bases its
 % predictions on.
 try
-    [dummy, infStates] = prc_fun(r, ptrans_prc, 'trans');
+    [r.traj] = prc_fun(r, ptrans_prc, 'trans');
 catch err
     negLogJoint = realmax;
     negLogLl = realmax;
@@ -456,7 +456,7 @@ end
 
 % Calculate the log-likelihood of observed responses given the perceptual trajectories,
 % under the observation model
-trialLogLls = obs_fun(r, infStates, ptrans_obs);
+trialLogLls = obs_fun(r, ptrans_obs);
 logLl = sum(trialLogLls, 'omitnan');
 negLogLl = -logLl;
 

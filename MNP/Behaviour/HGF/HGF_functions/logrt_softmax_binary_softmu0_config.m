@@ -26,7 +26,7 @@ for m=1:r.c_prc.nModels
 end
 
 % CAB: Number of levels
-l = r.c_prc.(type).n_priorlevels;
+l = r.c_prc.(r.c_prc.type{find(pmod)}).n_priorlevels;
 
 % Config structure
 c = struct;
@@ -36,10 +36,8 @@ c.model = 'soft';
 %c.model = 'RT';
 %c.model = 'RT-soft';
 
-% Is the decision based on predictions or posteriors? Comment as appropriate.
-%c.predorpost = 1; % Predictions
-%c.predorpost = 2; % Posteriors
-c.predorpost = 8; % Posteriors
+% Is the decision based on predictions or posteriors? 
+c.predorpost = 'mu0'; 
 
 % Beta
 c.logbemu = log(48);

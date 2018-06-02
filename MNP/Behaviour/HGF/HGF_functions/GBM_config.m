@@ -71,14 +71,14 @@ c = paramvec(c,type);
 %% Prior function
 for m = 1:c.nModels
     
-    type = c.modelnames(m);
+    type = c.modelnames{m};
     
     % Model name
     c.type{m} = type;
 
     %% add modelspecs to config struct
-    for fn = fieldnames(S.modelspec{m})'
-       c.(type).(fn{1}) = S.modelspec{m}.(fn{1});
+    for fn = fieldnames(S.modelspec.priormodels.(type))'
+       c.(type).(fn{1}) = S.modelspec.priormodels.(type).(fn{1});
     end
     
     %% Priors
@@ -227,7 +227,7 @@ for i = 1:length(fn)
         c.pn=c.pn+1;
         c.pnames{c.pn,1} = [type '_' fn{i}(1:end-2)];
         eval(['c.priormus = [c.priormus c.(type).' fn{i} '];']);
-        eval(['nparams(c.pn) = length(c.(type).' fn{i} ');']);
+        eval(['c.nparams(c.pn) = length(c.(type).' fn{i} ');']);
         if isfield(c.(type),[fn{i}(1:end-2) 'var'])
             c.varparam(c.pn)=1;
         else

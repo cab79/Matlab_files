@@ -1,4 +1,4 @@
-function [logp, yhat, res] = logrt_softmax_binary(r, infStates, ptrans)
+function [logp, yhat, res] = logrt_softmax_binary(r, ptrans)
 % Calculates the log-probability of log-reaction times y (in units of log-ms) according to the
 % linear log-RT model developed with Louise Marshall and Sven Bestmann
 % http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002575
@@ -15,15 +15,14 @@ for m=1:r.c_prc.nModels
     type = r.c_prc.type{m};
     pmod(m) = [r.c_prc.(type).respmodel];
 end
-
+type=r.c_prc.type{find(pmod)};
 % CAB: Number of levels
 l = r.c_prc.(type).n_priorlevels;
-
 
 % Initialize returned log-probabilities, predictions,
 % and residuals as NaNs so that NaN is returned for all
 % irregualar trials
-n = size(infStates,1);
+n = size(r.traj.(type).mu,1);
 reg = ~ismember(1:n,r.irr);
 logp = NaN(n,1);
 yhat = NaN(n,1);
@@ -31,19 +30,12 @@ res  = NaN(n,1);
 
 %% SOFTMAX
 if strcmp(r.c_obs.model,'RT-soft') || strcmp(r.c_obs.model,'soft')
-    % Predictions or posteriors?
-    %pop = 1; % Default: predictions
-    if r.c_obs.predorpost == 2
-        pop = 3; % Alternative: posteriors
-    else
-        pop = r.c_obs.predorpost;
-    end
 
     % Softmax parameter
     be = exp(ptrans(8));
 
     % Softmax: Weed irregular trials out from inferred states, responses, and inputs
-    x = infStates(:,1,pop);
+    x = r.traj.(type).(r.c_obs.predorpost)(:,1);
     x(r.irr) = [];
     ys = r.y(:,1);
     ys(r.irr) = [];
@@ -93,15 +85,15 @@ if strcmp(r.c_obs.model,'RT-soft') || strcmp(r.c_obs.model,'RT')
     u(r.irr) = [];
 
     % logRT: Extract trajectories of interest from infStates
-    mu1hat = infStates(:,1,1);
-    sa1hat = infStates(:,1,2);
-    da1 = infStates(:,1,5);
+    mu1hat = r.traj.(type).muhat(:,1);
+    sa1hat = r.traj.(type).sahat(:,1);
+    da1 = r.traj.(type).da(:,1);
     if l>1
-        mu2    = infStates(:,2,3);
-        sa2    = infStates(:,2,4);
+        mu2    = r.traj.(type).(mu)(:,2);
+        sa2    = r.traj.(type).(sa)(:,2);
     end
     if l>2
-        mu3    = infStates(:,3,3);
+        mu3    = r.traj.(type).(mu)(:,3);
     end
     
     
