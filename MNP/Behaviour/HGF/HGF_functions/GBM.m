@@ -70,9 +70,6 @@ for m=1:r.c_prc.nModels
         end
     end
 
-
-    % Initialize updated quantities
-
     % Representations
     M.(type).t.mu0 = NaN(n,1);
     M.(type).t.mu = NaN(n,M.(type).l);
@@ -363,9 +360,49 @@ for k=2:1:n
     % Joint prediction if more than one model
     if r.c_prc.nModels>1
         
+        v_mu=[];
+        v_phi=[];
+        v_mu_phi=[];
+        for m=1:r.c_prc.nModels
+
+            type = r.c_prc.type{m};
+            l=M.(type).l;
+            
+%             % Unpack parameters
+%             pnames = fieldnames(M.(type).p);
+%             for pn=1:length(pnames)
+%                 eval([pnames{pn} ' = M.(type).p.(pnames{pn});']);
+%             end
+%             
+%             % Unpack traj
+%             tnames = fieldnames(M.(type).t);
+%             for tn=1:length(tnames)
+%                 eval([tnames{tn} ' = M.(type).t.(tnames{tn});']);
+%             end
         
+            % define mu phi
+            v_mu_str = [c.(type).jointrep '(' c.(type).jointrepk ',' c.(type).jointreplev ')'];
+            eval(['v_mu(m) = ' v_mu_str ';']);
+            v_phi(m) = M.(type).p.phi;
+            v_mu_phi(m) = v_phi(m)*v_mu(m);
         
+        end
     end
+    
+    % joint probability
+    vj_phi = sum(v_phi);
+    vj_mu(k,1) = sum(v_mu_phi)/vj_phi;
+    
+    % joint prediction
+    r=exp((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2)/vj_phi^-2;
+    xchat(k,1) = 1/(1+r);
+
+    % (non-normalised) Gaussians for each input
+    und1 = exp(-(u(k,1) -eta1)^2/(2*al));
+    und0 = exp(-(u(k,1) -eta0)^2/(2*al));
+
+    % Update
+    xc(k,1) = xchat(k,1) *und1 /(xchat(k,1) *und1 +(1 -xchat(k,1)) *und0);
     
 end
 

@@ -70,9 +70,6 @@ for m=1:r.c_prc.nModels
         end
     end
 
-
-    % Initialize updated quantities
-
     % Representations
     M.(type).t.mu0 = NaN(n,1);
     M.(type).t.mu = NaN(n,M.(type).l);
@@ -108,6 +105,7 @@ for m=1:r.c_prc.nModels
         M.(type).p.expom = exp(M.(type).p.om);
     end
 end
+vj_mu = NaN(n,1);
 
 %% UPDATES
 for k=2:1:n
@@ -348,7 +346,6 @@ for k=2:1:n
             al(k)  = al(k-1);
         end
         
-            
         % Repack parameters
         for pn=1:length(pnames)
             eval(['M.(type).p.(pnames{pn}) =' pnames{pn} ';']);
@@ -359,6 +356,41 @@ for k=2:1:n
             eval(['M.(type).t.(tnames{tn}) =' tnames{tn} ';']);
         end
     end
+    
+    % Joint prediction if more than one model
+    if r.c_prc.nModels>1
+        
+        v_mus=[];
+        v_phis=[];
+        vj_phi = 0;
+        for m=1:r.c_prc.nModels
+
+            type = r.c_prc.type{m};
+            l=M.(type).l;
+            
+%             % Unpack parameters
+%             pnames = fieldnames(M.(type).p);
+%             for pn=1:length(pnames)
+%                 eval([pnames{pn} ' = M.(type).p.(pnames{pn});']);
+%             end
+%             
+%             % Unpack traj
+%             tnames = fieldnames(M.(type).t);
+%             for tn=1:length(tnames)
+%                 eval([tnames{tn} ' = M.(type).t.(tnames{tn});']);
+%             end
+        
+            % define mu phi
+            vm_mu_str = [c.(type).jointrep '(' c.(type).jointrepk ',' c.(type).jointreplev ')'];
+            eval(['v_mus(m) = ' vm_mu_str ';']);
+            v_phis(m) = M.(type).p.phi;
+        
+        end
+    end
+    % joint probability
+    vj_phi = vp_phi + va_phi + vs_phi;
+    vj_mu(k,1) = (vp_mu*vp_phi + va_mu*va_phi + vs_mu*vs_phi)/vj_phi;
+    
 end
 
 %% COMPILE RESULTS
