@@ -130,73 +130,73 @@ for k=2:1:n
     for m=1:r.c_prc.nModels
         if not(ismember(k-1, r.ign))
             
-            % Unpack likelihood parameters
-            type='like';
-            pnames = fieldnames(M.(type).p);
-            for pn=1:length(pnames)
-                p.(pnames{pn}) = M.(type).p.(pnames{pn});
-            end
-
+%             % Unpack likelihood parameters
+%             type='like';
+%             pnames = fieldnames(M.(type).p);
+%             for pn=1:length(pnames)
+%                 p.(pnames{pn}) = M.(type).p.(pnames{pn});
+%             end
+% 
             type = r.c_prc.type{m};
             l=M.(type).l;
-            
-            % Unpack prior parameters
-            pnames = fieldnames(M.(type).p);
-            for pn=1:length(pnames)
-                p.(pnames{pn}) = M.(type).p.(pnames{pn});
-            end
-            
-            %Unpack prior traj
-            tnames = fieldnames(M.(type).tr);
-            for tn=1:length(tnames)
-                tr.(tnames{tn}) = M.(type).tr.(tnames{tn});
-            end
+%             
+%             % Unpack prior parameters
+%             pnames = fieldnames(M.(type).p);
+%             for pn=1:length(pnames)
+%                 p.(pnames{pn}) = M.(type).p.(pnames{pn});
+%             end
+%             
+%             %Unpack prior traj
+%             tnames = fieldnames(M.(type).tr);
+%             for tn=1:length(tnames)
+%                 tr.(tnames{tn}) = M.(type).tr.(tnames{tn});
+%             end
         
             %% Predictions (from previous trial or fixed parameters)
             if strcmp(r.c_prc.(type).priortype,'hierarchical')
                 if strcmp(r.c_prc.(type).priorupdate,'fixed')
                     if r.c_prc.(type).n_muin>1
-                        tr.muhat(1,2) = p.mu_0(1+u(k,2));
-                        tr.pihat(1,2) = 1./p.sa_0(1+u(k,2));
+                        M.(type).tr.muhat(1,2) = M.(type).p.mu_0(1+u(k,2));
+                        M.(type).tr.pihat(1,2) = 1./M.(type).p.sa_0(1+u(k,2));
                     else
-                        tr.muhat(1,2) = p.mu_0(2);
-                        tr.pihat(1,2) = 1./p.sa_0(2);
+                        M.(type).tr.muhat(1,2) = M.(type).p.mu_0(2);
+                        M.(type).tr.pihat(1,2) = 1./M.(type).p.sa_0(2);
                     end
                     % 2nd level prediction
-                    tr.muhat(k,2) = tr.muhat(1,2);%mu(k-1,2) +t(k) *rho(2); % fixed to initial value - not updated on each trial
+                    M.(type).tr.muhat(k,2) = M.(type).tr.muhat(1,2);%mu(k-1,2) +t(k) *rho(2); % fixed to initial value - not updated on each trial
 
                 elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
                     % 2nd level prediction
-                    tr.muhat(k,2) = tr.mu(k-1,2) +t(k) *p.rho(2);
+                    M.(type).tr.muhat(k,2) = M.(type).tr.mu(k-1,2) +t(k) *M.(type).p.rho(2);
 
                 end
                 % Prediction from level 2 (which can be either fixed or dynamic)
-                tr.muhat(k,1) = tapas_sgm(tr.muhat(k,2), 1);
+                M.(type).tr.muhat(k,1) = tapas_sgm(M.(type).tr.muhat(k,2), 1);
 
             elseif strcmp(r.c_prc.(type).priortype,'state')
                 % Prediction from prior state, e.g. Kalman filter
-                tr.muhat(k,1) =  tr.mu(k-1,1);
+                M.(type).tr.muhat(k,1) =  M.(type).tr.mu(k-1,1);
 
             end
 
             % Precision of prediction
-            tr.pihat(k,1) = 1/(tr.muhat(k,1)*(1 -tr.muhat(k,1)));
+            M.(type).tr.pihat(k,1) = 1/(M.(type).tr.muhat(k,1)*(1 -M.(type).tr.muhat(k,1)));
 
 
             %% Updates
 
             % Value prediction error, e.g. for Kalman filter, also known as the
             % "innovation"
-            tr.dau(k) = u(k,1) -tr.muhat(k,1);
+            M.(type).tr.dau(k) = u(k,1) -M.(type).tr.muhat(k,1);
 
             % set alpha
-            if ~isfield(p,'al1')
-                p.al1=p.al0;
+            if ~isfield(M.like.p,'al1')
+                M.like.p.al1=M.like.p.al0;
             end
             if u(k,1)==0
-                tr.al(k)=p.al0(u(k,2));
+                M.like.tr.al(k)=M.like.p.al0(u(k,2));
             elseif u(k,1)==1
-                tr.al(k)=p.al1(u(k,2));
+                M.like.tr.al(k)=M.like.p.al1(u(k,2));
             end
 
             % 
@@ -204,111 +204,111 @@ for k=2:1:n
                 % Likelihood functions: one for each
                 % possible signal
                 if r.c_prc.n_inputcond >1
-                    und1 = exp(-(u(k,1) -p.eta1)^2/(2*p.al1(u(k,2))));
-                    und0 = exp(-(u(k,1) -p.eta0)^2/(2*p.al0(u(k,2))));
+                    und1 = exp(-(u(k,1) -M.like.p.eta1)^2/(2*M.like.p.al1(u(k,2))));
+                    und0 = exp(-(u(k,1) -M.like.p.eta0)^2/(2*M.like.p.al0(u(k,2))));
                 else
-                    und1 = exp(-(u(k,1) -p.eta1)^2/(2*p.al1));
-                    und0 = exp(-(u(k,1) -p.eta0)^2/(2*p.al0));
+                    und1 = exp(-(u(k,1) -M.like.p.eta1)^2/(2*M.like.p.al1));
+                    und0 = exp(-(u(k,1) -M.like.p.eta0)^2/(2*M.like.p.al0));
                 end
 
 
                 
                 if strcmp(type,'AL')
                     if u(k,3)==2
-                        tr.mu0(k,1) = tr.muhat(k,1) *und1 /(tr.muhat(k,1) *und1 +(1 -tr.muhat(k,1)) *und0);
-                        tr.mu(k,1) = tr.mu0(k,1);
+                        M.(type).tr.mu0(k,1) = M.(type).tr.muhat(k,1) *und1 /(M.(type).tr.muhat(k,1) *und1 +(1 -M.(type).tr.muhat(k,1)) *und0);
+                        M.(type).tr.mu(k,1) = M.(type).tr.mu0(k,1);
                     elseif u(k,3)==1
-                        tr.mu0(k,1) = (1-tr.muhat(k,1)) *und1 /(tr.muhat(k,1) *und0 +(1 -tr.muhat(k,1)) *und1);
-                        tr.mu(k,1) = 1-tr.mu0(k,1);
+                        M.(type).tr.mu0(k,1) = (1-M.(type).tr.muhat(k,1)) *und1 /(M.(type).tr.muhat(k,1) *und0 +(1 -M.(type).tr.muhat(k,1)) *und1);
+                        M.(type).tr.mu(k,1) = 1-M.(type).tr.mu0(k,1);
 
                         % calculate prediction error for mu0 - muhat
 
                     end
                 elseif strcmp(type,'PL')
-                    tr.mu(k,1) = tr.muhat(k,1) *und1 /(tr.muhat(k,1) *und1 +(1 -tr.muhat(k,1)) *und0);
-                    tr.mu0(k,1) = tr.mu(k,1);
+                    M.(type).tr.mu(k,1) = M.(type).tr.muhat(k,1) *und1 /(M.(type).tr.muhat(k,1) *und1 +(1 -M.(type).tr.muhat(k,1)) *und0);
+                    M.(type).tr.mu0(k,1) = M.(type).tr.mu(k,1);
                 end
 
 
                 %%
                 % Representation prediction error
-                tr.da(k,1) = tr.mu(k,1) -tr.muhat(k,1);
+                M.(type).tr.da(k,1) = M.(type).tr.mu(k,1) -M.(type).tr.muhat(k,1);
 
                 % second level predictions and precisions
                 if strcmp(r.c_prc.(type).priorupdate,'fixed')
-                    tr.mu(k,2) = tr.muhat(k,2); % for a model with higher level predictions, which are fixed
+                    M.(type).tr.mu(k,2) = M.(type).tr.muhat(k,2); % for a model with higher level predictions, which are fixed
                     % At second level, assume Inf precision for a model with invariable predictions
-                    tr.pi(k,2) = Inf;
-                    tr.pihat(k,2) = Inf;
+                    M.(type).tr.pi(k,2) = Inf;
+                    M.(type).tr.pihat(k,2) = Inf;
 
                 elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
                     % Precision of prediction
-                    tr.pihat(k,2) = 1/(1/tr.pi(k-1,2) +exp(p.ka(2) *tr.mu(k-1,3) +p.om(2)));
+                    M.(type).tr.pihat(k,2) = 1/(1/M.(type).tr.pi(k-1,2) +exp(M.(type).p.ka(2) *M.(type).tr.mu(k-1,3) +M.(type).p.om(2)));
 
                     % Updates
-                    tr.pi(k,2) = tr.pihat(k,2) +1/tr.pihat(k,1);
-                    tr.mu(k,2) = tr.muhat(k,2) +1/tr.pi(k,2) *tr.da(k,1);
+                    M.(type).tr.pi(k,2) = M.(type).tr.pihat(k,2) +1/M.(type).tr.pihat(k,1);
+                    M.(type).tr.mu(k,2) = M.(type).tr.muhat(k,2) +1/M.(type).tr.pi(k,2) *M.(type).tr.da(k,1);
 
                     % Volatility prediction error
-                    tr.da(k,2) = (1/tr.pi(k,2) +(tr.mu(k,2) -tr.muhat(k,2))^2) *tr.pihat(k,2) -1;
+                    M.(type).tr.da(k,2) = (1/M.(type).tr.pi(k,2) +(M.(type).tr.mu(k,2) -M.(type).tr.muhat(k,2))^2) *M.(type).tr.pihat(k,2) -1;
                 end
 
                 % Implied posterior precision at first level
-                sgmmu2 = tapas_sgm(tr.mu(k,2), 1);
-                tr.pi(k,1) = tr.pi(k,2)/(sgmmu2*(1-sgmmu2));
+                sgmmu2 = tapas_sgm(M.(type).tr.mu(k,2), 1);
+                M.(type).tr.pi(k,1) = M.(type).tr.pi(k,2)/(sgmmu2*(1-sgmmu2));
 
                 if l > 3
                     % Pass through higher levels
                     % ~~~~~~~~~~~~~~~~~~~~~~~~~~
                     for j = 3:l-1
                         % Prediction
-                        tr.muhat(k,j) = tr.mu(k-1,j) +t(k) *p.rho(j);
+                        M.(type).tr.muhat(k,j) = M.(type).tr.mu(k-1,j) +t(k) *M.(type).p.rho(j);
 
                         % Precision of prediction
-                        tr.pihat(k,j) = 1/(1/tr.pi(k-1,j) +t(k) *exp(p.ka(j) *tr.mu(k-1,j+1) +p.om(j)));
+                        M.(type).tr.pihat(k,j) = 1/(1/M.(type).tr.pi(k-1,j) +t(k) *exp(M.(type).p.ka(j) *M.(type).tr.mu(k-1,j+1) +M.(type).p.om(j)));
 
                         % Weighting factor
-                        tr.v(k,j-1) = t(k) *exp(p.ka(j-1) *tr.mu(k-1,j) +p.om(j-1));
-                        tr.w(k,j-1) = tr.v(k,j-1) *tr.pihat(k,j-1);
+                        M.(type).tr.v(k,j-1) = t(k) *exp(M.(type).p.ka(j-1) *M.(type).tr.mu(k-1,j) +M.(type).p.om(j-1));
+                        M.(type).tr.w(k,j-1) = M.(type).tr.v(k,j-1) *M.(type).tr.pihat(k,j-1);
 
                         % Updates
-                        tr.pi(k,j) = tr.pihat(k,j) +1/2 *p.ka(j-1)^2 *tr.w(k,j-1) *(tr.w(k,j-1) +(2 *tr.w(k,j-1) -1) *tr.da(k,j-1));
+                        M.(type).tr.pi(k,j) = M.(type).tr.pihat(k,j) +1/2 *M.(type).p.ka(j-1)^2 *M.(type).tr.w(k,j-1) *(M.(type).tr.w(k,j-1) +(2 *M.(type).tr.w(k,j-1) -1) *M.(type).tr.da(k,j-1));
 
-                        if tr.pi(k,j) <= 0
+                        if M.(type).tr.pi(k,j) <= 0
                             error('tapas:hgf:NegPostPrec', 'Negative posterior precision. Parameters are in a region where model assumptions are violated.');
                         end
 
-                        tr.mu(k,j) = tr.muhat(k,j) +1/2 *1/tr.pi(k,j) *p.ka(j-1) *tr.w(k,j-1) *tr.da(k,j-1);
+                        M.(type).tr.mu(k,j) = M.(type).tr.muhat(k,j) +1/2 *1/M.(type).tr.pi(k,j) *M.(type).p.ka(j-1) *M.(type).tr.w(k,j-1) *M.(type).tr.da(k,j-1);
 
                         % Volatility prediction error
-                        tr.da(k,j) = (1/tr.pi(k,j) +(tr.mu(k,j) -tr.muhat(k,j))^2) *tr.pihat(k,j) -1;
+                        M.(type).tr.da(k,j) = (1/M.(type).tr.pi(k,j) +(M.(type).tr.mu(k,j) -M.(type).tr.muhat(k,j))^2) *M.(type).tr.pihat(k,j) -1;
                     end
                 end
                 if l>2
                     % Last level
                     % ~~~~~~~~~~
                     % Prediction
-                    tr.muhat(k,l) = tr.mu(k-1,l) +t(k) *p.rho(l);
+                    M.(type).tr.muhat(k,l) = M.(type).tr.mu(k-1,l) +t(k) *M.(type).p.rho(l);
 
                     % Precision of prediction
-                    tr.pihat(k,l) = 1/(1/tr.pi(k-1,l) +t(k) *p.th);
+                    M.(type).tr.pihat(k,l) = 1/(1/M.(type).tr.pi(k-1,l) +t(k) *M.(type).p.th);
 
                     % Weighting factor
-                    tr.v(k,l)   = t(k) *p.th;
-                    tr.v(k,l-1) = t(k) *exp(p.ka(l-1) *tr.mu(k-1,l) +p.om(l-1));
-                    tr.w(k,l-1) = tr.v(k,l-1) *tr.pihat(k,l-1);
+                    M.(type).tr.v(k,l)   = t(k) *M.(type).p.th;
+                    M.(type).tr.v(k,l-1) = t(k) *exp(M.(type).p.ka(l-1) *M.(type).tr.mu(k-1,l) +M.(type).p.om(l-1));
+                    M.(type).tr.w(k,l-1) = M.(type).tr.v(k,l-1) *M.(type).tr.pihat(k,l-1);
 
                     % Updates
-                    tr.pi(k,l) = tr.pihat(k,l) +1/2 *p.ka(l-1)^2 *tr.w(k,l-1) *(tr.w(k,l-1) +(2 *tr.w(k,l-1) -1) *tr.da(k,l-1));
+                    M.(type).tr.pi(k,l) = M.(type).tr.pihat(k,l) +1/2 *M.(type).p.ka(l-1)^2 *M.(type).tr.w(k,l-1) *(M.(type).tr.w(k,l-1) +(2 *M.(type).tr.w(k,l-1) -1) *M.(type).tr.da(k,l-1));
 
-                    if tr.pi(k,l) <= 0
+                    if M.(type).tr.pi(k,l) <= 0
                         error('tapas:hgf:NegPostPrec', 'Negative posterior precision. Parameters are in a region where model assumptions are violated.');
                     end
 
-                    tr.mu(k,l) = tr.muhat(k,l) +1/2 *1/tr.pi(k,l) *p.ka(l-1) *tr.w(k,l-1) *tr.da(k,l-1);
+                    M.(type).tr.mu(k,l) = M.(type).tr.muhat(k,l) +1/2 *1/M.(type).tr.pi(k,l) *M.(type).p.ka(l-1) *M.(type).tr.w(k,l-1) *M.(type).tr.da(k,l-1);
 
                     % Volatility prediction error
-                    tr.da(k,l) = (1/tr.pi(k,l) +(tr.mu(k,l) -tr.muhat(k,l))^2) *tr.pihat(k,l) -1;
+                    M.(type).tr.da(k,l) = (1/M.(type).tr.pi(k,l) +(M.(type).tr.mu(k,l) -M.(type).tr.muhat(k,l))^2) *M.(type).tr.pihat(k,l) -1;
                 end
 
             elseif strcmp(r.c_prc.(type).priortype,'state') % Kalman
@@ -316,11 +316,11 @@ for k=2:1:n
                 % variance to representation variance
 
                 % Same gain function modified by two different alphas
-                tr.g(k) = (tr.g(k-1) +tr.al(k)*p.expom)/(tr.g(k-1) +tr.al(k)*p.expom +1);
+                M.(type).tr.g(k) = (M.(type).tr.g(k-1) +M.(type).tr.al(k)*M.(type).p.expom)/(M.(type).tr.g(k-1) +M.(type).tr.al(k)*M.(type).p.expom +1);
                 % Hidden state mean update
-                tr.mu(k,1) = tr.muhat(k,1)+tr.g(k)*tr.dau(k);
-                tr.mu0(k,1) = tr.mu(k,1);
-                tr.pi(k,1) = (1-tr.g(k)) *tr.al(k)*p.expom; 
+                M.(type).tr.mu(k,1) = M.(type).tr.muhat(k,1)+M.(type).tr.g(k)*M.(type).tr.dau(k);
+                M.(type).tr.mu0(k,1) = M.(type).tr.mu(k,1);
+                M.(type).tr.pi(k,1) = (1-M.(type).tr.g(k)) *M.like.tr.al(k)*M.(type).p.expom; 
 
                 % Alternative: separate gain functions for each stimulus type
           %      if r.c_prc.(type).one_alpha
@@ -348,73 +348,73 @@ for k=2:1:n
           %      end
 
                 % Representation prediction error
-                tr.da(k,1) = tr.mu(k,1) -tr.muhat(k,1);
+                M.(type).tr.da(k,1) = M.(type).tr.mu(k,1) -M.(type).tr.muhat(k,1);
 
             end
 
             % RESPONSE BIAS
-            if isfield(p,'rb')
-                tr.mu(k,1) = tr.mu(k,1)+p.rb;
+            if isfield(M.(type).p,'rb')
+                M.(type).tr.mu(k,1) = M.(type).tr.mu(k,1)+M.(type).p.rb;
             end
 
         else
-            tr.mu(k,:) = tr.mu(k-1,:); 
-            tr.pi(k,:) = tr.pi(k-1,:);
+            M.(type).tr.mu(k,:) = M.(type).tr.mu(k-1,:); 
+            M.(type).tr.pi(k,:) = M.(type).tr.pi(k-1,:);
 
-            tr.muhat(k,:) = tr.muhat(k-1,:);
-            tr.pihat(k,:) = tr.pihat(k-1,:);
+            M.(type).tr.muhat(k,:) = M.(type).tr.muhat(k-1,:);
+            M.(type).tr.pihat(k,:) = M.(type).tr.pihat(k-1,:);
 
-            tr.v(k,:)  = tr.v(k-1,:);
-            tr.w(k,:)  = tr.w(k-1,:);
-            tr.da(k,:) = tr.da(k-1,:);
-            tr.dau(k) = tr.dau(k-1);
-            if isfield(tr,'g')
-                tr.g(k,:)=tr.g(k-1,:);
+            M.(type).tr.v(k,:)  = M.(type).tr.v(k-1,:);
+            M.(type).tr.w(k,:)  = M.(type).tr.w(k-1,:);
+            M.(type).tr.da(k,:) = M.(type).tr.da(k-1,:);
+            M.(type).tr.dau(k) = M.(type).tr.dau(k-1);
+            if isfield(M.(type).tr,'g')
+                M.(type).tr.g(k,:)=M.(type).tr.g(k-1,:);
             end
-            tr.al(k)  = tr.al(k-1);
+            M.like.tr.al(k)  = M.like.tr.al(k-1);
         end
         
-        % Repack parameters
-        for pn=1:length(pnames)
-            if isfield(M.(type).p,pnames{pn})
-                M.(type).p.(pnames{pn}) = p.(pnames{pn});
-            end
-        end
-
-        % Repack traj
-        for tn=1:length(tnames)
-            if isfield(M.(type).tr,tnames{tn})
-                M.(type).tr.(tnames{tn}) = tr.(tnames{tn});
-            end
-        end
-        
-        % Repack like parameters
-        type='like';
-        for pn=1:length(pnames)
-            if isfield(M.(type).p,pnames{pn})
-                M.(type).p.(pnames{pn}) = p.(pnames{pn});
-            end
-        end
+%         % Repack parameters
+%         for pn=1:length(pnames)
+%             if isfield(M.(type).p,pnames{pn})
+%                 M.(type).p.(pnames{pn}) = p.(pnames{pn});
+%             end
+%         end
+% 
+%         % Repack traj
+%         for tn=1:length(tnames)
+%             if isfield(M.(type).tr,tnames{tn})
+%                 M.(type).tr.(tnames{tn}) = tr.(tnames{tn});
+%             end
+%         end
+%         
+%         % Repack like parameters
+%         type='like';
+%         for pn=1:length(pnames)
+%             if isfield(M.(type).p,pnames{pn})
+%                 M.(type).p.(pnames{pn}) = p.(pnames{pn});
+%             end
+%         end
     end
     
     % Joint prediction if more than one model
     if r.c_prc.nModels>1
         
-        % Unpack like parameters
-        type='like';
-        pnames = fieldnames(M.(type).p);
-        for pn=1:length(pnames)
-            p.(pnames{pn}) = M.(type).p.(pnames{pn});
-        end
+%         % Unpack like parameters
+%         type='like';
+%         pnames = fieldnames(M.(type).p);
+%         for pn=1:length(pnames)
+%             p.(pnames{pn}) = M.(type).p.(pnames{pn});
+%         end
         
         % set alpha
-        if ~isfield(p,'al1')
-            p.al1=p.al0;
+        if ~isfield(M.like.p,'al1')
+            M.like.p.al1=M.like.p.al0;
         end
         if u(k,1)==0
-            tr.al(k)=p.al0(u(k,2));
+            M.like.tr.al(k)=M.like.p.al0(u(k,2));
         elseif u(k,1)==1
-            tr.al(k)=p.al1(u(k,2));
+            M.like.tr.al(k)=M.like.p.al1(u(k,2));
         end
         
         v_mu=[];
@@ -438,29 +438,29 @@ for k=2:1:n
         M.like.tr.vj_mu(k,1) = sum(v_mu_phi)/vj_phi;
 
         % joint prediction
-        rt=exp((p.eta1-M.like.tr.vj_mu(k,1))^2 - (p.eta0-M.like.tr.vj_mu(k,1))^2)/vj_phi^-2;
+        rt=exp((M.like.p.eta1-M.like.tr.vj_mu(k,1))^2 - (M.like.p.eta0-M.like.tr.vj_mu(k,1))^2)/vj_phi^-2;
         M.like.tr.xchat(k,1) = 1/(1+rt);
         
         % Likelihood functions: one for each
         % possible signal
         if r.c_prc.n_inputcond >1
-            und1 = exp(-(u(k,1) -p.eta1)^2/(2*p.al1(u(k,2))));
-            und0 = exp(-(u(k,1) -p.eta0)^2/(2*p.al0(u(k,2))));
+            und1 = exp(-(u(k,1) -M.like.p.eta1)^2/(2*M.like.p.al1(u(k,2))));
+            und0 = exp(-(u(k,1) -M.like.p.eta0)^2/(2*M.like.p.al0(u(k,2))));
         else
-            und1 = exp(-(u(k,1) -p.eta1)^2/(2*p.al1));
-            und0 = exp(-(u(k,1) -p.eta0)^2/(2*p.al0));
+            und1 = exp(-(u(k,1) -M.like.p.eta1)^2/(2*M.like.p.al1));
+            und0 = exp(-(u(k,1) -M.like.p.eta0)^2/(2*M.like.p.al0));
         end
 
         % Update
         M.like.tr.xc(k,1) = M.like.tr.xchat(k,1) *und1 /(M.like.tr.xchat(k,1) *und1 +(1 -M.like.tr.xchat(k,1)) *und0);
         
-        % Repack like parameters
-        type='like';
-        for pn=1:length(pnames)
-            if isfield(M.(type).p,pnames{pn})
-                M.(type).p.(pnames{pn}) = p.(pnames{pn});
-            end
-        end
+%         % Repack like parameters
+%         type='like';
+%         for pn=1:length(pnames)
+%             if isfield(M.(type).p,pnames{pn})
+%                 M.(type).p.(pnames{pn}) = p.(pnames{pn});
+%             end
+%         end
     end
     
 end
@@ -474,48 +474,48 @@ M.like.tr.xchat(1) = [];
 
 for m=1:r.c_prc.nModels
 
-    % Unpack likelihood parameters
-    type='like';
-    pnames = fieldnames(M.(type).p);
-    for pn=1:length(pnames)
-        p.(pnames{pn}) = M.(type).p.(pnames{pn});
-    end
+%     % Unpack likelihood parameters
+%     type='like';
+%     pnames = fieldnames(M.(type).p);
+%     for pn=1:length(pnames)
+%         p.(pnames{pn}) = M.(type).p.(pnames{pn});
+%     end
 
     type = r.c_prc.type{m};
     l=M.(type).l;
     
-    % Unpack prior parameters
-    pnames = fieldnames(M.(type).p);
-    for pn=1:length(pnames)
-        p.(pnames{pn}) = M.(type).p.(pnames{pn});
-    end
-
-    %Unpack prior traj
-    tnames = fieldnames(M.(type).tr);
-    for tn=1:length(tnames)
-        tr.(tnames{tn}) = M.(type).tr.(tnames{tn});
-    end
+%     % Unpack prior parameters
+%     pnames = fieldnames(M.(type).p);
+%     for pn=1:length(pnames)
+%         p.(pnames{pn}) = M.(type).p.(pnames{pn});
+%     end
+% 
+%     %Unpack prior traj
+%     tnames = fieldnames(M.(type).tr);
+%     for tn=1:length(tnames)
+%         tr.(tnames{tn}) = M.(type).tr.(tnames{tn});
+%     end
 
     if l>1
         % Implied learning rate at the first level
-        sgmmu2 = tapas_sgm(tr.mu(:,2), 1);
-        lr1    = diff(sgmmu2)./tr.da(2:n,1);
-        lr1(tr.da(2:n,1)==0) = 0;
+        sgmmu2 = tapas_sgm(M.(type).tr.mu(:,2), 1);
+        lr1    = diff(sgmmu2)./M.(type).tr.da(2:n,1);
+        lr1(M.(type).tr.da(2:n,1)==0) = 0;
     end
 
     % Remove representation priors
-    tr.mu0(1,:)  = [];
-    tr.mu(1,:)  = [];
-    tr.pi(1,:)  = [];
+    M.(type).tr.mu0(1,:)  = [];
+    M.(type).tr.mu(1,:)  = [];
+    M.(type).tr.pi(1,:)  = [];
     % Check validity of trajectories
-    if any(isnan(tr.mu(:))) %|| any(isnan(pi(:)))
+    if any(isnan(M.(type).tr.mu(:))) %|| any(isnan(pi(:)))
         error('tapas:hgf:VarApproxInvalid', 'Variational approximation invalid. Parameters are in a region where model assumptions are violated.');
     else
         % Check for implausible jumps in trajectories
         % CAB: only use first 500 trials - after that changes in precision become too small
-        ntrials = min(length(tr.mu),500);
-        dmu = diff(tr.mu(1:ntrials,2:end));
-        dpi = diff(tr.pi(1:ntrials,2:end));
+        ntrials = min(length(M.(type).tr.mu),500);
+        dmu = diff(M.(type).tr.mu(1:ntrials,2:end));
+        dpi = diff(M.(type).tr.pi(1:ntrials,2:end));
         rmdmu = repmat(sqrt(mean(dmu.^2)),length(dmu),1);
         rmdpi = repmat(sqrt(mean(dpi.^2)),length(dpi),1);
 
@@ -527,16 +527,16 @@ for m=1:r.c_prc.nModels
     end
 
     % Remove other dummy initial values
-    tr.muhat(1,:) = [];
-    tr.pihat(1,:) = [];
-    tr.v(1,:)     = [];
-    tr.w(1,:)     = [];
-    tr.da(1,:)    = [];
-    tr.dau(1)     = [];
-    if isfield(tr,'g')
-        tr.g(1,:)  = [];
+    M.(type).tr.muhat(1,:) = [];
+    M.(type).tr.pihat(1,:) = [];
+    M.(type).tr.v(1,:)     = [];
+    M.(type).tr.w(1,:)     = [];
+    M.(type).tr.da(1,:)    = [];
+    M.(type).tr.dau(1)     = [];
+    if isfield(M.(type).tr,'g')
+        M.(type).tr.g(1,:)  = [];
     end
-    tr.al(1)     = [];
+    M.like.tr.al(1)     = [];
 
     % Create result data structure
     traj = struct;
@@ -545,43 +545,43 @@ for m=1:r.c_prc.nModels
     traj.like.xc = M.like.tr.xc;
     traj.like.xchat = M.like.tr.xchat;
 
-    traj.(type).mu0    = tr.mu0;
-    traj.(type).mu     = tr.mu;
-    traj.(type).sa     = 1./tr.pi;
+    traj.(type).mu0    = M.(type).tr.mu0;
+    traj.(type).mu     = M.(type).tr.mu;
+    traj.(type).sa     = 1./M.(type).tr.pi;
 
-    traj.(type).muhat  = tr.muhat;
-    traj.(type).sahat  = 1./tr.pihat;
-    traj.(type).v      = tr.v;
-    traj.(type).w      = tr.w;
-    traj.(type).da     = tr.da;
-    traj.(type).dau    = tr.dau;
-    if isfield(tr,'g')
-        traj.(type).g     = tr.g;
+    traj.(type).muhat  = M.(type).tr.muhat;
+    traj.(type).sahat  = 1./M.(type).tr.pihat;
+    traj.(type).v      = M.(type).tr.v;
+    traj.(type).w      = M.(type).tr.w;
+    traj.(type).da     = M.(type).tr.da;
+    traj.(type).dau    = M.(type).tr.dau;
+    if isfield(M.(type).tr,'g')
+        traj.(type).g     = M.(type).tr.g;
     end
 
     % Updates with respect to prediction
-    traj.(type).ud = tr.muhat -tr.mu;
+    traj.(type).ud = M.(type).tr.muhat -M.(type).tr.mu;
 
     % Psi (precision weights on prediction errors)
-    tr.psi        = NaN(n-1,l+1);
-    tr.psi(:,1)   = 1./(tr.al.*tr.pi(:,1)); % dot multiply only if al is a vector
-    if l>1; tr.psi(:,2)   = 1./tr.pi(:,2);end
-    if l>2; tr.psi(:,3:l) = tr.pihat(:,2:l-1)./tr.pi(:,3:l);end
-    traj.(type).psi   = tr.psi;
+    M.(type).tr.psi        = NaN(n-1,l+1);
+    M.(type).tr.psi(:,1)   = 1./(M.like.tr.al.*M.(type).tr.pi(:,1)); % dot multiply only if al is a vector
+    if l>1; M.(type).tr.psi(:,2)   = 1./M.(type).tr.pi(:,2);end
+    if l>2; M.(type).tr.psi(:,3:l) = M.(type).tr.pihat(:,2:l-1)./M.(type).tr.pi(:,3:l);end
+    traj.(type).psi   = M.(type).tr.psi;
 
     % Epsilons (precision-weighted prediction errors)
-    tr.epsi        = NaN(n-1,l);
-    tr.epsi(:,1)   = tr.psi(:,1) .*tr.dau;
-    if l>1; tr.epsi(:,2:l) = tr.psi(:,2:l) .*tr.da(:,1:l-1);end
-    traj.(type).epsi   = tr.epsi;
+    M.(type).tr.epsi        = NaN(n-1,l);
+    M.(type).tr.epsi(:,1)   = M.(type).tr.psi(:,1) .*M.(type).tr.dau;
+    if l>1; M.(type).tr.epsi(:,2:l) = M.(type).tr.psi(:,2:l) .*M.(type).tr.da(:,1:l-1);end
+    traj.(type).epsi   = M.(type).tr.epsi;
 
     % Full learning rate (full weights on prediction errors)
-    tr.wt        = NaN(n-1,l);
-    if l==1; lr1=tr.psi(:,1);end
-    tr.wt(:,1)   = lr1;
-    if l>1; tr.wt(:,2)   = tr.psi(:,2); end
-    if l>2; tr.wt(:,3:l) = 1/2 *(tr.v(:,2:l-1) *diag(p.ka(2:l-1))) .*tr.psi(:,3:l); end
-    traj.(type).wt   = tr.wt;
+    M.(type).tr.wt        = NaN(n-1,l);
+    if l==1; lr1=M.(type).tr.psi(:,1);end
+    M.(type).tr.wt(:,1)   = lr1;
+    if l>1; M.(type).tr.wt(:,2)   = M.(type).tr.psi(:,2); end
+    if l>2; M.(type).tr.wt(:,3:l) = 1/2 *(M.(type).tr.v(:,2:l-1) *diag(M.(type).p.ka(2:l-1))) .*M.(type).tr.psi(:,3:l); end
+    traj.(type).wt   = M.(type).tr.wt;
 
     % Create matrices for use by the observation model
 %     infStates = NaN(n-1,l,11);
