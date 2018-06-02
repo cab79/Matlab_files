@@ -7,11 +7,19 @@ c = struct;
     S.modelspec.likelihood.type = 'binary'; % binary, continuous
     S.modelspec.likelihood.inputvar = 'uncertain_unequal'; % uncertain_equal (variance), uncertain_unequal, certain
     S.modelspec.likelihood.n_inputcond = 1; % Number of conditions with unique input variance
+    c.modelspec.response.model = 'soft';
+    S.modelspec.response.priormodel = 'AL'; % Which model representations are used for the response model?
+    S.modelspec.response.rep = 'mu0';
     modeltype='AL'; % AL (associative learning), PL (perceptual learning), PR (priming)
     S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
     S.modelspec.priormodels.(modeltype).n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
     S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
-    S.modelspec.priormodels.(modeltype).respmodel = true; % use variables in response model?
+    S.modelspec.priormodels.(modeltype).respmodel = false; % use variables in response model?
+    modeltype='PR'; % AL (associative learning), PL (perceptual learning), PR (priming)
+    S.modelspec.priormodels.(modeltype).priortype = 'state'; % constant, hierarchical, state
+    S.modelspec.priormodels.(modeltype).n_priorlevels = 2; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
+    S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
+    
 
 %% General settings (specific to experimental design but not to the model)
 % Input intervals

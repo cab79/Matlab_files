@@ -10,25 +10,25 @@ function [logp, yhat, res] = logrt_softmax_binary(r, ptrans)
 % (either version 3 or, at your option, any later version). For further details, see the file
 % COPYING or <http://www.gnu.org/licenses/>.
 
-l = r.c_prc.(r.c_obs.model).n_priorlevels;
+l = r.c_prc.(r.c_prc.respmodel).n_priorlevels;
 
 % Initialize returned log-probabilities, predictions,
 % and residuals as NaNs so that NaN is returned for all
 % irregualar trials
-n = size(r.traj.(r.c_obs.model).mu,1);
+n = size(r.traj.(type).mu,1);
 reg = ~ismember(1:n,r.irr);
 logp = NaN(n,1);
 yhat = NaN(n,1);
 res  = NaN(n,1);
 
 %% SOFTMAX
-if strcmp(r.c_obs.response.model, 'RT-soft') || strcmp(r.c_obs.response.model,'soft')
+if strcmp(r.c_obs.model,'RT-soft') || strcmp(r.c_obs.model,'soft')
 
     % Softmax parameter
     be = exp(ptrans(8));
 
     % Softmax: Weed irregular trials out from inferred states, responses, and inputs
-    x = r.traj.(r.c_obs.model).(r.c_obs.rep)(:,1);
+    x = r.traj.(type).(r.c_obs.predorpost)(:,1);
     x(r.irr) = [];
     ys = r.y(:,1);
     ys(r.irr) = [];
@@ -58,7 +58,7 @@ if strcmp(r.c_obs.response.model, 'RT-soft') || strcmp(r.c_obs.response.model,'s
     yhat(reg) = yh;
     res(reg) = (ys -yh)./sqrt(yh.*(1 -yh));
 end
-if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT')
+if strcmp(r.c_obs.model,'RT-soft') || strcmp(r.c_obs.model,'RT')
 
     %% RT
 
@@ -78,15 +78,15 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
     u(r.irr) = [];
 
     % logRT: Extract trajectories of interest from infStates
-    mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
-    sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
-    da1 = r.traj.(r.c_obs.model).da(:,1);
+    mu1hat = r.traj.(type).muhat(:,1);
+    sa1hat = r.traj.(type).sahat(:,1);
+    da1 = r.traj.(type).da(:,1);
     if l>1
-        mu2    = r.traj.(r.c_obs.model).(mu)(:,2);
-        sa2    = r.traj.(r.c_obs.model).(sa)(:,2);
+        mu2    = r.traj.(type).(mu)(:,2);
+        sa2    = r.traj.(type).(sa)(:,2);
     end
     if l>2
-        mu3    = r.traj.(r.c_obs.model).(mu)(:,3);
+        mu3    = r.traj.(type).(mu)(:,3);
     end
     
     
