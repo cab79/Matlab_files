@@ -1,4 +1,4 @@
-function tapas_hgf_binary_plotTraj_CAB(r,priormodel)
+function tapas_hgf_binary_plotTraj_CAB(r,priormodel,plotsd)
 % Plots the estimated or generated trajectories for the binary HGF perceptual model
 % Usage example:  est = tapas_fitModel(responses, inputs); tapas_hgf_binary_plotTraj(est);
 %
@@ -11,7 +11,7 @@ function tapas_hgf_binary_plotTraj_CAB(r,priormodel)
 % COPYING or <http://www.gnu.org/licenses/>.
 
 % Optional plotting of standard deviations (true or false)
-plotsd = true;
+%plotsd = true;
 
 % Optional plotting of responses (true or false)
 ploty = true;
@@ -41,13 +41,24 @@ ts = [0, ts];
 %end
 
 mu_0=r.p_prc.([priormodel '_mu_0']);
-sa_0=r.p_prc.([priormodel '_sa_0']);
 mu = r.traj.(priormodel).mu;
-sa = r.traj.(priormodel).sa;
 wt = r.traj.(priormodel).wt;
-rho = r.p_prc.([priormodel '_rho']);
-ka = r.p_prc.([priormodel '_ka']);
 om = r.p_prc.([priormodel '_om']);
+if isfield(r.p_prc,[priormodel '_rho'])
+    rho = r.p_prc.([priormodel '_rho']);
+else
+    rho = NaN(1,l)
+end
+if isfield(r.p_prc,[priormodel '_ka'])
+    ka = r.p_prc.([priormodel '_ka']);
+else
+    ka = NaN(1,l)
+end
+
+if plotsd
+    sa_0=r.p_prc.([priormodel '_sa_0']);
+    sa = r.traj.(priormodel).sa;
+end
 
 % Upper levels
 for j = 1:l-1
@@ -78,9 +89,15 @@ end
 % Input level
 subplot(l,1,l);
 
-plot(ts, [tapas_sgm(mu_0(2), 1); tapas_sgm(mu(:,2), 1)], 'r', 'LineWidth', 2);
-hold all;
-plot(0, tapas_sgm(mu_0(2), 1), 'or', 'LineWidth', 2); % prior
+if l>1
+    plot(ts, [tapas_sgm(mu_0(2), 1); tapas_sgm(mu(:,2), 1)], 'r', 'LineWidth', 2);
+    hold all;
+    plot(0, tapas_sgm(mu_0(2), 1), 'or', 'LineWidth', 2); % prior
+else
+    plot(ts, [mu_0(1); mu(:,1)], 'r', 'LineWidth', 2);
+    hold all;
+    plot(0, mu_0(1), 'or', 'LineWidth', 2); % prior
+end
 plot(ts(2:end), r.u(:,1), '.', 'Color', [0 0.6 0]); % inputs
 plot(ts(2:end), wt(:,1), 'k') % implied learning rate 
 if (ploty == true) && ~isempty(find(strcmp(fieldnames(r),'y'))) && ~isempty(r.y)

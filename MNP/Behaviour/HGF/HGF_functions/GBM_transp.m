@@ -23,7 +23,7 @@ for pn=1:length(nme)
         pvec(idx{pn}) = ptrans(idx{pn});
     end
     nme2 = strsplit(nme{pn,1},'log');
-    pstruct.(nme2{end}) = pvec(idx{pn});
+    pstruct.(horzcat(nme2{:})) = pvec(idx{pn});
 end
 
 return;

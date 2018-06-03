@@ -61,6 +61,7 @@ for pn=1:length(nme)
     end
 end
 
+M.like.tr.al = NaN(n,1);
 % joint trajectories (if needed)
 M.like.tr.vj_mu = NaN(n,1);
 M.like.tr.xc = NaN(n,1);
@@ -100,7 +101,7 @@ for m=1:r.c_prc.nModels
     M.(type).tr.w     = NaN(n,M.(type).l-1);
     M.(type).tr.da    = NaN(n,M.(type).l);
     M.(type).tr.dau   = NaN(n,1);
-    M.(type).tr.al   = NaN(n,1);
+    M.like.tr.al   = NaN(n,1);
 
     % Representation priors
     % Note: first entries of the other quantities remain
@@ -128,7 +129,7 @@ end
 for k=2:1:n
     
     for m=1:r.c_prc.nModels
-        if not(ismember(k-1, r.ign))
+        if not(any(r.ign==k-1))
             
 %             % Unpack likelihood parameters
 %             type='like';
@@ -316,7 +317,7 @@ for k=2:1:n
                 % variance to representation variance
 
                 % Same gain function modified by two different alphas
-                M.(type).tr.g(k) = (M.(type).tr.g(k-1) +M.(type).tr.al(k)*M.(type).p.expom)/(M.(type).tr.g(k-1) +M.(type).tr.al(k)*M.(type).p.expom +1);
+                M.(type).tr.g(k) = (M.(type).tr.g(k-1) +M.like.tr.al(k)*M.(type).p.expom)/(M.(type).tr.g(k-1) +M.like.tr.al(k)*M.(type).p.expom +1);
                 % Hidden state mean update
                 M.(type).tr.mu(k,1) = M.(type).tr.muhat(k,1)+M.(type).tr.g(k)*M.(type).tr.dau(k);
                 M.(type).tr.mu0(k,1) = M.(type).tr.mu(k,1);
@@ -426,8 +427,8 @@ for k=2:1:n
             l=M.(type).l;
             
             % define mu phi
-            v_mu_str = ['M.(type).tr.' r.c_prc.(type).jointrep '(' r.c_prc.(type).jointrepk ',' num2str(r.c_prc.(type).jointreplev) ')'];
-            eval(['v_mu(m) = ' v_mu_str ';']);
+            rep = M.(type).tr.(r.c_prc.(type).jointrep);
+            v_mu(m) = rep(k+r.c_prc.(type).jointrepk,r.c_prc.(type).jointreplev);
             v_phi(m) = M.(type).p.phi;
             v_mu_phi(m) = v_phi(m)*v_mu(m);
         
@@ -466,7 +467,8 @@ for k=2:1:n
 end
 
 %% COMPILE RESULTS
-
+M.like.tr.al(1)     = [];
+ 
 % joint trajectories (if needed)
 M.like.tr.vj_mu(1) = [];
 M.like.tr.xc(1) = [];
@@ -536,7 +538,7 @@ for m=1:r.c_prc.nModels
     if isfield(M.(type).tr,'g')
         M.(type).tr.g(1,:)  = [];
     end
-    M.like.tr.al(1)     = [];
+   
 
     % Create result data structure
     traj = struct;

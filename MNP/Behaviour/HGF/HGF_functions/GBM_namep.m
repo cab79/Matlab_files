@@ -16,7 +16,7 @@ idx=c.priormusi;
 
 for pn=1:length(nme)
     nme2 = strsplit(nme{pn,1},'log');
-    pstruct.(nme2{end}) = pvec(idx{pn});
+    pstruct.(horzcat(nme2{:})) = pvec(idx{pn});
 end
 
 return;
