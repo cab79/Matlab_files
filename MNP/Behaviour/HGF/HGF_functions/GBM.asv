@@ -188,40 +188,40 @@ for k=2:1:n
                         pihat(1,2,m) = 1./sa_0(2,1,m);
                     end
                     % 2nd level prediction
-                    muhat(k,2,m) = muhat(1,2,m);%mu(k-1,2) +t(k) *rho(2); % fixed to initial value - not updated on each trial
+                    muhat(k,2) = muhat(1,2);%mu(k-1,2) +t(k) *rho(2); % fixed to initial value - not updated on each trial
 
                 elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
                     % 2nd level prediction
-                    muhat(k,2,m) = mu(k-1,2,m) +t(k,1,m) *rho(2,1,m);
+                    muhat(k,2) = mu(k-1,2) +t(k) *rho(2);
 
                 end
                 % Prediction from level 2 (which can be either fixed or dynamic)
-                muhat(k,1,m) = tapas_sgm(muhat(k,2,m), 1);
+                muhat(k,1) = tapas_sgm(muhat(k,2), 1);
 
             elseif strcmp(r.c_prc.(type).priortype,'state')
                 % Prediction from prior state, e.g. Kalman filter
-                muhat(k,1,m) =  mu(k-1,1,m);
+                muhat(k,1) =  mu(k-1,1);
 
             end
 
             % Precision of prediction
-            pihat(k,1,m) = 1/(muhat(k,1,m)*(1 -muhat(k,1,m)));
+            pihat(k,1) = 1/(muhat(k,1)*(1 -muhat(k,1)));
 
 
             %% Updates
 
             % Value prediction error, e.g. for Kalman filter, also known as the
             % "innovation"
-            dau(k,1,m) = u(k,1) -muhat(k,1,m);
+            dau(k) = u(k,1) -muhat(k,1);
 
             % set alpha
-            if ~exist('al1','var')
+            if ~isfield(M.like.p,'al1')
                 al1=al0;
             end
             if u(k,1)==0
-                al(k,1,m)=al0(u(k,2),1,m);
+                al(k)=al0(u(k,2));
             elseif u(k,1)==1
-                al(k,1,m)=al1(u(k,2),1,m);
+                al(k)=al1(u(k,2));
             end
 
             % 
@@ -229,11 +229,11 @@ for k=2:1:n
                 % Likelihood functions: one for each
                 % possible signal
                 if r.c_prc.n_inputcond >1
-                    und1 = exp(-(u(k,1,m) -eta1(1,1,m))^2/(2*al1(u(k,2),1,m)));
-                    und0 = exp(-(u(k,1,m) -eta0(1,1,m))^2/(2*al0(u(k,2),1,m)));
+                    und1 = exp(-(u(k,1) -eta1)^2/(2*al1(u(k,2))));
+                    und0 = exp(-(u(k,1) -eta0)^2/(2*al0(u(k,2))));
                 else
-                    und1 = exp(-(u(k,1,m) -eta1(1,1,m))^2/(2*al1));
-                    und0 = exp(-(u(k,1,m) -eta0(1,1,m))^2/(2*al0));
+                    und1 = exp(-(u(k,1) -eta1)^2/(2*al1));
+                    und0 = exp(-(u(k,1) -eta0)^2/(2*al0));
                 end
 
 
