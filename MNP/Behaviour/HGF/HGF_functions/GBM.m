@@ -140,7 +140,7 @@ for m=1:r.c_prc.nModels
     % Unpack prior parameters
     pnames = fieldnames(M.(type).p);
     for pn=1:length(pnames)
-        eval([pnames{pn} '(:,:,m) = M.(type).p.(pnames{pn});']);
+        eval([pnames{pn} '(:,:,m) = M.(type).p.(pnames{pn})'';']);
     end
 
     %Unpack prior traj
