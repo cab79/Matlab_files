@@ -192,7 +192,7 @@ for k=2:1:n
 
                 elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
                     % 2nd level prediction
-                    muhat(k,2,m) = mu(k-1,2,m) +t(k,1,m) *rho(2,1,m);
+                    muhat(k,2,m) = mu(k-1,2,m) +t(k) *rho(2,1,m);
 
                 end
                 % Prediction from level 2 (which can be either fixed or dynamic)
@@ -333,7 +333,7 @@ for k=2:1:n
                     mu(k,l(m),m) = muhat(k,l(m),m) +1/2 *1/pi(k,l(m),m) *ka(l(m)-1,1,m) *w(k,l(m)-1,m) *da(k,l(m)-1,m);
 
                     % Volatility prediction error
-                    da(k,l(m),m) = (1/pi(k,l(m),m) +(mu(k,l(m),m) -muhat(k,l(m)),m)^2) *pihat(k,l(m),m) -1;
+                    da(k,l(m),m) = (1/pi(k,l(m),m) +(mu(k,l(m),m) -muhat(k,l(m),m))^2) *pihat(k,l(m),m) -1;
                 end
 
             elseif strcmp(r.c_prc.(type).priortype,'state') % Kalman

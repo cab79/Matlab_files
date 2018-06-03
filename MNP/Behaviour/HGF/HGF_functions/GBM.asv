@@ -1,6 +1,6 @@
 function [traj] = GBM(r, pvec, varargin)
 % GENERAL BINARY (INPUT) MODEL
-
+dbstop if error
 % NOTES
 % 1. in and N defined separately
 % 2. representation Mu has no variance in SDT, there is just noise (alpha)
@@ -333,7 +333,7 @@ for k=2:1:n
                     mu(k,l(m),m) = muhat(k,l(m),m) +1/2 *1/pi(k,l(m),m) *ka(l(m)-1,1,m) *w(k,l(m)-1,m) *da(k,l(m)-1,m);
 
                     % Volatility prediction error
-                    da(k,l(m),m) = (1/pi(k,l(m),m) +(mu(k,l(m),m) -muhat(k,l(m)),m)^2) *pihat(k,l(m),m) -1;
+                    da(k,l(m),m) = (1/pi(k,l(m),m) +(mu(k,l(m),m) -muhat(k,l(m)))^2) *pihat(k,l(m),m) -1;
                 end
 
             elseif strcmp(r.c_prc.(type).priortype,'state') % Kalman
@@ -546,14 +546,14 @@ for m=1:r.c_prc.nModels
 
 
     % Check validity of trajectories
-    if any(isnan(mu(:))) %|| any(isnan(pi(:)))
+    if any(isnan(mu(:,:,m))) %|| any(isnan(pi(:)))
         error('tapas:hgf:VarApproxInvalid', 'Variational approximation invalid. Parameters are in a region where model assumptions are violated.');
     else
         % Check for implausible jumps in trajectories
         % CAB: only use first 500 trials - after that changes in precision become too small
-        ntrials = min(length(mu),500);
-        dmu = diff(mu(1:ntrials,2:end));
-        dpi = diff(pi(1:ntrials,2:end));
+        ntrials = min(length(mu(:,:,m)),500);
+        dmu = diff(mu(1:ntrials,2:end,m));
+        dpi = diff(pi(1:ntrials,2:end,m));
         rmdmu = repmat(sqrt(mean(dmu.^2)),length(dmu),1);
         rmdpi = repmat(sqrt(mean(dpi.^2)),length(dpi),1);
 
@@ -573,34 +573,34 @@ for m=1:r.c_prc.nModels
     traj.like.xc = xc;
     traj.like.xchat = xchat;
 
-    traj.(type).mu0    = mu0;
-    traj.(type).mu     = mu;
-    traj.(type).sa     = 1./pi;
+    traj.(type).mu0    = mu0(:,:,m);
+    traj.(type).mu     = mu(:,:,m);
+    traj.(type).sa     = 1./pi(:,:,m);
 
-    traj.(type).muhat  = muhat;
-    traj.(type).sahat  = 1./pihat;
-    traj.(type).v      = v;
-    traj.(type).w      = w;
-    traj.(type).da     = da;
-    traj.(type).dau    = dau;
-    if isfield(M.(type).tr,'g')
-        traj.(type).g     = g;
+    traj.(type).muhat  = muhat(:,:,m);
+    traj.(type).sahat  = 1./pihat(:,:,m);
+    traj.(type).v      = v(:,:,m);
+    traj.(type).w      = w(:,:,m);
+    traj.(type).da     = da(:,:,m);
+    traj.(type).dau    = dau(:,:,m);
+    if exist('g','var')
+        traj.(type).g     = g(:,:,m);
     end
 
     % Updates with respect to prediction
-    traj.(type).ud = muhat -mu;
+    traj.(type).ud = muhat(:,:,m) -mu(:,:,m);
 
     % Psi (precision weights on prediction errors)
     psi        = NaN(n-1,l(m)+1);
-    psi(:,1)   = 1./(al.*pi(:,1)); % dot multiply only if al is a vector
-    if l(m)>1; psi(:,2)   = 1./pi(:,2);end
-    if l(m)>2; psi(:,3:l(m)) = pihat(:,2:l(m)-1)./pi(:,3:l(m));end
+    psi(:,1)   = 1./(al(:,:,m).*pi(:,1,m)); % dot multiply only if al is a vector
+    if l(m)>1; psi(:,2)   = 1./pi(:,2,m);end
+    if l(m)>2; psi(:,3:l(m)) = pihat(:,2:l(m)-1,m)./pi(:,3:l(m),m);end
     traj.(type).psi   = psi;
 
     % Epsilons (precision-weighted prediction errors)
     epsi        = NaN(n-1,l(m));
-    epsi(:,1)   = psi(:,1) .*dau;
-    if l(m)>1; epsi(:,2:l(m)) = psi(:,2:l(m)) .*da(:,1:l(m)-1);end
+    epsi(:,1)   = psi(:,1) .*dau(:,:,m);
+    if l(m)>1; epsi(:,2:l(m)) = psi(:,2:l(m)) .*da(:,1:l(m)-1,m);end
     traj.(type).epsi   = epsi;
 
     % Full learning rate (full weights on prediction errors)
@@ -608,7 +608,7 @@ for m=1:r.c_prc.nModels
     if l(m)==1; lr1=psi(:,1);end
     wt(:,1)   = lr1;
     if l(m)>1; wt(:,2)   = psi(:,2); end
-    if l(m)>2; wt(:,3:l(m)) = 1/2 *(v(:,2:l(m)-1) *diag(ka(2:l(m)-1))) .*psi(:,3:l(m)); end
+    if l(m)>2; wt(:,3:l(m)) = 1/2 *(v(:,2:l(m)-1,m) *diag(ka(2:l(m)-1,m))) .*psi(:,3:l(m)); end
     traj.(type).wt   = wt;
 
     % Create matrices for use by the observation model
