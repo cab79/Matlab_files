@@ -57,7 +57,8 @@ for pn=1:length(nme)
     if strcmp(nme{pn,1}(1:length(type)),type)
         nme2 = strsplit(nme{pn,1},[type '_']);
         nme3 = strsplit(nme2{end},'log');
-        M.(type).p.(nme3{end}) = pvec(idx{pn});
+        %M.(type).p.(nme3{end}) = pvec(idx{pn});
+        eval([nme3{end} ' = pvec(idx{pn});']);
     end
 end
 
@@ -75,7 +76,8 @@ for m=1:r.c_prc.nModels
         if strcmp(nme{pn,1}(1:length(type)),type)
             nme2 = strsplit(nme{pn,1},[type '_']);
             nme3 = strsplit(nme2{end},'log');
-            M.(type).p.(nme3{end}) = pvec(idx{pn});
+            %M.(type).p.(nme3{end}) = pvec(idx{pn});
+            eval([nme3{end} '(:,:,m) = pvec(idx{pn});']);
         end
     end
 
