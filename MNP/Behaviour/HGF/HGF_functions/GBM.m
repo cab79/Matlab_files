@@ -232,108 +232,108 @@ for k=2:1:n
                     und1 = exp(-(u(k,1,m) -eta1(1,1,m))^2/(2*al1(u(k,2),1,m)));
                     und0 = exp(-(u(k,1,m) -eta0(1,1,m))^2/(2*al0(u(k,2),1,m)));
                 else
-                    und1 = exp(-(u(k,1,m) -eta1(1,1,m))^2/(2*al1));
-                    und0 = exp(-(u(k,1,m) -eta0(1,1,m))^2/(2*al0));
+                    und1 = exp(-(u(k,1,m) -eta1(1,1,m))^2/(2*al1(1,1,m)));
+                    und0 = exp(-(u(k,1,m) -eta0(1,1,m))^2/(2*al0(1,1,m)));
                 end
 
 
                 
                 if strcmp(type,'AL')
                     if u(k,3)==2
-                        mu0(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
-                        mu(k,1) = mu0(k,1);
+                        mu0(k,1,m) = muhat(k,1,m) *und1 /(muhat(k,1,m) *und1 +(1 -muhat(k,1,m)) *und0);
+                        mu(k,1,m) = mu0(k,1,m);
                     elseif u(k,3)==1
-                        mu0(k,1) = (1-muhat(k,1)) *und1 /(muhat(k,1) *und0 +(1 -muhat(k,1)) *und1);
-                        mu(k,1) = 1-mu0(k,1);
+                        mu0(k,1,m) = (1-muhat(k,1,m)) *und1 /(muhat(k,1,m) *und0 +(1 -muhat(k,1,m)) *und1);
+                        mu(k,1,m) = 1-mu0(k,1,m);
 
                         % calculate prediction error for mu0 - muhat
 
                     end
                 elseif strcmp(type,'PL')
-                    mu(k,1) = muhat(k,1) *und1 /(muhat(k,1) *und1 +(1 -muhat(k,1)) *und0);
-                    mu0(k,1) = mu(k,1);
+                    mu(k,1,m) = muhat(k,1,m) *und1 /(muhat(k,1,m) *und1 +(1 -muhat(k,1,m)) *und0);
+                    mu0(k,1,m) = mu(k,1,m);
                 end
 
 
                 %%
                 % Representation prediction error
-                da(k,1) = mu(k,1) -muhat(k,1);
+                da(k,1,m) = mu(k,1,m) -muhat(k,1,m);
 
                 % second level predictions and precisions
                 if strcmp(r.c_prc.(type).priorupdate,'fixed')
-                    mu(k,2) = muhat(k,2); % for a model with higher level predictions, which are fixed
+                    mu(k,2,m) = muhat(k,2,m); % for a model with higher level predictions, which are fixed
                     % At second level, assume Inf precision for a model with invariable predictions
-                    pi(k,2) = Inf;
-                    pihat(k,2) = Inf;
+                    pi(k,2,m) = Inf;
+                    pihat(k,2,m) = Inf;
 
                 elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
                     % Precision of prediction
-                    pihat(k,2) = 1/(1/pi(k-1,2) +exp(ka(2) *mu(k-1,3) +om(2)));
+                    pihat(k,2,m) = 1/(1/pi(k-1,2,m) +exp(ka(2,1,m) *mu(k-1,3,m) +om(2,1,m)));
 
                     % Updates
-                    pi(k,2) = pihat(k,2) +1/pihat(k,1);
-                    mu(k,2) = muhat(k,2) +1/pi(k,2) *da(k,1);
+                    pi(k,2,m) = pihat(k,2,m) +1/pihat(k,1,m);
+                    mu(k,2,m) = muhat(k,2,m) +1/pi(k,2,m) *da(k,1,m);
 
                     % Volatility prediction error
-                    da(k,2) = (1/pi(k,2) +(mu(k,2) -muhat(k,2))^2) *pihat(k,2) -1;
+                    da(k,2,m) = (1/pi(k,2,m) +(mu(k,2,m) -muhat(k,2,m))^2) *pihat(k,2,m) -1;
                 end
 
                 % Implied posterior precision at first level
-                sgmmu2 = tapas_sgm(mu(k,2), 1);
-                pi(k,1) = pi(k,2)/(sgmmu2*(1-sgmmu2));
+                sgmmu2 = tapas_sgm(mu(k,2,m), 1);
+                pi(k,1,m) = pi(k,2,m)/(sgmmu2*(1-sgmmu2));
 
                 if l(m) > 3
                     % Pass through higher levels
                     % ~~~~~~~~~~~~~~~~~~~~~~~~~~
                     for j = 3:l(m)-1
                         % Prediction
-                        muhat(k,j) = mu(k-1,j) +t(k) *rho(j);
+                        muhat(k,j,m) = mu(k-1,j,m) +t(k) *rho(j,1,m);
 
                         % Precision of prediction
-                        pihat(k,j) = 1/(1/pi(k-1,j) +t(k) *exp(ka(j) *mu(k-1,j+1) +om(j)));
+                        pihat(k,j,m) = 1/(1/pi(k-1,j,m) +t(k) *exp(ka(j,1,m) *mu(k-1,j+1,m) +om(j,1,m)));
 
                         % Weighting factor
-                        v(k,j-1) = t(k) *exp(ka(j-1) *mu(k-1,j) +om(j-1));
-                        w(k,j-1) = v(k,j-1) *pihat(k,j-1);
+                        v(k,j-1,m) = t(k) *exp(ka(j-1,1,m) *mu(k-1,j,m) +om(j-1,1,m));
+                        w(k,j-1,m) = v(k,j-1,m) *pihat(k,j-1,m);
 
                         % Updates
-                        pi(k,j) = pihat(k,j) +1/2 *ka(j-1)^2 *w(k,j-1) *(w(k,j-1) +(2 *w(k,j-1) -1) *da(k,j-1));
+                        pi(k,j,m) = pihat(k,j,m) +1/2 *ka(j-1,1,m)^2 *w(k,j-1,m) *(w(k,j-1,m) +(2 *w(k,j-1,m) -1) *da(k,j-1,m));
 
-                        if pi(k,j) <= 0
+                        if pi(k,j,m) <= 0
                             error('tapas:hgf:NegPostPrec', 'Negative posterior precision. Parameters are in a region where model assumptions are violated.');
                         end
 
-                        mu(k,j) = muhat(k,j) +1/2 *1/pi(k,j) *ka(j-1) *w(k,j-1) *da(k,j-1);
+                        mu(k,j,m) = muhat(k,j,m) +1/2 *1/pi(k,j,m) *ka(j-1,1,m) *w(k,j-1,m) *da(k,j-1,m);
 
                         % Volatility prediction error
-                        da(k,j) = (1/pi(k,j) +(mu(k,j) -muhat(k,j))^2) *pihat(k,j) -1;
+                        da(k,j,m) = (1/pi(k,j,m) +(mu(k,j,m) -muhat(k,j,m))^2) *pihat(k,j,m) -1;
                     end
                 end
                 if l(m)>2
                     % Last level
                     % ~~~~~~~~~~
                     % Prediction
-                    muhat(k,l(m)) = mu(k-1,l(m)) +t(k) *rho(l(m));
+                    muhat(k,l(m),m) = mu(k-1,l(m),m) +t(k) *rho(l(m),1,m);
 
                     % Precision of prediction
-                    pihat(k,l(m)) = 1/(1/pi(k-1,l(m)) +t(k) *th);
+                    pihat(k,l(m),m) = 1/(1/pi(k-1,l(m),m) +t(k) *th(1,1,m));
 
                     % Weighting factor
-                    v(k,l(m))   = t(k) *th;
-                    v(k,l(m)-1) = t(k) *exp(ka(l(m)-1) *mu(k-1,l(m)) +om(l(m)-1));
-                    w(k,l(m)-1) = v(k,l(m)-1) *pihat(k,l(m)-1);
+                    v(k,l(m),m)   = t(k) *th(1,1,m);
+                    v(k,l(m)-1,m) = t(k) *exp(ka(l(m)-1,1,m) *mu(k-1,l(m),m) +om(l(m)-1,1,m));
+                    w(k,l(m)-1,m) = v(k,l(m)-1,m) *pihat(k,l(m)-1,m);
 
                     % Updates
-                    pi(k,l(m)) = pihat(k,l(m)) +1/2 *ka(l(m)-1)^2 *w(k,l(m)-1) *(w(k,l(m)-1) +(2 *w(k,l(m)-1) -1) *da(k,l(m)-1));
+                    pi(k,l(m),m) = pihat(k,l(m),m) +1/2 *ka(l(m)-1,1,m)^2 *w(k,l(m)-1,m) *(w(k,l(m)-1,m) +(2 *w(k,l(m)-1,m) -1) *da(k,l(m)-1,m));
 
-                    if pi(k,l(m)) <= 0
+                    if pi(k,l(m),m) <= 0
                         error('tapas:hgf:NegPostPrec', 'Negative posterior precision. Parameters are in a region where model assumptions are violated.');
                     end
 
-                    mu(k,l(m)) = muhat(k,l(m)) +1/2 *1/pi(k,l(m)) *ka(l(m)-1) *w(k,l(m)-1) *da(k,l(m)-1);
+                    mu(k,l(m),m) = muhat(k,l(m),m) +1/2 *1/pi(k,l(m),m) *ka(l(m)-1,1,m) *w(k,l(m)-1,m) *da(k,l(m)-1,m);
 
                     % Volatility prediction error
-                    da(k,l(m)) = (1/pi(k,l(m)) +(mu(k,l(m)) -muhat(k,l(m)))^2) *pihat(k,l(m)) -1;
+                    da(k,l(m),m) = (1/pi(k,l(m),m) +(mu(k,l(m),m) -muhat(k,l(m)),m)^2) *pihat(k,l(m),m) -1;
                 end
 
             elseif strcmp(r.c_prc.(type).priortype,'state') % Kalman
@@ -341,62 +341,62 @@ for k=2:1:n
                 % variance to representation variance
 
                 % Same gain function modified by two different alphas
-                g(k) = (g(k-1) +al(k)*expom)/(g(k-1) +al(k)*expom +1);
+                g(k,1,m) = (g(k-1,1,m) +al(k,1,m)*expom(1,1,m))/(g(k-1,1,m) +al(k,1,m)*expom(1,1,m) +1);
                 % Hidden state mean update
-                mu(k,1) = muhat(k,1)+g(k)*dau(k);
-                mu0(k,1) = mu(k,1);
-                pi(k,1) = (1-g(k)) *al(k)*expom; 
+                mu(k,1,m) = muhat(k,1,m)+g(k,1,m)*dau(k,1,m);
+                mu0(k,1,m) = mu(k,1,m);
+                pi(k,1,m) = (1-g(k,1,m)) *al(k,1,m)*expom(1,1,m); 
 
                 % Alternative: separate gain functions for each stimulus type
           %      if r.c_prc.(type).one_alpha
           %          pi_u=al0(u(k,2));
           %          g(k,1) = (g(k-1,1) +pi_u*expom)/(g(k-1,1) +pi_u*expom +1);
           %          % Hidden state mean update
-          %          mu(k,1) = muhat(k,1)+g(k,1)*dau(k);
-          %          pi(k,1) = (1-g(k,1)) *pi_u*expom;
+          %          mu(k,1,m) = muhat(k,1,m)+g(k,1)*dau(k);
+          %          pi(k,1,m) = (1-g(k,1)) *pi_u*expom;
           %      else
           %          if u(k,1)==0
           %              pi_u=al0(u(k,2));
           %              g(k,1) = (g(k-1,1) +pi_u*expom)/(g(k-1,1) +pi_u*expom +1);
           %              g(k,2) = g(k-1,2);
           %              % Hidden state mean update
-          %              mu(k,1) = muhat(k,1)+g(k,1)*dau(k);
-          %              pi(k,1) = (1-g(k,1)) *pi_u*expom;
+          %              mu(k,1,m) = muhat(k,1,m)+g(k,1)*dau(k);
+          %              pi(k,1,m) = (1-g(k,1)) *pi_u*expom;
           %          elseif u(k,1)==1
           %              pi_u=al1(u(k,2));
           %              g(k,2) = (g(k-1,2) +pi_u*expom)/(g(k-1,2) +pi_u*expom +1);
           %              g(k,1) = g(k-1,1);
           %              % Hidden state mean update
-          %              mu(k,1) = muhat(k,1)+g(k,2)*dau(k);
-          %              pi(k,1) = (1-g(k,2)) *pi_u*expom;
+          %              mu(k,1,m) = muhat(k,1,m)+g(k,2)*dau(k);
+          %              pi(k,1,m) = (1-g(k,2)) *pi_u*expom;
           %          end
           %      end
 
                 % Representation prediction error
-                da(k,1) = mu(k,1) -muhat(k,1);
+                da(k,1,m) = mu(k,1,m) -muhat(k,1,m);
 
             end
 
             % RESPONSE BIAS
-            if isfield(M.(type).p,'rb')
-                mu(k,1) = mu(k,1)+rb;
+            if exist('rb','var')
+                mu(k,1,m) = mu(k,1,m)+rb(1,1,m);
             end
 
         else
-            mu(k,:) = mu(k-1,:); 
-            pi(k,:) = pi(k-1,:);
+            mu(k,:,m) = mu(k-1,:,m); 
+            pi(k,:,m) = pi(k-1,:,m);
 
-            muhat(k,:) = muhat(k-1,:);
-            pihat(k,:) = pihat(k-1,:);
+            muhat(k,:,m) = muhat(k-1,:,m);
+            pihat(k,:,m) = pihat(k-1,:,m);
 
-            v(k,:)  = v(k-1,:);
-            w(k,:)  = w(k-1,:);
-            da(k,:) = da(k-1,:);
-            dau(k) = dau(k-1);
-            if isfield(M.(type).tr,'g')
-                g(k,:)=g(k-1,:);
+            v(k,:,m)  = v(k-1,:,m);
+            w(k,:,m)  = w(k-1,:,m);
+            da(k,:,m) = da(k-1,:,m);
+            dau(k,1,m) = dau(k-1,1,m);
+            if exist('g','var')
+                g(k,:,m)=g(k-1,:,m);
             end
-            al(k)  = al(k-1);
+            al(k,1,m)  = al(k-1,1,m);
         end
         
 %         % Repack parameters
@@ -433,13 +433,13 @@ for k=2:1:n
 %         end
         
         % set alpha
-        if ~isfield(M.like.p,'al1')
+        if ~exist('al1','var')
             al1=al0;
         end
         if u(k,1)==0
-            al(k)=al0(u(k,2));
+            al(k,1,m)=al0(u(k,2),1,m);
         elseif u(k,1)==1
-            al(k)=al1(u(k,2));
+            al(k,1,m)=al1(u(k,2),1,m);
         end
         
         v_mu=[];
@@ -448,12 +448,11 @@ for k=2:1:n
         for m=1:r.c_prc.nModels
 
             type = r.c_prc.type{m};
-            l(m)=M.(type).l;
             
             % define mu phi
             rep = (r.c_prc.(type).jointrep);
             v_mu(m) = rep(k+r.c_prc.(type).jointrepk,r.c_prc.(type).jointreplev);
-            v_phi(m) = phi;
+            v_phi(m) = phi(1,1,m);
             v_mu_phi(m) = v_phi(m)*v_mu(m);
         
         end
@@ -469,11 +468,11 @@ for k=2:1:n
         % Likelihood functions: one for each
         % possible signal
         if r.c_prc.n_inputcond >1
-            und1 = exp(-(u(k,1) -eta1)^2/(2*al1(u(k,2))));
-            und0 = exp(-(u(k,1) -eta0)^2/(2*al0(u(k,2))));
+            und1 = exp(-(u(k,1) -eta1(1,1,m))^2/(2*al1(u(k,2),1,m)));
+            und0 = exp(-(u(k,1) -eta0(1,1,m))^2/(2*al0(u(k,2),1,m)));
         else
-            und1 = exp(-(u(k,1) -eta1)^2/(2*al1));
-            und0 = exp(-(u(k,1) -eta0)^2/(2*al0));
+            und1 = exp(-(u(k,1) -eta1(1,1,m))^2/(2*al1(1,1,m)));
+            und0 = exp(-(u(k,1) -eta0(1,1,m))^2/(2*al0(1,1,m)));
         end
 
         % Update
@@ -491,12 +490,36 @@ for k=2:1:n
 end
 
 %% COMPILE RESULTS
-al(1)     = [];
+% Remove representation priors
+mu0(1,:,:)  = [];
+mu(1,:,:)  = [];
+pi(1,:,:)  = [];
+al(1,:,:)     = [];
  
 % joint trajectories (if needed)
 vj_mu(1) = [];
 xc(1) = [];
 xchat(1) = [];
+
+for m=1:r.c_prc.nModels
+    if l(m)>1
+        % Implied learning rate at the first level
+        sgmmu2 = tapas_sgm(mu(:,2,m), 1);
+        lr1    = diff(sgmmu2)./da(2:n,1,m);
+        lr1(da(2:n,1,m)==0) = 0;
+    end
+end
+
+% Remove other dummy initial values
+muhat(1,:,:) = [];
+pihat(1,:,:) = [];
+v(1,:,:)     = [];
+w(1,:,:)     = [];
+da(1,:,:)    = [];
+dau(1,:,:)     = [];
+if exist('g','var')
+    g(1,:,:)  = [];
+end
 
 for m=1:r.c_prc.nModels
 
@@ -508,7 +531,6 @@ for m=1:r.c_prc.nModels
 %     end
 
     type = r.c_prc.type{m};
-    l(m)=M.(type).l;
     
 %     % Unpack prior parameters
 %     pnames = fieldnames(M.(type).p);
@@ -522,26 +544,16 @@ for m=1:r.c_prc.nModels
 %         tr.(tnames{tn}) = (tnames{tn});
 %     end
 
-    if l(m)>1
-        % Implied learning rate at the first level
-        sgmmu2 = tapas_sgm(mu(:,2), 1);
-        lr1    = diff(sgmmu2)./da(2:n,1);
-        lr1(da(2:n,1)==0) = 0;
-    end
 
-    % Remove representation priors
-    mu0(1,:)  = [];
-    mu(1,:)  = [];
-    pi(1,:)  = [];
     % Check validity of trajectories
-    if any(isnan(mu(:))) %|| any(isnan(pi(:)))
+    if any(isnan(mu(:,:,m))) %|| any(isnan(pi(:)))
         error('tapas:hgf:VarApproxInvalid', 'Variational approximation invalid. Parameters are in a region where model assumptions are violated.');
     else
         % Check for implausible jumps in trajectories
         % CAB: only use first 500 trials - after that changes in precision become too small
-        ntrials = min(length(mu),500);
-        dmu = diff(mu(1:ntrials,2:end));
-        dpi = diff(pi(1:ntrials,2:end));
+        ntrials = min(length(mu(:,:,m)),500);
+        dmu = diff(mu(1:ntrials,2:end,m));
+        dpi = diff(pi(1:ntrials,2:end,m));
         rmdmu = repmat(sqrt(mean(dmu.^2)),length(dmu),1);
         rmdpi = repmat(sqrt(mean(dpi.^2)),length(dpi),1);
 
@@ -552,16 +564,6 @@ for m=1:r.c_prc.nModels
         end
     end
 
-    % Remove other dummy initial values
-    muhat(1,:) = [];
-    pihat(1,:) = [];
-    v(1,:)     = [];
-    w(1,:)     = [];
-    da(1,:)    = [];
-    dau(1)     = [];
-    if isfield(M.(type).tr,'g')
-        g(1,:)  = [];
-    end
    
 
     % Create result data structure
@@ -571,34 +573,34 @@ for m=1:r.c_prc.nModels
     traj.like.xc = xc;
     traj.like.xchat = xchat;
 
-    traj.(type).mu0    = mu0;
-    traj.(type).mu     = mu;
-    traj.(type).sa     = 1./pi;
+    traj.(type).mu0    = mu0(:,:,m);
+    traj.(type).mu     = mu(:,:,m);
+    traj.(type).sa     = 1./pi(:,:,m);
 
-    traj.(type).muhat  = muhat;
-    traj.(type).sahat  = 1./pihat;
-    traj.(type).v      = v;
-    traj.(type).w      = w;
-    traj.(type).da     = da;
-    traj.(type).dau    = dau;
-    if isfield(M.(type).tr,'g')
-        traj.(type).g     = g;
+    traj.(type).muhat  = muhat(:,:,m);
+    traj.(type).sahat  = 1./pihat(:,:,m);
+    traj.(type).v      = v(:,:,m);
+    traj.(type).w      = w(:,:,m);
+    traj.(type).da     = da(:,:,m);
+    traj.(type).dau    = dau(:,:,m);
+    if exist('g','var')
+        traj.(type).g     = g(:,:,m);
     end
 
     % Updates with respect to prediction
-    traj.(type).ud = muhat -mu;
+    traj.(type).ud = muhat(:,:,m) -mu(:,:,m);
 
     % Psi (precision weights on prediction errors)
     psi        = NaN(n-1,l(m)+1);
-    psi(:,1)   = 1./(al.*pi(:,1)); % dot multiply only if al is a vector
-    if l(m)>1; psi(:,2)   = 1./pi(:,2);end
-    if l(m)>2; psi(:,3:l(m)) = pihat(:,2:l(m)-1)./pi(:,3:l(m));end
+    psi(:,1)   = 1./(al(:,:,m).*pi(:,1,m)); % dot multiply only if al is a vector
+    if l(m)>1; psi(:,2)   = 1./pi(:,2,m);end
+    if l(m)>2; psi(:,3:l(m)) = pihat(:,2:l(m)-1,m)./pi(:,3:l(m),m);end
     traj.(type).psi   = psi;
 
     % Epsilons (precision-weighted prediction errors)
     epsi        = NaN(n-1,l(m));
-    epsi(:,1)   = psi(:,1) .*dau;
-    if l(m)>1; epsi(:,2:l(m)) = psi(:,2:l(m)) .*da(:,1:l(m)-1);end
+    epsi(:,1)   = psi(:,1) .*dau(:,:,m);
+    if l(m)>1; epsi(:,2:l(m)) = psi(:,2:l(m)) .*da(:,1:l(m)-1,m);end
     traj.(type).epsi   = epsi;
 
     % Full learning rate (full weights on prediction errors)
@@ -606,7 +608,7 @@ for m=1:r.c_prc.nModels
     if l(m)==1; lr1=psi(:,1);end
     wt(:,1)   = lr1;
     if l(m)>1; wt(:,2)   = psi(:,2); end
-    if l(m)>2; wt(:,3:l(m)) = 1/2 *(v(:,2:l(m)-1) *diag(ka(2:l(m)-1))) .*psi(:,3:l(m)); end
+    if l(m)>2; wt(:,3:l(m)) = 1/2 *(v(:,2:l(m)-1,m) *diag(ka(2:l(m)-1,m))) .*psi(:,3:l(m)); end
     traj.(type).wt   = wt;
 
     % Create matrices for use by the observation model
