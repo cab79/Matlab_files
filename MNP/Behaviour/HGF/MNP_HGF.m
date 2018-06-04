@@ -108,7 +108,15 @@ for f = files_ana'
             sname = [S(1).select.subjects{1, 1} '_' sname '_bopars.mat'];
             save(fullfile(aname,sname),'bopars');
             % PLOTS
-            tapas_hgf_binary_plotTraj_CAB(bopars,'PR',false)
+            if isfield(bopars.traj,'AL')
+                tapas_hgf_binary_plotTraj_CAB(bopars,'AL',true)
+            end
+            if isfield(bopars.traj,'PR')
+                tapas_hgf_binary_plotTraj_CAB(bopars,'PR',false)
+            end
+            if isfield(bopars.traj,'PL')
+                tapas_hgf_binary_plotTraj_CAB(bopars,'PL',true)
+            end
             %tapas_fit_plotResidualDiagnostics(bopars);
         end
     end

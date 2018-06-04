@@ -47,12 +47,12 @@ om = r.p_prc.([priormodel '_om']);
 if isfield(r.p_prc,[priormodel '_rho'])
     rho = r.p_prc.([priormodel '_rho']);
 else
-    rho = NaN(1,l)
+    rho = NaN(1,l);
 end
 if isfield(r.p_prc,[priormodel '_ka'])
     ka = r.p_prc.([priormodel '_ka']);
 else
-    ka = NaN(1,l)
+    ka = NaN(1,l);
 end
 
 if plotsd
@@ -60,11 +60,16 @@ if plotsd
     sa = r.traj.(priormodel).sa;
 end
 
+ll=0;
+if all(~isnan(r.traj.like.xc))
+    ll = 1;
+end
+
 % Upper levels
-for j = 1:l-1
+for j = 1:(l+ll)-(1+ll)
 
     % Subplots
-    subplot(l,1,j);
+    subplot(l+ll,1,j);
 
     if plotsd == true
         upperprior = mu_0(l-j+1) +sqrt(sa_0(l-j+1));
@@ -87,7 +92,7 @@ for j = 1:l-1
 end
 
 % Input level
-subplot(l,1,l);
+subplot(l+ll,1,l+ll-1);
 
 if l>1
     plot(ts, [tapas_sgm(mu_0(2), 1); tapas_sgm(mu(:,2), 1)], 'r', 'LineWidth', 2);
@@ -129,3 +134,22 @@ end
 plot(ts(2:end), 0.5, 'k');
 xlabel('Trial number');
 hold off;
+
+% Joint models
+if ll
+    subplot(l+ll,1,l+ll);
+    
+    xchat = r.traj.like.xchat;
+    vj_mu = r.traj.like.vj_mu;
+    plot(ts, [NaN; xchat(:,1)], 'm', 'LineWidth', 2);
+    hold all;
+    plot(ts, [NaN; vj_mu(:,1)], 'k--', 'LineWidth', 2);
+    
+    title(['posterior expectation of input xchat (magenta) and the joint probablity vj_mu (black) ', ...
+      'FontWeight', 'bold']);
+    axis([0 ts(end) -0.1 1.1]);
+    
+    plot(ts(2:end), 0.5, 'k');
+    xlabel('Trial number');
+    hold off;
+end

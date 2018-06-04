@@ -14,6 +14,7 @@ pstruct = struct;
 
 %CAB: names and indices
 nme=r.c_prc.pnames;
+nme_mod=r.c_prc.pnames_mod; % model-specific names
 idx=r.c_prc.priormusi;
 
 for pn=1:length(nme)
@@ -22,8 +23,7 @@ for pn=1:length(nme)
     else
         pvec(idx{pn}) = ptrans(idx{pn});
     end
-    nme2 = strsplit(nme{pn,1},'log');
-    pstruct.(horzcat(nme2{:})) = pvec(idx{pn});
+    pstruct.(nme_mod{pn}) = pvec(idx{pn});
 end
 
 return;

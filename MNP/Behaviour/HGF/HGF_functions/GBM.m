@@ -14,7 +14,7 @@ function [traj] = GBM(r, pvec, varargin)
 % 3. Prior and alpha variable by block type
 % 4. Prior and alpha variable by trial (Kalman)
 % 5. Hierarchical priors
-mu=[];
+
 % Transform paramaters back to their native space if needed
 if ~isempty(varargin) 
     if strcmp(varargin{1},'trans')
@@ -51,22 +51,45 @@ end
 
 % Create param struct
 nme=r.c_prc.pnames;
+nme_gen=r.c_prc.pnames_gen;
 idx=r.c_prc.priormusi;
 type='like';
 for pn=1:length(nme)
     if strcmp(nme{pn,1}(1:length(type)),type)
-        nme2 = strsplit(nme{pn,1},[type '_']);
-        nme3 = strsplit(nme2{end},'log');
-        M.(type).p.(nme3{end}) = pvec(idx{pn});
-        %eval([nme3{end} ' = pvec(idx{pn});']);
+        eval([nme_gen{pn} ' = pvec(idx{pn})'';']);
     end
 end
 
-M.like.tr.al = NaN(n,1);
+%levels
+for m=1:r.c_prc.nModels
+    type = r.c_prc.type{m};
+    l(m) = r.c_prc.(type).n_priorlevels;
+end
+maxlev=max(l);
+
+% Representations
+nmod=r.c_prc.nModels;
+mu0 = NaN(n,maxlev,nmod);
+mu = NaN(n,maxlev,nmod);
+pi = NaN(n,maxlev,nmod);
+
+% Other quantities
+muhat = NaN(n,maxlev,nmod);
+pihat = NaN(n,maxlev,nmod);
+v     = NaN(n,maxlev,nmod);
+w     = NaN(n,maxlev,nmod);
+da    = NaN(n,maxlev,nmod);
+dau   = NaN(n,1,nmod);
+g  = NaN(n,maxlev,nmod); % Kalman gain (optional)
+
+al = NaN(n,1);
 % joint trajectories (if needed)
-M.like.tr.vj_mu = NaN(n,1);
-M.like.tr.xc = NaN(n,1);
-M.like.tr.xchat = NaN(n,1);
+vj_mu = NaN(n,1);
+xc = NaN(n,1);
+xchat = NaN(n,1);
+
+% parameters
+th = NaN(1,1,nmod);
     
 for m=1:r.c_prc.nModels
     type = r.c_prc.type{m};
@@ -74,87 +97,108 @@ for m=1:r.c_prc.nModels
     % Create param struct
     for pn=1:length(nme)
         if strcmp(nme{pn,1}(1:length(type)),type)
-            nme2 = strsplit(nme{pn,1},[type '_']);
-            nme3 = strsplit(nme2{end},'log');
-            M.(type).p.(nme3{end}) = pvec(idx{pn});
-            %eval([nme3{end} '(:,:,m) = pvec(idx{pn});']);
+            eval([nme_gen{pn} '(:,:,m) = pvec(idx{pn})'';']);
         end
     end
 
-    % Number of levels
-    M.(type).l = r.c_prc.(type).n_priorlevels;
-
-    if isfield(M.(type).p,'om')
-        if length(M.(type).p.om)>1
-            M.(type).p.th   = exp(M.(type).p.om(end));
-            M.(type).p.om(end)=[];
+    if exist('om','var')
+        if l(m)>1
+            th(1,1,m)   = exp(om(end,1,m));
+            om(end,1,m)=NaN;
         end
     end
-
-    % Representations
-    M.(type).tr.mu0 = NaN(n,1);
-    M.(type).tr.mu = NaN(n,M.(type).l);
-    M.(type).tr.pi = NaN(n,M.(type).l);
-
-    % Other quantities
-    M.(type).tr.muhat = NaN(n,M.(type).l);
-    M.(type).tr.pihat = NaN(n,M.(type).l);
-    M.(type).tr.v     = NaN(n,M.(type).l);
-    M.(type).tr.w     = NaN(n,M.(type).l-1);
-    M.(type).tr.da    = NaN(n,M.(type).l);
-    M.(type).tr.dau   = NaN(n,1);
-    M.like.tr.al   = NaN(n,1);
 
     % Representation priors
     % Note: first entries of the other quantities remain
     % NaN because they are undefined and are thrown away
     % at the end; their presence simply leads to consistent
     % trial indices.
-    M.(type).tr.mu(1,1) = tapas_sgm(M.(type).p.mu_0(1), 1);
-    M.(type).tr.pi(1,1) = Inf;
-    if M.(type).l>1
-        M.(type).tr.mu(1,2:end) = M.(type).p.mu_0(2:end);
-        M.(type).tr.pi(1,2:end) = 1./M.(type).p.sa_0(2:end);
+    mu(1,1,m) = 1./(1+exp(-mu_0(1,1,m)));
+    pi(1,1,m) = Inf;
+    if l(m)>1
+        mu(1,2:end,m) = mu_0(2:end,1,m);
+        pi(1,2:end,m) = 1./sa_0(2:end,1,m);
     end
-    if isfield(M.(type).p,'g_0')
-        %if r.c_prc.(type).one_alpha
-        %    g  = NaN(n,1); % Kalman gain (optional)
-        %else
-            M.(type).tr.g  = NaN(n,2); % Kalman gain (optional)
-        %end
-        M.(type).tr.g(1,:)  = M.(type).p.g_0; % Kalman gain (optional)
-        M.(type).p.expom = exp(M.(type).p.om);
+    if exist('g_0','var') && size(g_0,3)>=m
+        g(1,:,m)  = g_0(1,1,m); % Kalman gain (optional)
+        expom(:,1,m) = exp(om(:,1,m));
     end
 end
 
+%% Efficiacy
 % Unpack from struct to double for efficiency
-type='like';
-pnames = fieldnames(M.(type).p);
-for pn=1:length(pnames)
-    eval([pnames{pn} ' = M.(type).p.(pnames{pn});']);
+% type='like';
+% pnames = fieldnames(M.(type).p);
+% for pn=1:length(pnames)
+%     eval([pnames{pn} ' = M.(type).p.(pnames{pn});']);
+% end
+% for m=1:r.c_prc.nModels
+%     type = r.c_prc.type{m};
+% 
+%     % Unpack prior parameters
+%     pnames = fieldnames(M.(type).p);
+%     for pn=1:length(pnames)
+%         eval([pnames{pn} '(:,:,m) = M.(type).p.(pnames{pn})'';']);
+%     end
+% 
+%     %Unpack prior traj
+% %     tnames = fieldnames(M.(type).tr);
+% %     for tn=1:length(tnames)
+% %         eval([tnames{tn} '(:,1:size(M.(type).tr.(tnames{tn}),2),m) = M.(type).tr.(tnames{tn});']);
+% %     end
+% end
+
+% find out if certain variables exist or not
+no_al1=0;
+if ~exist('al1','var')
+    no_al1=1;
 end
+no_rb=0;
+if ~exist('rb','var')
+    no_rb=1;
+end
+no_g=0;
+if ~exist('g','var')
+    no_g=1;
+end
+
+% get model structure
 for m=1:r.c_prc.nModels
     type = r.c_prc.type{m};
-    l(m)=M.(type).l;
-
-    % Unpack prior parameters
-    pnames = fieldnames(M.(type).p);
-    for pn=1:length(pnames)
-        eval([pnames{pn} '(:,:,m) = M.(type).p.(pnames{pn})'';']);
+    hierarchical(m)=0;
+    fixed(m)=0;
+    dynamic(m)=0;
+    state(m)=0;
+    if strcmp(r.c_prc.(type).priortype,'hierarchical')
+        hierarchical(m)=1;
+        if strcmp(r.c_prc.(type).priorupdate,'fixed')
+            fixed(m)=1;
+        elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
+            dynamic(m)=1;
+        end
+    elseif strcmp(r.c_prc.(type).priortype,'state')
+        state(m)=1;
     end
-
-    %Unpack prior traj
-    tnames = fieldnames(M.(type).tr);
-    for tn=1:length(tnames)
-        eval([tnames{tn} '(:,1:size(M.(type).tr.(tnames{tn}),2),m) = M.(type).tr.(tnames{tn});']);
+    AL(m)=0;
+    PL(m)=0;
+    if strcmp(r.c_prc.type{m},'AL')
+        AL(m)=1;
+    elseif strcmp(r.c_prc.type{m},'PL')
+        PL(m)=1;
     end
 end
+n_inputcond=r.c_prc.n_inputcond;
+nModels=r.c_prc.nModels;
+
+% ignore trials
+no_ign = ones(1,n);
+no_ign(r.ign) = 0;
 
 %% UPDATES
 for k=2:1:n
     
-    for m=1:r.c_prc.nModels
-        if not(any(r.ign==k-1))
+    for m=1:nModels
+        if no_ign(k-1)
             
 %             % Unpack likelihood parameters
 %             type='like';
@@ -163,7 +207,7 @@ for k=2:1:n
 %                 p.(pnames{pn}) = M.(type).p.(pnames{pn});
 %             end
 % 
-            type = r.c_prc.type{m};
+           % type = r.c_prc.type{m};
 %             
 %             % Unpack prior parameters
 %             pnames = fieldnames(M.(type).p);
@@ -178,27 +222,27 @@ for k=2:1:n
 %             end
         
             %% Predictions (from previous trial or fixed parameters)
-            if strcmp(r.c_prc.(type).priortype,'hierarchical')
-                if strcmp(r.c_prc.(type).priorupdate,'fixed')
-                    if r.c_prc.(type).n_muin>1
-                        muhat(1,2,m) = mu_0(1+u(k,2),1,m);
-                        pihat(1,2,m) = 1./sa_0(1+u(k,2),1,m);
-                    else
+            if hierarchical(m)
+                if fixed(m)
+                    %if r.c_prc.(type).n_muin>1
+                    %    muhat(1,2,m) = mu_0(1+u(k,2),1,m);
+                    %    pihat(1,2,m) = 1./sa_0(1+u(k,2),1,m);
+                    %else
                         muhat(1,2,m) = mu_0(2,1,m);
                         pihat(1,2,m) = 1./sa_0(2,1,m);
-                    end
+                    %end
                     % 2nd level prediction
                     muhat(k,2,m) = muhat(1,2,m);%mu(k-1,2) +t(k) *rho(2); % fixed to initial value - not updated on each trial
 
-                elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
+                elseif dynamic(m)
                     % 2nd level prediction
                     muhat(k,2,m) = mu(k-1,2,m) +t(k) *rho(2,1,m);
 
                 end
                 % Prediction from level 2 (which can be either fixed or dynamic)
-                muhat(k,1,m) = tapas_sgm(muhat(k,2,m), 1);
+                muhat(k,1,m) = 1./(1+exp(-muhat(k,2,m)));
 
-            elseif strcmp(r.c_prc.(type).priortype,'state')
+            elseif state(m)
                 % Prediction from prior state, e.g. Kalman filter
                 muhat(k,1,m) =  mu(k-1,1,m);
 
@@ -215,30 +259,30 @@ for k=2:1:n
             dau(k,1,m) = u(k,1) -muhat(k,1,m);
 
             % set alpha
-            if ~exist('al1','var')
+            if no_al1
                 al1=al0;
             end
             if u(k,1)==0
-                al(k,1,m)=al0(u(k,2),1,m);
+                al(k,1,m)=al0(u(k,2));
             elseif u(k,1)==1
-                al(k,1,m)=al1(u(k,2),1,m);
+                al(k,1,m)=al1(u(k,2));
             end
 
             % 
-            if strcmp(r.c_prc.(type).priortype,'hierarchical')
+            if hierarchical(m)
                 % Likelihood functions: one for each
                 % possible signal
-                if r.c_prc.n_inputcond >1
-                    und1 = exp(-(u(k,1,m) -eta1(1,1,m))^2/(2*al1(u(k,2),1,m)));
-                    und0 = exp(-(u(k,1,m) -eta0(1,1,m))^2/(2*al0(u(k,2),1,m)));
+                if n_inputcond >1
+                    und1 = exp(-(u(k) -eta1)^2/(2*al1(u(k,2))));
+                    und0 = exp(-(u(k) -eta0)^2/(2*al0(u(k,2))));
                 else
-                    und1 = exp(-(u(k,1,m) -eta1(1,1,m))^2/(2*al1(1,1,m)));
-                    und0 = exp(-(u(k,1,m) -eta0(1,1,m))^2/(2*al0(1,1,m)));
+                    und1 = exp(-(u(k) -eta1)^2/(2*al1));
+                    und0 = exp(-(u(k) -eta0)^2/(2*al0));
                 end
 
 
                 
-                if strcmp(type,'AL')
+                if AL(m)
                     if u(k,3)==2
                         mu0(k,1,m) = muhat(k,1,m) *und1 /(muhat(k,1,m) *und1 +(1 -muhat(k,1,m)) *und0);
                         mu(k,1,m) = mu0(k,1,m);
@@ -249,7 +293,7 @@ for k=2:1:n
                         % calculate prediction error for mu0 - muhat
 
                     end
-                elseif strcmp(type,'PL')
+                elseif PL(m)
                     mu(k,1,m) = muhat(k,1,m) *und1 /(muhat(k,1,m) *und1 +(1 -muhat(k,1,m)) *und0);
                     mu0(k,1,m) = mu(k,1,m);
                 end
@@ -260,13 +304,13 @@ for k=2:1:n
                 da(k,1,m) = mu(k,1,m) -muhat(k,1,m);
 
                 % second level predictions and precisions
-                if strcmp(r.c_prc.(type).priorupdate,'fixed')
+                if fixed(m)
                     mu(k,2,m) = muhat(k,2,m); % for a model with higher level predictions, which are fixed
                     % At second level, assume Inf precision for a model with invariable predictions
                     pi(k,2,m) = Inf;
                     pihat(k,2,m) = Inf;
 
-                elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
+                elseif dynamic(m)
                     % Precision of prediction
                     pihat(k,2,m) = 1/(1/pi(k-1,2,m) +exp(ka(2,1,m) *mu(k-1,3,m) +om(2,1,m)));
 
@@ -279,7 +323,7 @@ for k=2:1:n
                 end
 
                 % Implied posterior precision at first level
-                sgmmu2 = tapas_sgm(mu(k,2,m), 1);
+                sgmmu2 = 1./(1+exp(-mu(k,2,m)));
                 pi(k,1,m) = pi(k,2,m)/(sgmmu2*(1-sgmmu2));
 
                 if l(m) > 3
@@ -336,7 +380,7 @@ for k=2:1:n
                     da(k,l(m),m) = (1/pi(k,l(m),m) +(mu(k,l(m),m) -muhat(k,l(m),m))^2) *pihat(k,l(m),m) -1;
                 end
 
-            elseif strcmp(r.c_prc.(type).priortype,'state') % Kalman
+            elseif state(m) % Kalman
                 % Gain update - optimal gain is calculated from ratio of input
                 % variance to representation variance
 
@@ -378,7 +422,7 @@ for k=2:1:n
             end
 
             % RESPONSE BIAS
-            if exist('rb','var')
+            if no_rb
                 mu(k,1,m) = mu(k,1,m)+rb(1,1,m);
             end
 
@@ -393,73 +437,29 @@ for k=2:1:n
             w(k,:,m)  = w(k-1,:,m);
             da(k,:,m) = da(k-1,:,m);
             dau(k,1,m) = dau(k-1,1,m);
-            if exist('g','var')
+            if no_g==0
                 g(k,:,m)=g(k-1,:,m);
             end
             al(k,1,m)  = al(k-1,1,m);
         end
-        
-%         % Repack parameters
-%         for pn=1:length(pnames)
-%             if isfield(M.(type).p,pnames{pn})
-%                 (pnames{pn}) = p.(pnames{pn});
-%             end
-%         end
-% 
-%         % Repack traj
-%         for tn=1:length(tnames)
-%             if isfield(M.(type).tr,tnames{tn})
-%                 (tnames{tn}) = tr.(tnames{tn});
-%             end
-%         end
-%         
-%         % Repack like parameters
-%         type='like';
-%         for pn=1:length(pnames)
-%             if isfield(M.(type).p,pnames{pn})
-%                 (pnames{pn}) = p.(pnames{pn});
-%             end
-%         end
     end
     
     % Joint prediction if more than one model
-    if r.c_prc.nModels>1
-        
-%         % Unpack like parameters
-%         type='like';
-%         pnames = fieldnames(M.(type).p);
-%         for pn=1:length(pnames)
-%             p.(pnames{pn}) = (pnames{pn});
-%         end
+    if nModels>1
         
         % set alpha
-        if ~exist('al1','var')
+        if no_al1
             al1=al0;
         end
         if u(k,1)==0
-            al(k,1,m)=al0(u(k,2),1,m);
+            al(k,1,m)=al0(u(k,2));
         elseif u(k,1)==1
-            al(k,1,m)=al1(u(k,2),1,m);
+            al(k,1,m)=al1(u(k,2));
         end
         
-        v_mu=[];
-        v_phi=[];
-        v_mu_phi=[];
-        for m=1:r.c_prc.nModels
-
-            type = r.c_prc.type{m};
-            
-            % define mu phi
-            rep = (r.c_prc.(type).jointrep);
-            v_mu(m) = rep(k+r.c_prc.(type).jointrepk,r.c_prc.(type).jointreplev);
-            v_phi(m) = phi(1,1,m);
-            v_mu_phi(m) = v_phi(m)*v_mu(m);
-        
-        end
-    
         % joint probability
-        vj_phi = sum(v_phi);
-        vj_mu(k,1) = sum(v_mu_phi)/vj_phi;
+        vj_phi = sum(phi(1,1,:));
+        vj_mu(k,1) = sum(phi(1,1,:).*mu0(k,1,:))/vj_phi;
 
         % joint prediction
         rt=exp((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2)/vj_phi^-2;
@@ -467,29 +467,32 @@ for k=2:1:n
         
         % Likelihood functions: one for each
         % possible signal
-        if r.c_prc.n_inputcond >1
-            und1 = exp(-(u(k,1) -eta1(1,1,m))^2/(2*al1(u(k,2),1,m)));
-            und0 = exp(-(u(k,1) -eta0(1,1,m))^2/(2*al0(u(k,2),1,m)));
+        if n_inputcond >1
+            und1 = exp(-(u(k,1) -eta1)^2/(2*al1(u(k,2))));
+            und0 = exp(-(u(k,1) -eta0)^2/(2*al0(u(k,2))));
         else
-            und1 = exp(-(u(k,1) -eta1(1,1,m))^2/(2*al1(1,1,m)));
-            und0 = exp(-(u(k,1) -eta0(1,1,m))^2/(2*al0(1,1,m)));
+            und1 = exp(-(u(k,1) -eta1)^2/(2*al1));
+            und0 = exp(-(u(k,1) -eta0)^2/(2*al0));
         end
 
         % Update
         xc(k,1) = xchat(k,1) *und1 /(xchat(k,1) *und1 +(1 -xchat(k,1)) *und0);
         
-%         % Repack like parameters
-%         type='like';
-%         for pn=1:length(pnames)
-%             if isfield(M.(type).p,pnames{pn})
-%                 (pnames{pn}) = p.(pnames{pn});
-%             end
-%         end
     end
     
 end
 
 %% COMPILE RESULTS
+
+for m=1:nModels
+    if l(m)>1
+        % Implied learning rate at the first level
+        sgmmu2 = 1./(1+exp(-mu(:,2,m)));
+        lr1    = diff(sgmmu2)./da(2:n,1,m);
+        lr1(da(2:n,1,m)==0) = 0;
+    end
+end
+
 % Remove representation priors
 mu0(1,:,:)  = [];
 mu(1,:,:)  = [];
@@ -501,15 +504,6 @@ vj_mu(1) = [];
 xc(1) = [];
 xchat(1) = [];
 
-for m=1:r.c_prc.nModels
-    if l(m)>1
-        % Implied learning rate at the first level
-        sgmmu2 = tapas_sgm(mu(:,2,m), 1);
-        lr1    = diff(sgmmu2)./da(2:n,1,m);
-        lr1(da(2:n,1,m)==0) = 0;
-    end
-end
-
 % Remove other dummy initial values
 muhat(1,:,:) = [];
 pihat(1,:,:) = [];
@@ -517,11 +511,14 @@ v(1,:,:)     = [];
 w(1,:,:)     = [];
 da(1,:,:)    = [];
 dau(1,:,:)     = [];
-if exist('g','var')
+if no_g==0
     g(1,:,:)  = [];
 end
 
-for m=1:r.c_prc.nModels
+% Create result data structure
+traj = struct;
+
+for m=1:nModels
 
 %     % Unpack likelihood parameters
 %     type='like';
@@ -564,11 +561,6 @@ for m=1:r.c_prc.nModels
         end
     end
 
-   
-
-    % Create result data structure
-    traj = struct;
-    
     traj.like.vj_mu = vj_mu;
     traj.like.xc = xc;
     traj.like.xchat = xchat;
@@ -583,7 +575,7 @@ for m=1:r.c_prc.nModels
     traj.(type).w      = w(:,:,m);
     traj.(type).da     = da(:,:,m);
     traj.(type).dau    = dau(:,:,m);
-    if exist('g','var')
+    if no_g==0 && size(g,3)>=l(m)
         traj.(type).g     = g(:,:,m);
     end
 

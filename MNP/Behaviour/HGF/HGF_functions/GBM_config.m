@@ -8,21 +8,21 @@ c = struct;
     S.modelspec.likelihood.inputvar = 'uncertain_unequal'; % uncertain_equal (variance), uncertain_unequal, certain
     S.modelspec.likelihood.n_inputcond = 1; % Number of conditions with unique input variance
     S.modelspec.response.model = 'soft';
-    S.modelspec.response.priormodel = 'like'; % Which model representations are used for the response model?
-    S.modelspec.response.rep = 'xc';
-    modeltype='AL'; % AL (associative learning), PL (perceptual learning), PR (priming)
-    S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
-    S.modelspec.priormodels.(modeltype).n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
-    S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
-    modeltype='PR'; % AL (associative learning), PL (perceptual learning), PR (priming)
-    S.modelspec.priormodels.(modeltype).priortype = 'state'; % constant, hierarchical, state
-    S.modelspec.priormodels.(modeltype).n_priorlevels = 1; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
-    S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
+    S.modelspec.response.priormodel = 'PL'; % Which model representations are used for the response model?
+    S.modelspec.response.rep = 'mu0';
+%     modeltype='AL'; % AL (associative learning), PL (perceptual learning), PR (priming)
+%     S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
+%     S.modelspec.priormodels.(modeltype).n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
+%     S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
+%     modeltype='PR'; % AL (associative learning), PL (perceptual learning), PR (priming)
+%     S.modelspec.priormodels.(modeltype).priortype = 'state'; % constant, hierarchical, state
+%     S.modelspec.priormodels.(modeltype).n_priorlevels = 1; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
+%     S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
     modeltype='PL'; % AL (associative learning), PL (perceptual learning), PR (priming)
     S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
     S.modelspec.priormodels.(modeltype).n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
     S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
-    
+%     
 
 %% General settings (specific to experimental design but not to the model)
 % Input intervals
@@ -195,9 +195,6 @@ for m = 1:c.nModels
     c.(type).rbsa = 0;
     
     %% Joint models
-    c.(type).jointrep = 'mu0'; % name of representation variable
-    c.(type).jointreplev = 1; % level of this variable
-    c.(type).jointrepk =0; % time point (e.g. current=0, previous = -1)
     % Variance (Phi)
     c.(type).logphimu = log(0.05);
     c.(type).logphisa = 1; % unfixed
@@ -246,6 +243,9 @@ for i = 1:length(fn)
     if strcmp(fn{i}(end-1:end),'mu')
         c.pn=c.pn+1;
         c.pnames{c.pn,1} = [type '_' fn{i}(1:end-2)];
+        nme_gen = strsplit(fn{i}(1:end-2),'log');
+        c.pnames_gen{c.pn,1} = nme_gen{end};
+        c.pnames_mod{c.pn,1} = [type '_' nme_gen{end}];
         eval(['c.priormus = [c.priormus c.(type).' fn{i} '];']);
         eval(['c.nparams(c.pn) = length(c.(type).' fn{i} ');']);
         if isfield(c.(type),[fn{i}(1:end-2) 'var'])

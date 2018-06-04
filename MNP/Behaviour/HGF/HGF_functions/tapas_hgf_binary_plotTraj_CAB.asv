@@ -44,20 +44,32 @@ mu_0=r.p_prc.([priormodel '_mu_0']);
 mu = r.traj.(priormodel).mu;
 wt = r.traj.(priormodel).wt;
 om = r.p_prc.([priormodel '_om']);
-if r.p_prc.([priormodel '_rho'])
-rho = r.p_prc.([priormodel '_rho']);
-ka = r.p_prc.([priormodel '_ka']);
+if isfield(r.p_prc,[priormodel '_rho'])
+    rho = r.p_prc.([priormodel '_rho']);
+else
+    rho = NaN(1,l);
+end
+if isfield(r.p_prc,[priormodel '_ka'])
+    ka = r.p_prc.([priormodel '_ka']);
+else
+    ka = NaN(1,l);
+end
 
 if plotsd
     sa_0=r.p_prc.([priormodel '_sa_0']);
     sa = r.traj.(priormodel).sa;
 end
 
+ll=0;
+if all(~isnan(r.traj.like.xc))
+    ll = 1;
+end
+
 % Upper levels
-for j = 1:l-1
+for j = 1:(l+ll)-(1+ll)
 
     % Subplots
-    subplot(l,1,j);
+    subplot(l+ll,1,j);
 
     if plotsd == true
         upperprior = mu_0(l-j+1) +sqrt(sa_0(l-j+1));
@@ -80,11 +92,17 @@ for j = 1:l-1
 end
 
 % Input level
-subplot(l,1,l);
+subplot(l+ll,1,l+ll-1);
 
-plot(ts, [tapas_sgm(mu_0(2), 1); tapas_sgm(mu(:,2), 1)], 'r', 'LineWidth', 2);
-hold all;
-plot(0, tapas_sgm(mu_0(2), 1), 'or', 'LineWidth', 2); % prior
+if l>1
+    plot(ts, [tapas_sgm(mu_0(2), 1); tapas_sgm(mu(:,2), 1)], 'r', 'LineWidth', 2);
+    hold all;
+    plot(0, tapas_sgm(mu_0(2), 1), 'or', 'LineWidth', 2); % prior
+else
+    plot(ts, [mu_0(1); mu(:,1)], 'r', 'LineWidth', 2);
+    hold all;
+    plot(0, mu_0(1), 'or', 'LineWidth', 2); % prior
+end
 plot(ts(2:end), r.u(:,1), '.', 'Color', [0 0.6 0]); % inputs
 plot(ts(2:end), wt(:,1), 'k') % implied learning rate 
 if (ploty == true) && ~isempty(find(strcmp(fieldnames(r),'y'))) && ~isempty(r.y)
@@ -116,3 +134,18 @@ end
 plot(ts(2:end), 0.5, 'k');
 xlabel('Trial number');
 hold off;
+
+% Joint models
+if ll
+    subplot(l+ll,1,l+ll);
+    
+    xchat = r.traj.like.xc;
+    vj_mu = r.traj.like.vj_mu;
+    plot(ts, [NaN; vj_mu(:,1)], 'm--', 'LineWidth', 2);
+    hold all;
+    plot(ts, [NaN; xchat(:,1)], 'm', 'LineWidth', 2);
+    
+    plot(ts(2:end), 0.5, 'k');
+    xlabel('Trial number');
+    hold off;
+end

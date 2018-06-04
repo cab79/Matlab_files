@@ -15,15 +15,15 @@ end
 
 %% 2. FOLDER AND FILENAME DEFINITIONS
 clear S
-S.expt = 'NLT';
+S.expt = 'VLT';
 S.version = 2; % version of the NLT/ALT design
 S.path.raw = ['C:\Data\MNP\Pilots\' S.expt 'v2\raw']; % unprocessed data in original format
 S.path.prep = ['C:\Data\MNP\Pilots\' S.expt 'v2\processed']; % folder to save processed .set data
 S.fname.parts = {'prefix','subject','block','ext'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
 S.select.subjects = {'cab10'}; % either a single subject, or leave blank to process all subjects in folder
 S.select.sessions = {};
-%S.select.blocks = {['Sequence_' S.expt '_OptionAdaptive']}; % blocks to load (each a separate file) - empty means all of them, or not defined
-S.select.blocks = {['Sequence_' S.expt '_OptionNLT_assoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.select.blocks = {['Sequence_' S.expt '_OptionAssoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
+%S.select.blocks = {['Sequence_' S.expt '_OptionNLT_assoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
 S.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
 S.path.datfile = ['C:\Data\MNP\Pilots\Participant_Data.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
