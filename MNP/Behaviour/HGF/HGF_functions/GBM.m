@@ -1,4 +1,4 @@
-function [traj] = GBM(r, pvec, varargin)
+function [traj,infStates] = GBM(r, pvec, varargin)
 % GENERAL BINARY (INPUT) MODEL
 
 % NOTES
@@ -422,7 +422,7 @@ for k=2:1:n
             end
 
             % RESPONSE BIAS
-            if no_rb
+            if ~no_rb
                 mu(k,1,m) = mu(k,1,m)+rb(1,1,m);
             end
 
@@ -462,8 +462,17 @@ for k=2:1:n
         vj_mu(k,1) = sum(phi(1,1,:).*mu0(k,1,:))/vj_phi;
 
         % joint prediction
-        rt=exp((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2)/vj_phi^-2;
+            % ((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2) gives a value between
+            % -1 (if vj_mu is closer to eta1) and 1 (if closer to eta0).
+            % dividing by vj_phi makes log(rt) either very large positive (if phi
+            % is very precise) or very large negative (if uncertain). Exp of
+            % these results in a large positive or small positive number
+            % respectively.
+            % So, when vj_mu is close to 0 and precise, xchat approaches 0
+        
+        rt=exp(((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2)/(vj_phi^-2));
         xchat(k,1) = 1/(1+rt);
+        
         
         % Likelihood functions: one for each
         % possible signal
@@ -603,15 +612,15 @@ for m=1:nModels
     if l(m)>2; wt(:,3:l(m)) = 1/2 *(v(:,2:l(m)-1,m) *diag(ka(2:l(m)-1,m))) .*psi(:,3:l(m)); end
     traj.(type).wt   = wt;
 
-    % Create matrices for use by the observation model
-%     infStates = NaN(n-1,l(m),11);
-%     infStates(:,:,1) = traj.muhat;
-%     infStates(:,:,2) = traj.sahat;
-%     infStates(:,:,3) = traj.mu;
-%     infStates(:,:,4) = traj.sa;
-%     infStates(:,:,5) = traj.da;
-%     infStates(:,:,6) = traj.epsi;
-%     infStates(:,1,7) = traj.dau;
+    % Create matrices for use by tapas observation models
+     infStates = NaN(n-1,l(m),11);
+%      infStates(:,:,1) = traj.(type).muhat;
+%      infStates(:,:,2) = traj.(type).sahat;
+%      infStates(:,:,3) = traj.(type).mu;
+%      infStates(:,:,4) = traj.(type).sa;
+%      infStates(:,:,5) = traj.(type).da;
+%      infStates(:,:,6) = traj.(type).epsi;
+%      infStates(:,1,7) = traj.(type).dau;
 %     infStates(:,1,8) = traj.mu0;
 %     infStates(:,1,9) = traj.vj_mu;
 %     infStates(:,1,10) = traj.xc;

@@ -108,7 +108,7 @@ S=eeglab_preprocess(S,'rej')
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 %% STEP 4: ICA
 S.prep.load.suffix = {'manrej'}; % suffix to add to input file name, if needed. Can use * as wildcard
-S.prep.save.suffix = {'ICA'}; % suffix to add to output file name, if needed. 
+S.prep.save.suffix = {''}; % suffix to add to output file name, if needed. 
 S.prep.clean.ICA = 1;
 S.prep.startfile = 1; 
 S=eeglab_preprocess(S,'ICA')

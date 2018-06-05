@@ -36,70 +36,66 @@ end
 % Decision based on which representation?
 c.rep = r.c_prc.response.rep; 
 
-% Beta
-c.logbemu = log(48);
-c.logbesa = 1;
+c.nparams =[];
+c.priormus=[];
+c.priorsas=[];
+c.st = [];
+c.pn=0;
 
-% Sufficient statistics of Gaussian parameter priors
-%
-% Beta_0
-c.be0mu = log(500); 
-c.be0sa = 4;
-
-% Beta_1
-c.be1mu = 0;
-c.be1sa = 4;
-
-% Beta_2
-c.be2mu = 0; 
-c.be2sa = 4;
-
-% Beta_3
-c.be3mu = 0; 
-if l>1
-    c.be3sa = 4;
-else
-    c.be3sa = 0;
+if strcmp(c.response.model, 'RT-soft') || strcmp(c.response.model,'soft')
+    % Beta
+    c.soft.logbemu = log(48);
+    c.soft.logbesa = 1;
+    
+    % Gather prior settings in vectors
+    type='soft';
+    c = paramvec(c,type);
 end
 
-% Beta_4
-c.be4mu = 0; 
-if l>2
-    c.be4sa = 4;
-else
-    c.be4sa = 0;
+if strcmp(c.response.model,'RT-soft') || strcmp(c.response.model,'RT')
+    % Sufficient statistics of Gaussian parameter priors
+    %
+    % Beta_0
+    c.rt.be0mu = log(500); 
+    c.rt.be0sa = 4;
+
+    % Beta_1
+    c.rt.be1mu = 0;
+    c.rt.be1sa = 4;
+
+    % Beta_2
+    c.rt.be2mu = 0; 
+    c.rt.be2sa = 4;
+
+    % Beta_3
+    c.rt.be3mu = 0; 
+    if l>1
+        c.rt.be3sa = 4;
+    else
+        c.rt.be3sa = 0;
+    end
+
+    % Beta_4
+    c.rt.be4mu = 0; 
+    if l>2
+        c.rt.be4sa = 4;
+    else
+        c.rt.be4sa = 0;
+    end
+
+    % Beta_5
+    c.rt.be5mu = 0; 
+    c.rt.be5sa = 4;
+
+    % Zeta
+    c.rt.logzemu = log(log(20));
+    c.rt.logzesa = log(2);
+    c.rt.logzesavar = true; % this is a variance parameter
+    
+    % Gather prior settings in vectors
+    type='rt';
+    c = paramvec(c,type);
 end
-
-% Beta_5
-c.be5mu = 0; 
-c.be5sa = 4;
-
-% Zeta
-c.logzemu = log(log(20));
-c.logzesa = log(2);
-
-% Gather prior settings in vectors
-c.priormus = [
-    c.be0mu,...
-    c.be1mu,...
-    c.be2mu,...
-    c.be3mu,...
-    c.be4mu,...
-    c.be5mu,...
-    c.logzemu,...
-    c.logbemu,...
-         ];
-
-c.priorsas = [
-    c.be0sa,...
-    c.be1sa,...
-    c.be2sa,...
-    c.be3sa,...
-    c.be4sa,...
-    c.be5sa,...
-    c.logzesa,...
-    c.logbesa,...
-         ];
 
 % Model filehandle
 c.obs_fun = @logrt_softmax_binary;
@@ -109,3 +105,32 @@ c.obs_fun = @logrt_softmax_binary;
 c.transp_obs_fun = @logrt_softmax_binary_transp;
 
 return;
+
+function c = paramvec(c,type)
+fn=fieldnames(c.(type));
+for i = 1:length(fn)
+    if strcmp(fn{i}(end-1:end),'mu')
+        c.pn=c.pn+1;
+        c.pnames{c.pn,1} = [type '_' fn{i}(1:end-2)];
+        nme_gen = strsplit(fn{i}(1:end-2),'log');
+        c.pnames_gen{c.pn,1} = nme_gen{end};
+        c.pnames_mod{c.pn,1} = [type '_' nme_gen{end}];
+        eval(['c.priormus = [c.priormus c.(type).' fn{i} '];']);
+        eval(['c.nparams(c.pn) = length(c.(type).' fn{i} ');']);
+        if isfield(c.(type),[fn{i}(1:end-2) 'var'])
+            c.varparam(c.pn)=1;
+        else
+            c.varparam(c.pn)=0;
+        end
+    elseif strcmp(fn{i}(end-1:end),'sa')
+        eval(['c.priorsas = [c.priorsas c.(type).' fn{i} '];']);
+    else
+        continue
+    end
+    if isempty(c.st)
+        c.st = 0;
+    else
+        c.st=sum(c.nparams(1:c.pn-1));
+    end
+    c.priormusi{c.pn} = c.st+1:sum(c.nparams(1:c.pn));
+end

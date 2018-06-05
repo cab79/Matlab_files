@@ -1,8 +1,12 @@
-function [EEG,rejtrial,rejchan] = FTrejman(EEG,filterset,chan,varargin)
+function [EEG,rejtrial,rejchan] = FTrejman(EEG,filterset,varargin)
 %convert to FT and manually remove chan and trial condidering a particular freq
 
 if ~isempty(varargin)
-    format = varargin;
+    chan = varargin{1};
+end
+
+if ~isempty(varargin) && length(varargin)>1
+    format = varargin{2};
 else
     format = 'EEGLAB';
 end
@@ -23,6 +27,9 @@ orig_chans=FT.label';
 cfg =[];
 cfg.method = 'summary';
 cfg.alim = 1e-5;
+if ~exist('chan','var')
+    chan = 1:length(orig_chans);
+end
 cfg.channel = orig_chans(chan);
 cfg.keepchannel='no';
 cfg.keeptrial='yes';

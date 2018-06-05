@@ -1,11 +1,10 @@
-function S=eeglab_preprocess(S)
+function S=eeglab_preprocess(S,part)
 %% PREPROCESSING FOR CONTINUOUS EEGLAB .SET FILES
-
 S.func = 'prep';
 
+switch part
+    case 'epoch'
 
-
-if 1
     % GET FILE LIST
     S.path.file = S.path.(S.func);
     S = getfilelist(S);
@@ -17,7 +16,7 @@ if 1
     if isempty(S.prep.filelist)
         error('No files found!\n');
     end
-    
+
     % run though all files in a loop
     for f = S.prep.startfile:length(S.prep.filelist)
         filename = S.prep.filelist{f};
@@ -124,14 +123,15 @@ if 1
         EEG = eeg_checkset( EEG );
 
         % SAVE
-        sname_ext = 'epoched';
-        sname = [nme '_' sname_ext '.' S.prep.fname.ext{:}];
-        if ~exist(fullfile(S.path.prep,sname_ext),'dir')
-            mkdir(fullfile(S.path.prep,sname_ext));
+        sname = [nme '_' S.prep.save.suffix '.' S.prep.fname.ext{:}];
+        if ~exist(fullfile(S.path.prep,S.prep.save.suffix),'dir')
+            mkdir(fullfile(S.path.prep,S.prep.save.suffix));
         end
-        EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,sname_ext)); 
+        EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix)); 
     end
 
+%% COMBINE
+    case 'combine'
     % update last filenameparts
     for fnp = 1:length(S.prep.fname.parts)
         try
@@ -143,156 +143,156 @@ if 1
             end
         end
     end
-elseif exist(fullfile(S.path.prep,'epoched'),'dir')
-    sname_ext = 'epoched';
-end
 
-%% combine data files
-if 0%S.prep.combinefiles
-    clear OUTEEG
-    
-    
-    % GET FILE LIST
-    S.path.file = fullfile(S.path.prep,sname_ext);
-    S = getfilelist(S,sname_ext);
-    
-    loadpath = fullfile(S.path.prep,sname_ext);
-    for s = 1:length(S.prep.select.subjects)
-        if isempty(S.prep.select.sessions)
-            S.prep.select.sessions = {''};
-        end
-        for a = 1:length(S.prep.select.sessions)
-        
-            % FIND THE FILES FOR THIS SUBJECT
-            if ~isempty(S.prep.select.sessions{a})
-                subfiles = S.prep.filelist(find(not(cellfun('isempty', strfind(S.prep.filelist,S.prep.select.subjects{s}))) & not(cellfun('isempty', strfind(S.prep.filelist,S.prep.select.sessions{a})))));
-            else
-                subfiles = S.prep.filelist(find(not(cellfun('isempty', strfind(S.prep.filelist,S.prep.select.subjects{s})))));
+    % combine data files
+    if S.prep.combinefiles
+        clear OUTEEG
+
+
+        % GET FILE LIST
+        S.path.file = fullfile(S.path.prep,S.prep.load.suffix);
+        S = getfilelist(S,S.prep.load.suffix);
+
+        loadpath = fullfile(S.path.prep,S.prep.load.suffix);
+        for s = 1:length(S.prep.select.subjects)
+            if isempty(S.prep.select.sessions)
+                S.prep.select.sessions = {''};
             end
-            
-            
-            % CYCLE THROUGH EACH FILE FOR THIS SUBJECT
-            for f = 1:length(subfiles)
+            for a = 1:length(S.prep.select.sessions)
 
-                % get filename parts
-                file = subfiles{f};
-                [pth nme ext] = fileparts(file); 
-                fparts = strsplit(nme,'_');
-
-                % create base name (without extension)
-                basename='';
-                for i = 1:length(fparts)
-                    if i==1;c= '';else;c= '_';end
-                    basename = [basename c fparts{i}];
-                end
-
-                % load and merge
-                EEG = pop_loadset('filename',file,'filepath',loadpath);
-                [EEG.epoch(:).file] = deal(basename);
-                if exist('OUTEEG','var')
-                    OUTEEG = pop_mergeset(OUTEEG, EEG);
+                % FIND THE FILES FOR THIS SUBJECT
+                if ~isempty(S.prep.select.sessions{a})
+                    subfiles = S.prep.filelist(find(not(cellfun('isempty', strfind(S.prep.filelist,S.prep.select.subjects{s}))) & not(cellfun('isempty', strfind(S.prep.filelist,S.prep.select.sessions{a})))));
                 else
-                    OUTEEG = EEG;
-                    OUTEEG.fileinfo = [];
+                    subfiles = S.prep.filelist(find(not(cellfun('isempty', strfind(S.prep.filelist,S.prep.select.subjects{s})))));
                 end
-                OUTEEG.fileinfo = [OUTEEG.fileinfo,{EEG.epoch.file}];
-                clear EEG
-            end
-            EEG=OUTEEG;
-            [EEG.epoch.file] = deal(EEG.fileinfo{:});
-            clear OUTEEG
-            EEG = eeg_checkset( EEG );
 
-            % SAVE
-            sname_ext = 'combined';
-            if ~isempty(S.prep.select.sessions{a})
-                S.prep.select.sessions{a} = ['allsessions_'];
+
+                % CYCLE THROUGH EACH FILE FOR THIS SUBJECT
+                for f = 1:length(subfiles)
+
+                    % get filename parts
+                    file = subfiles{f};
+                    [pth nme ext] = fileparts(file); 
+                    fparts = strsplit(nme,'_');
+
+                    % create base name (without extension)
+                    basename='';
+                    for i = 1:length(fparts)
+                        if i==1;c= '';else;c= '_';end
+                        basename = [basename c fparts{i}];
+                    end
+
+                    % load and merge
+                    EEG = pop_loadset('filename',file,'filepath',loadpath);
+                    [EEG.epoch(:).file] = deal(basename);
+                    if exist('OUTEEG','var')
+                        OUTEEG = pop_mergeset(OUTEEG, EEG);
+                    else
+                        OUTEEG = EEG;
+                        OUTEEG.fileinfo = [];
+                    end
+                    OUTEEG.fileinfo = [OUTEEG.fileinfo,{EEG.epoch.file}];
+                    clear EEG
+                end
+                EEG=OUTEEG;
+                [EEG.epoch.file] = deal(EEG.fileinfo{:});
+                clear OUTEEG
+                EEG = eeg_checkset( EEG );
+
+                % SAVE
+                if ~isempty(S.prep.select.sessions{a})
+                    sessionname = [S.prep.select.sessions{a} '_'];
+                else
+                    sessionname = ['allsessions_'];
+                end
+                sname = [S.prep.study{:} '_' S.prep.select.subjects{s} '_' sessionname S.prep.save.suffix '.' S.prep.fname.ext{:}];
+                if ~exist(fullfile(S.path.prep,S.prep.save.suffix),'dir')
+                    mkdir(fullfile(S.path.prep,S.prep.save.suffix));
+                end
+                EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix));
             end
-            sname = [S.prep.study{:} '_' S.prep.select.subjects{s} '_' S.prep.select.sessions{a} sname_ext '.' S.prep.fname.ext{:}];
-            if ~exist(fullfile(S.path.prep,sname_ext),'dir')
-                mkdir(fullfile(S.path.prep,sname_ext));
-            end
-            EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,sname_ext));
         end
+    elseif exist(fullfile(S.path.prep,'combined'),'dir')
+        S.prep.save.suffix = 'combined';
     end
-elseif exist(fullfile(S.path.prep,'combined'),'dir')
-    sname_ext = 'combined';
-end
 
 % FIND THE NEW DATA FILES
-%files = dir(fullfile(S.path.prep,['*' S.runsubject '*' sname_ext]));
+%files = dir(fullfile(S.path.prep,['*' S.runsubject '*' S.prep.load.suffix]));
 %files_ana = 1:length(files);
 
-% NOISY TRIAL AND CHANNEL REJECTION USING FIELDTRIP
-if 0%~isempty(S.prep.clean.FTrej) && iscell(S.prep.clean.FTrej)
-    
-    % GET FILE LIST
-    S.path.file = fullfile(S.path.prep,sname_ext);
-    if strcmp(sname_ext,'combined')
-        S.prep.fname.parts = {'study','subject','session','suffix','ext'};
-        S.prep.select.conds = {};
-        S.prep.select.blocks = {};
-    end
-    S = getfilelist(S,sname_ext);
-    
-    loadpath = fullfile(S.path.prep,sname_ext);
-    for f = S.prep.startfile:length(S.prep.filelist)
-        file = S.prep.filelist{f};
-        EEG = pop_loadset('filename',file,'filepath',loadpath);
-        
-        % REMOVE FLAT CHANNELS using 1/var
-        if isfield(S.prep.clean,'flatchan') && S.prep.clean.flatchan.varthresh > 0
-            S = flat_channel_reject(S,EEG);
-            EEG = eeg_interp(EEG, S.prep.clean.flatchan.rejchan);
-            if length(EEG.chanlocs)>EEG.nbchan
-                EEG.chanlocs(S.prep.clean.flatchan.rejchan)=[];
+%% NOISY TRIAL AND CHANNEL REJECTION USING FIELDTRIP
+    case 'rej'
+    if ~isempty(S.prep.clean.FTrej) && iscell(S.prep.clean.FTrej)
+
+        % GET FILE LIST
+        S.path.file = fullfile(S.path.prep,S.prep.load.suffix);
+        if strcmp(S.prep.load.suffix,'combined')
+            S.prep.fname.parts = {'study','subject','session','suffix','ext'};
+            S.prep.select.conds = {};
+            S.prep.select.blocks = {};
+        end
+        S = getfilelist(S,S.prep.load.suffix);
+
+        loadpath = fullfile(S.path.prep,S.prep.load.suffix);
+        for f = S.prep.startfile:length(S.prep.filelist)
+            file = S.prep.filelist{f};
+            EEG = pop_loadset('filename',file,'filepath',loadpath);
+
+            % REMOVE FLAT CHANNELS using 1/var
+            if isfield(S.prep.clean,'flatchan') && S.prep.clean.flatchan.varthresh > 0
+                S = flat_channel_reject(S,EEG);
+                EEG = eeg_interp(EEG, S.prep.clean.flatchan.rejchan);
+                if length(EEG.chanlocs)>EEG.nbchan
+                    EEG.chanlocs(S.prep.clean.flatchan.rejchan)=[];
+                end
+                EEG = pop_select(EEG, 'notrial', S.prep.clean.flatchan.rejtrial);
             end
-            EEG = pop_select(EEG, 'notrial', S.prep.clean.flatchan.rejtrial);
-        end
 
-        % strategy - only remove a very small number of very bad trials / chans
-        % before ICA - do further cleaning after ICA
-        for i = 1:length(S.prep.clean.FTrej)
-            %try
-                EEG = FTrejman(EEG,S.prep.clean.FTrej{i}); 
-            %end
-        end
+            % strategy - only remove a very small number of very bad trials / chans
+            % before ICA - do further cleaning after ICA
+            for i = 1:length(S.prep.clean.FTrej)
+                %try
+                    EEG = FTrejman(EEG,S.prep.clean.FTrej{i}); 
+                %end
+            end
 
-        % SAVE
-        [pth nme ext] = fileparts(file); 
-        sname_ext = 'manrej';
-        sname = [nme '_' sname_ext '.' S.prep.fname.ext{:}];
-        if ~exist(fullfile(S.path.prep,sname_ext),'dir')
-            mkdir(fullfile(S.path.prep,sname_ext));
+            % SAVE
+            [pth nme ext] = fileparts(file); 
+            sname = [nme '_' S.prep.save.suffix '.' S.prep.fname.ext{:}];
+            if ~exist(fullfile(S.path.prep,S.prep.save.suffix),'dir')
+                mkdir(fullfile(S.path.prep,S.prep.save.suffix));
+            end
+            EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix)); 
         end
-        EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,sname_ext)); 
+    elseif exist(fullfile(S.path.prep,'manrej'),'dir')
+        S.prep.save.suffix = 'manrej';
     end
-elseif exist(fullfile(S.path.prep,'manrej'),'dir')
-    sname_ext = 'manrej';
 end
 
-% ICA
-if S.prep.clean.ICA
-    % GET FILE LIST 
-    S.path.file = fullfile(S.path.prep,sname_ext);
-    S = getfilelist(S,'combined_manrej');
-    
-    loadpath = fullfile(S.path.prep,sname_ext);
-    for f = S.prep.startfile:length(S.prep.filelist)
-        file = S.prep.filelist{f};
-        EEG = pop_loadset('filename',file,'filepath',loadpath);
+%% ICA
+    case 'ICA'
+    if S.prep.clean.ICA
+        % GET FILE LIST 
+        S.path.file = fullfile(S.path.prep,S.prep.load.suffix);
+        S = getfilelist(S,'combined_manrej');
 
-        %RUN ICA 
-        numcomp = numcompeig(EEG);
-        EEG = pop_runica(EEG, 'extended',1,'interupt','on','pca',numcomp);
+        loadpath = fullfile(S.path.prep,S.prep.load.suffix);
+        for f = S.prep.startfile:length(S.prep.filelist)
+            file = S.prep.filelist{f};
+            EEG = pop_loadset('filename',file,'filepath',loadpath);
 
-        % SAVE
-        [pth nme ext] = fileparts(file); 
-        sname_ext = 'ICA';
-        sname = [nme '_' sname_ext '.' S.prep.fname.ext{:}];
-        if ~exist(fullfile(S.path.prep,sname_ext),'dir')
-            mkdir(fullfile(S.path.prep,sname_ext));
+            %RUN ICA 
+            numcomp = numcompeig(EEG);
+            EEG = pop_runica(EEG, 'extended',1,'interupt','on','pca',numcomp);
+
+            % SAVE
+            [pth nme ext] = fileparts(file);
+            sname = [nme '_' S.prep.save.suffix '.' S.prep.fname.ext{:}];
+            if ~exist(fullfile(S.path.prep,S.prep.save.suffix),'dir')
+                mkdir(fullfile(S.path.prep,S.prep.save.suffix));
+            end
+            EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix));
         end
-        EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,sname_ext));
     end
 end

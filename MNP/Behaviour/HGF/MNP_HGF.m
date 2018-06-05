@@ -6,7 +6,7 @@ addpath('C:\Data\Matlab\HGF\HGFv5.0');
 addpath('C:\Data\Matlab\Matlab_files\MNP\Behavioural\HGF\HGF_functions')
 
 dname='C:\Data\MNP\Pilots\NLTv2\processed';
-aname='C:\Data\MNP\Pilots\NLTv2\HGF\3lev_test'; bayes_opt=0; 
+aname='C:\Data\MNP\Pilots\NLTv2\HGF\3lev_test'; 
 
 overwrite=1;
 hgf=1;
@@ -94,8 +94,11 @@ for f = files_ana'
         if ~isempty(sim_param)
             sim = tapas_simModel_CAB(u(1:nst,:), 'GBM', sim_param, [], [], S.prc_config, []);
             varargout={sim};
-        elseif bayes_opt
+        elseif S.bayes_opt
             bopars = tapas_fitModel_CAB([], u(1:nst,:), prc_model, obs_model, opt_algo); %BAYES OPTIMAL
+        elseif strfind(S.prc_config,'tapas')
+            bopars = tapas_fitModel(y(1:nst,:), u(1:nst,:), prc_model, obs_model, opt_algo);
+            tapas_hgf_binary_plotTraj(bopars);
         else
             bopars = tapas_fitModel_CAB(y(1:nst,:), u(1:nst,:), prc_model, obs_model, opt_algo, S);
         end
@@ -107,6 +110,7 @@ for f = files_ana'
         else
             sname = [S(1).select.subjects{1, 1} '_' sname '_bopars.mat'];
             save(fullfile(aname,sname),'bopars');
+            
             % PLOTS
             if isfield(bopars.traj,'AL')
                 tapas_hgf_binary_plotTraj_CAB(bopars,'AL',true)

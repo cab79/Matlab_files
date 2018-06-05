@@ -188,7 +188,7 @@ for m=1:r.c_prc.nModels
     end
 end
 n_inputcond=r.c_prc.n_inputcond;
-r.c_prc.nModels
+nModels=r.c_prc.nModels;
 
 % ignore trials
 no_ign = ones(1,n);
@@ -442,39 +442,10 @@ for k=2:1:n
             end
             al(k,1,m)  = al(k-1,1,m);
         end
-        
-%         % Repack parameters
-%         for pn=1:length(pnames)
-%             if isfield(M.(type).p,pnames{pn})
-%                 (pnames{pn}) = p.(pnames{pn});
-%             end
-%         end
-% 
-%         % Repack traj
-%         for tn=1:length(tnames)
-%             if isfield(M.(type).tr,tnames{tn})
-%                 (tnames{tn}) = tr.(tnames{tn});
-%             end
-%         end
-%         
-%         % Repack like parameters
-%         type='like';
-%         for pn=1:length(pnames)
-%             if isfield(M.(type).p,pnames{pn})
-%                 (pnames{pn}) = p.(pnames{pn});
-%             end
-%         end
     end
     
     % Joint prediction if more than one model
     if nModels>1
-        
-%         % Unpack like parameters
-%         type='like';
-%         pnames = fieldnames(M.(type).p);
-%         for pn=1:length(pnames)
-%             p.(pnames{pn}) = (pnames{pn});
-%         end
         
         % set alpha
         if no_al1
@@ -491,7 +462,12 @@ for k=2:1:n
         vj_mu(k,1) = sum(phi(1,1,:).*mu0(k,1,:))/vj_phi;
 
         % joint prediction
-        rt=exp((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2)/vj_phi^-2;
+            % ((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2) gives a value between
+            % -1 (if vj_mu is closer to eta1) and 1 (if closer to eta0).
+            % dividing by vj_phi makes rt either very large (if phi
+            % is very precise) or very small (if uncertain) - approaching 0
+            % So, when vj_mu is close to and precise, xchat approaches 0
+        rt=exp(((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2)/(vj_phi^-2));
         xchat(k,1) = 1/(1+rt);
         
         % Likelihood functions: one for each
@@ -507,13 +483,6 @@ for k=2:1:n
         % Update
         xc(k,1) = xchat(k,1) *und1 /(xchat(k,1) *und1 +(1 -xchat(k,1)) *und0);
         
-%         % Repack like parameters
-%         type='like';
-%         for pn=1:length(pnames)
-%             if isfield(M.(type).p,pnames{pn})
-%                 (pnames{pn}) = p.(pnames{pn});
-%             end
-%         end
     end
     
 end
@@ -550,6 +519,9 @@ dau(1,:,:)     = [];
 if no_g==0
     g(1,:,:)  = [];
 end
+
+% Create result data structure
+traj = struct;
 
 for m=1:nModels
 
@@ -594,11 +566,6 @@ for m=1:nModels
         end
     end
 
-   
-
-    % Create result data structure
-    traj = struct;
-    
     traj.like.vj_mu = vj_mu;
     traj.like.xc = xc;
     traj.like.xchat = xchat;

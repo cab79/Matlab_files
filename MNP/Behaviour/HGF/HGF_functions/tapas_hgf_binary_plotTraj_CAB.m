@@ -92,7 +92,7 @@ for j = 1:(l+ll)-(1+ll)
 end
 
 % Input level
-subplot(l+ll,1,l+ll-1);
+subplot(l+ll,1,l);
 
 if l>1
     plot(ts, [tapas_sgm(mu_0(2), 1); tapas_sgm(mu(:,2), 1)], 'r', 'LineWidth', 2);
@@ -145,11 +145,22 @@ if ll
     hold all;
     plot(ts, [NaN; vj_mu(:,1)], 'k--', 'LineWidth', 2);
     
-    title(['posterior expectation of input xchat (magenta) and the joint probablity vj_mu (black) ', ...
-      'FontWeight', 'bold']);
+    title(['posterior expectation of input xchat (magenta) and the joint probablity vj_mu (black) '], ...
+      'FontWeight', 'bold');
     axis([0 ts(end) -0.1 1.1]);
     
     plot(ts(2:end), 0.5, 'k');
     xlabel('Trial number');
     hold off;
+end
+
+if 0
+   figure
+   hold all
+   plot(bopars.traj.PR.mu0,'r')
+   plot(bopars.traj.AL.mu0,'b')
+   plot(bopars.traj.PL.mu0,'g')
+   axis([0 length(bopars.traj.PR.mu0) -0.1 1.1]);
+   %legend({'PR','AL','PL'})
+   hold off
 end

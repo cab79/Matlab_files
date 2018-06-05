@@ -1,4 +1,4 @@
-function [logp, yhat, res] = logrt_softmax_binary(r, ptrans)
+function [logp, yhat, res] = logrt_softmax_binary(r, infStates, pvec)
 % Calculates the log-probability of log-reaction times y (in units of log-ms) according to the
 % linear log-RT model developed with Louise Marshall and Sven Bestmann
 % http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002575
@@ -25,11 +25,26 @@ logp = NaN(n,1);
 yhat = NaN(n,1);
 res  = NaN(n,1);
 
+% Transform parameters to their native space
+pvec = logrt_softmax_binary_transp(r, pvec);
+
+% Create param struct
+nme=r.c_obs.pnames;
+nme_gen=r.c_obs.pnames_gen;
+idx=r.c_obs.priormusi;
+
 %% SOFTMAX
 if strcmp(r.c_obs.response.model, 'RT-soft') || strcmp(r.c_obs.response.model,'soft')
 
-    % Softmax parameter
-    be = exp(ptrans(8));
+    % Create param struct
+    type='soft';
+    for pn=1:length(nme)
+        if strcmp(nme{pn,1}(1:length(type)),type)
+            eval([nme_gen{pn} ' = pvec(idx{pn})'';']);
+        end
+    end
+%     % Softmax parameter
+%     be = exp(ptrans(8));
 
     % Softmax: Weed irregular trials out from inferred states, responses, and inputs
     x = r.traj.(r.c_obs.model).(r.c_obs.rep)(:,1);
@@ -65,15 +80,22 @@ end
 if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT')
 
     %% RT
-
-    % Transform parameters to their native space
-    be0  = ptrans(1);
-    be1  = ptrans(2);
-    be2  = ptrans(3);
-    be3  = ptrans(4);
-    be4  = ptrans(5);
-    be5  = ptrans(6);
-    ze   = exp(ptrans(7));
+    % Create param struct
+    type='rt';
+    for pn=1:length(nme)
+        if strcmp(nme{pn,1}(1:length(type)),type)
+            eval([nme_gen{pn} ' = pvec(idx{pn})'';']);
+        end
+    end
+    
+%     % Transform parameters to their native space
+%     be0  = ptrans(1);
+%     be1  = ptrans(2);
+%     be2  = ptrans(3);
+%     be3  = ptrans(4);
+%     be4  = ptrans(5);
+%     be5  = ptrans(6);
+%     ze   = exp(ptrans(7));
 
     % logRT: Weed irregular trials out from responses and inputs
     yr = r.y(:,2); % CAB: RTs are in column 2
