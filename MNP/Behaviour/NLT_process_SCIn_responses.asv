@@ -61,8 +61,8 @@ S.trialmax = {1000};%{16,20,24,28,32}; % max number of trials to include per con
 S.movingavg = 20;
 % RUN
 [S,D]=SCIn_data_process(S,D);
-save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
-save(fullfile(S.path.prep,'D'),'D'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+save(fullfile(S.path.prep,'S'),'S'); 
+save(fullfile(S.path.prep,'D'),'D'); 
 
 %% HGF
 
@@ -78,25 +78,27 @@ save(fullfile(S.path.prep,'D'),'D'); % saves 'S' - will be overwritten each time
 % eta1=1;
 % sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1];
 
-
+close all
 S.prc_config = 'GBM_config'; S.obs_config = 'logrt_softmax_binary_softmu0_config'; S.nstim=[];S.bayes_opt=0; 
 %S.prc_config = 'GBM_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
 %S.prc_config = 'tapas_hgf_binary_pu_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
 %S.prc_config = 'GBM_config'; S.obs_config = 'bayes_optimal_binary_config_CAB'; S.nstim=[]; S.bayes_opt=1; 
-mu_0=[NaN,0.5];
-sa_0=[NaN,0];
-al0=[0.05 0.05];
-al1=[0.05 0.05];
-rho=[];
-ka = [];
-om = [];
-eta0=0;
-eta1=1;
-rb=0
+% mu_0=[NaN,0.5];
+% sa_0=[NaN,0];
+% al0=[0.05 0.05];
+% al1=[0.05 0.05];
+% rho=[];
+% ka = [];
+% om = [];
+% eta0=0;
+% eta1=1;
+% rb=0
 
 % run
-sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1 rb];
+%sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1 rb];
 %sim=MNP_HGF(D,S,sim_param);
+S.model = 1;
+
 MNP_HGF(D,S,[]);
 return
 

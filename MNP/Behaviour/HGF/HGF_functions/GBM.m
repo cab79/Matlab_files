@@ -6,11 +6,11 @@ function [traj,infStates] = GBM(r, pvec, varargin)
 % 2. representation Mu has no variance in SDT, there is just noise (alpha)
 % that influences it's mean value.
 % 3. must be a two-level model because the 2nd level sets the prior for the
-% first, even if the prior is fixed
+% first, even if the prior is static
 
 % PLANNED UPDATES
 % 1. Allow separate evaluation of alpha for targets and non-targets - done
-% 2. Estimate prior expectation (fixed)
+% 2. Estimate prior expectation (static)
 % 3. Prior and alpha variable by block type
 % 4. Prior and alpha variable by trial (Kalman)
 % 5. Hierarchical priors
@@ -63,7 +63,7 @@ end
 %levels
 for m=1:r.c_prc.nModels
     type = r.c_prc.type{m};
-    l(m) = r.c_prc.(type).n_priorlevels;
+    l(m) = r.c_prc.(type).n_priorlevels+1;
 end
 maxlev=max(l);
 
@@ -166,13 +166,13 @@ end
 for m=1:r.c_prc.nModels
     type = r.c_prc.type{m};
     hierarchical(m)=0;
-    fixed(m)=0;
+    static(m)=0;
     dynamic(m)=0;
     state(m)=0;
     if strcmp(r.c_prc.(type).priortype,'hierarchical')
         hierarchical(m)=1;
-        if strcmp(r.c_prc.(type).priorupdate,'fixed')
-            fixed(m)=1;
+        if strcmp(r.c_prc.(type).priorupdate,'static')
+            static(m)=1;
         elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
             dynamic(m)=1;
         end
@@ -221,9 +221,9 @@ for k=2:1:n
 %                 tr.(tnames{tn}) = M.(type).tr.(tnames{tn});
 %             end
         
-            %% Predictions (from previous trial or fixed parameters)
+            %% Predictions (from previous trial or static parameters)
             if hierarchical(m)
-                if fixed(m)
+                if static(m)
                     %if r.c_prc.(type).n_muin>1
                     %    muhat(1,2,m) = mu_0(1+u(k,2),1,m);
                     %    pihat(1,2,m) = 1./sa_0(1+u(k,2),1,m);
@@ -239,7 +239,7 @@ for k=2:1:n
                     muhat(k,2,m) = mu(k-1,2,m) +t(k) *rho(2,1,m);
 
                 end
-                % Prediction from level 2 (which can be either fixed or dynamic)
+                % Prediction from level 2 (which can be either static or dynamic)
                 muhat(k,1,m) = 1./(1+exp(-muhat(k,2,m)));
 
             elseif state(m)
@@ -293,7 +293,7 @@ for k=2:1:n
                         % calculate prediction error for mu0 - muhat
 
                     end
-                elseif PL(m)
+                else
                     mu(k,1,m) = muhat(k,1,m) *und1 /(muhat(k,1,m) *und1 +(1 -muhat(k,1,m)) *und0);
                     mu0(k,1,m) = mu(k,1,m);
                 end
@@ -304,8 +304,8 @@ for k=2:1:n
                 da(k,1,m) = mu(k,1,m) -muhat(k,1,m);
 
                 % second level predictions and precisions
-                if fixed(m)
-                    mu(k,2,m) = muhat(k,2,m); % for a model with higher level predictions, which are fixed
+                if static(m)
+                    mu(k,2,m) = muhat(k,2,m); % for a model with higher level predictions, which are static
                     % At second level, assume Inf precision for a model with invariable predictions
                     pi(k,2,m) = Inf;
                     pihat(k,2,m) = Inf;

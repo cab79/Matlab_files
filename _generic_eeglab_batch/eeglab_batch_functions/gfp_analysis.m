@@ -24,7 +24,11 @@ S=select_chans(S);
     files = dir(fullfile(S.path.file,'*grandavg*mat'));
     for ga = 1:length(files)
         load(fullfile(S.path.file,files(ga).name));
-        S.(S.func).gadata{ga} = gadata;
+        try
+            S.(S.func).gadata{ga} = gadata.gavg;
+        catch
+            S.(S.func).gadata{ga} = gadata;
+        end
         [~,S.(S.func).ganame{ga},~] = fileparts(files(ga).name);
     end
 %end

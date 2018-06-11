@@ -31,7 +31,7 @@ D = gplotprepare_spmeegsensorcluster(S)
 
 %% prepare weights data for gplot
 clear S
-S.path = 'C:\Data\Catastrophising study\SPMstats\pronto\Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI_noperm';
+S.path = 'C:\Data\Catastrophising study\SPMstats\pronto\Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI_perm10000weights';
 S.fname = 'weight_timeseries.xlsx';
 S.nhead = 1;
 S.xvalhead = 'time';

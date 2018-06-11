@@ -3,10 +3,14 @@ function S = getfilelist(S,varargin)
 % add suffix as part of callng function, rather than from script
 if nargin>1
     %if ~isfield(S.(S.func),'load') || ~isfield(S.(S.func).load,'suffix') || isempty(S.(S.func).load.suffix{:})
-        S.(S.func).load.suffix = varargin;
-        if ~any(strcmp(S.(S.func).fname.parts,'suffix'))
-            S.(S.func).fname.parts = [S.(S.func).fname.parts 'suffix'];
-        end
+    if iscell(varargin{1})
+        varargin=varargin{:};
+    end
+    
+    S.(S.func).load.suffix = varargin;
+    if ~any(strcmp(S.(S.func).fname.parts,'suffix'))
+        S.(S.func).fname.parts = [S.(S.func).fname.parts 'suffix'];
+    end
     %else
     %    S.(S.func).load.suffix{:} = [S.(S.func).load.suffix{:} '_' varargin{:}];
     %end
@@ -15,6 +19,10 @@ end
 if ~isfield(S,'func')
     S.func='T';
     S.T=S;
+end
+
+if iscell(S.path.file)
+    S.path.file = S.path.file{:};
 end
 
 cd(S.path.file);
@@ -52,6 +60,11 @@ end
 if ~isfield(S.(S.func),'save') || ~isfield(S.(S.func).save,'suffix')
     S.(S.func).save.suffix = {''};
 end
+
+% get filename parts
+S.(S.func).designmat = {'groups','subjects','sessions','blocks','conds'};
+fnameparts = {'prefix','study','group','subject','session','block','cond','suffix','ext'};
+parts = ismember(fnameparts,S.(S.func).fname.parts);
 
 % load participant info and identify the relevant columns
 [~,~,pdata] = xlsread(S.path.datfile);
@@ -116,11 +129,6 @@ for g = 1:Ngrp
 end
 
 subjlists = subjlists(grplist);
-
-% get filename part
-S.(S.func).designmat = {'groups','subjects','sessions','blocks','conds'};
-fnameparts = {'prefix','study','group','subject','session','block','cond','suffix','ext'};
-parts = ismember(fnameparts,S.(S.func).fname.parts);
 
 % create file list
 S.(S.func).filelist = {};

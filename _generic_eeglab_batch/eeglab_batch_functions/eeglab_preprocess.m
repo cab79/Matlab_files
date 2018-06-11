@@ -123,11 +123,11 @@ switch part
         EEG = eeg_checkset( EEG );
 
         % SAVE
-        sname = [nme '_' S.prep.save.suffix '.' S.prep.fname.ext{:}];
-        if ~exist(fullfile(S.path.prep,S.prep.save.suffix),'dir')
-            mkdir(fullfile(S.path.prep,S.prep.save.suffix));
+        sname = [nme '_' S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+        if ~exist(fullfile(S.path.prep,S.prep.save.suffix{:}),'dir')
+            mkdir(fullfile(S.path.prep,S.prep.save.suffix{:}));
         end
-        EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix)); 
+        EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix{:})); 
     end
 
 %% COMBINE
@@ -150,10 +150,10 @@ switch part
 
 
         % GET FILE LIST
-        S.path.file = fullfile(S.path.prep,S.prep.load.suffix);
+        S.path.file = fullfile(S.path.prep,S.prep.load.suffix{:});
         S = getfilelist(S,S.prep.load.suffix);
 
-        loadpath = fullfile(S.path.prep,S.prep.load.suffix);
+        loadpath = fullfile(S.path.prep,S.prep.load.suffix{:});
         for s = 1:length(S.prep.select.subjects)
             if isempty(S.prep.select.sessions)
                 S.prep.select.sessions = {''};
@@ -206,19 +206,19 @@ switch part
                 else
                     sessionname = ['allsessions_'];
                 end
-                sname = [S.prep.study{:} '_' S.prep.select.subjects{s} '_' sessionname S.prep.save.suffix '.' S.prep.fname.ext{:}];
-                if ~exist(fullfile(S.path.prep,S.prep.save.suffix),'dir')
-                    mkdir(fullfile(S.path.prep,S.prep.save.suffix));
+                sname = [S.prep.study{:} '_' S.prep.select.subjects{s} '_' sessionname S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+                if ~exist(fullfile(S.path.prep,S.prep.save.suffix{:}),'dir')
+                    mkdir(fullfile(S.path.prep,S.prep.save.suffix{:}));
                 end
-                EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix));
+                EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix{:}));
             end
         end
     elseif exist(fullfile(S.path.prep,'combined'),'dir')
-        S.prep.save.suffix = 'combined';
+        S.prep.save.suffix{:} = 'combined';
     end
 
 % FIND THE NEW DATA FILES
-%files = dir(fullfile(S.path.prep,['*' S.runsubject '*' S.prep.load.suffix]));
+%files = dir(fullfile(S.path.prep,['*' S.runsubject '*' S.prep.load.suffix{:}]));
 %files_ana = 1:length(files);
 
 %% NOISY TRIAL AND CHANNEL REJECTION USING FIELDTRIP
@@ -226,15 +226,15 @@ switch part
     if ~isempty(S.prep.clean.FTrej) && iscell(S.prep.clean.FTrej)
 
         % GET FILE LIST
-        S.path.file = fullfile(S.path.prep,S.prep.load.suffix);
-        if strcmp(S.prep.load.suffix,'combined')
+        S.path.file = fullfile(S.path.prep,S.prep.load.suffix{:});
+        if strcmp(S.prep.load.suffix{:},'combined')
             S.prep.fname.parts = {'study','subject','session','suffix','ext'};
             S.prep.select.conds = {};
             S.prep.select.blocks = {};
         end
         S = getfilelist(S,S.prep.load.suffix);
 
-        loadpath = fullfile(S.path.prep,S.prep.load.suffix);
+        loadpath = fullfile(S.path.prep,S.prep.load.suffix{:});
         for f = S.prep.startfile:length(S.prep.filelist)
             file = S.prep.filelist{f};
             EEG = pop_loadset('filename',file,'filepath',loadpath);
@@ -259,25 +259,24 @@ switch part
 
             % SAVE
             [pth nme ext] = fileparts(file); 
-            sname = [nme '_' S.prep.save.suffix '.' S.prep.fname.ext{:}];
-            if ~exist(fullfile(S.path.prep,S.prep.save.suffix),'dir')
-                mkdir(fullfile(S.path.prep,S.prep.save.suffix));
+            sname = [nme '_' S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+            if ~exist(fullfile(S.path.prep,S.prep.save.suffix{:}),'dir')
+                mkdir(fullfile(S.path.prep,S.prep.save.suffix{:}));
             end
-            EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix)); 
+            EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix{:})); 
         end
     elseif exist(fullfile(S.path.prep,'manrej'),'dir')
-        S.prep.save.suffix = 'manrej';
+        S.prep.save.suffix{:} = 'manrej';
     end
-end
 
 %% ICA
     case 'ICA'
     if S.prep.clean.ICA
         % GET FILE LIST 
-        S.path.file = fullfile(S.path.prep,S.prep.load.suffix);
-        S = getfilelist(S,'combined_manrej');
+        S.path.file = fullfile(S.path.prep,S.prep.load.suffix{:});
+        S = getfilelist(S,S.prep.load.suffix);
 
-        loadpath = fullfile(S.path.prep,S.prep.load.suffix);
+        loadpath = fullfile(S.path.prep,S.prep.load.suffix{:});
         for f = S.prep.startfile:length(S.prep.filelist)
             file = S.prep.filelist{f};
             EEG = pop_loadset('filename',file,'filepath',loadpath);
@@ -288,11 +287,11 @@ end
 
             % SAVE
             [pth nme ext] = fileparts(file);
-            sname = [nme '_' S.prep.save.suffix '.' S.prep.fname.ext{:}];
-            if ~exist(fullfile(S.path.prep,S.prep.save.suffix),'dir')
-                mkdir(fullfile(S.path.prep,S.prep.save.suffix));
+            sname = [nme '_' S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+            if ~exist(fullfile(S.path.prep,S.prep.save.suffix{:}),'dir')
+                mkdir(fullfile(S.path.prep,S.prep.save.suffix{:}));
             end
-            EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix));
+            EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix{:}));
         end
     end
 end

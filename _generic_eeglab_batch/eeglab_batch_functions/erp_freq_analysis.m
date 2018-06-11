@@ -35,7 +35,15 @@ for f = 1:length(S.(S.func).filelist)
     %end
     
     % add in any missing chans, fill with nan
-    load(fullfile(S.path.prep,'chanlocs.mat'));
+    try
+        load(fullfile(S.path.prep,'chanlocs.mat'));
+    catch
+        try
+            load(fullfile(S.path.main,'chanlocs.mat'));
+        catch
+            error('No chanlocs file') 
+        end
+    end
     labs = {chanlocs.labels};
     actlabs = {EEG.chanlocs.labels};
     missing = find(~ismember(labs,actlabs));
@@ -58,6 +66,12 @@ for f = 1:length(S.(S.func).filelist)
         EEG = pop_select(EEG,'nochannel',find(ecgchan));
     end
     
+    
+    % LINEAR DETREND
+    if 1%S.(S.func).detrend
+        tim = dsearchn(EEG.times',[-4000 2000]');
+        for i = 1:EEG.trials, EEG.data(:,tim(1):tim(2),i) = detrend(EEG.data(:,tim(1):tim(2),i)')'; end
+    end
     % remove baseline
     if S.(S.func).epoch.rmbase
         EEG = pop_rmbase( EEG, [S.(S.func).epoch.basewin(1)*1000 S.(S.func).epoch.basewin(2)*1000]);
@@ -210,7 +224,11 @@ for f = 1:length(S.(S.func).filelist)
                 % get marker occuring at zero latency
                 events={};
                 for m=1:length(EEG.epoch)
-                    events{m} = EEG.epoch(m).eventtype{find([EEG.epoch(m).eventlatency{:}]==0)};
+                    if iscell(EEG.epoch(m).eventlatency)
+                        events{m} = EEG.epoch(m).eventtype{find([EEG.epoch(m).eventlatency{:}]==0)};
+                    else
+                        events{m} = EEG.epoch(m).eventtype;
+                    end
                 end
                 for mt = 1:S.(S.func).nMarkType
                     cfg.trials      = find(strcmp(events,S.(S.func).epoch.markers{mt}));

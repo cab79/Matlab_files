@@ -35,7 +35,7 @@ ts = [0, ts];
 
 % Number of levels
 %try
-    l = r.c_prc.(priormodel).n_priorlevels;
+    l = r.c_prc.(priormodel).n_priorlevels+1;
 %catch
 %    l = (length(r.p_prc.p)+1)/5;
 %end
@@ -43,7 +43,11 @@ ts = [0, ts];
 mu_0=r.p_prc.([priormodel '_mu_0']);
 mu = r.traj.(priormodel).mu;
 wt = r.traj.(priormodel).wt;
-om = r.p_prc.([priormodel '_om']);
+if isfield(r.p_prc,[priormodel '_om'])
+    om = r.p_prc.([priormodel '_om']);
+else
+    om = NaN(1,l);
+end
 if isfield(r.p_prc,[priormodel '_rho'])
     rho = r.p_prc.([priormodel '_rho']);
 else

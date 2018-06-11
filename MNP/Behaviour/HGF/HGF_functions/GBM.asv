@@ -1,4 +1,4 @@
-function [traj] = GBM(r, pvec, varargin)
+function [traj,infStates] = GBM(r, pvec, varargin)
 % GENERAL BINARY (INPUT) MODEL
 
 % NOTES
@@ -6,11 +6,11 @@ function [traj] = GBM(r, pvec, varargin)
 % 2. representation Mu has no variance in SDT, there is just noise (alpha)
 % that influences it's mean value.
 % 3. must be a two-level model because the 2nd level sets the prior for the
-% first, even if the prior is fixed
+% first, even if the prior is constant
 
 % PLANNED UPDATES
 % 1. Allow separate evaluation of alpha for targets and non-targets - done
-% 2. Estimate prior expectation (fixed)
+% 2. Estimate prior expectation (constant)
 % 3. Prior and alpha variable by block type
 % 4. Prior and alpha variable by trial (Kalman)
 % 5. Hierarchical priors
@@ -166,13 +166,13 @@ end
 for m=1:r.c_prc.nModels
     type = r.c_prc.type{m};
     hierarchical(m)=0;
-    fixed(m)=0;
+    constant(m)=0;
     dynamic(m)=0;
     state(m)=0;
     if strcmp(r.c_prc.(type).priortype,'hierarchical')
         hierarchical(m)=1;
-        if strcmp(r.c_prc.(type).priorupdate,'fixed')
-            fixed(m)=1;
+        if strcmp(r.c_prc.(type).priorupdate,'constant')
+            constant(m)=1;
         elseif strcmp(r.c_prc.(type).priorupdate,'dynamic')
             dynamic(m)=1;
         end
@@ -221,25 +221,26 @@ for k=2:1:n
 %                 tr.(tnames{tn}) = M.(type).tr.(tnames{tn});
 %             end
         
-            %% Predictions (from previous trial or fixed parameters)
-            if hierarchical(m)
-                if fixed(m)
-                    %if r.c_prc.(type).n_muin>1
-                    %    muhat(1,2,m) = mu_0(1+u(k,2),1,m);
-                    %    pihat(1,2,m) = 1./sa_0(1+u(k,2),1,m);
-                    %else
-                        muhat(1,2,m) = mu_0(2,1,m);
-                        pihat(1,2,m) = 1./sa_0(2,1,m);
-                    %end
-                    % 2nd level prediction
-                    muhat(k,2,m) = muhat(1,2,m);%mu(k-1,2) +t(k) *rho(2); % fixed to initial value - not updated on each trial
+            %% Predictions (from previous trial or constant parameters)
+            if constant(m)
+                %if r.c_prc.(type).n_muin>1
+                %    muhat(1,2,m) = mu_0(1+u(k,2),1,m);
+                %    pihat(1,2,m) = 1./sa_0(1+u(k,2),1,m);
+                %else
+                    muhat(1,2,m) = mu_0(2,1,m);
+                    pihat(1,2,m) = 1./sa_0(2,1,m);
+                %end
+                % 2nd level prediction
+                muhat(k,2,m) = muhat(1,2,m);%mu(k-1,2) +t(k) *rho(2); % fixed to initial value - not updated on each trial
+            elseif hierarchical(m)
+                
 
                 elseif dynamic(m)
-                    % 2nd level prediction
-                    muhat(k,2,m) = mu(k-1,2,m) +t(k) *rho(2,1,m);
+                % 2nd level prediction
+                muhat(k,2,m) = mu(k-1,2,m) +t(k) *rho(2,1,m);
 
                 end
-                % Prediction from level 2 (which can be either fixed or dynamic)
+                % Prediction from level 2 (which can be either constant or dynamic)
                 muhat(k,1,m) = 1./(1+exp(-muhat(k,2,m)));
 
             elseif state(m)
@@ -304,8 +305,8 @@ for k=2:1:n
                 da(k,1,m) = mu(k,1,m) -muhat(k,1,m);
 
                 % second level predictions and precisions
-                if fixed(m)
-                    mu(k,2,m) = muhat(k,2,m); % for a model with higher level predictions, which are fixed
+                if constant(m)
+                    mu(k,2,m) = muhat(k,2,m); % for a model with higher level predictions, which are constant
                     % At second level, assume Inf precision for a model with invariable predictions
                     pi(k,2,m) = Inf;
                     pihat(k,2,m) = Inf;
@@ -422,7 +423,7 @@ for k=2:1:n
             end
 
             % RESPONSE BIAS
-            if no_rb
+            if ~no_rb
                 mu(k,1,m) = mu(k,1,m)+rb(1,1,m);
             end
 
@@ -464,11 +465,15 @@ for k=2:1:n
         % joint prediction
             % ((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2) gives a value between
             % -1 (if vj_mu is closer to eta1) and 1 (if closer to eta0).
-            % dividing by vj_phi makes rt either very large (if phi
-            % is very precise) or very small (if uncertain) - approaching 0
-            % So, when vj_mu is close to and precise, xchat approaches 0
+            % dividing by vj_phi makes log(rt) either very large positive (if phi
+            % is very precise) or very large negative (if uncertain). Exp of
+            % these results in a large positive or small positive number
+            % respectively.
+            % So, when vj_mu is close to 0 and precise, xchat approaches 0
+        
         rt=exp(((eta1-vj_mu(k,1))^2 - (eta0-vj_mu(k,1))^2)/(vj_phi^-2));
         xchat(k,1) = 1/(1+rt);
+        
         
         % Likelihood functions: one for each
         % possible signal
@@ -608,15 +613,15 @@ for m=1:nModels
     if l(m)>2; wt(:,3:l(m)) = 1/2 *(v(:,2:l(m)-1,m) *diag(ka(2:l(m)-1,m))) .*psi(:,3:l(m)); end
     traj.(type).wt   = wt;
 
-    % Create matrices for use by the observation model
-%     infStates = NaN(n-1,l(m),11);
-%     infStates(:,:,1) = traj.muhat;
-%     infStates(:,:,2) = traj.sahat;
-%     infStates(:,:,3) = traj.mu;
-%     infStates(:,:,4) = traj.sa;
-%     infStates(:,:,5) = traj.da;
-%     infStates(:,:,6) = traj.epsi;
-%     infStates(:,1,7) = traj.dau;
+    % Create matrices for use by tapas observation models
+     infStates = NaN(n-1,l(m),11);
+%      infStates(:,:,1) = traj.(type).muhat;
+%      infStates(:,:,2) = traj.(type).sahat;
+%      infStates(:,:,3) = traj.(type).mu;
+%      infStates(:,:,4) = traj.(type).sa;
+%      infStates(:,:,5) = traj.(type).da;
+%      infStates(:,:,6) = traj.(type).epsi;
+%      infStates(:,1,7) = traj.(type).dau;
 %     infStates(:,1,8) = traj.mu0;
 %     infStates(:,1,9) = traj.vj_mu;
 %     infStates(:,1,10) = traj.xc;

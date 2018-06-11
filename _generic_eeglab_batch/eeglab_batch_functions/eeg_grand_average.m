@@ -32,6 +32,18 @@ for ga = 1:length(uni_ind)
     % FIND THE FILES
     S.(S.func).gafiles{ga} = S.(S.func).filelist(file_ind==uni_ind(ga));
     
+    % savename
+    tabcell = table2cell(designtab(first_ind(ga),:));
+    S.(S.func).ganame{ga} = [strjoin(tabcell,'') 'grandavg'];
+    switch S.(S.func).select.datatype
+        case {'TF','Freq'}
+            fr_name = '_freq';
+            for fr = 1:length(S.(S.func).select.freqs)
+                fr_name = [fr_name '_' num2str(S.(S.func).select.freqs(fr))];
+            end
+            S.(S.func).ganame{ga} = [S.(S.func).ganame{ga} fr_name];
+    end
+    
     % function to select events and frequencies
     S.(S.func).files = S.(S.func).gafiles{ga};
     S = select_eventsfreqs(S);
@@ -45,56 +57,73 @@ for ga = 1:length(uni_ind)
     for n = 1:length(Nconds)
         fileidx(n,1:max(Nconds{n})) = n;
     end
-    fileidx = reshape(fileidx',1,[]);
-    data_all{ga}=horzcat(data_all{ga}{:});
+    %fileidx = reshape(fileidx',1,[]);
+    data_all{ga}=vertcat(data_all{ga}{:});
+    nev = size(data_all{ga},2); % number of events
+    %data_all{ga}=horzcat(data_all{ga}{:});
     
     % remove empty cells
-    noemp = find(~cellfun(@isempty,data_all{ga}));
-    data_all{ga} = data_all{ga}(noemp);
-    S.(S.func).fileidx = fileidx(noemp);
+    noemp = ~cellfun(@isempty,data_all{ga});
+    data_all{ga} = reshape(data_all{ga}(noemp),[],nev);
+    S.(S.func).fileidx = reshape(fileidx(noemp),[],nev);
     
-    % savename
-    tabcell = table2cell(designtab(first_ind(ga),:));
-    S.(S.func).ganame{ga} = [strjoin(tabcell,'') 'grandavg'];
-    switch S.(S.func).select.datatype
-        case {'TF','Freq'}
-            fr_name = '_freq';
-            for fr = 1:length(S.(S.func).select.freqs)
-                fr_name = [fr_name '_' num2str(S.(S.func).select.freqs(fr))];
-            end
-            S.(S.func).ganame{ga} = [S.(S.func).ganame{ga} fr_name];
+    % multivariate outliers (applies to all events jointly, not separately)
+    if S.ga.grand_avg.outliers==1
+        S=MultiOutliers(S,data_all{ga}(:));
+        outdata = S.(S.func).multout;
+        outlist = S.(S.func).multoutlist;
+        save(fullfile(S.path.file,'Outliers.mat'),'outdata','outlist');
+    elseif S.ga.grand_avg.outliers==2
+        for n = 1:nev
+            S=MultiOutliers(S,data_all{ga}(:,n));
+            outdata{n} = S.(S.func).multout;
+            outlist{n} = S.(S.func).multoutlist;
+            save(fullfile(S.path.file,'Outliers.mat'),'outdata','outlist');
+        end
     end
     
-    % multivariate outliers
-    if S.ga.grand_avg.outliers
-        S=MultiOutliers(S,data_all{ga});
+    if S.ga.grand_avg.outliers 
+        rejsub = outlist((cell2mat(outlist(:,2))>=log10(outdata.chi_crt(1,3))),1);
+        subs = S.(S.func).designmat(2:end,find(strcmp(S.(S.func).designmat(1,:),'subjects')));
+        [unisubs,~,subsidx] = unique(subs,'stable');
+        data_all_rej{ga} = data_all{ga}(ismember(subs,rejsub),:);
+        data_all_acc{ga} = data_all{ga}(~ismember(subs,rejsub),:);
     end
-    outdata = S.(S.func).multout;
-    outlist = S.(S.func).multoutlist;
-    save(fullfile(S.path.file,'Outliers.mat'),'outdata','outlist');
     
-    switch S.(S.func).select.datatype
-        case {'ERP'}
-            % grand average using Fieldtrip
-            cfg.channel        = data_all{ga}{1}.label(S.(S.func).inclchan);
-            cfg.latency        = 'all';
-            cfg.keepindividual = 'no';
-            cfg.normalizevar   = 'N-1';
-            cfg.method         = method;
-            cfg.parameter      = 'avg';
-            S.(S.func).gadata{ga} = ft_timelockgrandaverage_cab(cfg, data_all{ga});
-        case {'Freq','TF'}
-            cfg.keepindividual = 'no';
-            cfg.foilim         = 'all'; %[fmin fmax] or 'all', to specify a subset of frequencies (default = 'all')
-            cfg.toilim         = 'all'; % to specify a subset of latencies (default = 'all')
-            cfg.channel        = data_all{ga}{1}.label(S.(S.func).inclchan);
-            cfg.parameter      = 'powspctrm';
-            S.(S.func).gadata{ga} = ft_freqgrandaverage_cab(cfg, data_all{ga});
+    % for each event
+    for n = 1:nev
+        switch S.(S.func).select.datatype
+            case {'ERP'}
+                % grand average using Fieldtrip
+                cfg.channel        = data_all{ga}{1,1}.label(S.(S.func).inclchan);
+                cfg.latency        = 'all';
+                cfg.keepindividual = 'no';
+                cfg.normalizevar   = 'N-1';
+                cfg.method         = method;
+                cfg.parameter      = 'avg';
+                S.(S.func).gadata{ga}.events{n} = ft_timelockgrandaverage_cab(cfg, data_all{ga}(:,n));
+                S.(S.func).gadata{ga}.gavg = ft_timelockgrandaverage_cab(cfg, data_all{ga}{:});
+                if S.ga.grand_avg.outliers 
+                    S.(S.func).gadata{ga}.events_rej{n} = ft_timelockgrandaverage_cab(cfg, data_all_rej{ga}(:,n));
+                    S.(S.func).gadata{ga}.events_acc{n} = ft_timelockgrandaverage_cab(cfg, data_all_acc{ga}(:,n));
+                end
+            case {'Freq','TF'}
+                cfg.keepindividual = 'no';
+                cfg.foilim         = 'all'; %[fmin fmax] or 'all', to specify a subset of frequencies (default = 'all')
+                cfg.toilim         = 'all'; % to specify a subset of latencies (default = 'all')
+                cfg.channel        = data_all{ga}{1,1}.label(S.(S.func).inclchan);
+                cfg.parameter      = 'powspctrm';
+                S.(S.func).gadata{ga}.events{n} = ft_freqgrandaverage_cab(cfg, data_all{ga}(:,n));
+                S.(S.func).gadata{ga}.gavg = ft_freqgrandaverage_cab(cfg, data_all{ga}{:});
+                if S.ga.grand_avg.outliers 
+                    S.(S.func).gadata{ga}.events_rej{n} = ft_freqgrandaverage_cab(cfg, data_all_rej{ga}(:,n));
+                    S.(S.func).gadata{ga}.events_acc{n} = ft_freqgrandaverage_cab(cfg, data_all_acc{ga}(:,n));
+                end
+        end
     end
     
     gadata = S.(S.func).gadata{ga};
-    save(fullfile(S.path.file,S.(S.func).ganame{ga}),'gadata');
-    
+    save(fullfile(S.path.file,S.(S.func).ganame{ga}),'gadata'); 
 
 end
 

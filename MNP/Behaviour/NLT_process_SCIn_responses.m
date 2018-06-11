@@ -15,15 +15,15 @@ end
 
 %% 2. FOLDER AND FILENAME DEFINITIONS
 clear S
-S.expt = 'NLT';
+S.expt = 'VLT';
 S.version = 2; % version of the NLT/ALT design
 S.path.raw = ['C:\Data\MNP\Pilots\' S.expt 'v2\raw']; % unprocessed data in original format
 S.path.prep = ['C:\Data\MNP\Pilots\' S.expt 'v2\processed']; % folder to save processed .set data
 S.fname.parts = {'prefix','subject','block','ext'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
 S.select.subjects = {'cab10'}; % either a single subject, or leave blank to process all subjects in folder
 S.select.sessions = {};
-%S.select.blocks = {['Sequence_' S.expt '_OptionAssoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
-S.select.blocks = {['Sequence_' S.expt '_OptionNLT_assoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.select.blocks = {['Sequence_' S.expt '_OptionAssoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
+%S.select.blocks = {['Sequence_' S.expt '_OptionNLT_assoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
 S.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
 S.path.datfile = ['C:\Data\MNP\Pilots\Participant_Data.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
@@ -61,44 +61,34 @@ S.trialmax = {1000};%{16,20,24,28,32}; % max number of trials to include per con
 S.movingavg = 20;
 % RUN
 [S,D]=SCIn_data_process(S,D);
-save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
-save(fullfile(S.path.prep,'D'),'D'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+save(fullfile(S.path.prep,'S'),'S'); 
+save(fullfile(S.path.prep,'D'),'D'); 
 
 %% HGF
-
-%prc_config = 'GBM_config_3lev'; obs_config = 'logrt_softmax_binary_softmu0_config'; nstim=[];
-% mu_0=[NaN,0,1];
-% sa_0=[NaN,0.5,1];
-% al0=[0.05 0.05];
-% al1=[0.05 0.05];
-% rho=[NaN 0 0];
-% ka = [NaN,1];
-% om = [NaN,-9,-6];
-% eta0=0;
-% eta1=1;
-% sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1];
-
-close all
-S.prc_config = 'GBM_config'; S.obs_config = 'logrt_softmax_binary_softmu0_config'; S.nstim=[];S.bayes_opt=0; 
+S.model = 1;
+S.fitsim = 2; % 1=fit model, 2= simulate
+S.plotresponses = 0;
+S.prc_config = 'GBM_config'; S.obs_config = 'logrt_softmax_binary_config'; S.nstim=[];S.bayes_opt=0;
 %S.prc_config = 'GBM_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
 %S.prc_config = 'tapas_hgf_binary_pu_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
 %S.prc_config = 'GBM_config'; S.obs_config = 'bayes_optimal_binary_config_CAB'; S.nstim=[]; S.bayes_opt=1; 
-mu_0=[NaN,0.5];
-sa_0=[NaN,0];
-al0=[0.05 0.05];
-al1=[0.05 0.05];
-rho=[];
-ka = [];
-om = [];
-eta0=0;
-eta1=1;
-rb=0
 
-% run
-sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1 rb];
-%sim=MNP_HGF(D,S,sim_param);
-MNP_HGF(D,S,[]);
-return
+
+S=MNP_models(S);
+if S.fitsim==1 % fit model
+    MNP_HGF(D,S,[]);
+elseif S.fitsim==2 % simulate model    
+    
+    %parameters to vary (otherwise uses those in config)
+    S.sim.PL_mu_0=[NaN 1];
+    
+    %sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1 rb];
+    sim=MNP_HGF(D,S,S.sim);  
+end
+
+if ~S.plotresponses
+    return
+end
 
 %% 5. PLOTS
 %close all
@@ -213,7 +203,8 @@ for d = 1:length(D)
                 labels = {'high prob: pair 1','low prob: pair 2','equal prob: pair 1','equal prob: pair 2','high prob: pair 2','low prob: pair 1',}; % v2
         end
         set(gca,'xticklabel', labels)
-        title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+        %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+        title([D(d).subname])
         hold on
         plot(xlim,[0.5 0.5], 'k--')
     end
@@ -257,7 +248,8 @@ if isfield(D.Processed,'stimcondcorrectfract')
                     labels = {'high prob: pair 1','low prob: pair 2','equal prob: pair 1','equal prob: pair 2','high prob: pair 2','low prob: pair 1',}; % v2
             end
             set(gca,'xticklabel', labels)
-            title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+            %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+            title([D(d).subname])
             legend(b,{'low','high','low x2','high x2'});
             hold on
             plot(xlim,[0.5 0.5], 'k--')
@@ -273,7 +265,8 @@ if isfield(D.Processed,'stimcondcorrectfract')
                     labels = {'low','high','low x2','high x2'}; % v2
             end
             set(gca,'xticklabel', labels)
-            title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+            %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+            title([D(d).subname])
             hold on
             plot(xlim,[0.5 0.5], 'k--')
         end
@@ -296,7 +289,8 @@ if isfield(D.Processed,'stimcuecorrectfract')
                     labels = {'high pitch','low pitch',}; % v2
             end
             set(gca,'xticklabel', labels)
-            title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+            %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+            title([D(d).subname])
             legend(b,{'low','high','low x2','high x2'});
             hold on
             plot(xlim,[0.5 0.5], 'k--')

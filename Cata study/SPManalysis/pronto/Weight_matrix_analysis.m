@@ -16,8 +16,8 @@ D.pref = '';
 %D.suff = {'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI'};
 %D.suff = {'Expectancy\LEP\t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Exp_gpc_ROI_noperm'};
 %D.suff = {'t-5500_1500_b-5500_-5000_m_0_1500_Grp_Exp_Subject_orig_cleaned_trialNmatch_prt_Int_gpc_ROI_perm1000weights'};
-D.suff = {'Group\Per condition\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpHighExp_gpc_ROI_perm1000weights',...
-    'Expectancy\ExpHL\OLD\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI_perm1000weights'%,...
+D.suff = {%'Group\Per condition\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpHighExp_gpc_ROI_perm1000weights',...
+    'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHL_gpc_ROI_perm10000weights'%,...
     %'Expectancy\ExpHL\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_Exp_gpc_ROI'
     %'t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHLLowPC_gpc_ROI_perm1000weights'
     %'Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_ExpHLHighPC_gpc_ROI_perm1000weights'
@@ -43,20 +43,20 @@ D = get_fnames(D)
 
 %% create projections
 % second input: indices of D.suff to perform this function on
-%create_projections(D,1)
+create_projections(D,1)
 
 %% regression of weight vectors
 % input 3: indices of D.suff for dependent variable
 % input 4: indices of D.suff for independent variable(s)
 % input 5: indices of D.suff for nuisance covariate(s)
-use_bootstrapped=1; 
-regress_images(D,{'wimg','pwimg'},1,2,[],use_bootstrapped)
+%use_bootstrapped=0; 
+%regress_images(D,{'wimg','pwimg'},1,2,[],use_bootstrapped)
 
 %% plot weight TOIs
 % input 3: indices of D.suff to plot
 % input 4: masked time array (for x axis)
 % input 5: full time window unmasked
-%plot_weight_TOIs(D,{'wimg','pwimg'},1,[-2495:10:-1005],[-3000:2:-2]);
+plot_weight_TOIs(D,{'wimg','pwimg'},1,[-2495:10:-1005],[-3000:2:-2]);
 %plot_weight_TOIs(D,{'wimg','pwimg'},1,[5:10:1495],[-5500:2:1500]);
 
 end

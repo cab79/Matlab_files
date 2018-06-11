@@ -1,22 +1,21 @@
-function pstruct = GBM_namep(pvec,varargin)
+function [pstruct, pvec] = GBM_namep(psim,c)
 
-% CAB run config to get parameter names and indices
-if nargin>1
-    c = varargin{1};
-    eval(['c = ' c ';']);
-else
-    C=strsplit(mfilename,'_namep');
-    eval(['c = ' C{1} '_config;']);
-end
+% replace 
+pvec = c.priormus;
 
 pstruct = struct;
 
 nme=c.pnames;
+nme_mod=c.pnames_mod; % model-specific names
 idx=c.priormusi;
 
 for pn=1:length(nme)
-    nme2 = strsplit(nme{pn,1},'log');
-    pstruct.(horzcat(nme2{:})) = pvec(idx{pn});
+    if isfield(psim,nme_mod{pn})
+        pstruct.(nme_mod{pn}) = psim.(nme_mod{pn});
+        pvec(idx{pn}) = psim.(nme_mod{pn});
+    else
+        pstruct.(nme_mod{pn}) = pvec(idx{pn});
+    end
 end
 
 return;

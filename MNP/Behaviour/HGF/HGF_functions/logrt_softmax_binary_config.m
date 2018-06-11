@@ -1,4 +1,4 @@
-function c = logrt_softmax_binary_softmu0_config(r)
+function c = logrt_softmax_binary_config(r)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Contains the configuration for the linear log-reaction time response model according to as

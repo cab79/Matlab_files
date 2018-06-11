@@ -184,11 +184,11 @@ if nargin > 3
         % Store observation parameters
         obs_pstruct = varargin{2};
         obs_namep_fun = str2func(strrep(r.c_sim.obs_model, 'config', 'namep'));
-        [r.p_obs,obs_pvec] = obs_namep_fun(obs_pstruct,r.c_obs);
+        r.p_obs,   = obs_namep_fun(obs_pstruct,r.c_obs);
         r.p_obs.p = obs_pvec;
 
         % Get function handle to observation model
-        obs_fun = str2func(strrep(r.c_sim.obs_model, 'config', 'sim'));
+        obs_fun = str2func([r.c_sim.obs_model, '_sim']);
 
         % Simulate decisions
         r.y = obs_fun(r, infStates, r.p_obs.p);

@@ -22,9 +22,9 @@ addpath(genpath(support_path));
 %% SET DATA PATHS
 clear S
 S.path=struct;% clears the field
-S.path.main = 'C:\EEGLABtraining2018\Data\'
+S.path.main = 'C:\Data\temp\Sarah'
 S.path.raw = [S.path.main '\Raw']; % unprocessed data in original format
-S.path.prep = [S.path.main '\Preprocessed']; % folder to save processed .set data
+S.path.prep = [S.path.main '\SetC']; % folder to save processed .set data
 S.path.freq = [S.path.main '\Frequency']; % folder to save frequency analyses
 S.path.tf = [S.path.main '\TF']; % folder to save time-frequency analyses
 S.path.erp = [S.path.main '\ERP']; % folder to save ERP analyses
@@ -32,167 +32,52 @@ S.path.datfile = [S.path.main '\Participant_data.xlsx']; % .xlsx file to group p
 S.path.locfile = fullfile(eeglab_path,'\plugins\dipfit2.3\standard_BESA\standard-10-5-cap385.elp');
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
-%% DATA IMPORT
-% This identifies files for conversion to EEGLAB format for a
-% specific study and sets some parameters for the conversion. It calls the generic function
-% "eeglab_import" to do the actual conversion.
-load(fullfile(S.path.main,'S'))
-S.import=struct;% clears the field
-S.import.fname.parts = {'study','subject','block','cond','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
-S.import.fname.ext = {'vhdr'}; % file extension of input data: supports 'vhdr' (Brainvision), 'cnt' (Neuroscan), 'mff' (EGI - requires mffimport2.0 toolbox)
-S.import.study = {'NTIP'};
-S.import.select.groups = {}; % either single/multiple groups, or use * to process all groups in the datfile
-S.import.select.subjects = {'P1'}; % either single/multiple subjects, or use * to process all subjects in the datfile
-S.import.select.sessions = {}; % Can use * as wildcard
-S.import.select.blocks = {'ECA'}; % blocks to load (each a separate file). Can use * as wildcard
-S.import.select.conds = {'1','1O','10','10O'}; % conditions to load (each a separate file). Can use * as wildcard
-S.import.select.chans = {[],[32]}; % include (first cell) or exclude (second cell) channels, or leave empty (default all chans)
-S.import.chan.addloc = 1; % add channel locations from S.path.locfile; or leave as 0
-S.import.load.prefix = {''}; % prefix to add to input file name, if needed. Can use * as wildcard
-S.import.load.suffix = {''}; % suffix to add to input file name, if needed. Can use * as wildcard
-S.import.save.prefix = {''}; % prefix to add to output file, if needed. 
-S.import.save.suffix = {''}; % suffix to add to output file, if needed. 
-% RUN
-S=eeglab_import(S);
-save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is re-run
-
 %% PREPROCESSING
 %% SET DATA OPTIONS
 load(fullfile(S.path.main,'S'))
 S.prep=struct; % clears the field
-S.prep.fname.parts = {'study','subject','block','cond','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
-S.prep.fname.ext = {'set'};
-S.prep.study = {'NTIP'};
-S.prep.select.groups = {}; % either single/multiple groups, or use * to process all groups in the datfile
-S.prep.select.subjects = {'P1'}; % either a single subject, or leave blank to process all subjects in folder
+S.prep.fname.parts = {'study','subject','block','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
+S.prep.study = {'xiipcD2'};
+S.prep.load.suffix = {'SetC'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.prep.fname.ext = {'set'};% generic file suffix
+S.prep.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
 S.prep.select.sessions = {};
-S.prep.select.blocks = {'ECA'}; % blocks to load (each a separate file) - empty means all of them, or not defined
-S.prep.select.conds = {'1','1O','10','10O'}; % conditions to load (each a separate file) - empty means all of them, or not defined
-%% STEP 1: filtering, epoching
-S.prep.load.suffix = {''}; % suffix to add to input file name, if needed. Can use * as wildcard
-S.prep.save.suffix = {'epoched'}; % suffix to add to output file name, if needed. 
-S.prep.cont.timewin = {[],[],[],[]}; % timewindow (s) of data to analyse; one per S.select.conds. Blank = analyse all.
-S.prep.cont.downsample = 125;
-S.prep.chan.addloc = 1; % add channel locations from this path; or leave as ''
-S.prep.chan.interp = [];
-S.prep.chan.reref = 1;
-S.prep.filter.notch = {[45 55]};
-S.prep.filter.incl = [0.5 45];%[0.1 100]; % FILTER - INCLUSIVE
-S.prep.epoch.markers = {'S  1' 'S  2' 'S  3' 'S  4' 'S  5' 'S  6' 'S  7' 'S  8' 'S  9'};
-S.prep.epoch.addmarker = 1; % set to 1 to add markers if the above are not present: will use the first marker value
-S.prep.epoch.timewin = [-1 1]; % peri-marker time window
-S.prep.epoch.detrend = 0;
-S.prep.epoch.rmbase = 0;
-S.prep.epoch.basewin = [-3.5 -3]; % baseline window
-S.prep.epoch.separate = {[]}; % index of markers to separate into files
-S.prep.epoch.separate_suffix = {}; % suffixes to new file names: one per cell of S.epoch.separate
-S.prep.startfile = 1; 
-S=eeglab_preprocess(S,'epoch')
-save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
-%% STEP 2: COMBINE FILES
-S.prep.load.suffix = {'epoched'}; % suffix to add to input file name, if needed. Can use * as wildcard
-S.prep.save.suffix = {'combined'}; % suffix to add to output file name, if needed. 
-S.prep.combinefiles = 1;
-S.prep.startfile = 1; 
-S=eeglab_preprocess(S,'combine')
-save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+S.prep.select.blocks = {'*'}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.prep.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
 %% STEP 3: channel and trial rejection
-S.prep.load.suffix = {'combined'}; % suffix to add to input file name, if needed. Can use * as wildcard
 S.prep.save.suffix = {'manrej'}; % suffix to add to output file name, if needed. 
-S.prep.clean.flatchan.varthresh = 1; % std threshold - less variance than this per trial will be rejected
-S.prep.clean.flatchan.trial_weight = 1;
-S.prep.clean.flatchan.chan_weights = [0.01 0.02 0.05 0.1 0.2 0.5 1 2 5 20 50 100];
+% S.prep.clean.flatchan.varthresh = 1; % std threshold - less variance than this per trial will be rejected
+% S.prep.clean.flatchan.trial_weight = 1;
+% S.prep.clean.flatchan.chan_weights = [0.01 0.02 0.05 0.1 0.2 0.5 1 2 5 20 50 100];
 S.prep.clean.FTrej = {[]}; % high freq to identify noise, low freq to identify eye movement
 S.prep.startfile = 1; 
 S=eeglab_preprocess(S,'rej')
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 %% STEP 4: ICA
 S.prep.load.suffix = {'manrej'}; % suffix to add to input file name, if needed. Can use * as wildcard
-S.prep.save.suffix = {''}; % suffix to add to output file name, if needed. 
+S.prep.save.suffix = {'ICA'}; % suffix to add to output file name, if needed. 
 S.prep.clean.ICA = 1;
 S.prep.startfile = 1; 
 S=eeglab_preprocess(S,'ICA')
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
-%% PREPROCESSING AFTER ICA
-% Only run this part if you have already manually selected ICA components
-% for removal and saved that file (with the same name, i.e. ..._ICA.set)
-load(fullfile(S.path.main,'S'))
-S.prep2=struct;% clears the field
-S.prep2.fname.parts = {'study','subject','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
-S.prep2.fname.ext = {'set'};
-S.prep2.study = {'NTIP'};
-S.prep2.load.prefix = {''}; % prefix to add to input file name, if needed. Can use * as wildcard
-S.prep2.load.suffix = {'combined_manrej_ICA'}; % suffix to add to input file name, if needed. Can use * as wildcard
-S.prep2.select.groups = {}; % either single/multiple groups, or use * to process all groups in the datfile
-S.prep2.select.subjects = {'P1'}; % either a single subject, or leave blank to process all subjects in folder
-S.prep2.select.sessions = {};
-S.prep2.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
-S.prep2.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
-S.prep2.epoch.ICAremove = 1; % remove ICA components (0 if already removed from data, 1 if selected but not removed)
-S.prep2.epoch.detrend = 0;
-S.prep2.epoch.rmbase = 1;
-S.prep2.epoch.basewin = [-0.2 0]; % baseline window
-S.prep2.clean.FTrej.freq = {[]};
-S.prep2.clean.FTrej.chan = {[],[3 31:33 41]}; % include (first cell) or exclude (second cell) channels, or leave empty (default all chans)
-S.prep2.epoch.reref = 1;
-S.prep2.separatefiles.on = 1;
-S.prep2.separatefiles.markerindex = {}; % index of markers to separate into files
-S.prep2.separatefiles.suffix = {}; % suffixes to new files names: one per cell of S.epoch.separate
-S.prep2.startfile = 1; 
-% RUN
-S=eeglab_preprocess_afterICA(S)
-save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
-
-%% FREQUENCY / TF ANALYSIS
-load(fullfile(S.path.main,'S'))
-S.tf=struct;% clears the field
-S.path.prep = 'C:\EEGLABtraining2018\Data\Preprocessed\separated'; % folder to load data from
-S.tf.fname.parts = {'study','subject','block','cond','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
-S.tf.study = {'NTIP'};
-S.tf.load.suffix = {'epoched_cleaned'}; % suffix to add to input file name, if needed. Can use * as wildcard
-S.tf.fname.ext = {'set'};% generic file suffix
-S.tf.select.subjects = {'P1'}; % either a single subject, or leave blank to process all subjects in folder
-S.tf.select.sessions = {};
-S.tf.select.blocks = {'ECA'}; % blocks to load (each a separate file) - empty means all of them, or not defined
-S.tf.select.conds = {'1','1O','10','10O'}; % conditions to load (each a separate file) - empty means all of them, or not defined
-S.tf.select.datatype = 'Freq'; %'Freq','TF','Coh','ERP'
-S.tf.select.freq = [6:1:14]; % select frequency range and resolution (if freq analysis). 1D array produces all freqs enteredl 2D array uses ranges, e.g. [0 4; 4 8; 8 13; 13 30; 30 40];
-% general settings
-S.tf.epoch.basewin = [-0.2 0]; % baseline window
-S.tf.epoch.rmbase = 0; % remove baseline prior to frequency/ERP
-S.tf.epoch.markers = {'S  1','S  2','S  3','S  4','S  5','S  6','S  7','S  8', 'S  9'}; % marker types to analyse
-S.tf.epoch.combinemarkers = 0; %include all events in a single condition.
-% freq analysis settings
-S.tf.freq.type = 'both'; % induced or both
-S.tf.freq.basenorm = 'relative'; % for TF analysis only: 'absolute', 'relative', 'relchange', 'normchange'
-S.tf.freq.bootrep = 500;% Bootstraps repetitions (for coherence analysis only)
-S.tf.freq.method = 'mtmfft'; % options: 'mtmfft' (Freq),'mtmconvol' (TF), 'wavelet' (TF), 
-S.tf.freq.param=0; % for mtmfft or wavelet, number of cycles. For multitaper, smoothness. If set to zero the time window will be fixed across frequencies to the smallest possible given the freq resolution.
-S.tf.freq.taper = 'hanning'; % 'hanning' or 'dpss'
-S.tf.freq.pad = 'min_pad';
-S.tf.op.mov_avg_trials = 20; % N trials: average EEG power over trials using a moving average window
-S.tf.op.mov_avg_trials_step = 20;
-S=erp_freq_analysis(S)
-save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
-
 %% ERP ANALYSIS 
 load(fullfile(S.path.main,'S'))
 S.tf=struct;% clears the field
-S.path.prep = 'C:\EEGLABtraining2018\Data\Preprocessed\separated'; % folder to load data from
-S.tf.fname.parts = {'study','subject','block','cond','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
-S.tf.study = {'NTIP'};
-S.tf.load.suffix = {'epoched_cleaned'}; % suffix to add to input file name, if needed. Can use * as wildcard
+%S.path.prep = 'C:\EEGLABtraining2018\Data\Preprocessed\separated'; % folder to load data from
+S.tf.fname.parts = {'study','subject','session','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
+S.tf.study = {'xiipcD2'};
+S.tf.load.suffix = {'SetC'}; % suffix to add to input file name, if needed. Can use * as wildcard
 S.tf.fname.ext = {'set'};% generic file suffix
-S.tf.select.subjects = {'P1'}; % either a single subject, or leave blank to process all subjects in folder
-S.tf.select.sessions = {};
-S.tf.select.blocks = {'ECA'}; % blocks to load (each a separate file) - empty means all of them, or not defined
-S.tf.select.conds = {'1','1O','10','10O'}; % conditions to load (each a separate file) - empty means all of them, or not defined
+S.tf.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+S.tf.select.sessions = {'01','02','03'};
+S.tf.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.tf.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
 S.tf.select.datatype = 'ERP'; %'Freq','TF','Coh','ERP'
 % general settings
-S.tf.epoch.basewin = [-0.2 0]; % baseline window
+S.tf.epoch.basewin = [-3.5 -3]; % baseline window
 S.tf.epoch.rmbase = 1; % remove baseline prior to frequency/ERP
-S.tf.epoch.markers = {'S  1','S  2','S  3','S  4','S  5','S  6','S  7','S  8', 'S  9'}; % marker types to analyse
+S.tf.epoch.markers = {'S  4','S  5','S  8','S  9'}; % marker types to analyse
 S.tf.epoch.combinemarkers = 0; %include all events in a single condition.
 % ERP settings
 S.tf.CSD.apply=0; % Apply CSD (leave as 0 unless you know what you are doing!)
@@ -200,28 +85,60 @@ S.tf.CSD.montage = 'C:\Data\NTIP\CSDmontage_64.mat';
 S=erp_freq_analysis(S)
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
+%% PLOT ERPs
+close all
+load(fullfile(S.path.main,'S'))
+S.ploterp=struct;% clears the field
+S.ploterp.fname.parts = {'study','subject','block','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
+S.ploterp.study = {'xiipcD2'};
+S.ploterp.load.suffix = {'SetC_ERP'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.ploterp.fname.ext = {'mat'};% generic file suffix
+S.ploterp.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+S.tf.select.sessions = {'01','02','03'};
+S.ploterp.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.ploterp.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
+S.ploterp.select.events = 1:4;
+S.ploterp.select.chans = {[],[]};
+S.ploterp.select.datatype = 'ERP'; % Options: 'TF','ERP','Freq'. NOT YET TESTED ON Freq or TF DATA - WILL PROBABLY FAIL
+S.ploterp.select.freqs = 0; % select which freq to actally process
+S.ploterp.layout = 'acticap-64ch-standard2.mat'; % layout file in Fieldtrip layouts folder
+S.ploterp.ylim= [-15,15]; 
+S.ploterp.times= {[-3 -2.5],[-0.5 0],[0.2 0.25],[0.3 0.5]}; 
+% RUN
+S=plot_ERPs(S,'subject');
+save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+
 %% GRAND AVERAGE OF ERP/TF/FREQ DATA
 close all
 load(fullfile(S.path.main,'S'))
 S.ga=struct;% clears the field
-S.ga.fname.parts = {'study','subject','block','cond','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
-S.ga.study = {'NTIP'};
-S.ga.load.suffix = {'epoched_cleaned_ERP'}; % suffix to add to input file name, if needed. Can use * as wildcard
-S.ga.fname.ext = {'.mat'};% generic file suffix
-S.ga.select.groups = {'1'}; % group index, or leave blank to process all 
-S.ga.select.subjects = {'P1'}; % either a single subject, or leave blank to process all subjects in folder
-S.ga.select.sessions = {};
-S.ga.select.blocks = {'ECA'}; % blocks to load (each a separate file) - empty means all of them, or not defined
-S.ga.select.conds = {'1','1O','10','10O'}; % conditions to load (each a separate file) - empty means all of them, or not defined
-S.ga.select.events = 1:9;
-S.ga.select.chans = {[],[29 30]};
+S.ga.fname.parts = {'study','subject','session','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
+S.ga.study = {'xiipcD2'};
+S.ga.load.suffix = {'SetC_ERP'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.ga.fname.ext = {'mat'};% generic file suffix
+S.ga.select.groups = {}; % group index, or leave blank to process all 
+S.ga.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+S.ga.select.sessions = {'01','02','03'};
+S.ga.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.ga.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
+S.ga.select.events = 1:4;
+S.ga.select.chans = {[],[]};
 S.ga.select.datatype = 'ERP'; % Options: 'TF','ERP','Freq'. NOT YET TESTED ON Freq or TF DATA - WILL PROBABLY FAIL
-S.ga.select.freqs = 10; % select which freq to actally process
+S.ga.select.freqs = 0; % select which freq to actally process
 S.ga.grand_avg.parts = {}; % which file categories to produce separate grand averages? Blank = one GA for all. Options: {'groups','subjects','sessions','blocks','conds'};
 S.ga.grand_avg.weighted = 1; % weighted average according to number of trials
+S.ga.grand_avg.outliers = 1; % calculate multivariate outliers (SLOW). 1 = use all data; 2 = calculate for each event separately
 % RUN
 S=eeg_grand_average(S);
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+% PLOT
+close all
+S.ploterp.select.datatype = 'ERP'; % Options: 'TF','ERP','Freq'. NOT YET TESTED ON Freq or TF DATA - WILL PROBABLY FAIL
+S.ploterp.select.chans = {[],[]};
+S.ploterp.layout = 'acticap-64ch-standard2.mat'; % layout file in Fieldtrip layouts folder
+S.ploterp.ylim= [-15,15]; 
+S.ploterp.times= {[-2.5 -2],[-0.5 0],[0.2 0.25],[0.3 0.5]}; 
+S=plot_ERPs(S,'grandavg');
 
 %% GLOBAL FIELD POWER (GFP) ANALYSIS FOR ERP/TF
 close all

@@ -200,6 +200,30 @@ S.tf.CSD.montage = 'C:\Data\NTIP\CSDmontage_64.mat';
 S=erp_freq_analysis(S)
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
+%% PLOT ERPs
+close all
+load(fullfile(S.path.main,'S'))
+S.ploterp=struct;% clears the field
+S.ploterp.fname.parts = {'subject','block','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
+S.ploterp.study = {};
+S.ploterp.load.suffix = {'epoched_cleaned_ERP'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.ploterp.fname.ext = {'mat'};% generic file suffix
+S.ploterp.select.groups = {}; % group index, or leave blank to process all 
+S.ploterp.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+S.ploterp.select.sessions = {};
+S.ploterp.select.blocks = {'a','b'}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.ploterp.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
+S.ploterp.select.events = 1:8;
+S.ploterp.select.chans = {[],[]};
+S.ploterp.select.datatype = 'ERP'; % Options: 'TF','ERP','Freq'. NOT YET TESTED ON Freq or TF DATA - WILL PROBABLY FAIL
+S.ploterp.select.freqs = 0; % select which freq to actally process
+S.ploterp.layout = 'acticap-64ch-standard2.mat'; % layout file in Fieldtrip layouts folder
+S.ploterp.ylim= [-15,15]; 
+S.ploterp.times= {[-3 -2.5],[-0.5 0],[0.2 0.25],[0.3 0.5]}; 
+% RUN
+S=plot_ERPs(S);
+save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+
 %% GRAND AVERAGE OF ERP/TF/FREQ DATA
 close all
 load(fullfile(S.path.main,'S'))
@@ -219,9 +243,12 @@ S.ga.select.datatype = 'ERP'; % Options: 'TF','ERP','Freq'. NOT YET TESTED ON Fr
 S.ga.select.freqs = 10; % select which freq to actally process
 S.ga.grand_avg.parts = {}; % which file categories to produce separate grand averages? Blank = one GA for all. Options: {'groups','subjects','sessions','blocks','conds'};
 S.ga.grand_avg.weighted = 1; % weighted average according to number of trials
+S.ga.grand_avg.outliers = 1; % calculate multivariate outliers (SLOW)
 % RUN
 S=eeg_grand_average(S);
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+% PLOT
+S=plot_ERPs(S,'grandavg');
 
 %% GLOBAL FIELD POWER (GFP) ANALYSIS FOR ERP/TF
 close all

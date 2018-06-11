@@ -3,27 +3,6 @@ function c = GBM_config(S)
 %% Config structure
 c = struct;
 
-    % modelspecs (add these to calling function)
-    S.modelspec.likelihood.type = 'binary'; % binary, continuous
-    S.modelspec.likelihood.inputvar = 'uncertain_unequal'; % uncertain_equal (variance), uncertain_unequal, certain
-    S.modelspec.likelihood.n_inputcond = 1; % Number of conditions with unique input variance
-    S.modelspec.response.model = 'soft';
-    S.modelspec.response.priormodel = 'like'; % Which model representations are used for the response model?
-    S.modelspec.response.rep = 'xc';
-    modeltype='AL'; % AL (associative learning), PL (perceptual learning), PR (priming)
-    S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
-    S.modelspec.priormodels.(modeltype).n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
-    S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
-    modeltype='PR'; % AL (associative learning), PL (perceptual learning), PR (priming)
-    S.modelspec.priormodels.(modeltype).priortype = 'state'; % constant, hierarchical, state
-    S.modelspec.priormodels.(modeltype).n_priorlevels = 1; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
-    S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
-    modeltype='PL'; % AL (associative learning), PL (perceptual learning), PR (priming)
-    S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
-    S.modelspec.priormodels.(modeltype).n_priorlevels = 3; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
-    S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
-%     
-
 %% General settings (specific to experimental design but not to the model)
 % Input intervals
 % If input intervals are irregular, the last column of the input
@@ -109,13 +88,13 @@ for m = 1:c.nModels
             switch S.modelspec.priormodels.(type).priorupdate
                 case 'dynamic'
                     switch S.modelspec.priormodels.(type).n_priorlevels
-                        case 2
+                        case 1
                             c.(type).mu_0mu = [NaN, 0];
                             c.(type).mu_0sa = [NaN, 0];% prior fixed to 0 at k=0 but dynamically updates after that
                             c.(type).logsa_0mu = [NaN, log(0.5)];
                             c.(type).logsa_0sa = [NaN, 0];
                             c.(type).logsa_0var = true; % this is a variance parameter
-                        case 3
+                        case 2
                             c.(type).mu_0mu = [NaN, 0, 1];
                             c.(type).mu_0sa = [NaN, 0, 0];% prior fixed to 0 at k=0 but dynamically updates after that
                             c.(type).logsa_0mu = [NaN, log(0.5), log(1)];
@@ -125,43 +104,47 @@ for m = 1:c.nModels
 
                 case 'static'
                     switch S.modelspec.priormodels.(type).n_priorlevels
-                        case 2
-                            c.(type).mu_0mu = [NaN, 0.5];
-                            c.(type).mu_0sa = [NaN, 1];% estimated mean
-                            c.(type).logsa_0mu = [NaN, log(0.1)];
+                        case 1
+                            c.(type).mu_0mu = [NaN, 0];
+                            c.(type).mu_0sa = [NaN, 1];% estimated 
+                            c.(type).logsa_0mu = [NaN, log(0.5)];
                             c.(type).logsa_0sa = [NaN, 0];
                             c.(type).logsa_0var = true; % this is a variance parameter
-                        case 3
-                            c.(type).mu_0mu = [NaN, 0.2, 1];
+                        case 2
+                            c.(type).mu_0mu = [NaN, 0, 1];
                             c.(type).mu_0sa = [NaN, 1, 0];% estimated mean
-                            c.(type).logsa_0mu = [NaN, log(0.1), log(1)];
+                            c.(type).logsa_0mu = [NaN, log(0.5), log(1)];
                             c.(type).logsa_0sa = [NaN, 0, 0];
                             c.(type).logsa_0var = true; % this is a variance parameter
                     end
                     
             end
             
-            % Rhos
-            % Format: row vector of length n_levels.
-            % Undefined (therefore NaN) at the first level.
-            % Fix this to zero to turn off drift.
-            c.(type).rhomu = [NaN, repmat(0, 1, length(c.(type).mu_0mu)-1)];
-            c.(type).rhosa = [NaN, repmat(0, 1, length(c.(type).mu_0mu)-1)];
+            if ~(strcmp(S.modelspec.priormodels.(type).priorupdate,'static') && S.modelspec.priormodels.(type).n_priorlevels==1)
+                % don't include these for static models with a single prior
+            
+                % Rhos
+                % Format: row vector of length n_levels.
+                % Undefined (therefore NaN) at the first level.
+                % Fix this to zero to turn off drift.
+                c.(type).rhomu = [NaN, repmat(0, 1, length(c.(type).mu_0mu)-1)];
+                c.(type).rhosa = [NaN, repmat(0, 1, length(c.(type).mu_0mu)-1)];
 
-            % Kappas
-            % Format: row vector of length n_levels-1.
-            % Undefined (therefore NaN) at the first level.
-            % This should be fixed (preferably to 1) if the observation model
-            % does not use mu_i+1 (kappa then determines the scaling of x_i+1).
-            c.(type).logkamu = [NaN, repmat(log(1), 1, length(c.(type).mu_0mu)-2)];
-            c.(type).logkasa = [NaN, repmat(0, 1, length(c.(type).mu_0mu)-2)];
-            c.(type).logkavar = true; % this is a variance parameter
-            
-            % Format: row vector of length n_levels.
-            % Undefined (therefore NaN) at the first level.
-            c.(type).ommu = [NaN, repmat(-3.4, 1, length(c.(type).mu_0mu)-1)];
-            c.(type).omsa = [NaN, repmat(4^2, 1, length(c.(type).mu_0mu)-1)];
-            
+                % Kappas
+                % Format: row vector of length n_levels-1.
+                % Undefined (therefore NaN) at the first level.
+                % This should be fixed (preferably to 1) if the observation model
+                % does not use mu_i+1 (kappa then determines the scaling of x_i+1).
+                c.(type).logkamu = [NaN, repmat(log(1), 1, length(c.(type).mu_0mu)-2)];
+                c.(type).logkasa = [NaN, repmat(0, 1, length(c.(type).mu_0mu)-2)];
+                c.(type).logkavar = true; % this is a variance parameter
+
+                % Format: row vector of length n_levels.
+                % Undefined (therefore NaN) at the first level.
+                c.(type).ommu = [NaN, repmat(-3.4, 1, length(c.(type).mu_0mu)-1)];
+                c.(type).omsa = [NaN, repmat(4^2, 1, length(c.(type).mu_0mu)-1)];
+            end
+
         case 'state'
             % PRIOR STATE MODELS
             % e.g. Kalman Filter or Rascorla-Wagner
@@ -180,14 +163,6 @@ for m = 1:c.nModels
             % Undefined (therefore NaN) at the first level.
             c.(type).ommu = -6;
             c.(type).omsa = 4^2;
-            
-        case 'constant'
-            % must be static
-            c.(type).mu_0mu = [NaN, 0.5];
-            c.(type).mu_0sa = [NaN, 0];% constant mean
-            c.(type).logsa_0mu = [NaN, log(0.1)];
-            c.(type).logsa_0sa = [NaN, 0];
-            c.(type).logsa_0var = true; % this is a variance parameter
     end
     
     %% Response bias
@@ -198,7 +173,7 @@ for m = 1:c.nModels
     % Variance (Phi)
     if c.nModels>1
         c.(type).logphimu = log(2); % range between 1 and 3 seems to work
-        c.(type).logphisa = 1; % unfixed
+        c.(type).logphisa = 10; % unfixed
         c.(type).logphivar = true; % this is a variance parameter
     end
 

@@ -7,7 +7,7 @@ savefigspath = 'C:\Users\cab79\Google Drive\1. Liverpool University\Publications
 
 %% Plot weight matrix scatter
 clear S
-S.path = 'C:\Data\Catastrophising study\SPMstats\pronto\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_perm1000weights';
+S.path = 'C:\Data\Catastrophising study\SPMstats\pronto\Group Expectancy\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_perm10000';
 S.fnames = {
     'weight_regress_bothExp.xlsx';
     'weight_regress_HighPCExp.xlsx';
