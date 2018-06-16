@@ -73,6 +73,12 @@ for f = files_ana'
         y(y==2)=0;
         y=y';
     end
+    
+    % response times
+    y(:,1)=nan;
+    RT=D.Output.RT;
+    RT(RT<0)=nan;;
+    y(D.Output.presstrial,2) = log(RT);
 
     %% HGF
     % prc: perceptual; obs:observation; opt:optimisation

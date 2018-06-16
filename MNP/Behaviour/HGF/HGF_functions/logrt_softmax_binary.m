@@ -116,11 +116,11 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
     ep2 = r.traj.(r.c_obs.model).epsi(:,2);
     ep3 = r.traj.(r.c_obs.model).epsi(:,3);
     if l>1
-        mu2    = r.traj.(r.c_obs.model).(mu)(:,2);
-        sa2    = r.traj.(r.c_obs.model).(sa)(:,2);
+        mu2    = r.traj.(r.c_obs.model).mu(:,2);
+        sa2    = r.traj.(r.c_obs.model).sa(:,2);
     end
     if l>2
-        mu3    = r.traj.(r.c_obs.model).(mu)(:,3);
+        mu3    = r.traj.(r.c_obs.model).mu(:,3);
     end
     
     

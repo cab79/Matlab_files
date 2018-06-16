@@ -105,11 +105,11 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
     da1 = r.traj.(r.c_obs.model).da(:,1);
     if l>1
-        mu2    = r.traj.(r.c_obs.model).(mu)(:,2);
-        sa2    = r.traj.(r.c_obs.model).(sa)(:,2);
+        mu2    = r.traj.(r.c_obs.model).mu(:,2);
+        sa2    = r.traj.(r.c_obs.model).sa(:,2);
     end
     if l>2
-        mu3    = r.traj.(r.c_obs.model).(mu)(:,3);
+        mu3    = r.traj.(r.c_obs.model).mu(:,3);
     end
     
     % prediction error

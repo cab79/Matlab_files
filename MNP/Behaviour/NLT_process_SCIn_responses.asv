@@ -7,7 +7,7 @@ S.run_HGF = 1;
 S.HGF.plottraj = 1; 
 S.HGF_model_recovery =0;
 S.model_sim = 7;
-S.model_fit = 8; % select multiple models to test model recovery
+S.model_fit = 4; % select multiple models to test model recovery
 S.fitsim = 1; % 1=fit model, 2= simulate/recover
 %S.plot_simresponses = 1;
 S.numsimrep = 10; % number of simulations to run per parameter combination
