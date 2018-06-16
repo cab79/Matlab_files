@@ -77,15 +77,25 @@ if strcmp(c.response.model,'RT-soft') || strcmp(c.response.model,'RT')
 
     % Beta_4
     c.rt.be4mu = 0; 
+    c.rt.be7mu = 0; 
+    c.rt.be8mu = 0; 
     if l>2
         c.rt.be4sa = 4;
+        c.rt.be7sa = 4;
+        c.rt.be8sa = 4;
     else
         c.rt.be4sa = 0;
+        c.rt.be7sa = 0;
+        c.rt.be8sa = 0;
     end
 
     % Beta_5
     c.rt.be5mu = 0; 
     c.rt.be5sa = 4;
+    
+    % Beta_6
+    c.rt.be6mu = 0; 
+    c.rt.be6sa = 4;
 
     % Zeta
     c.rt.logzemu = log(log(20));

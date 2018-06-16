@@ -167,14 +167,12 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
 
     % Calculate predicted log-reaction time
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    try % CAB
+    if l>2
         logrt = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*da1reg +be6.*ep2reg +be7.*da2reg +be8.*ep3reg;
-    catch
-        if l<2
-            logrt = be0 +be1.*surp +be2.*bernv +be5.*da1reg +be6.*ep2reg;
-        elseif l<3
-            logrt = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*da1reg +be6.*ep2reg;
-        end
+    elseif l>1
+        logrt = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*da1reg +be6.*ep2reg;
+    else
+        logrt = be0 +be1.*surp +be2.*bernv +be5.*da1reg +be6.*ep2reg;
     end
 
     % Calculate log-probabilities for non-irregular trials
