@@ -104,6 +104,9 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
     mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
     da1 = r.traj.(r.c_obs.model).da(:,1);
+    da2 = r.traj.(r.c_obs.model).da(:,2);
+    ep2 = r.traj.(r.c_obs.model).epsi(:,2);
+    ep3 = r.traj.(r.c_obs.model).epsi(:,3);
     if l>1
         mu2    = r.traj.(r.c_obs.model).mu(:,2);
         sa2    = r.traj.(r.c_obs.model).sa(:,2);
@@ -114,10 +117,16 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
     
     % prediction error
     % ~~~~~~~~
-    da1reg = da1;
+    da1reg = abs(da1);
     da1reg(r.irr) = [];
+    ep2reg = abs(ep2);
+    ep2reg(r.irr) = [];
+    da2reg = da2;
+    da2reg(r.irr) = [];
+    ep3reg = ep3;
+    ep3reg(r.irr) = [];
 
-    % Surprise
+    % Surprise: informational
     % ~~~~~~~~
     m1hreg = mu1hat;
     m1hreg(r.irr) = [];
@@ -132,31 +141,33 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
     if l>1 % CAB
         % Inferential variance (aka informational or estimation uncertainty, ambiguity)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        inferv = tapas_sgm(mu2, 1).*(1 -tapas_sgm(mu2, 1)).*sa2; % transform down to 1st level
+        %inferv = tapas_sgm(mu2, 1).*(1 -tapas_sgm(mu2, 1)).*sa2; % transform down to 1st level
+        %sigmoid_mu2 = 1/(1+exp(-mu2)); % transform down to 1st level
+        %inferv = sigmoid_mu2.*(1 -sigmoid_mu2).*sa2; 
+        inferv = sa2; 
         inferv(r.irr) = [];
     end
 
     if l>2 % CAB
         % Phasic volatility (aka environmental or unexpected uncertainty)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        pv = tapas_sgm(mu2, 1).*(1-tapas_sgm(mu2, 1)).*exp(mu3); % transform down to 1st level
+        %pv = sigmoid_mu2.*(1-sigmoid_mu2).*exp(mu3); % transform down to 1st level
+        pv = exp(mu3); % transform down to 1st level
         pv(r.irr) = [];
     end
 
     % Calculate predicted log-reaction time
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    try % CAB
-        logrt = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*da1reg;
-    catch
-        if l<2
-            logrt = be0 +be1.*surp +be2.*bernv +be5.*da1reg;
-        elseif l<3
-            logrt = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*da1reg;
-        end
+    if l>2
+        logrt = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*da1reg +be6.*ep2reg +be7.*da2reg +be8.*ep3reg;
+    elseif l>1
+        logrt = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*da1reg +be6.*ep2reg;
+    else
+        logrt = be0 +be1.*surp +be2.*bernv +be5.*da1reg +be6.*ep2reg;
     end
     
     % Simulate
-    y(:,end) = logrt+sqrt(ze)*randn(n, 1);
+    y(:,end) = logrt +sqrt(ze)*randn(n, 1); % response time plus Gaussian noise
 end
 
 
