@@ -148,3 +148,36 @@ for d = 1:length(D)
     end
     
 end
+
+% average
+if S.meanD
+    S.mean_fields = {'macorrect','blockcorrectmovavg','condcorrectfract','blockcondcorrectfract','stimcondcorrectfract','stimcuecorrectfract'};
+    for mf = 1:length(S.mean_fields)
+        if iscell(D(1).Processed.(S.mean_fields{mf}))
+            for i1 = 1:length(D(1).Processed.(S.mean_fields{mf}))
+                if iscell(D(1).Processed.(S.mean_fields{mf}){i1})
+                    for i2 = 1:length(D(1).Processed.(S.mean_fields{mf}){i1})
+                        temp_mf=[];
+                        for d = 1:length(D)
+                            temp_mf(d,:) = D(d).Processed.(S.mean_fields{mf}){i1}{i2};
+                        end
+                        D(1).Processed.(S.mean_fields{mf}){i1}{i2} = mean(temp_mf,1);
+                    end
+                else
+                    temp_mf=[];
+                    for d = 1:length(D)
+                        temp_mf(d,:) = D(d).Processed.(S.mean_fields{mf}){i1};
+                    end
+                    D(1).Processed.(S.mean_fields{mf}){i1} = mean(temp_mf,1);
+                end
+            end
+        else
+            temp_mf=[];
+            for d = 1:length(D)
+                temp_mf(d,:) = D(d).Processed.(S.mean_fields{mf});
+            end
+            D(1).Processed.(S.mean_fields{mf}) = mean(temp_mf,1);
+        end
+    end
+    D = D(1);
+end

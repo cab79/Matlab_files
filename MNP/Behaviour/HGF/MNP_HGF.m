@@ -93,7 +93,6 @@ for f = files_ana'
         end
         if ~isempty(sim_param)
             sim = tapas_simModel_CAB(u(1:nst,:), 'GBM', sim_param, obs_model, [], S);
-            varargout={sim};
         elseif S.bayes_opt
             bopars = tapas_fitModel_CAB([], u(1:nst,:), prc_model, obs_model, opt_algo); %BAYES OPTIMAL
         elseif strfind(S.prc_config,'tapas')
@@ -107,21 +106,25 @@ for f = files_ana'
             plotstruct=sim;
             sname = [S(1).select.subjects{1, 1} '_' sname '_sim.mat'];
             save(fullfile(aname,sname),'sim');
+            varargout={sim};
         else
             plotstruct=bopars;
             sname = [S(1).select.subjects{1, 1} '_' sname '_bopars.mat'];
             save(fullfile(aname,sname),'bopars');
+            varargout={bopars};
         end
             
         % PLOTS
-        if isfield(plotstruct.traj,'AL')
-            tapas_hgf_binary_plotTraj_CAB(plotstruct,'AL',true)
-        end
-        if isfield(plotstruct.traj,'PR')
-            tapas_hgf_binary_plotTraj_CAB(plotstruct,'PR',false)
-        end
-        if isfield(plotstruct.traj,'PL')
-            tapas_hgf_binary_plotTraj_CAB(plotstruct,'PL',true)
+        if S.HGF.plottraj
+            if isfield(plotstruct.traj,'AL')
+                tapas_hgf_binary_plotTraj_CAB(plotstruct,'AL',true)
+            end
+            if isfield(plotstruct.traj,'PR')
+                tapas_hgf_binary_plotTraj_CAB(plotstruct,'PR',false)
+            end
+            if isfield(plotstruct.traj,'PL')
+                tapas_hgf_binary_plotTraj_CAB(plotstruct,'PL',true)
+            end
         end
         %tapas_fit_plotResidualDiagnostics(bopars);
     end

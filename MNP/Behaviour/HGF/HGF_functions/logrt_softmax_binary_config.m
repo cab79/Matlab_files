@@ -28,7 +28,7 @@ c.response.model = r.c_prc.response.model;
 
 % CAB: Number of levels
 try
-    l = r.c_prc.(c.model).n_priorlevels;
+    l = r.c_prc.(c.model).n_priorlevels+1;
 catch
     l=1;
 end

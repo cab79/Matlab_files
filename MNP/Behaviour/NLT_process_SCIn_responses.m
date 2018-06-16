@@ -1,5 +1,17 @@
 clear all
+close all
 dbstop if error % optional instruction to stop at a breakpoint if there is an error - useful for debugging
+clear S
+%% run options
+S.run_HGF = 1; 
+S.HGF.plottraj = 0; 
+S.HGF_model_recovery =1;
+S.model_sim = 7;
+S.model_fit = [3:7]; % select multiple models to test model recovery
+S.fitsim = 2; % 1=fit model, 2= simulate/recover
+%S.plot_simresponses = 1;
+S.numsimrep = 10; % number of simulations to run per parameter combination
+S.meanD=0; % set to 1 to average results over repeated simulations
 
 %% 1. ADD FUNCTIONS/TOOLBOXES TO MATLAB PATH
 paths = {'C:\Data\Matlab\Matlab_files\MNP','C:\Data\Matlab\Matlab_files\_generic_eeglab_batch\eeglab_batch_supporting_functions'};
@@ -14,7 +26,7 @@ for p = 1:length(paths)
 end
 
 %% 2. FOLDER AND FILENAME DEFINITIONS
-clear S
+
 S.expt = 'VLT';
 S.version = 2; % version of the NLT/ALT design
 S.path.raw = ['C:\Data\MNP\Pilots\' S.expt 'v2\raw']; % unprocessed data in original format
@@ -40,21 +52,57 @@ S.save.suffix = {''}; % suffix to add to output file, if needed
 save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 save(fullfile(S.path.prep,'D'),'D'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
-%% 4. PROCESSING
+%% HGF simulations
+if S.run_HGF && S.fitsim==2 % simulate model    
+    S.prc_config = 'GBM_config'; S.obs_config = 'logrt_softmax_binary_config'; S.nstim=[];S.bayes_opt=0;
+    %S.prc_config = 'GBM_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
+    %S.prc_config = 'tapas_hgf_binary_pu_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
+    %S.prc_config = 'GBM_config'; S.obs_config = 'bayes_optimal_binary_config_CAB'; S.nstim=[]; S.bayes_opt=1; 
+
+    S.model = S.model_sim;
+    S=MNP_perceptual_models(S);   
+    Dtemp=D;
+    %parameters to vary (otherwise uses those in config)
+    S=MNP_sim_parameters(S)
+    %sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1 rb];
+    sim=[];
+    for ns = 1:S.numsimrep
+        sim{ns}=MNP_HGF(D,S,S.sim);
+    end
+
+    for ns = 1:S.numsimrep
+        if length(sim{ns}.y)==length(Dtemp.Sequence.condnum)
+            D(ns) = Dtemp;
+            D(ns).Output.presstrial = 1:length(sim{ns}.y);
+            D(ns).Output.pressbutton = D(ns).Output.Settings.buttonopt(sim{ns}.y+1);
+        else
+            error('simulated data has the wrong number of trials')
+        end
+    end
+end
+
+%% 4. PROCESSING OF RESPONSES
 % SET PROCESSING OPTIONS
 S.accuracy.on = 1;
 %S.accuracy.buttons = {'LeftArrow','RightArrow'};%{'DownArrow','UpArrow'};
 S.accuracy.signal = [1 2];
-switch S.version
-    case 1
-        S.accuracy.target_resp = {[1 2],[1 2]}; % for each target (1st cell) which is the correct response (2nd cell)
-        S.signal.target = 1; % which row of signal is the target being responded to?
-        S.signal.cue = 0;
-    case 2
-        S.accuracy.target_resp = {[1 2],[2 1]}; % for each target (1st cell) which is the correct response (2nd cell)
-        S.signal.target = 2; % which row of signal is the target being responded to?
-        S.signal.cue = 1;
-        S.accuracy.cond_stimtype = [1 2]; % which stimtypes to include when summarising results within conditions?
+if S.fitsim==1
+    switch S.version
+        case 1
+            S.accuracy.target_resp = {[1 2],[1 2]}; % for each target (1st cell) which is the correct response (2nd cell)
+            S.signal.target = 1; % which row of signal is the target being responded to?
+            S.signal.cue = 0;
+        case 2
+            S.accuracy.target_resp = {[1 2],[2 1]}; % for each target (1st cell) which is the correct response (2nd cell)
+            S.signal.target = 2; % which row of signal is the target being responded to?
+            S.signal.cue = 1;
+            S.accuracy.cond_stimtype = [1 2]; % which stimtypes to include when summarising results within conditions?
+    end
+elseif S.fitsim==2
+    S.accuracy.target_resp = {[1 2],[1 2]}; % for each target (1st cell) which is the correct response (2nd cell)
+    S.signal.target = 2; % which row of signal is the target being responded to?
+    S.signal.cue = 1;
+    S.accuracy.cond_stimtype = [1 2]; % which stimtypes to include when summarising results within conditions?
 end
 S.RT = 1;
 S.trialmax = {1000};%{16,20,24,28,32}; % max number of trials to include per condition - to work out min num of trials needed
@@ -64,30 +112,34 @@ S.movingavg = 20;
 save(fullfile(S.path.prep,'S'),'S'); 
 save(fullfile(S.path.prep,'D'),'D'); 
 
-%% HGF
-S.model = 1;
-S.fitsim = 2; % 1=fit model, 2= simulate
-S.plotresponses = 0;
-S.prc_config = 'GBM_config'; S.obs_config = 'logrt_softmax_binary_config'; S.nstim=[];S.bayes_opt=0;
-%S.prc_config = 'GBM_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
-%S.prc_config = 'tapas_hgf_binary_pu_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
-%S.prc_config = 'GBM_config'; S.obs_config = 'bayes_optimal_binary_config_CAB'; S.nstim=[]; S.bayes_opt=1; 
+%% HGF fitting
+if S.run_HGF && S.fitsim==1  
+  
+    S.prc_config = 'GBM_config'; S.obs_config = 'logrt_softmax_binary_config'; S.nstim=[];S.bayes_opt=0;
+    %S.prc_config = 'GBM_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
+    %S.prc_config = 'tapas_hgf_binary_pu_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
+    %S.prc_config = 'GBM_config'; S.obs_config = 'bayes_optimal_binary_config_CAB'; S.nstim=[]; S.bayes_opt=1; 
 
-
-S=MNP_models(S);
-if S.fitsim==1 % fit model
-    MNP_HGF(D,S,[]);
-elseif S.fitsim==2 % simulate model    
+    S.model = S.model_fit;
+    S=MNP_perceptual_models(S);
+    bopars=MNP_HGF(D,S,[]);
     
-    %parameters to vary (otherwise uses those in config)
-    S.sim.PL_mu_0=[NaN 1];
-    
-    %sim_param = [mu_0 sa_0 al0 al1 rho ka om eta0 eta1 rb];
-    sim=MNP_HGF(D,S,S.sim);  
 end
 
-if ~S.plotresponses
-    return
+%% HGF model recovery
+if S.run_HGF && S.HGF_model_recovery % simulate model and and fit to test model recovery  
+    fit=[];
+    for m=1:length(S.model_fit)
+        S.model = S.model_fit(m);
+        S=MNP_perceptual_models(S);
+        for ns = 1:S.numsimrep
+            fit{m}{ns}=MNP_HGF(D(ns),S,[]);
+            evi.LME(m,ns)=fit{m}{ns}.optim.LME;
+            evi.AIC(m,ns)=fit{m}{ns}.optim.AIC;
+            evi.BIC(m,ns)=fit{m}{ns}.optim.BIC;
+        end
+    end
+    save(fullfile(S.path.prep,['evidence_model' num2str(S.model_sim) '.mat']), 'evi','fit');
 end
 
 %% 5. PLOTS
@@ -98,33 +150,33 @@ if isfield(D(1).Sequence,'adapttype');
     hold on; plot(D(1).Sequence.adapttype,'r')
 end
 if S.version==2;
-    figure;plot(D(1).Sequence.condnum)
-    hold on; 
-    low = ismember(D(1).Sequence.signal(2,:),[1 2]);
-    condplot = nan(1,length(D(1).Sequence.condnum));
-    condplot(low) = D(1).Sequence.condnum(low);
-    s1 = scatter(1:length(D(1).Sequence.condnum),condplot,'k');
-    hold on; 
-    high = ismember(D(1).Sequence.signal(2,:),[3 4]);
-    condplot = nan(1,length(D(1).Sequence.condnum));
-    condplot(high) = D(1).Sequence.condnum(high);
-    s2 = scatter(1:length(D(1).Sequence.condnum),condplot,'r');
-    title('design')
-    legend([s1,s2],'low discrim','high discrim')
-    
-    figure;plot(D(1).Sequence.condnum)
-    hold on; 
-    low = ismember(D(1).Sequence.signal(2,:),[1 3]);
-    condplot = nan(1,length(D(1).Sequence.condnum));
-    condplot(low) = D(1).Sequence.condnum(low);
-    s1 = scatter(1:length(D(1).Sequence.condnum),condplot,'k');
-    hold on; 
-    high = ismember(D(1).Sequence.signal(2,:),[2 4]);
-    condplot = nan(1,length(D(1).Sequence.condnum));
-    condplot(high) = D(1).Sequence.condnum(high);
-    s2 = scatter(1:length(D(1).Sequence.condnum),condplot,'r');
-    title('design')
-    legend([s1,s2],'low intensity','high intensity')
+%     figure;plot(D(1).Sequence.condnum)
+%     hold on; 
+%     low = ismember(D(1).Sequence.signal(2,:),[1 2]);
+%     condplot = nan(1,length(D(1).Sequence.condnum));
+%     condplot(low) = D(1).Sequence.condnum(low);
+%     s1 = scatter(1:length(D(1).Sequence.condnum),condplot,'k');
+%     hold on; 
+%     high = ismember(D(1).Sequence.signal(2,:),[3 4]);
+%     condplot = nan(1,length(D(1).Sequence.condnum));
+%     condplot(high) = D(1).Sequence.condnum(high);
+%     s2 = scatter(1:length(D(1).Sequence.condnum),condplot,'r');
+%     title('design')
+%     legend([s1,s2],'low discrim','high discrim')
+%     
+%     figure;plot(D(1).Sequence.condnum)
+%     hold on; 
+%     low = ismember(D(1).Sequence.signal(2,:),[1 3]);
+%     condplot = nan(1,length(D(1).Sequence.condnum));
+%     condplot(low) = D(1).Sequence.condnum(low);
+%     s1 = scatter(1:length(D(1).Sequence.condnum),condplot,'k');
+%     hold on; 
+%     high = ismember(D(1).Sequence.signal(2,:),[2 4]);
+%     condplot = nan(1,length(D(1).Sequence.condnum));
+%     condplot(high) = D(1).Sequence.condnum(high);
+%     s2 = scatter(1:length(D(1).Sequence.condnum),condplot,'r');
+%     title('design')
+%     legend([s1,s2],'low intensity','high intensity')
     
     figure;plot(D(1).Sequence.condnum)
     hold on; 
