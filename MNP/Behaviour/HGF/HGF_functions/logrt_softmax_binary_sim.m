@@ -12,7 +12,7 @@ function y = logrt_softmax_binary_sim(r, infStates, pvec)
 
 % CAB: Number of levels
 try
-    l = r.c_prc.(r.c_obs.model).n_priorlevels;
+    l = r.c_prc.(r.c_obs.model).n_priorlevels+1;
 catch
     l=1;
 end

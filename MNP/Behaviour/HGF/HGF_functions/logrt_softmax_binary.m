@@ -11,7 +11,7 @@ function [logp, yhat, res] = logrt_softmax_binary(r, infStates, pvec)
 % COPYING or <http://www.gnu.org/licenses/>.
 
 try
-    l = r.c_prc.(r.c_obs.model).n_priorlevels;
+    l = r.c_prc.(r.c_obs.model).n_priorlevels+1;
 catch
     l=1;
 end
@@ -151,19 +151,28 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
         % Inferential variance (aka informational or estimation uncertainty, ambiguity)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         %inferv = tapas_sgm(mu2, 1).*(1 -tapas_sgm(mu2, 1)).*sa2; % transform down to 1st level
-        %sigmoid_mu2 = 1/(1+exp(-mu2)); % transform down to 1st level
-        %inferv = sigmoid_mu2.*(1 -sigmoid_mu2).*sa2; 
-        inferv = sa2; 
+        sigmoid_mu2 = 1./(1+exp(-mu2)); % transform down to 1st level
+        inferv = sigmoid_mu2.*(1 -sigmoid_mu2).*sa2; 
+        %inferv = sa2; 
         inferv(r.irr) = [];
     end
 
     if l>2 % CAB
         % Phasic volatility (aka environmental or unexpected uncertainty)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        %pv = sigmoid_mu2.*(1-sigmoid_mu2).*exp(mu3); % transform down to 1st level
-        pv = exp(mu3); % transform down to 1st level
+        pv = sigmoid_mu2.*(1-sigmoid_mu2).*exp(mu3); % transform down to 1st level
+        %pv = exp(mu3); % transform down to 1st level
         pv(r.irr) = [];
     end
+    
+%     trajmat =[surp,bernv,inferv,da1reg,ep2reg,da2reg,ep3reg];
+%     % determine numcomponent by doing an eig on the covariance matrix
+%     covar = trajmat'*trajmat;
+%     [V, D] = eig(covar);
+%     [D,ind] = sort(diag(D),'descend');
+%     D = D ./ sum(D);
+%     Dcum = cumsum(D);
+%     numcomp = find(Dcum>.9999,1,'first');
 
     % Calculate predicted log-reaction time
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
