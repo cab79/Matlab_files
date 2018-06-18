@@ -124,7 +124,8 @@ function r = tapas_fitModel_CAB(responses, inputs, varargin)
 
 % Store responses, inputs, and information about irregular trials in newly
 % initialized structure r
-r = dataPrep(responses, inputs);
+S=varargin{4};
+r = dataPrep(responses, inputs, S);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -150,7 +151,6 @@ r.c_opt = tapas_quasinewton_optim_config;
 
 % Override default settings with arguments from the command line
 if nargin > 2 && ~isempty(varargin{1})
-    S=varargin{4};
     r.c_prc = eval([varargin{1} '(S)']); % runs the config function
 end
 
@@ -242,7 +242,7 @@ disp(' ')
 return;
 
 % --------------------------------------------------------------------------------------------------
-function r = dataPrep(responses, inputs)
+function r = dataPrep(responses, inputs, S)
 
 % Initialize data structure to be returned
 r = struct;
@@ -277,7 +277,7 @@ disp(['Ignored trials: ', num2str(ignout)])
 % Determine irregular trials
 irr = [];
 for k = 1:size(r.y,1)
-    if all(isnan(r.y(k,:))) % CAB
+    if any(isnan(r.y(k,S.use_y_col))) % CAB
         irr = [irr, k];
     end
 end

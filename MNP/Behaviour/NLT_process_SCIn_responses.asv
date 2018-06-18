@@ -6,11 +6,11 @@ clear S
 S.run_HGF = 1; 
 S.HGF.plottraj = 1; 
 S.HGF_model_recovery =0;
-S.model_sim = 7;
-S.model_fit = 4; % select multiple models to test model recovery
-S.fitsim = 1; % 1=fit model, 2= simulate/recover
+S.model_sim = 8;
+S.model_fit = 8; % select multiple models to test model recovery
+S.fitsim = 2; % 1=fit model, 2= simulate/recover
 %S.plot_simresponses = 1;
-S.numsimrep = 10; % number of simulations to run per parameter combination
+S.numsimrep = 1; % number of simulations to run per parameter combination
 S.meanD=0; % set to 1 to average results over repeated simulations
 
 %% 1. ADD FUNCTIONS/TOOLBOXES TO MATLAB PATH
@@ -74,6 +74,7 @@ if S.run_HGF && S.fitsim==2 % simulate model
         if length(sim{ns}.y)==length(Dtemp.Sequence.condnum)
             D(ns) = Dtemp;
             D(ns).Output.presstrial = 1:length(sim{ns}.y);
+            if length(unique(sim{ns}.y+1))==2 % should be binary, otherwise may be RT
             D(ns).Output.pressbutton = D(ns).Output.Settings.buttonopt(sim{ns}.y+1);
         else
             error('simulated data has the wrong number of trials')

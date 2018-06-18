@@ -103,9 +103,21 @@ switch S.model
     S.modelspec.likelihood.n_inputcond = 1; % Number of conditions with unique input variance
     S.modelspec.response.model = 'RT';
     S.modelspec.response.priormodel = 'AL'; % Which model representations are used for the response model?
-    S.modelspec.response.rep = 'mu0';
+    S.modelspec.response.rep = 'mu';
     modeltype='AL'; % AL (associative learning), PL (perceptual learning), PR (priming)
     S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
     S.modelspec.priormodels.(modeltype).n_priorlevels = 2; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
     S.modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
+    
+    case 9 % static prior (1 level), with equal sensory uncertainty for each input
+    S.modelspec.likelihood.type = 'binary'; 
+    S.modelspec.likelihood.inputvar = 'uncertain_equal'; % uncertain_equal (variance), uncertain_unequal, certain
+    S.modelspec.likelihood.n_inputcond = 1; % Number of conditions with unique input variance
+    S.modelspec.response.model = 'RT';
+    S.modelspec.response.priormodel = 'PL'; % Which model representations are used for the response model?
+    S.modelspec.response.rep = 'mu0';
+    modeltype='PL'; % AL (associative learning), PL (perceptual learning), PR (priming)
+    S.modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % hierarchical, state
+    S.modelspec.priormodels.(modeltype).n_priorlevels = 1; % in prior hierarchy. For binary models, 3 is minimum; for continuous 2 is minimum.
+    S.modelspec.priormodels.(modeltype).priorupdate = 'static'; % static, dynamic (unique estimate on each trial)
 end

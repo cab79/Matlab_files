@@ -6,11 +6,11 @@ clear S
 S.run_HGF = 1; 
 S.HGF.plottraj = 1; 
 S.HGF_model_recovery =0;
-S.model_sim = 7;
+S.model_sim = 8;
 S.model_fit = 8; % select multiple models to test model recovery
 S.fitsim = 1; % 1=fit model, 2= simulate/recover
 %S.plot_simresponses = 1;
-S.numsimrep = 10; % number of simulations to run per parameter combination
+S.numsimrep = 1; % number of simulations to run per parameter combination
 S.meanD=0; % set to 1 to average results over repeated simulations
 
 %% 1. ADD FUNCTIONS/TOOLBOXES TO MATLAB PATH
@@ -74,7 +74,9 @@ if S.run_HGF && S.fitsim==2 % simulate model
         if length(sim{ns}.y)==length(Dtemp.Sequence.condnum)
             D(ns) = Dtemp;
             D(ns).Output.presstrial = 1:length(sim{ns}.y);
-            D(ns).Output.pressbutton = D(ns).Output.Settings.buttonopt(sim{ns}.y+1);
+            if length(unique(sim{ns}.y+1))==2 % should be binary, otherwise may be RT
+                D(ns).Output.pressbutton = D(ns).Output.Settings.buttonopt(sim{ns}.y+1);
+            end
         else
             error('simulated data has the wrong number of trials')
         end
@@ -116,6 +118,7 @@ save(fullfile(S.path.prep,'D'),'D');
 if S.run_HGF && S.fitsim==1  
   
     S.prc_config = 'GBM_config'; S.obs_config = 'logrt_softmax_binary_config'; S.nstim=[];S.bayes_opt=0;
+    %S.prc_config = 'GBM_config'; S.obs_config = 'tapas_logrt_linear_binary_config'; S.nstim=[];S.bayes_opt=0;
     %S.prc_config = 'GBM_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
     %S.prc_config = 'tapas_hgf_binary_pu_config'; S.obs_config = 'tapas_softmax_binary_config'; S.nstim=[];S.bayes_opt=0; 
     %S.prc_config = 'GBM_config'; S.obs_config = 'bayes_optimal_binary_config_CAB'; S.nstim=[]; S.bayes_opt=1; 

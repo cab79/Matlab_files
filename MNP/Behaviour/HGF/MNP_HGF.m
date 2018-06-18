@@ -75,10 +75,12 @@ for f = files_ana'
     end
     
     % response times
-    y(:,1)=nan;
+    y(:,2)=nan;
     RT=D.Output.RT;
-    RT(RT<0)=nan;;
+    RT(RT<0.5)=nan; % don't consider RTs less than 500ms
     y(D.Output.presstrial,2) = log(RT);
+    
+    S.use_y_col = find([any(strfind(S.modelspec.response.model,'soft')), any(strfind(S.modelspec.response.model,'RT')),any(strfind(S.modelspec.response.model,'eeg'))]);
 
     %% HGF
     % prc: perceptual; obs:observation; opt:optimisation

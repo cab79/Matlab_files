@@ -11,7 +11,7 @@ function [logp, yhat, res] = logrt_softmax_binary(r, infStates, pvec)
 % COPYING or <http://www.gnu.org/licenses/>.
 
 try
-    l = r.c_prc.(r.c_obs.model).n_priorlevels;
+    l = r.c_prc.(r.c_obs.model).n_priorlevels+1;
 catch
     l=1;
 end
@@ -87,15 +87,6 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
             eval([nme_gen{pn} ' = pvec(idx{pn})'';']);
         end
     end
-    
-%     % Transform parameters to their native space
-%     be0  = ptrans(1);
-%     be1  = ptrans(2);
-%     be2  = ptrans(3);
-%     be3  = ptrans(4);
-%     be4  = ptrans(5);
-%     be5  = ptrans(6);
-%     ze   = exp(ptrans(7));
 
     % logRT: Weed irregular trials out from responses and inputs
     yr = r.y(:,2); % CAB: RTs are in column 2
@@ -104,7 +95,7 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
     u(r.irr) = [];
     
     % check inputs RTs are logged
-    if any(yr>10)
+    if any(yr>2)
         error('input RTs must be logged and not contain any extreme outliers')
     end
 
@@ -114,13 +105,13 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
     da1 = r.traj.(r.c_obs.model).da(:,1);
     da2 = r.traj.(r.c_obs.model).da(:,2);
     ep2 = r.traj.(r.c_obs.model).epsi(:,2);
-    ep3 = r.traj.(r.c_obs.model).epsi(:,3);
     if l>1
         mu2    = r.traj.(r.c_obs.model).mu(:,2);
         sa2    = r.traj.(r.c_obs.model).sa(:,2);
     end
     if l>2
         mu3    = r.traj.(r.c_obs.model).mu(:,3);
+        ep3 = r.traj.(r.c_obs.model).epsi(:,3);
     end
     
     
@@ -132,8 +123,10 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
     ep2reg(r.irr) = [];
     da2reg = da2;
     da2reg(r.irr) = [];
-    ep3reg = ep3;
-    ep3reg(r.irr) = [];
+    if l>2
+        ep3reg = ep3;
+        ep3reg(r.irr) = [];
+    end
 
     % Surprise: informational
     % ~~~~~~~~
@@ -151,7 +144,7 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
         % Inferential variance (aka informational or estimation uncertainty, ambiguity)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         %inferv = tapas_sgm(mu2, 1).*(1 -tapas_sgm(mu2, 1)).*sa2; % transform down to 1st level
-        %sigmoid_mu2 = 1/(1+exp(-mu2)); % transform down to 1st level
+        %sigmoid_mu2 = 1./(1+exp(-mu2)); % transform down to 1st level
         %inferv = sigmoid_mu2.*(1 -sigmoid_mu2).*sa2; 
         inferv = sa2; 
         inferv(r.irr) = [];
@@ -161,18 +154,18 @@ if strcmp(r.c_obs.response.model,'RT-soft') || strcmp(r.c_obs.response.model,'RT
         % Phasic volatility (aka environmental or unexpected uncertainty)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         %pv = sigmoid_mu2.*(1-sigmoid_mu2).*exp(mu3); % transform down to 1st level
-        pv = exp(mu3); % transform down to 1st level
+        pv = exp(mu3); 
         pv(r.irr) = [];
     end
     
-    trajmat =[surp,bernv,inferv,da1reg,ep2reg,da2reg,ep3reg];
-    % determine numcomponent by doing an eig on the covariance matrix
-    covar = trajmat'*trajmat;
-    [V, D] = eig(covar);
-    [D,ind] = sort(diag(D),'descend');
-    D = D ./ sum(D);
-    Dcum = cumsum(D);
-    numcomp = find(Dcum>.9999,1,'first');
+%     trajmat =[surp,bernv,inferv,da1reg,ep2reg,da2reg,ep3reg];
+%     % determine numcomponent by doing an eig on the covariance matrix
+%     covar = trajmat'*trajmat;
+%     [V, D] = eig(covar);
+%     [D,ind] = sort(diag(D),'descend');
+%     D = D ./ sum(D);
+%     Dcum = cumsum(D);
+%     numcomp = find(Dcum>.9999,1,'first');
 
     % Calculate predicted log-reaction time
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
