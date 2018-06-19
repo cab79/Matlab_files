@@ -3,7 +3,10 @@ close all
 dbstop if error % optional instruction to stop at a breakpoint if there is an error - useful for debugging
 clear S
 %% run options
-S.run_HGF = 1; 
+S.accuracy.on = 0;
+S.RT.on = 1;
+S.RT.min = 0.5; % min RT to consider
+S.run_HGF = 0; 
 S.HGF.plottraj = 1; 
 S.HGF_model_recovery =0;
 S.model_sim = 8;
@@ -27,15 +30,15 @@ end
 
 %% 2. FOLDER AND FILENAME DEFINITIONS
 
-S.expt = 'VLT';
+S.expt = 'NLT';
 S.version = 2; % version of the NLT/ALT design
 S.path.raw = ['C:\Data\MNP\Pilots\' S.expt 'v2\raw']; % unprocessed data in original format
 S.path.prep = ['C:\Data\MNP\Pilots\' S.expt 'v2\processed']; % folder to save processed .set data
 S.fname.parts = {'prefix','subject','block','ext'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
 S.select.subjects = {'cab10'}; % either a single subject, or leave blank to process all subjects in folder
 S.select.sessions = {};
-S.select.blocks = {['Sequence_' S.expt '_OptionAssoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
-%S.select.blocks = {['Sequence_' S.expt '_OptionNLT_assoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
+%S.select.blocks = {['Sequence_' S.expt '_OptionAssoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.select.blocks = {['Sequence_' S.expt '_OptionNLT_assoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
 S.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
 S.path.datfile = ['C:\Data\MNP\Pilots\Participant_Data.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
@@ -85,7 +88,7 @@ end
 
 %% 4. PROCESSING OF RESPONSES
 % SET PROCESSING OPTIONS
-S.accuracy.on = 1;
+
 %S.accuracy.buttons = {'LeftArrow','RightArrow'};%{'DownArrow','UpArrow'};
 S.accuracy.signal = [1 2];
 if S.fitsim==1
@@ -106,7 +109,6 @@ elseif S.fitsim==2
     S.signal.cue = 1;
     S.accuracy.cond_stimtype = [1 2]; % which stimtypes to include when summarising results within conditions?
 end
-S.RT = 1;
 S.trialmax = {1000};%{16,20,24,28,32}; % max number of trials to include per condition - to work out min num of trials needed
 S.movingavg = 20;
 % RUN
@@ -148,10 +150,10 @@ end
 %% 5. PLOTS
 %close all
 % PLOT sequence
-if isfield(D(1).Sequence,'adapttype');
-    figure;plot(D(1).Sequence.condnum);
-    hold on; plot(D(1).Sequence.adapttype,'r')
-end
+% if isfield(D(1).Sequence,'adapttype');
+%     figure;plot(D(1).Sequence.condnum);
+%     hold on; plot(D(1).Sequence.adapttype,'r')
+% end
 if S.version==2;
 %     figure;plot(D(1).Sequence.condnum)
 %     hold on; 
@@ -196,103 +198,61 @@ if S.version==2;
     legend([s1,s2],'cue type 1','cue type 2')
 end
 
-%5. PLOT %correct as a moving average over time
-for d = 1:length(D)
-    Y=D(d).Processed.macorrect;
-    figure
-    plot(Y,'linewidth',2)
-    ylabel('% correct')
-    xlabel('trials')
-    title(['% correct, moving average of ' num2str(S.movingavg) ' trials'])
-end
+%
+if S.accuracy.on
 
-%5. PLOT difference in %correct over time between valid and invalid cues for each block 
-for d = 1:length(D)
-    figure
-    ii=0;
-    for b = 1:length(D.Processed.blockcorrectmovavg{1})
-        plotind = find(~isnan(D.Processed.blockcorrectmovavg{1}{b}));
-        if ~isempty(plotind) && any(D.Processed.blockcorrectmovavg{1}{b}(plotind)) && length(plotind)>S.movingavg
-            ii=ii+1;
-            subplot(2,2,ii)
-            Y=D.Processed.blockcorrectmovavg{1}{b};
-            Yind = 1:length(Y);
-            % clear leading zeros
-            index = find(Y ~= 0, 1, 'first');
-            Y = Y(index:end);
-            Yind = Yind(index:end);
-            % find values less than an equal/greater than S.movingavg and
-            % plot separately
-            hold on
-            Yplot = Y; Yplot(Yind<S.movingavg)=NaN;
-            scatter(1:length(Yplot),Yplot,'b','filled')
-            lsline
-            Yplot = Y; Yplot(Yind>=S.movingavg)=NaN;
-            scatter(1:length(Yplot),Yplot,'b')
-            hold off
-            ylabel('% correct, valid-invalid')
-            xlabel('trials')
-            title(['Block ' num2str(b)])
-        end
-    end
-end
-
-%5. PLOT %correct
-for d = 1:length(D)
-    for tm = 1:length(S.trialmax)
-        Y=D(d).Processed.condcorrectfract{tm};
-        X=1:length(Y);
+    %5. PLOT %correct as a moving average over time
+    for d = 1:length(D)
+        Y=D(d).Processed.macorrect;
         figure
-        bar(X,Y)
-        labels = arrayfun(@(value) num2str(value,'%2.0f'),cell2mat(D(d).Processed.numtrials{tm}),'UniformOutput',false);
-        text(X,Y,labels,'HorizontalAlignment','center','VerticalAlignment','bottom') 
-          % clears X axis data
-          %set(gca,'XTick',[]);
-        ylabel('fraction correct')
-        xlabel('condition')
-        switch S.version
-            case 1
-                %labels = {'adaptive: low','adaptive: high','low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',};
-                labels = {'low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',}; % v1
-            case 2
-                labels = {'high prob: pair 1','low prob: pair 2','equal prob: pair 1','equal prob: pair 2','high prob: pair 2','low prob: pair 1',}; % v2
-        end
-        set(gca,'xticklabel', labels)
-        %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
-        title([D(d).subname])
-        hold on
-        plot(xlim,[0.5 0.5], 'k--')
+        plot(Y,'linewidth',2)
+        ylabel('% correct')
+        xlabel('trials')
+        title(['% correct, moving average of ' num2str(S.movingavg) ' trials'])
     end
-end
 
-%5. PLOT %correct for some conditions only, across blocks
-%close all
-if S.version==1
-    plotcond = [3 4];
+    %5. PLOT difference in %correct over time between valid and invalid cues for each block 
     for d = 1:length(D)
-        for tm = 1:length(S.trialmax)
-            figure
-            dat=cell2mat(D(d).Processed.blockcondcorrectfract{tm}(plotcond)')';
-            b = bar([dat])
-            ylabel('fraction correct')
-            xlabel('block')
-            legend(b,{'low','high'});
-            title(D(d).subname)
-            hold on
-            plot(xlim,[0.5 0.5], 'k--')
+        figure
+        ii=0;
+        for b = 1:length(D.Processed.blockcorrectmovavg{1})
+            plotind = find(~isnan(D.Processed.blockcorrectmovavg{1}{b}));
+            if ~isempty(plotind) && any(D.Processed.blockcorrectmovavg{1}{b}(plotind)) && length(plotind)>S.movingavg
+                ii=ii+1;
+                subplot(2,2,ii)
+                Y=D.Processed.blockcorrectmovavg{1}{b};
+                Yind = 1:length(Y);
+                % clear leading zeros
+                index = find(Y ~= 0, 1, 'first');
+                Y = Y(index:end);
+                Yind = Yind(index:end);
+                % find values less than an equal/greater than S.movingavg and
+                % plot separately
+                hold on
+                Yplot = Y; Yplot(Yind<S.movingavg)=NaN;
+                scatter(1:length(Yplot),Yplot,'b','filled')
+                lsline
+                Yplot = Y; Yplot(Yind>=S.movingavg)=NaN;
+                scatter(1:length(Yplot),Yplot,'b')
+                hold off
+                ylabel('% correct, valid-invalid')
+                xlabel('trials')
+                title(['Block ' num2str(b)])
+            end
         end
     end
-end
 
-% PLOT by stimulus
-if isfield(D.Processed,'stimcondcorrectfract')
+    %5. PLOT %correct
     for d = 1:length(D)
         for tm = 1:length(S.trialmax)
-
-            % for each condition, breaking down by stimulus type
-            Y=cell2mat(D.Processed.stimcondcorrectfract{:}');
+            Y=D(d).Processed.condcorrectfract{tm};
+            X=1:length(Y);
             figure
-            b=bar(Y)
+            bar(X,Y)
+            labels = arrayfun(@(value) num2str(value,'%2.0f'),cell2mat(D(d).Processed.numtrials{tm}),'UniformOutput',false);
+            text(X,Y,labels,'HorizontalAlignment','center','VerticalAlignment','bottom') 
+              % clears X axis data
+              %set(gca,'XTick',[]);
             ylabel('fraction correct')
             xlabel('condition')
             switch S.version
@@ -305,51 +265,173 @@ if isfield(D.Processed,'stimcondcorrectfract')
             set(gca,'xticklabel', labels)
             %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
             title([D(d).subname])
-            legend(b,{'low','high','low x2','high x2'});
-            hold on
-            plot(xlim,[0.5 0.5], 'k--')
-
-            % plot stims averaged across all conditions
-            Y = nanmean(Y,1);
-            figure
-            b=bar(Y)
-            ylabel('fraction correct')
-            xlabel('stimulus type')
-            switch S.version
-                case 2
-                    labels = {'low','high','low x2','high x2'}; % v2
-            end
-            set(gca,'xticklabel', labels)
-            %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
-            title([D(d).subname])
             hold on
             plot(xlim,[0.5 0.5], 'k--')
         end
     end
+
+    %5. PLOT %correct for some conditions only, across blocks
+    %close all
+    if S.version==1
+        plotcond = [3 4];
+        for d = 1:length(D)
+            for tm = 1:length(S.trialmax)
+                figure
+                dat=cell2mat(D(d).Processed.blockcondcorrectfract{tm}(plotcond)')';
+                b = bar([dat])
+                ylabel('fraction correct')
+                xlabel('block')
+                legend(b,{'low','high'});
+                title(D(d).subname)
+                hold on
+                plot(xlim,[0.5 0.5], 'k--')
+            end
+        end
+    end
+
+    % PLOT by stimulus
+    if isfield(D.Processed,'stimcondcorrectfract')
+        for d = 1:length(D)
+            for tm = 1:length(S.trialmax)
+
+                % for each condition, breaking down by stimulus type
+                Y=cell2mat(D.Processed.stimcondcorrectfract{:}');
+                figure
+                b=bar(Y)
+                ylabel('fraction correct')
+                xlabel('condition')
+                switch S.version
+                    case 1
+                        %labels = {'adaptive: low','adaptive: high','low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',};
+                        labels = {'low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',}; % v1
+                    case 2
+                        labels = {'high prob: pair 1','low prob: pair 2','equal prob: pair 1','equal prob: pair 2','high prob: pair 2','low prob: pair 1',}; % v2
+                end
+                set(gca,'xticklabel', labels)
+                %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+                title([D(d).subname])
+                legend(b,{'low','high','low x2','high x2'});
+                hold on
+                plot(xlim,[0.5 0.5], 'k--')
+
+                % plot stims averaged across all conditions
+                Y = nanmean(Y,1);
+                figure
+                b=bar(Y)
+                ylabel('fraction correct')
+                xlabel('stimulus type')
+                switch S.version
+                    case 2
+                        labels = {'low','high','low x2','high x2'}; % v2
+                end
+                set(gca,'xticklabel', labels)
+                %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+                title([D(d).subname])
+                hold on
+                plot(xlim,[0.5 0.5], 'k--')
+            end
+        end
+    end
+
+    % PLOT by cue/stimulus
+    if isfield(D.Processed,'stimcuecorrectfract')
+        for d = 1:length(D)
+            for tm = 1:length(S.trialmax)
+
+                % for each cue, breaking down by stimulus type
+                Y=cell2mat(D.Processed.stimcuecorrectfract{:}');
+                figure
+                b=bar(Y)
+                ylabel('fraction correct')
+                xlabel('cue type')
+                switch S.version
+                    case 2
+                        labels = {'high pitch','low pitch',}; % v2
+                end
+                set(gca,'xticklabel', labels)
+                %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+                title([D(d).subname])
+                legend(b,{'low','high','low x2','high x2'});
+                hold on
+                plot(xlim,[0.5 0.5], 'k--')
+
+            end
+        end
+    end
 end
 
-% PLOT by cue/stimulus
-if isfield(D.Processed,'stimcuecorrectfract')
+if S.RT.on
+    %5. PLOT %correct as a moving average over time
+    for d = 1:length(D)
+        Y=D(d).Processed.malogrt;
+        figure
+        plot(Y,'linewidth',2)
+        ylabel('log(RT)')
+        xlabel('trials')
+        title(['log(RT), moving average of ' num2str(S.movingavg) ' trials'])
+    end
+    
+    %5. PLOT %correct
     for d = 1:length(D)
         for tm = 1:length(S.trialmax)
-
-            % for each cue, breaking down by stimulus type
-            Y=cell2mat(D.Processed.stimcuecorrectfract{:}');
+            Y=D(d).Processed.cond_logrt{tm};
+            X=1:length(Y);
             figure
-            b=bar(Y)
-            ylabel('fraction correct')
-            xlabel('cue type')
+            bar(X,Y)
+            %labels = arrayfun(@(value) num2str(value,'%2.0f'),cell2mat(D(d).Processed.numtrials{tm}),'UniformOutput',false);
+            %text(X,Y,labels,'HorizontalAlignment','center','VerticalAlignment','bottom') 
+            ylabel('log(RT)')
+            xlabel('condition')
             switch S.version
+                case 1
+                    %labels = {'adaptive: low','adaptive: high','low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',};
+                    labels = {'low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',}; % v1
                 case 2
-                    labels = {'high pitch','low pitch',}; % v2
+                    labels = {'high prob: pair 1','low prob: pair 2','equal prob: pair 1','equal prob: pair 2','high prob: pair 2','low prob: pair 1',}; % v2
             end
             set(gca,'xticklabel', labels)
             %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
             title([D(d).subname])
-            legend(b,{'low','high','low x2','high x2'});
-            hold on
-            plot(xlim,[0.5 0.5], 'k--')
+        end
+    end
+    
+    % PLOT by stimulus
+    if isfield(D.Processed,'stimcond_logrt')
+        for d = 1:length(D)
+            for tm = 1:length(S.trialmax)
 
+                % for each condition, breaking down by stimulus type
+                Y=cell2mat(D.Processed.stimcond_logrt{:}');
+                figure
+                b=bar(Y)
+                ylabel('log(RT)')
+                xlabel('condition')
+                switch S.version
+                    case 1
+                        %labels = {'adaptive: low','adaptive: high','low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',};
+                        labels = {'low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',}; % v1
+                    case 2
+                        labels = {'high prob: pair 1','low prob: pair 2','equal prob: pair 1','equal prob: pair 2','high prob: pair 2','low prob: pair 1',}; % v2
+                end
+                set(gca,'xticklabel', labels)
+                %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+                title([D(d).subname])
+                legend(b,{'low','high','low x2','high x2'});
+
+                % plot stims averaged across all conditions
+                Y = nanmean(Y,1);
+                figure
+                b=bar(Y)
+                ylabel('log(RT)')
+                xlabel('stimulus type')
+                switch S.version
+                    case 2
+                        labels = {'low','high','low x2','high x2'}; % v2
+                end
+                set(gca,'xticklabel', labels)
+                %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
+                title([D(d).subname])
+            end
         end
     end
 end

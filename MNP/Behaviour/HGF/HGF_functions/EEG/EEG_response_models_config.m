@@ -1,23 +1,4 @@
-function c = logrt_softmax_binary_config(r)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Contains the configuration for the linear log-reaction time response model according to as
-% developed with Louise Marshall and Sven Bestmann
-% http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002575
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% The Gaussian noise observation model assumes that responses have a Gaussian distribution around
-% the inferred mean of the relevant state. The only parameter of the model is the noise variance
-% (NOT standard deviation) zeta.
-%
-% --------------------------------------------------------------------------------------------------
-% Copyright (C) 2016 Christoph Mathys, UZH & ETHZ
-%
-% This file is part of the HGF toolbox, which is released under the terms of the GNU General Public
-% Licence (GPL), version 3. You can redistribute it and/or modify it under the terms of the GPL
-% (either version 3 or, at your option, any later version). For further details, see the file
-% COPYING or <http://www.gnu.org/licenses/>.
+function c = EEG_response_models_config(r)
 
 % Config structure
 c = struct;
@@ -42,77 +23,65 @@ c.priorsas=[];
 c.st = [];
 c.pn=0;
 
-if strcmp(c.response.model, 'RT-soft') || strcmp(c.response.model,'soft')
-    % Beta
-    c.soft.logbemu = log(48);
-    c.soft.logbesa = 1;
-    
-    % Gather prior settings in vectors
-    type='soft';
-    c = paramvec(c,type);
+% Sufficient statistics of Gaussian parameter priors
+%
+% Beta_0
+c.eeg.be0mu = log(0); 
+c.eeg.be0sa = 4;
+
+% Beta_1
+c.eeg.be1mu = 0;
+c.eeg.be1sa = 4;
+
+% Beta_2
+c.eeg.be2mu = 0; 
+c.eeg.be2sa = 4;
+
+% Beta_3
+c.eeg.be3mu = 0; 
+if l>1
+    c.eeg.be3sa = 4;
+else
+    c.eeg.be3sa = 0;
 end
 
-if strcmp(c.response.model,'RT-soft') || strcmp(c.response.model,'RT')
-    % Sufficient statistics of Gaussian parameter priors
-    %
-    % Beta_0
-    c.rt.be0mu = log(0.5); 
-    c.rt.be0sa = 4;
-
-    % Beta_1
-    c.rt.be1mu = 0;
-    c.rt.be1sa = 4;
-
-    % Beta_2
-    c.rt.be2mu = 0; 
-    c.rt.be2sa = 4;
-
-    % Beta_3
-    c.rt.be3mu = 0; 
-    if l>1
-        c.rt.be3sa = 4;
-    else
-        c.rt.be3sa = 0;
-    end
-
-    % Beta_4
-    c.rt.be4mu = 0; 
-    c.rt.be7mu = 0; 
-    c.rt.be8mu = 0; 
-    if l>2
-        c.rt.be4sa = 4;
-        c.rt.be7sa = 4;
-        c.rt.be8sa = 4;
-    else
-        c.rt.be4sa = 0;
-        c.rt.be7sa = 0;
-        c.rt.be8sa = 0;
-    end
-
-    % Beta_5
-    c.rt.be5mu = 0; 
-    c.rt.be5sa = 4;
-    
-    % Beta_6
-    c.rt.be6mu = 0; 
-    c.rt.be6sa = 4;
-
-    % Zeta
-    c.rt.logzemu = log(log(20));
-    c.rt.logzesa = log(2);
-    c.rt.logzevar = true; % this is a variance parameter
-    
-    % Gather prior settings in vectors
-    type='rt';
-    c = paramvec(c,type);
+% Beta_4
+c.eeg.be4mu = 0; 
+c.eeg.be7mu = 0; 
+c.eeg.be8mu = 0; 
+if l>2
+    c.eeg.be4sa = 4;
+    c.eeg.be7sa = 4;
+    c.eeg.be8sa = 4;
+else
+    c.eeg.be4sa = 0;
+    c.eeg.be7sa = 0;
+    c.eeg.be8sa = 0;
 end
+
+% Beta_5
+c.eeg.be5mu = 0; 
+c.eeg.be5sa = 4;
+
+% Beta_6
+c.eeg.be6mu = 0; 
+c.eeg.be6sa = 4;
+
+% Zeta
+c.eeg.logzemu = log(log(20));
+c.eeg.logzesa = log(2);
+c.eeg.logzevar = true; % this is a variance parameter
+
+% Gather prior settings in vectors
+type='eeg';
+c = paramvec(c,type);
 
 % Model filehandle
-c.obs_fun = @logrt_softmax_binary;
+c.obs_fun = @EEG_response_models;
 
 % Handle to function that transforms observation parameters to their native space
 % from the space they are estimated in
-c.transp_obs_fun = @logrt_softmax_binary_transp;
+c.transp_obs_fun = @EEG_response_models_transp;
 
 return;
 

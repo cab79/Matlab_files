@@ -11,9 +11,10 @@ for d = 1:length(D)
             D(d).Output(op).Settings = A.settings;
         end
         
-        S.accuracy.buttons = D(d).Output.Settings.buttonopt;
-
         if S.accuracy.on
+            
+            S.accuracy.buttons = D(d).Output.Settings.buttonopt;
+            
             % create presssignal 
             D(d).Processed(op).presssignal = nan(1,size(D(d).Sequence.signal,2));
             presssignal = [];
@@ -145,13 +146,71 @@ for d = 1:length(D)
                 end
             end
         end
+        if S.RT.on
+            
+            % log response times
+            D(d).Processed(op).logrt=nan(1,size(D(d).Sequence.signal,2));
+            RT=D.Output.RT;
+            RT(RT<S.RT.min)=nan; % don't consider RTs less than 500ms
+            D(d).Processed(op).logrt(D.Output.presstrial) = log(RT);
+            
+            % moving average RT over time
+            ma=S.movingavg;
+            for i = 1:length(D(d).Processed(op).logrt)
+                D(d).Processed(op).malogrt(i) = nansum(D(d).Processed(op).logrt(max(1,i-ma+1):i))/length(max(1,i-ma+1):i);
+            end
+            
+            % create condnum cell which either contains all trials or a
+            % subset of trials according to S.trialmax
+                    % This allows testing of how many trials are needed to
+                    % produce robust condition differences.
+            condnum={};
+            conds = unique(D(d).Sequence.condnum);
+            if ~isempty(S.trialmax)
+                for tm = 1:length(S.trialmax)
+                    trialmax = S.trialmax{tm};
+                    % reduce the number of trials per condition-pair to S.trialmax
+                    for i = 1:length(conds)/2
+                        ind = (i-1)*2+1:(i-1)*2+2; % condition pair indices, e.g. 1 2, 3 4, 5 6
+                        trialind = find(ismember(D(d).Sequence.condnum,conds(ind)));
+                        trialind_new = trialind(1:min(trialmax,length(trialind)));
+                        condnum_orig{tm} = D(d).Sequence.condnum;
+                        condnum{tm}(trialind) = nan;
+                        condnum{tm}(trialind_new) = condnum_orig{tm}(trialind_new);
+                    end
+                end
+            else
+                condnum{1} = D(d).Sequence.condnum;
+            end
+
+            % for each version of condnum (diff number of trials in each),
+            % get perc correct for each condition and block
+            for cn = 1:length(condnum)
+                
+                % split into conditions
+                condsuni = unique(condnum{cn});
+                condsuni = condsuni(~isnan(condsuni));
+                D(d).Processed(op).cond_logrt{cn} = nan(1,length(conds));
+                for i = 1:length(condsuni)
+                    D(d).Processed(op).cond_logrt{cn}(condsuni(i)) = nanmean(D(d).Processed(op).logrt(condnum{cn}==condsuni(i) & ismember(D(d).Sequence.signal(S.signal.target,:),S.accuracy.cond_stimtype))); 
+                end
+
+                % split into stim intensity per condition
+                stims = unique(D(d).Sequence.signal(S.signal.target,:));
+                for i = 1:length(condsuni)
+                    for s = 1:length(stims)
+                        D(d).Processed(op).stimcond_logrt{cn}{condsuni(i)}(s) = nanmean(D(d).Processed(op).logrt(condnum{cn}==condsuni(i) & D(d).Sequence.signal(S.signal.target,:)==stims(s))); 
+                    end
+                end
+            end
+        end
     end
     
 end
 
 % average
 if S.meanD
-    S.mean_fields = {'macorrect','blockcorrectmovavg','condcorrectfract','blockcondcorrectfract','stimcondcorrectfract','stimcuecorrectfract'};
+    S.mean_fields = {'macorrect','blockcorrectmovavg','condcorrectfract','blockcondcorrectfract','stimcondcorrectfract','stimcuecorrectfract','logrt','cond_logrt','stimcond_logrt'};
     for mf = 1:length(S.mean_fields)
         if iscell(D(1).Processed.(S.mean_fields{mf}))
             for i1 = 1:length(D(1).Processed.(S.mean_fields{mf}))
