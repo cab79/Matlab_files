@@ -1,11 +1,12 @@
 clear all
-filepath = 'C:\Data\CORE\Preprocessed_100Hz';
+filepath = 'C:\Data\CORE\EEG\ana\prep\cleaned_new';
 cd(filepath);
 files = dir('*_ALLEEG.mat');
 trials_ana = 1; % propotion of trials to analyse
 
 %% plot conditions
-for f =41%:length(files)
+%for 
+    f=13%:length(files)
     [pth nme ext] = fileparts(files(f).name); 
     C = strsplit(nme,'_');
     load(fullfile(filepath,files(f).name));
@@ -72,7 +73,7 @@ for f =41%:length(files)
     numtrials(f,:)=[totadd totsub];
     
     [erp1 erp2 erpsub] = pop_comperp(ALLEEG, 1, datadd, datsub,'addavg','on','subavg','on','diffavg','on','ylim',[-3 3]);
-end
+%end
 
 return
 

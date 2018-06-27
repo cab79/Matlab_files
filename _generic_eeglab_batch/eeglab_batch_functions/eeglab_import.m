@@ -25,10 +25,12 @@ for sub = 1:length(uni_ind)
     
     % FIND THE FILES
     subfiles = S.(S.func).filelist(file_ind==uni_ind(sub));
+    subdirs = S.(S.func).dirlist(file_ind==uni_ind(sub));
 
     % run though subject files in a loop and convert
     for f = 1:length(subfiles)
         filename = subfiles{f};
+        dirname = subdirs{f};
         %if length(file) > 1
         %    error('Expected 1 recording file. Found %d.\n',length(file));
         %else
@@ -39,17 +41,17 @@ for sub = 1:length(uni_ind)
         switch S.(S.func).fname.ext{:}
             case 'vhdr' % Brainvision
                 if isfield(S.import,'module') && any(strcmp(S.import.module,'fileio'))
-                    EEG = pop_fileio(fullfile(S.path.raw,filename));
+                    EEG = pop_fileio(fullfile(dirname,filename));
                 else
-                    EEG = pop_loadbv_CAB(S.path.raw,filename); % CAB version changes filesnames to be the same as those on disk
+                    EEG = pop_loadbv_CAB(dirname,filename); % CAB version changes filesnames to be the same as those on disk
                 end
             case 'cnt' % Neuroscan
-                EEG = pop_loadcnt(fullfile(S.path.raw,filename));
-            case 'mff'
+                EEG = pop_loadcnt(fullfile(dirname,filename));
+            case {'mff',''}
                 % requires toolbox: mffimport2.0 (Srivas Chennu)
-                EEG = pop_readegimff(fullfile(S.path.raw,filename));
+                EEG = pop_readegimff(fullfile(dirname,filename));
             case 'bdf'
-                EEG = pop_biosig(fullfile(S.path.raw,filename),[],'BDF'); % NOT TESTED. May need to add in channel range instead of []
+                EEG = pop_biosig(fullfile(dirname,filename),[],'BDF'); % NOT TESTED. May need to add in channel range instead of []
             case 'csv'
                 % NEEDS CODE
         end
@@ -73,7 +75,11 @@ for sub = 1:length(uni_ind)
         savename = nme;
         EEG.setname = sprintf([S.(S.func).save.prefix{:} '%s' S.(S.func).save.suffix{:}],savename); % the output file is called: basename_orig
         EEG.filename = sprintf([S.(S.func).save.prefix{:} '%s' S.(S.func).save.suffix{:} '.set'],savename);
-        EEG.filepath = S.path.prep;
+        EEG.filepath = fullfile(S.path.prep,'imported');
+        
+        if ~exist(EEG.filepath,'dir')
+            mkdir(EEG.filepath)
+        end
 
         fprintf('Saving %s%s.\n', EEG.filepath, EEG.filename);
         pop_saveset(EEG,'filename', EEG.filename, 'filepath', EEG.filepath);

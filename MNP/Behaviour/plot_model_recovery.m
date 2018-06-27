@@ -1,6 +1,8 @@
+function MNP_plot_model_recovery(D,S)
+
 close all
 clear all
-cd('C:\Data\MNP\Pilots\VLTv2\processed')
+cd('C:\Data\MNP\Pilots\VLTv3\processed')
 
 basename = 'evidence_model';
 

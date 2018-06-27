@@ -12,7 +12,7 @@ close all
 % directory in which SPM is saved
 %P.spm_path = 'C:\Data\CORE\SPMstats\t-200_299_b-200_0_m_0_299_CP_Odd_DC_Subject_4_cleaned_tm_spm';
 %P.spm_path = 'C:\Data\CORE\SPMstats\t-200_299_b-200_0_m_0_299_CP_Grp_Odd_Subject_4_cleaned_tm_spm';
-P.spm_path = 'C:\Data\CORE\SPMstats\t-200_899_b-200_0_m_0_899_Grp_Odd_DC_Subject_2_merged_cleaned_spm';
+P.spm_path = 'C:\Data\CORE\EEG\ana\spm\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm';
 
 %cluster directory name, which also specifies the constrast that will be
 %plotted (i.e. the characters before the underscore)
@@ -74,7 +74,7 @@ plot_diff_wave = 1;
 use_flipped=1;
 fcond = [5:8 13:16 21:24];
 %eventtypes = 1:24;
-eeglab_path = 'C:\Data\CORE\Preprocessed_100Hz';
+eeglab_path = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2';
 no_plot_ele=[];
 
 % save optons

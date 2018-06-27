@@ -11,8 +11,9 @@ function plot_topo(P,D)
     % P.EEGtimes
     
 % average ERPs over non-unique rows
-DATa = cell(length(unique(D.WFrows)),1);
-for i = unique(D.WFrows)'
+ind = unique(D.WFrows,'stable')';
+DATa = cell(length(ind),1);
+for i = ind
     DATa{i}=mean(cat(3,D.DAT{D.WFrows==i}),3);
 end
 f1=figure
@@ -26,9 +27,19 @@ pln=0;
 
 y=DATa(D.Fi_ind);
 y=y(D.fi);
-[~,~,condind]=unique(D.cond,'stable');
-unicond = unique(condind)';
-for cn = unicond
+if iscell(P.cval)
+    cond = P.cval{1}(P.cval{2});
+    condind=nan(1,length(D.cond));
+    for cn = 1:length(cond) 
+        ind = ismember(D.cond,cond{cn});
+        condind(ind) = cn;
+    end
+else
+    [cond,~,condind]=unique(D.cond,'stable');
+    unicond = unique(condind)';
+end
+
+for cn = 1:length(cond) 
     peakdata=y(condind==cn);
     peakdata = mean(cat(3,peakdata{:}),3);
     plotchans=1:length(D.chanlocs);
@@ -47,7 +58,7 @@ for cn = unicond
         for ln = 1:length(lats)-1
             pln = pln+1;
             lat=lats(ln:ln+1);
-            ax(pln) = subplot(length(unicond),length(lats)-1,pln); plottopotype(mean(peakdata(:,lat(1):lat(2)),2),D.chanlocs,plotchans,P.topotype)
+            ax(pln) = subplot(length(cond),length(lats)-1,pln); plottopotype(mean(peakdata(:,lat(1):lat(2)),2),D.chanlocs,plotchans,P.topotype)
         end
     elseif any(P.topo_subtimewin) && length(P.topo_subtimewin)==2 % specified time window
         pln = pln+1;

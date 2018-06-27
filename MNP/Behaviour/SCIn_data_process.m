@@ -1,6 +1,34 @@
 function [S,D] = SCIn_data_process(S,D)
 % requires strcuture D containing all the data
 
+if ~isfield(S,'trialmax')
+    S.trialmax = {1000};
+end
+if ~isfield(S,'movingavg')
+    S.movingavg = 20;
+end
+
+%S.accuracy.buttons = {'LeftArrow','RightArrow'};%{'DownArrow','UpArrow'};
+S.accuracy.signal = [1 2];
+if S.fitsim==1
+    switch S.version
+        case 1
+            S.accuracy.target_resp = {[1 2],[1 2]}; % for each target (1st cell) which is the correct response (2nd cell)
+            S.signal.target = 1; % which row of signal is the target being responded to?
+            S.signal.cue = 0;
+        case {2 3}
+            S.accuracy.target_resp = {[1 2],[2 1]}; % for each target (1st cell) which is the correct response (2nd cell)
+            S.signal.target = 2; % which row of signal is the target being responded to?
+            S.signal.cue = 1;
+            S.accuracy.cond_stimtype = [1 2]; % which stimtypes to include when summarising results within conditions?
+    end
+elseif S.fitsim==2
+    S.accuracy.target_resp = {[1 2],[1 2]}; % for each target (1st cell) which is the correct response (2nd cell)
+    S.signal.target = 2; % which row of signal is the target being responded to?
+    S.signal.cue = 1;
+    S.accuracy.cond_stimtype = [1 2]; % which stimtypes to include when summarising results within conditions?
+end
+
 for d = 1:length(D)
     
     for op = 1:length(D(d).Output)
@@ -210,7 +238,13 @@ end
 
 % average
 if S.meanD
-    S.mean_fields = {'macorrect','blockcorrectmovavg','condcorrectfract','blockcondcorrectfract','stimcondcorrectfract','stimcuecorrectfract','logrt','cond_logrt','stimcond_logrt'};
+    S.mean_fields = {};
+    if S.accuracy.on
+        S.mean_fields = [S.mean_fields {'macorrect','blockcorrectmovavg','condcorrectfract','blockcondcorrectfract','stimcondcorrectfract','stimcuecorrectfract'}];
+    end
+    if S.RT.on
+        S.mean_fields = [S.mean_fields {'logrt','cond_logrt','stimcond_logrt'}];
+    end
     for mf = 1:length(S.mean_fields)
         if iscell(D(1).Processed.(S.mean_fields{mf}))
             for i1 = 1:length(D(1).Processed.(S.mean_fields{mf}))

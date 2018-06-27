@@ -215,7 +215,8 @@ else
             grptype(grptype==0)=[];
             Ngrp(gd) = length(grptype);
         else %Change char Grp inputs to numbers
-            grpdat = grpdat(~cellfun(@isnan,grpdat));
+            %grpdat = grpdat(~cellfun(@isnan,grpdat,'UniformOutput',false));
+            grpdat = grpdat(~cell2mat(cellfun(@any,cellfun(@isnan,grpdat,'UniformOutput',false),'UniformOutput',false)));
             grptype = unique(grpdat);
             grptype(isempty(grptype))=[];
             Ngrp(gd) = length(grptype);
@@ -545,10 +546,10 @@ for gd = 1:length(Ngrp)
                         if ~exist(fname{:},'file')
                             fname_temp = dir(fullfile(subdir, [subfile D.imglist{i}]));
                             if length(fname_temp)>1 && ~strcmp(D.anatype,'singlesubject')
-                                display(fname);
+                                display(fname{:});
                                 error('Subject file name is not unique in this folder');
                             elseif length(fname_temp)==0
-                                display(fname);
+                                display(fname{:});
                                 error('no file found with this name');
                             end
                             for f = 1:length(fname_temp)
@@ -1198,17 +1199,17 @@ if D.pronto
     %end
     %cfg_util('deljob', job_id);
 end
-try
+%try
     if D.para
         spm_jobman('initcfg')
         spm_jobman('run',matlabbatch);
     end
-catch
-    if D.para==1
-        % reduced number of subjects if fails
-        subind = randperm(length(matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject));
-        matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject = matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject(subind(1:D.nSubs));
-        spm_jobman('initcfg');
-        spm_jobman('run',matlabbatch);
-    end
-end
+%catch
+%    if D.para==1
+%        % reduce number of subjects if fails
+%        subind = randperm(length(matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject));
+%        matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject = matlabbatch{1, 1}.spm.tools.snpm.des.PairT.fsubject(subind(1:D.nSubs));
+%        spm_jobman('initcfg');
+%        spm_jobman('run',matlabbatch);
+%    end
+%end

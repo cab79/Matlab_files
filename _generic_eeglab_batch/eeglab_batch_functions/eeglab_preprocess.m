@@ -4,9 +4,14 @@ S.func = 'prep';
 
 switch part
     case 'epoch'
+        
+    % load directory
+    if ~isfield(S.prep,'loaddir')
+        S.prep.loaddir = S.path.(S.func);
+    end
 
     % GET FILE LIST
-    S.path.file = S.path.(S.func);
+    S.path.file = S.prep.loaddir;
     S = getfilelist(S);
 
     % change to the input directory
@@ -28,7 +33,7 @@ switch part
         fparts = strsplit(nme,'_');
 
         % LOAD DATA
-        EEG = pop_loadset('filename',filename,'filepath',S.path.prep);
+        EEG = pop_loadset('filename',filename,'filepath',S.path.file);
 
         %ADD CHANNEL LOCATIONS 
         if S.prep.chan.addloc && isempty(EEG.chanlocs(1).theta)
@@ -132,22 +137,23 @@ switch part
 
 %% COMBINE
     case 'combine'
-    % update last filenameparts
-    for fnp = 1:length(S.prep.fname.parts)
-        try
-            for i = 1:length(S.prep.select.([S.prep.fname.parts{fnp} 's']))
-
-                S.prep.select.([S.prep.fname.parts{fnp} 's']){i} = strrep(S.prep.select.([S.prep.fname.parts{fnp} 's']){i},'.','_');
-
-                %S.prep.([S.prep.fname.parts{end} 's']){i} = [S.prep.([S.prep.fname.parts{end} 's']){i} '_' sname_ext];
-            end
-        end
-    end
+    
 
     % combine data files
-    if S.prep.combinefiles
+    if S.prep.combinefiles.on
         clear OUTEEG
 
+        % update last filenameparts
+        for fnp = 1:length(S.prep.fname.parts)
+            try
+                for i = 1:length(S.prep.select.([S.prep.fname.parts{fnp} 's']))
+
+                    S.prep.select.([S.prep.fname.parts{fnp} 's']){i} = strrep(S.prep.select.([S.prep.fname.parts{fnp} 's']){i},'.','_');
+
+                    %S.prep.([S.prep.fname.parts{end} 's']){i} = [S.prep.([S.prep.fname.parts{end} 's']){i} '_' sname_ext];
+                end
+            end
+        end
 
         % GET FILE LIST
         S.path.file = fullfile(S.path.prep,S.prep.load.suffix{:});
@@ -268,6 +274,10 @@ switch part
     elseif exist(fullfile(S.path.prep,'manrej'),'dir')
         S.prep.save.suffix{:} = 'manrej';
     end
+    
+%% separate prior to ICA
+    case 'sep'
+        S=eeglab_separate_files(S)
 
 %% ICA
     case 'ICA'

@@ -3,21 +3,25 @@ rmpath(genpath('C:\Data\Matlab\fieldtrip-20170113'))
 addpath('C:\Data\Matlab\spm12')
 addpath(genpath('C:\Data\Matlab\spm12\external'));
 eeglab_path = 'C:\Data\Matlab\eeglab14_1_1b'; % path to eeglab toolbox
-addpath(genpath(eeglab_path)); 
+%addpath(genpath(eeglab_path)); 
 
 %% SPECIFY DATA
 
 % path of EEGLAB .set files after preprocessing, path of SPM outputs, and
 % prefix of output files
-filepath = 'C:\Data\PET-LEP\Preprocessed\cleaned'; 
-outpath = 'C:\Data\PET-LEP\SPM\sensor'; 
+%filepath = 'C:\Data\Sarah\D2_Antag_Amisulpride'; 
+%outpath = 'C:\Data\Sarah\D2_Antag_Amisulpride\spm'; 
+%filepath = 'C:\Data\Sarah\D2_Cabergoline'; 
+%outpath = 'C:\Data\Sarah\D2_Cabergoline\spm'; 
+filepath = 'C:\Data\Sarah\D2_Placebo'; 
+outpath = 'C:\Data\Sarah\D2_Placebo\spm'; 
 outprefix = 'spm12_';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
 fpref = '';
 fmid = '';
-fsuff = 'cleaned.set';
+fsuff = '.set';
 
 % set data type: 'epoched' or 'continuous'
 dattype ='epoched';

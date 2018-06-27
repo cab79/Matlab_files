@@ -10,7 +10,7 @@ S.path.file = S.path.raw;
 S = getfilelist(S);
 
 % change to the input directory
-eval(sprintf('%s', ['cd(''' S.path.raw ''')']));
+eval(sprintf('%s', ['cd(''' S.path.file ''')']));
 
 % report if there are no such files
 if isempty(S.filelist)

@@ -1,7 +1,7 @@
 function S=select_chans(S);
 
 if ~isfield(S.(S.func),'chanlocs')
-    load(fullfile(S.path.prep,'chanlocs.mat'));
+    load(fullfile(S.path.main,'chanlocs.mat'));
     S.(S.func).chanlocs = chanlocs;
 end
 if isempty(S.(S.func).select.chans{1})

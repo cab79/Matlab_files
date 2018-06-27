@@ -2,15 +2,18 @@ clear all
 dbstop if error
 addpath('C:\Data\Matlab\NIfTI_20140122');
 %% SPECIFY DATA
-filepath = 'C:\Data\PET-LEP\SPM\sensor'; 
-outpath = 'C:\Data\PET-LEP\SPM\sensor\sensorimages'; 
+filepath = 'C:\Data\Sarah\D2_Antag_Amisulpride\spm'; 
+%filepath = 'C:\Data\Sarah\D2_Cabergoline\spm'; 
+%filepath = 'C:\Data\Sarah\D2_Placebo\spm'; 
+
+outpath = 'C:\Data\Sarah\sensorimages_SPN'; 
 batchpath = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\Sensor';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
 fpref = 'spm12_';
 fmid = '';
-fsuff = 'cleaned.mat';
+fsuff = '.mat';
 %fsuff = 'cleaned_trialNmatch.mat';
 
 %% SPECIFY OPTIONS
@@ -42,14 +45,14 @@ freqwin = []; % empty if not requiring freq analysis
 freqres = 0; % freq resolution
 %timewin = [-5500 -2500]; % empty will include whole epoch
 %basewin = [-5500 -5000]; % empty will not baseline correct
-timewin = [-500 1500]; % empty will include whole epoch
-basewin = [-500 0]; % empty will not baseline correct
+timewin = [-3000 0]; % empty will include whole epoch
+basewin = [-3500 -3300]; % empty will not baseline correct
 %timewin = [-5500 1500]; % empty will include whole epoch
 %basewin = [-5500 -5000]; % empty will not baseline correct
 
 %smooth output images (specify FWHM or 0 for no smoothing)
 spmsmooth = 1;
-delete_unsmoothed = 0;
+delete_unsmoothed = 1;
 
 %% RUN
 files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));

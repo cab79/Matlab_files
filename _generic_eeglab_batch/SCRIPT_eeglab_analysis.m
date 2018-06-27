@@ -17,15 +17,15 @@ addpath(genpath(support_path));
 %% EEG DATA FILE NAMING
 % Name the input files as <study name>_<participant ID>_<sessions name_<block name>_<condition name>
 % For example: EEGstudy_P1_S1_B1_C1.set
-% Any of the elements can be left out. But all must be separated by underscores.
+% Any of the elements can be left out as long as what is there is defined.
 
 %% SET DATA PATHS
 clear S
 S.path=struct;% clears the field
 S.path.main = 'C:\EEGLABtraining2018\Data\'
-S.path.raw = [S.path.main '\Raw']; % unprocessed data in original format
-S.path.prep = [S.path.main '\Preprocessed']; % folder to save processed .set data
-S.path.freq = [S.path.main '\Frequency']; % folder to save frequency analyses
+S.path.raw = [S.path.main '\Raw']; % unprocessed data in original or BIDS format
+S.path.prep = [S.path.main '\prep']; % folder to save processed .set data
+S.path.freq = [S.path.main '\freq']; % folder to save frequency analyses
 S.path.tf = [S.path.main '\TF']; % folder to save time-frequency analyses
 S.path.erp = [S.path.main '\ERP']; % folder to save ERP analyses
 S.path.datfile = [S.path.main '\Participant_data.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
@@ -38,11 +38,14 @@ save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time
 % "eeglab_import" to do the actual conversion.
 load(fullfile(S.path.main,'S'))
 S.import=struct;% clears the field
+S.import.grpdir = 0; % e.g. 1 if the files are within a group-specific folder with the group's name
+S.import.subjdir = 0; % e.g. 1 if the files are within a subject-specific folder with the subject's name
 S.import.fname.parts = {'study','subject','block','cond','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
+S.import.fname.partsep = {'','_',' ','',''}; % optional separator used in filename after each part (must be one per part even if empty). Otherwise, assumes underscores.
 S.import.fname.ext = {'vhdr'}; % file extension of input data: supports 'vhdr' (Brainvision), 'cnt' (Neuroscan), 'mff' (EGI - requires mffimport2.0 toolbox)
 S.import.study = {'NTIP'};
-S.import.select.groups = {}; % either single/multiple groups, or use * to process all groups in the datfile
-S.import.select.subjects = {'P1'}; % either single/multiple subjects, or use * to process all subjects in the datfile
+S.import.select.groups = {}; % either single/multiple groups, or leave empty to process all groups in the datfile
+S.import.select.subjects = {}; % either single/multiple subjects, or leave blank to process all subjects in the datfile
 S.import.select.sessions = {}; % Can use * as wildcard
 S.import.select.blocks = {'ECA'}; % blocks to load (each a separate file). Can use * as wildcard
 S.import.select.conds = {'1','1O','10','10O'}; % conditions to load (each a separate file). Can use * as wildcard
@@ -90,9 +93,9 @@ S.prep.startfile = 1;
 S=eeglab_preprocess(S,'epoch')
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 %% STEP 2: COMBINE FILES
+S.prep.combinefiles = 1;
 S.prep.load.suffix = {'epoched'}; % suffix to add to input file name, if needed. Can use * as wildcard
 S.prep.save.suffix = {'combined'}; % suffix to add to output file name, if needed. 
-S.prep.combinefiles = 1;
 S.prep.startfile = 1; 
 S=eeglab_preprocess(S,'combine')
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable

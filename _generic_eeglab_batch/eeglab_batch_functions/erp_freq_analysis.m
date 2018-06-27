@@ -41,7 +41,8 @@ for f = 1:length(S.(S.func).filelist)
         try
             load(fullfile(S.path.main,'chanlocs.mat'));
         catch
-            error('No chanlocs file') 
+            chanlocs = EEG.chanlocs;
+            save(fullfile(S.path.main,'chanlocs.mat'),'chanlocs')
         end
     end
     labs = {chanlocs.labels};
@@ -86,13 +87,22 @@ for f = 1:length(S.(S.func).filelist)
     sname_ext = [S.(S.func).select.datatype '.mat'];
     sname = [nme '_' sname_ext];
     
+    % This is study-specific code for data recorded from an EGI system
+    if any(find(strcmp('STIM',EEG.epoch(1).eventtype)))
+        [conds, tnums, fnums, bnums] = get_markers(EEG);
+    end
+    
     % switch to selected analysis
     switch S.(S.func).select.datatype
         case 'ERP'
             EEGall=EEG;
             for mt = 1:S.(S.func).nMarkType
                 if S.(S.func).epoch.combinemarkers
-                    EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers);
+                    if exist(conds,'var') % EGI
+                        % not yet complete
+                    else
+                        EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers);
+                    end
                 else
                     try
                         EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers{mt});

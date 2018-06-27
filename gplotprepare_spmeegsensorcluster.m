@@ -70,7 +70,7 @@ for cl = 1:length(clnames)
         wf=wf.wf;
     end
     % identify unique rows of the combination of factors
-    [~,Frows,D(cl).WFrows] = unique([fact_ind sub_ind],'rows');
+    [~,Frows,D(cl).WFrows] = unique([fact_ind sub_ind],'rows','stable');
     
     % create new factor indices for unique rows.
     D(cl).Fi = fact_ind(Frows,:);
@@ -87,9 +87,16 @@ for cl = 1:length(clnames)
     end
     
     D(cl).ptitle = cllabel;
-    if length(S.cval)>1 && isfield(S,'selectlev')
+    if size(S.cval,1)>1 && isfield(S,'selectlev')
         D(cl).Fi_ind = find(D(cl).Fi(:,1)==S.selectlev); % indices of Fi (and wf) for each plot
+%         cond = P.cval{1}(P.cval{2});
+%         condind=nan(1,length(D.cond));
+%         for cn = 1:length(cond) 
+%             ind = ismember(D.cond,cond{cn});
+%             condind(ind) = cn;
+%         end
     else
+        %[~,D(cl).Fi_ind] = sort(D(cl).Fi);
         D(cl).Fi_ind = 1:length(D(cl).Fi);
     end
     
@@ -113,7 +120,7 @@ for cl = 1:length(clnames)
 
     % set x and y axis data to plot
     D(cl).y=wff(D(cl).Fi_ind);
-    D(cl).y=D(cl).y(D(cl).fi);
+    D(cl).y=D(cl).y(find(D(cl).fi));
     if ~isempty(S.xlimits)
         xlim = dsearchn(itimes',S.xlimits')';% x values of the selected segment to plot
         D(cl).x = itimes(xlim(1):xlim(2));

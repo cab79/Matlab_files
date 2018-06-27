@@ -58,6 +58,9 @@ switch type
         % good, bad?
         S.(S.func).qual{i,1} = file;
         S.(S.func).qual{i,2} = MFquestdlg([0.9 0.3],['outlier percentile: ' num2str(outval)],'Data quality','Good','So-so','Bad','So-so')
+        if isempty(S.(S.func).qual{i,2})
+            return
+        end
         close(f); close(f2)
         qual=S.(S.func).qual;
         save(fullfile(S.path.file,'data_quality'),'qual')

@@ -66,6 +66,12 @@ S.(S.func).designmat = {'groups','subjects','sessions','blocks','conds'};
 fnameparts = {'prefix','study','group','subject','session','block','cond','suffix','ext'};
 parts = ismember(fnameparts,S.(S.func).fname.parts);
 
+% get separators
+partsep = {'_','_','_','_','_','_','_','_','_'};
+if isfield(S.(S.func).fname,'partsep')
+    partsep(parts) = S.(S.func).fname.partsep;
+end
+
 % load participant info and identify the relevant columns
 [~,~,pdata] = xlsread(S.path.datfile);
 grp_col = find(strcmp(pdata(1,:),'Group'));
@@ -78,7 +84,7 @@ if isnumeric([pdata{2:end,grp_col}])
     ugrp = unique([pdata{2:end,grp_col}]);
 else
     grpdata = pdata(2:end,grp_col);
-    grpdata = grpdata(~cellfun(@isnan,grpdata));
+    grpdata = grpdata(~cell2mat(cellfun(@any,cellfun(@isnan,grpdata,'UniformOutput',false),'UniformOutput',false)));
     ugrp = unique(grpdata);
 end
 Ngrp = length(ugrp);
@@ -153,22 +159,22 @@ for g = 1:length(grps)
         if isempty(S.(S.func).study{:})
             study = {''};
         else
-            study = {[S.(S.func).study{:} '_']};
+            study = {[S.(S.func).study{:} partsep{2}]};
         end
         if isempty(grp)
             grp = {''};
         else
-            grp = {[grp '_']};
+            grp = {[grp partsep{3}]};
         end
         if isempty(subj)
             subj = {''};
         else
-            subj = {[subj '_']};
+            subj = {[subj partsep{4}]};
         end
         if isempty(S.(S.func).load.prefix{:})
             pref = {''};
         else
-            pref = {[S.(S.func).load.prefix{:} '_']};
+            pref = {[S.(S.func).load.prefix{:} partsep{1}]};
         end
         if isempty(S.(S.func).load.suffix{:})
             suff = {''};
@@ -191,17 +197,17 @@ for g = 1:length(grps)
                     if isempty(S.(S.func).select.sessions{a})
                         session = {''};
                     else
-                        session = {[S.(S.func).select.sessions{a} '_']};
+                        session = {[S.(S.func).select.sessions{a} partsep{5}]};
                     end
                     if isempty(S.(S.func).select.blocks{b})
                         block = {''};
                     else
-                        block = {[S.(S.func).select.blocks{b} '_']};
+                        block = {[S.(S.func).select.blocks{b} partsep{6}]};
                     end
                     if isempty(S.(S.func).select.conds{c})
                         cond = {''};
                     else
-                        cond = {[S.(S.func).select.conds{c} '_']};
+                        cond = {[S.(S.func).select.conds{c} partsep{7}]};
                     end
                     
                     genname = [pref study grp subj session block cond suff ext];
@@ -214,7 +220,20 @@ for g = 1:length(grps)
                     genname = strrep(genname,'**','*');
                     genname = strrep(genname,'_.','.');
                     %genname = regexprep(genname,{'\.','set'},{'','.set'});
-                    file = dir(fullfile(S.path.file,genname));
+                    
+                    if isfield(S.(S.func),'grpdir')
+                        grpdir = grps{g};
+                    else
+                        grpdir = '';
+                    end
+                    
+                    if isfield(S.(S.func),'subjdir')
+                        subdir = subjlists{g,1}{s,1};
+                    else
+                        subdir = '';
+                    end
+                    
+                    file = dir(fullfile(S.path.file,grpdir,subdir,genname));
                     if length(file)~=1
                         disp(['No unique file named ' genname])
                         continue
@@ -229,6 +248,7 @@ for g = 1:length(grps)
                     end
                     i=i+1;
                     S.(S.func).filelist{i} = fname;
+                    S.(S.func).dirlist{i} = fullfile(S.path.file,grpdir,subdir);
                     S.(S.func).designmat{i+1,1} = grp{:}(1:end-1);
                     S.(S.func).designmat{i+1,2} = subj{:}(1:end-1);
                     S.(S.func).designmat{i+1,3} = S.(S.func).select.sessions{a};
