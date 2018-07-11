@@ -97,10 +97,12 @@ end
 if strcmp(S.use_classifier,'LDA')
     % Define which classifier to use, using a function handle.
     % Alternatives are @cosmo_classify_{svm,matlabsvm,libsvm,nn,naive_bayes}
-    measure_args.matlab_lda = matlab_lda;
-    measure_args.logist = logist;
+    measure_args.matlab_lda = S.matlab_lda;
+    measure_args.logist = S.logist;
     measure_args.classifier = @cosmo_classify_lda_CAB;
-    measure_args.regularization =regularization;
+    measure_args.regularization =S.regularization;
+elseif strcmp(S.use_classifier,'GP')
+    measure_args.classifier=@cosmo_gpml_CAB;
 elseif strcmp(S.use_classifier,'Bayes')
     measure_args.classifier=@cosmo_classify_naive_bayes;
 elseif strcmp(S.use_classifier,'SVM')

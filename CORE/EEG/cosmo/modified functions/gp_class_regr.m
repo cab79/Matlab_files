@@ -1,15 +1,3 @@
-function test_gp
-
-dbstop if error
-addpath('C:\Matlab_files')
-gp_path = 'C:\Matlab\gpml-matlab-v4.2-2018-06-11';
-addpath(gp_path); run(fullfile(gp_path,'startup.m'));
-
-
-
-
-out = gp_class_regr(dat,targets,type,nfold,ndec)
-
 function out = gp_class_regr(dat,targets,type,nfold,ndec)
 % Bayesian multivariate classification or regression using Gaussian Processes
 % http://www.gaussianprocess.org/gpml/code/matlab/doc/
@@ -61,29 +49,3 @@ end
 % Finally, lp are the test output log probabilities.
 [nlZ,dnlZ] = gp(hyp, inf, mean, cov, lik, dat, targets);
 
-
-ldaClass = resubPredict(lda);
-% misclassification error (the proportion of misclassified observations) on the training set.
-ldaResubErr = resubLoss(lda);
-% confusion matrix
-[ldaResubCM,grpOrder] = confusionmat(groups,ldaClass);
-%Estimate the true test error for LDA using 10-fold stratified cross-validation.
-cp = cvpartition(groups,'KFold',nfold);
-cvlda = crossval(lda,'CVPartition',cp);
-out.ldaCVErr = kfoldLoss(cvlda);
-
-% clear 'ClassificationDiscriminant' ...
-%     'classreg.learning.modelparams.DiscriminantParams' ...
-%     'classreg.learning.modelparams.EnsembleParams' ...
-%     'classreg.learning.generator.Partitioner' ...
-%     'classreg.learning.classif.CompactClassificationDiscriminant' ...
-%     'classreg.learning.FitTemplate' ...
-%     'update' ...
-%     'cvpartition' ...
-%     'classreg.learning.internal.ClassLabel' ...
-%     'classreg.learning.modifier.BlankModifier' ...
-%     'classreg.learning.combiner.WeightedAverage' ...
-%     'classreg.learning.impl.CompactEnsembleImpl'
-%     
-% [M,X,C] = inmem;
-% C
