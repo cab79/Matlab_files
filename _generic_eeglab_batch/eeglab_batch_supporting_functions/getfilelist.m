@@ -143,6 +143,7 @@ gs=0;
 for g = 1:length(grps)
     for s = 1:length(subjlists{g,1}) 
         subj = subjlists{g,1}{s,1};
+        subj_pdat_idx = SubInd{g}(s);
         grp = grps{g};
         gs=gs+1;
         
@@ -254,6 +255,7 @@ for g = 1:length(grps)
                     S.(S.func).designmat{i+1,3} = S.(S.func).select.sessions{a};
                     S.(S.func).designmat{i+1,4} = S.(S.func).select.blocks{b};
                     S.(S.func).designmat{i+1,5} = S.(S.func).select.conds{c};
+                    S.(S.func).subj_pdat_idx(i) = subj_pdat_idx;
                 end
             end
         end

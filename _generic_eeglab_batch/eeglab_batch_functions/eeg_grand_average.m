@@ -1,4 +1,4 @@
-function S=FT_grand_average(S)
+function S=eeg_grand_average(S)
 
 dbstop if error
 

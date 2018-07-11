@@ -1,6 +1,8 @@
 function S=MultiOutliers(S,data);
-% assumes data is a cell array of Fieldtrip data structures containing .avg
+% Between-subject analysis: assumes data is a cell array of Fieldtrip data structures containing .avg
 % field
+% Within-subject analysis: assumes data is a 3D double array of
+% chan_time_trials
 
 %restoredefaultpath
 addpath('C:\Data\Matlab\Multivariate_Outliers')
@@ -12,19 +14,29 @@ addpath('C:\Data\Matlab\Multivariate_Outliers')
 % selection of time points.
 %outliers_demo_v2(12000,64,0.05)
 
+% for one data point at a time:
 % Subs (e.g. 30) * conds (e.g. 2) / chans (e.g. 59) need to be greater than
 % 1.
 
+% Over trials within-subject:
+% Trials (e.g. 400) / chans (e.g. 92)
+
 % create data array X
-for f = 1:length(data)
-    dat=data{f}.avg(S.(S.func).inclchan,:);
-    for e = 1:size(dat,1)
-        dat(e,:) = smooth(squeeze(dat(e,:)),30,'lowess');
+if iscell(data) && isfield(data{1},'avg') % SUBJECTS
+    dattype='subjects'
+    for f = 1:length(data)
+        dat=data{f}.avg(S.(S.func).inclchan,:);
+        for e = 1:size(dat,1)
+            dat(e,:) = smooth(squeeze(dat(e,:)),30,'lowess');
+        end
+        %dat2 = ft_preproc_bandpassfilter(dat, 250, [0 20]);
+        X{f}=dat;
     end
-    %dat2 = ft_preproc_bandpassfilter(dat, 250, [0 20]);
-    X{f}=dat;
+    X = cat(3,X{:});
+elseif isnumeric(data) && ndims(data)==3 % TRIALS
+    dattype='trials'
+    X=data;
 end
-X = cat(3,X{:});
 
 % cycle through for each time point
 for i = 1:size(X,2)
@@ -35,6 +47,7 @@ for i = 1:size(X,2)
     S.(S.func).multout.var(i,:,:) = var;
     S.(S.func).multout.RD(i,:) = RD';
     S.(S.func).multout.chi_crt(i,:) = chi_crt;
+    disp(['sample ' num2str(i) ' of ' num2str(size(X,2))])
 end
 
 % plots
@@ -102,13 +115,19 @@ pause(0.1)
 
 p=get(gca,'Position'); w=0.98*(x-p(1)); p(3)=w; set(gca,'Position',p)
 
-% summarise per subject
-files = unique(S.(S.func).fileidx);
-subs = S.(S.func).designmat(2:end,find(strcmp(S.(S.func).designmat(1,:),'subjects')));
-[unisubs,~,subsidx] = unique(subs,'stable');
-for i = 1:length(unisubs)
-    RDsub(i) = mean(RD(ismember(S.(S.func).fileidx,find(subsidx==i))));
+if strcmp(dattype,'subjects')
+    % summarise per subject
+    files = unique(S.(S.func).fileidx);
+    subs = S.(S.func).designmat(2:end,find(strcmp(S.(S.func).designmat(1,:),'subjects')));
+    [unisubs,~,subsidx] = unique(subs,'stable');
+    for i = 1:length(unisubs)
+        RDsub(i) = mean(RD(ismember(S.(S.func).fileidx,find(subsidx==i))));
+    end
+    [sortRD,ord] = sort(RDsub,'descend');
+    S.(S.func).multoutlist = unisubs(ord);
+    S.(S.func).multoutlist(:,2) = num2cell(sortRD');
+elseif strcmp(dattype,'trials')
+    [sortRD,ord] = sort(RD,'descend');
+    S.(S.func).multoutlist = ord;
+    S.(S.func).multoutlist(:,2) = sortRD;
 end
-[sortRD,ord] = sort(RDsub,'descend');
-S.(S.func).multoutlist = unisubs(ord);
-S.(S.func).multoutlist(:,2) = num2cell(sortRD');

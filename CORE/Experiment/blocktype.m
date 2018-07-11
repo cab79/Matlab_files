@@ -1,6 +1,12 @@
-function [hand,dc,cp,bi,blockii,btypes] = blocktype(dname,fname)
+function [hand,dc,cp,bi,blockii,btypes] = blocktype(varargin)
 
-load(fullfile(dname,fname));
+if nargin==1
+    dt = varargin{1}; % assume struct input
+else
+    dname = varargin{1};
+    fname = varargin{2};
+    load(fullfile(dname,fname));
+end
 
 btypes = {
     [1 3],1,1,1 % L, 1DC, 10PC
