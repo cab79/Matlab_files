@@ -33,7 +33,7 @@ S.parti='take-one-out';
 S.use_classifier = 'LDA'; regularization = 0.5; matlab_lda = 0; logist=0; EEGLAB_logit = 0;% For ? = 1, the weight vector is proportional to ?2 ? ?1, while it is proportional to ?ˆ?1(?2??1) in the case without shrinkage (? = 0). http://www.sciencedirect.com/science/article/pii/S1053811910009067#bb0250
 %S.use_classifier = 'Bayes';
 %S.use_classifier = 'SVM';
-EEGLAB_logit = 0;
+%EEGLAB_logit = 0;
 S.use_chunks = 'balance_targets';
     S.nchunks=4;
     
