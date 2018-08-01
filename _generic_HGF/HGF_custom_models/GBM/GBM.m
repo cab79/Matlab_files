@@ -265,12 +265,19 @@ for k=2:1:n
             if no_al1
                 al1=al0;
             end
-            if u(k,1)==0
-                al(k,1,m)=al0(u(k,2));
-            elseif u(k,1)==1
-                al(k,1,m)=al1(u(k,2));
+            if n_inputcond >1
+                if u(k,1)==0
+                    al(k,1,m)=al0(u(k,2));
+                elseif u(k,1)==1
+                    al(k,1,m)=al1(u(k,2));
+                end
+            else
+                if u(k,1)==0
+                    al(k,1,m)=al0;
+                elseif u(k,1)==1
+                    al(k,1,m)=al1;
+                end
             end
-
             % 
             if hierarchical(m)
                 % Likelihood functions: one for each
@@ -283,8 +290,6 @@ for k=2:1:n
                     und0 = exp(-(u(k) -eta0)^2/(2*al0));
                 end
 
-
-                
                 if AL(m)
                     if u(k,3)==2
                         mu0(k,1,m) = muhat(k,1,m) *und1 /(muhat(k,1,m) *und1 +(1 -muhat(k,1,m)) *und0);
@@ -292,9 +297,6 @@ for k=2:1:n
                     elseif u(k,3)==1
                         mu0(k,1,m) = (1-muhat(k,1,m)) *und1 /(muhat(k,1,m) *und0 +(1 -muhat(k,1,m)) *und1);
                         mu(k,1,m) = 1-mu0(k,1,m);
-
-                        % calculate prediction error for mu0 - muhat
-
                     end
                 else
                     mu(k,1,m) = muhat(k,1,m) *und1 /(muhat(k,1,m) *und1 +(1 -muhat(k,1,m)) *und0);

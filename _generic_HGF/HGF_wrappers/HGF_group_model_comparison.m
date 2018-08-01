@@ -10,17 +10,23 @@ grpuni = unique(grplist,'stable');
 % for each model
 rm=[];
 rc=cell(1,1);
-for m = 1:length(S.perc_models)
-    load(fullfile(fitted_path,['CORE_fittedparameters_percmodel' num2str(S.perc_models(m)) '_respmodel' num2str(S.resp_model) '_' S.sname '.mat']));
-    
-    
+
+% testing perceptual models
+% for m = 1:length(S.perc_models)
+%     load(fullfile(fitted_path,['CORE_fittedparameters_percmodel' num2str(S.perc_models(m)) '_respmodel' num2str(S.resp_model) '_fractrain' num2str(S.frac_train) '_' S.sname '.mat']));
+
+% testing response models
+for m = 1:length(S.resp_models)
+    load(fullfile(fitted_path,['CORE_fittedparameters_percmodel' num2str(S.perc_model) '_respmodel' num2str(S.resp_models(m)) '_fractrain' num2str(S.frac_train) '_' S.sname '.mat']));
     % mean evidence for each fitted model over repetitions
     for d = 1:length(D_fit)
         try
             LME(m,d) = D_fit(d).HGF.fit.optim.LME; % rows: fitted models; columns: simulated models
         catch
             rm=[rm d];
-            disp(['Missing LME from subject d = ' num2str(d) ', model ' num2str(S.perc_models(m))])
+            try
+                disp(['Missing LME from subject d = ' num2str(d) ', model ' num2str(S.perc_models(m))])
+            end
         end
         rs(m,d)=D_fit(d).HGF.fit;
         rc{m,d}=D_fit(d).HGF.fit;
@@ -34,7 +40,8 @@ rs(:,rm) = [];
 rc(:,rm) = [];
 grplist(rm) = [];
     
-for m = 1:length(S.perc_models)
+%for m = 1:length(S.perc_models)
+for m = 1:length(S.resp_models)
     
     % separate into groups
     for g = 1:length(grpuni)
@@ -48,6 +55,8 @@ for m = 1:length(S.perc_models)
 end
 
 % compare models
-%[posterior,out] = VBA_groupBMC(LME);
-[gposterior,gout] = VBA_groupBMC_btwGroups(LMEgrp)
-
+if length(LMEgrp)==1
+    [posterior,out] = VBA_groupBMC(LME);
+elseif length(LMEgrp)>1
+    [gposterior,gout] = VBA_groupBMC_btwGroups(LMEgrp)
+end

@@ -490,7 +490,7 @@ S.plot.legend= {'entrain 10Hz-1Hz','entrain 10Hz-1Hz & oddball','mono'};
 S = eeg_plot_func(S);
 
 %% Grand average plots
-S.gaplot ='freqtopo'; % plot grandavg. Options: 'plottopo' (ERP/TF), 'timtopo' (ERP/TF), 'freqtopo' (Freq)
-% TBC
+S.plot ='freqtopo'; % plot grandavg. Options: 'plottopo' (ERP/TF), 'timtopo' (ERP/TF), 'freqtopo' (Freq)
+% TBC: average over trials and plot topos
 
 %% EXPORT DATA TO EXCEL FOR FURTHER PLOTTING AND STATISTICS

@@ -1,4 +1,4 @@
-function S=CORE_response_models(S)
+function S=CORE_response_models_v2(S)
 
 S.resp_modelspec = struct;
 
@@ -49,15 +49,36 @@ switch S.resp_model
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
     S.resp_modelspec.params = [8]; % from betas 1 to 8 
     
-    case 10 % RT uncertainty
+    case 10 % RT 
+    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
+    S.resp_modelspec.params = [9]; % from betas 1 to 8 
+    
+    case 11 % RT 
+    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
+    S.resp_modelspec.params = [10]; % from betas 1 to 8 
+    
+    case 12 % RT uncertainty
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
     S.resp_modelspec.params = [1 2 3 4]; % from betas 1 to 8 
     
-    case 11 % RT Prediction error
+    case 13 % RT Prediction error
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [5 6 7 8]; % from betas 1 to 8 
+    S.resp_modelspec.params = [5 6]; 
     
-    case 12 % RT full
+    case 14 % RT Prediction error
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [1:8]; % from betas 1 to 8 
+    S.resp_modelspec.params = [7 8]; 
+    
+    case 15 % RT Prediction error
+    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
+    S.resp_modelspec.params = [9 10]; 
+    
+    case 16 % RT Prediction error
+    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
+    S.resp_modelspec.params = [5 6 7 8 9 10]; % from betas 1 to 8 
+    
+    case 17 % RT full
+    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
+    S.resp_modelspec.params = [1:10]; % from betas 1 to 8 
+    
 end

@@ -95,6 +95,8 @@ if any(strcmp(r.c_obs.responses, 'RT'))
     % logRT: Extract trajectories of interest from infStates
     mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
+    dau = r.traj.(r.c_obs.model).dau;
+    ep1 = r.traj.(r.c_obs.model).epsi(:,1);
     da1 = r.traj.(r.c_obs.model).da(:,1);
     ep2 = r.traj.(r.c_obs.model).epsi(:,2);
     if l>1
@@ -107,8 +109,10 @@ if any(strcmp(r.c_obs.responses, 'RT'))
         ep3 = r.traj.(r.c_obs.model).epsi(:,3);
     end
     
-    % prediction error
+     % prediction error
     % ~~~~~~~~
+    daureg = abs(dau);
+    ep1reg = abs(ep1);
     da1reg = abs(da1);
     ep2reg = abs(ep2);
     if l>2
@@ -145,15 +149,16 @@ if any(strcmp(r.c_obs.responses, 'RT'))
     % Calculate predicted log-reaction time
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if l>2
-        logrt = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*da1reg +be6.*ep2reg +be7.*da2reg +be8.*ep3reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg;
     elseif l>1
-        logrt = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*da1reg +be6.*ep2reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg;
     else
-        logrt = be0 +be1.*surp +be2.*bernv +be5.*da1reg +be6.*ep2reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg;
     end
     
     % Simulate
-    y(:,2) = logrt +sqrt(ze)*randn(n, 1); % response time plus Gaussian noise
+    %y(:,2) = logresp +sqrt(ze)*randn(n, 1); % response time plus Gaussian noise
+    y(:,2) = logresp; % response time without Gaussian noise
 end
 
 

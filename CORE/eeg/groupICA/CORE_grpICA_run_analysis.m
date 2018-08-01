@@ -6,4 +6,4 @@ settings_script = 'CORE_icatb_input_settings';
 close all
 addpath(genpath(toolbox_path));
 addpath(study_functions_path);
-icatb_batch_file_run(fullfile(study_functions_path,settings_script));
+CORE_icatb_batch_file_run(fullfile(study_functions_path,settings_script));

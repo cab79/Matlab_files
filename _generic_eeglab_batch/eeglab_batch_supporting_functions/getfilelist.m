@@ -115,6 +115,8 @@ if isempty(grplist)
     grplist = 1:Ngrp;
 end
 grps = ugrp(grplist);
+SubInd=SubInd(grplist);
+Ngrp=length(grps);
 
 subjlists={};
 for g = 1:Ngrp
@@ -134,7 +136,7 @@ for g = 1:Ngrp
     subjlists{g,1} = subgrp;
 end
 
-subjlists = subjlists(grplist);
+%subjlists = subjlists(grplist);
 
 % create file list
 S.(S.func).filelist = {};

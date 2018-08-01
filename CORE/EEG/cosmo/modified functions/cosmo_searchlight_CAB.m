@@ -195,7 +195,7 @@ function results_map = cosmo_searchlight_CAB(ds, nbrhood, measure, varargin)
                                     'UniformOutput',false);
 
     results_map=cosmo_stack(result_map_cell,2);
-    cosmo_check_dataset_CAB(results_map);
+    %cosmo_check_dataset_CAB(results_map);
 
 function results_map=run_searchlight_with_worker(worker_opt)
 % run searchlight using the options in worker_opt
@@ -216,8 +216,10 @@ function results_map=run_searchlight_with_worker(worker_opt)
     ncenters=numel(nbrhood.neighbors);
     res_cell=cell(ncenters,1);
     weights=cell(ncenters,1);%CAB
+    transweights=cell(ncenters,1);%CAB
     offsets=cell(ncenters,1);%CAB
     prior=cell(ncenters,1);%CAB
+    logl=cell(ncenters,1);%CAB
 
     % see if progress is to be reported
     show_progress=~isempty(progress) && ...
@@ -268,7 +270,7 @@ function results_map=run_searchlight_with_worker(worker_opt)
                 % because they don't change for different searchlights
                 measure_opt.check_partitions=false;
 
-                cosmo_check_dataset_CAB(res); %CAB
+                %cosmo_check_dataset_CAB(res); %CAB
                 if size(res.samples,2)~=1
                     error('Measure output must yield a column vector');
                 end
@@ -291,6 +293,14 @@ function results_map=run_searchlight_with_worker(worker_opt)
             res = rmfield(res,'weights'); % CAB
             res = rmfield(res,'offsets'); % CAB
             res = rmfield(res,'prior'); % CAB
+        end
+        if isfield(res,'transweights') % CAB
+            transweights{center_id}=res.transweights; % CAB
+            res = rmfield(res,'transweights'); % CAB
+        end
+        if isfield(res,'logl') % CAB
+            logl{center_id}=res.logl; % CAB
+            res = rmfield(res,'logl'); % CAB
         end
         res_cell{center_id}=res;
 
@@ -343,8 +353,10 @@ function results_map=run_searchlight_with_worker(worker_opt)
     end
     
     results_map.weights=weights; % CAB
+    results_map.transweights=transweights; % CAB
     results_map.offsets=offsets; % CAB
     results_map.prior=prior; % CAB
+    results_map.logl=logl; % CAB
 
 
 function nbrhood_cell=split_nbrhood_for_workers(nbrhood,center_ids,nproc)
@@ -390,7 +402,7 @@ function check_input(ds, nbrhood, measure, opt)
         error('nproc must be positive scalar');
     end
 
-    cosmo_check_dataset(ds);
+    %cosmo_check_dataset(ds);
     cosmo_check_neighborhood(nbrhood,ds);
 
 

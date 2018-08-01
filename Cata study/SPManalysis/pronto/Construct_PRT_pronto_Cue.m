@@ -11,19 +11,19 @@ clear all
 % name and location of the current design-batch file
 D.batch_path = 'C:\Data\Matlab\Matlab_files\Cata study\SPManalysis\pronto\Construct_PRT_pronto_Cue.m';
 % template flexible factorial matlabbatch
-D.batch = 'C:\Data\Catastrophising study\SPMstats\pronto\PRT.mat';
+D.batch = 'E:\Data\Catastrophising study\SPMstats\pronto\PRT.mat';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\Catastrophising study\SPMdata\sensorimages';
+D.data_path = 'E:\Data\Catastrophising study\SPMdata\sensorimages';
 % directory in which image masks are saved
-D.mask_path = 'C:\Data\Catastrophising study\SPMdata\masks';
+D.mask_path = 'E:\Data\Catastrophising study\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
-D.pdatfile = 'C:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
+D.pdatfile = 'E:\Data\Catastrophising study\Behavioural\Participant_data_nocodes.xlsx';
 % names of headers in the above xls file:
     D.subhead = 'Subject';
     D.grphead = {'Group'}; 
     D.inchead = 'Include';
 % directory in which SPM analyses will be saved (new folder created)
-D.spmstats_path = 'C:\Data\Catastrophising study\SPMstats\pronto';
+D.spmstats_path = 'E:\Data\Catastrophising study\SPMstats\pronto';
 
 %% specific directory and file information for this analysis
 %-------------------------------------------------------------

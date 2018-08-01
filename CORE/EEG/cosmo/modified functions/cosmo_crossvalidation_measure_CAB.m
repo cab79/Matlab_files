@@ -231,13 +231,13 @@ function ds_sa = cosmo_crossvalidation_measure_CAB(ds, varargin)
 
     params=rmfield(params,'classifier');
     params=rmfield(params,'partitions');
-    try
-        [pred,accuracy,wei,off,prior]=cosmo_crossvalidate_CAB(ds,classifier,...
+    %try
+        [pred,accuracy,wei,off,prior,logl]=cosmo_crossvalidate_CAB(ds,classifier,...
                                             partitions,params); %CAB
-    catch
-        [pred,accuracy]=cosmo_crossvalidate(ds,classifier,...
-                                            partitions,params);
-    end
+    %catch
+    %    [pred,accuracy]=cosmo_crossvalidate(ds,classifier,...
+    %                                        partitions,params);
+    %end
     % <@@<
     ds_sa=struct();
     output=params.output;
@@ -291,6 +291,9 @@ try
     ds_sa.weights=mean(wei,3);
     ds_sa.offsets=mean(off,2);
     ds_sa.prior=mean(prior,2);
+    ds_sa.pred=nanmean(pred,2);
+    ds_sa.logl=mean(logl,2);
+    ds_sa.transweights = ds_sa.weights * (ds.samples' *ds.samples);
 end
 
 function [accs,folds]=compute_fold_accuracy(pred,targets)

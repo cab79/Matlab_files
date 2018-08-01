@@ -17,7 +17,7 @@ icasso_opts.sel_mode = 'randinit';  % Options are 'randinit', 'bootstrap' and 'b
 icasso_opts.num_ica_runs = 10; % Number of times ICA will be run
 % Most stable run estimate is based on these settings. 
 icasso_opts.min_cluster_size = 2; % Minimum cluster size
-icasso_opts.max_cluster_size = 20; % Max cluster size. Max is the no. of components
+icasso_opts.max_cluster_size = 10; % Max cluster size. Max is the no. of components
 
 %% fMRI: Enter TR in seconds. If TRs vary across subjects, TR must be a row vector of length equal to the number of subjects.
 %TR = [];
@@ -248,7 +248,7 @@ numOfPC2 = min(92,icasso_opts.max_cluster_size);
 % 2 - Scale to Z scores
 % 3 - Normalize spatial maps using the maximum intensity value and multiply timecourses using the maximum intensity value
 % 4 - Scale timecourses using the maximum intensity value and spatial maps using the standard deviation of timecourses
-scaleType = 1;
+scaleType = 4;
 
 
 %% 'Which ICA Algorithm Do You Want To Use';
@@ -257,7 +257,7 @@ scaleType = 1;
 % Note: Use only one subject and one session for Semi-blind ICA. Also specify atmost two reference function names
 
 % 1 means infomax, 2 means fastICA, etc.
-algoType = 13;
+algoType = 1;
 
 
 %% Specify atmost two reference function names if you select Semi-blind ICA algorithm.

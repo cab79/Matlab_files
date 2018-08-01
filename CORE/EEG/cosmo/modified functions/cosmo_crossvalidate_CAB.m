@@ -1,4 +1,4 @@
-function [pred, accuracy, wei,off,prior] = cosmo_crossvalidate_CAB(ds, classifier, partitions, opt)
+function [pred, accuracy, wei,off,prior,logl] = cosmo_crossvalidate_CAB(ds, classifier, partitions, opt)
 % performs cross-validation using a classifier
 %
 % [pred, accuracy] = cosmo_crossvalidate(dataset, classifier, partitions, opt)
@@ -182,13 +182,19 @@ function [pred, accuracy, wei,off,prior] = cosmo_crossvalidate_CAB(ds, classifie
 
     targets=ds.sa.targets;
     
-    ntarg = length(unique(targets)); % CAB
-    wei=NaN(ntarg,nfeat,npartitions); % CAB
-    off=NaN(ntarg,npartitions); % CAB
-    prior=NaN(ntarg,npartitions); % CAB
+    if all(floor(targets)==targets) % integer
+        nclasses = length(unique(targets)); % classification
+    else
+        nclasses = 1; % regression
+    end
+    wei=NaN(nclasses,nfeat,npartitions); % CAB
+    off=NaN(nclasses,npartitions); % CAB
+    prior=NaN(nclasses,npartitions); % CAB
+    logl=NaN(nclasses,npartitions); % CAB
 
     % process each fold
     for fold=1:npartitions
+        disp(['fold ' num2str(fold) '/' num2str(npartitions)])
         train_idxs=train_indices{fold};
         test_idxs=test_indices{fold};
         % for each partition get the training and test data, store in
@@ -228,22 +234,37 @@ function [pred, accuracy, wei,off,prior] = cosmo_crossvalidate_CAB(ds, classifie
         % then get predictions for the training samples using
         % the classifier, and store these in the k-th column of all_pred.
         try
-            [p, model] = classifier(train_data, train_targets, test_data, opt);
-            wei(1:size(model.class_weight,1),:,fold) = model.class_weight;
-            off(1:size(model.class_offset,1),fold) = model.class_offset;
-            prior(1:size(model.class_offset,1),fold) = model.class_prior;
+            [output, model] = classifier(train_data, train_targets, test_data, opt);
         catch
-            p = classifier(train_data, train_targets, test_data, opt);
+            output = classifier(train_data, train_targets, test_data, opt);
         end
-
-        pred(test_idxs,fold) = p;
+        if isstruct(output)
+            pred(test_idxs,fold) = output.predictions;
+        else
+            pred(test_idxs,fold) = output;
+        end
+        
+        if exist('model','var')
+            if strcmp(model.type,'classification')
+                wei(1:size(model.class_weight,1),:,fold) = model.class_weight;
+                off(1:size(model.class_offset,1),fold) = model.class_offset;
+                prior(1:size(model.class_offset,1),fold) = model.class_prior;
+            else
+                wei(1,:,fold) = output.class_weight{1};
+                off(1,fold)=model.mtr;
+                logl(1,fold)=model.nlml;
+            end
+        end
     end
 
-    % compute accuracies
-    has_prediction_mask=~isnan(pred);
-    correct_mask=bsxfun(@eq,targets,pred) & has_prediction_mask;
-
-    accuracy=sum(correct_mask)/sum(has_prediction_mask);
+    % compute accuracies or correlation coefficient
+    if strcmp(model.type,'classification')
+        has_prediction_mask=~isnan(pred);
+        correct_mask=bsxfun(@eq,targets,pred) & has_prediction_mask;
+        accuracy=sum(correct_mask)/sum(has_prediction_mask)
+    else % regression
+        accuracy=corr(nanmean(pred,2),targets,'type','Spearman')
+    end
 
 function [do_average_train, average_train_opt]=get_average_train_opt(opt)
     persistent cached_opt;

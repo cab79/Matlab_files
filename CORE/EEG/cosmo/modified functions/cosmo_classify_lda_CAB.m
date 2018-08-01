@@ -49,8 +49,9 @@ function [predicted, model] = cosmo_classify_lda_CAB(samples_train, targets_trai
         opt=struct();
     end
     if ~isfield(opt, 'regularization'), opt.regularization=.01; end
-    if ~isfield(opt, 'max_feature_count'), opt.max_feature_count=5000; end
-    if ~isfield(opt, 'matlab_lda'), matlab_lda=0; end %CAB
+    if ~isfield(opt, 'max_feature_count'), opt.max_feature_count=50000; end
+    if ~isfield(opt, 'matlab_lda'), opt.matlab_lda=0; end %CAB
+    if ~isfield(opt, 'output_weights'), opt.output_weights=1; end %CAB
 
     % support repeated testing on different data after training every time
     % on the same data. This is achieved by caching the training data
@@ -123,7 +124,13 @@ function [predicted, model] = cosmo_classify_lda_CAB(samples_train, targets_trai
         nclasses=numel(classes);
         
         if opt.matlab_lda % use MATLAB LDA
-            Mdl = fitcdiscr(samples_train,targets_train,'SaveMemory','on','FillCoeffs','off');
+            try
+                disp('trying linear LDA (Matlab function)')
+                Mdl = fitcdiscr(samples_train,targets_train,'DiscrimType','linear');
+            catch
+                disp('trying pseudolinear LDA')
+                Mdl = fitcdiscr(samples_train,targets_train,'DiscrimType','pseudolinear');
+            end
             class_weight=Mdl.Mu/Mdl.Sigma;
             class_offset=sum(class_weight .* Mdl.Mu,2);
             model=struct();
@@ -188,14 +195,23 @@ function [predicted, model] = cosmo_classify_lda_CAB(samples_train, targets_trai
                 class_samples=samples_train(msk,:);
 
                 class_mean(k,:) = sum(class_samples,1)/n(k); % class mean
-                res = bsxfun(@minus,class_samples,class_mean(k,:)); % residuals
-                class_cov = class_cov+res'*res; % estimate common covariance matrix
+                if opt.output_weights
+                    res = bsxfun(@minus,class_samples,class_mean(k,:)); % residuals
+                    class_cov = class_cov+res'*res; % estimate common covariance matrix
+                end
             end;
-            % apply regularization
-            regularization=opt.regularization;
-            class_cov=class_cov/ntrain;
-            reg=eye(nfeatures)*trace(class_cov)/max(1,nfeatures);
-            class_cov_reg=class_cov+reg*regularization;
+            if opt.output_weights
+                % apply regularization
+                regularization=opt.regularization;
+                class_cov=class_cov/ntrain;
+                reg=eye(nfeatures)*trace(class_cov)/max(1,nfeatures);
+                class_cov_reg=class_cov+reg*regularization;
+                class_weight=class_mean/class_cov_reg;
+                class_offset=-.5*sum(class_weight .* class_mean,2);
+            else
+                class_weight=nan;
+                class_offset=nan;
+            end
             
             % Assign prior probabilities
             if  ~isempty(opt.priors)
@@ -205,10 +221,6 @@ function [predicted, model] = cosmo_classify_lda_CAB(samples_train, targets_trai
                 % Use the sample probabilities
                 PriorProb = n / ntrain;
             end
-
-            % linear discriminant
-            class_weight=class_mean/class_cov_reg;
-            class_offset=-.5*sum(class_weight .* class_mean,2);
             class_prior =log(PriorProb)'; %CAB added priorprob
 
             model=struct();

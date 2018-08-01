@@ -1,4 +1,4 @@
-function [predicted, model] = cosmo_gpml_CAB(samples_train, targets_train, samples_test, opt)
+function [output, model] = cosmo_gpml_CAB(samples_train, targets_train, samples_test, opt)
 
 % predicted=cosmo_gpml_CAB(samples_train, targets_train, samples_test[,opt])
 %
@@ -19,8 +19,9 @@ function [predicted, model] = cosmo_gpml_CAB(samples_train, targets_train, sampl
 % regression.
 
 % Bayesian multivariate classification or regression using Gaussian Processes
-% Requires GPML toolbox:
+% Requires GPML toolbox as implemented in PRoNTo:
 % http://www.gaussianprocess.org/gpml/code/matlab/doc/
+% http://www.mlnl.cs.ucl.ac.uk/pronto/
 
 % A Gaussian Process is fully specified by a mean function and a covariance function. 
 % These functions are specified separately, and consist of a specification
@@ -41,6 +42,7 @@ function [predicted, model] = cosmo_gpml_CAB(samples_train, targets_train, sampl
 if nargin<4 || isempty(opt)
     opt=struct();
 end
+if ~isfield(opt, 'max_feature_count'), opt.max_feature_count=50000; end
 if ~isfield(opt, 'optimise_theta'), opt.optimise_theta=1; end
 
 % support repeated testing on different data after training every time
@@ -68,8 +70,8 @@ else
 end
 
 % test classifier
-output=test(model, samples_test);
-predicted = output.predictions;
+output=test(model, samples_test, samples_train);
+%predicted = output.predictions;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % helper functions
@@ -134,10 +136,10 @@ if opt.optimise_theta
     %if map
     %    [hyp,nlmls] = minimize(hyp, @gp_map, maxeval, inffunc, meanfunc, covfunc, likfunc, K, y, priors);
     %else
-        [hyp nlmls] = minimize(hyp, @gp, maxeval, inffunc, meanfunc, covfunc, likfunc, samples_train, y);
+        [hyp nlmls] = minimize(hyp, @prt_gp, maxeval, inffunc, meanfunc, covfunc, likfunc, {samples_train*samples_train'}, y);
     %end
 else
-    nlmls = gp(hyp, inffunc, meanfunc, covfunc, likfunc, samples_train, y);
+    nlmls = prt_gp(hyp, inffunc, meanfunc, covfunc, likfunc, {samples_train*samples_train'}, y);
 end
 
 % Outputs
@@ -150,10 +152,10 @@ model.classes=classes;
 model.targets_train = targets_train;
 model.mtr = mtr;
 
-function output=test(model, samples_test)
+function output=test(model, samples_test, samples_train)
 % make GP predictions
-[hyp, maxeval, inffunc, meanfunc, covfunc, likfunc, y] = gp_params(model.type,model.targets_train);
-[ymu,ys2,fmu,fs2,lp,post] = prt_gp(hyp, inffunc, meanfunc, covfunc, likfunc,K, y, samples_test, zeros(size(samples_test{1},1),1));
+[hyp, maxeval, inffunc, meanfunc, covfunc, likfunc, y, mtr] = gp_params(model.type,model.targets_train);
+[ymu,ys2,fmu,fs2,lp,post] = prt_gp(hyp, inffunc, meanfunc, covfunc, likfunc, {samples_train*samples_train'}, y, {samples_test*samples_train'}, zeros(size(samples_test,1),1),{samples_test*samples_test'});
 
 if strcmp(model.type,'classification')
     p = exp(lp);
@@ -169,13 +171,26 @@ output.alpha       = post.alpha;
 %output.sW          = post.sW;
 %output.L           = post.L;
 
+% compute weights
+nclasses=1; % regression
+for c = 1:nclasses
+    img1d     = zeros(size(samples_train(1,:)),'single');
+    for i=1:length(output.alpha)
+        tmp1 = single(samples_train(i,:));
+        tmp2 = single(output.alpha(i,c));
+        img1d = img1d + tmp1 * tmp2;
+    end
+    output.class_weight{c} = img1d;
+end
+
+
 
 function unq_xs=fast_vector_unique(xs)
 xs_sorted=sort(xs(:));
 idxs=([true;diff(xs_sorted)>0]);
 unq_xs=xs_sorted(idxs);
 
-function [hyp, maxeval, inffunc, meanfunc, covfunc, likfunc, y, mtr] = gp_param(type,targets_train)
+function [hyp, maxeval, inffunc, meanfunc, covfunc, likfunc, y, mtr] = gp_params(type,targets_train)
 
 % Info from PRoNTo prt_gp function:
 % Gaussian Process inference and prediction. The gp function provides a
@@ -230,15 +245,16 @@ switch type
           %meanfunc = [];                    % empty: don't use a mean function
           %covfunc = @covSEiso;              % Squared Exponental covariance function, see help covSEiso
           likfunc   = @likErf;
-          inffunc   = @infEP;
-          hyp = struct('mean', [], 'cov', [0 0], 'lik', -1); % initialize the hyperparameter struct
+          inffunc   = @prt_infEP;
+          %hyp = struct('mean', [], 'cov', [0 0], 'lik', -1); % initialize the hyperparameter struct
+          mtr       = nan;
 
     case 'regression'
           %meanfunc = [];                    % empty: don't use a mean function
           %covfunc = @covSEiso;              % Squared Exponental covariance function, see help covSEiso
           likfunc = @likGauss;              % Gaussian likelihood
-          inffunc   = @infExact;
-          hyp = struct('mean', [], 'cov', [0 0], 'lik', -1); % initialize the hyperparameter struct
+          inffunc   = @prt_infExact;
+          %hyp = struct('mean', [], 'cov', [0 0], 'lik', -1); % initialize the hyperparameter struct
           mtr       = mean(targets_train);      % mean of the training data
 end
 

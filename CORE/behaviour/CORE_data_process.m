@@ -1,6 +1,6 @@
 function [S,D] = CORE_data_process(S,D)
 
-ic = [1 1 1 1 1 1 1]; 
+ic = [1 2 1 2 nan nan nan]; 
 
 % event numbers for each condition (1st = change, 2nd = no change)
 cond1 = [1 3]; %0.1 prob, 1 digit change, left hand

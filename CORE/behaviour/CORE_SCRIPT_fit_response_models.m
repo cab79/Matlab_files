@@ -14,6 +14,7 @@ S.path.hgf = ['C:\Data\CORE\behaviour\hgf']; % folder to save processed data
 S.path.design = ['C:\Data\CORE\design']; % 
 S.fname.parts = {'prefix','subject','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
 S.fname.ext = {'mat'}; 
+S.select.groups = {'HC'};
 S.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
 S.select.sessions = {};
 S.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
@@ -25,7 +26,8 @@ S.path.datfile = ['C:\Data\CORE\participants\Participant_data.xlsx']; % .xlsx fi
 run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 
 % unique save name extension
-S.sname = datestr(now,30);
+sname = datestr(now,30)
+S.sname=sname;
 
 % data import
 S.load.prefixes = {'RT','dt'};
@@ -41,8 +43,19 @@ S.RT.min = 0.2; % min RT to consider
 S.save.tables = 0;
 [S,D_prep]=CORE_data_process(S,D);  % specific function for CORE (bypasses SCIn_data_process)
 
+% get PCs of traj
+S.traj{1} = {
+    {'PL'},{'mu','sa','muhat','sahat'};
+    {'PR'},{'mu','sa','muhat','sahat'};
+    }; % beliefs and their variance
+S.traj{2} = {
+    {'PL'},{'da','dau','ud','psi','epsi','wt'};
+    {'PR'},{'da','dau','ud','psi','epsi','wt'};
+    }; % prediction errors, updates and learning rates
+%[D] = HGF_traj2mat(D,S,opt)
+
 % split data into training and testing sets (if we want to test for prediction of behaviour)
-S.frac_train = 0.5; % set to 0 to include all data in training set AND test set
+S.frac_train = 0; % set to 0 to include all data in training set AND test set
 D_train=D_prep;
 if S.frac_train>0
     for d=1:length(D_prep)
@@ -62,23 +75,23 @@ if S.frac_train>0
 end
 
 % model fitting
-S.prc_config = 'GBM_config'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
-S.perc_models=[1 3 9 10];
-S.resp_model = 16; S=CORE_response_models(S);
-for pm=1:length(S.perc_models)
-    S.perc_model = S.perc_models(pm); 
+S.prc_config = 'GBM_config'; S.obs_config = 'response_model_config_v2'; S.nstim=[];S.bayes_opt=0;
+S.perc_model=[10];
+S.resp_models = [12:17]; 
+for rm=6%:length(S.resp_models)
+    S.resp_model = S.resp_models(rm); 
     S=CORE_perceptual_models(S);
-    %S.resp_model = 12; S=CORE_response_models(S);
+    S=CORE_response_models_v2(S);
     S.HGF.plottraj = 0; % turn off if doing multiple simulations!
     D_fit=HGF_run(D_train,S,0);
     save(fullfile(S.path.hgf,'fitted',['CORE_fittedparameters_percmodel' num2str(S.perc_model) '_respmodel' num2str(S.resp_model) '_fractrain' num2str(S.frac_train) '_' S.sname '.mat']), 'D_fit', 'S');
     
     % extract, tabulate and save parameters and summary stats of
     % trajectories
-    [out(pm).T,out(pm).traj,out(pm).param,out(pm).rt] = CORE_extract_HGF_results(D_fit,S);
-    [out(pm).stats] = CORE_HGF_groupstatistics(out(pm).T,{out(pm).traj});
+    %[out(rm).T,out(rm).traj,out(rm).param,out(rm).rt] = CORE_extract_HGF_results(D_fit,S);
+    %[out(rm).stats] = CORE_HGF_groupstatistics(out(rm).T,{out(rm).traj});
 end
-save(fullfile(S.path.hgf,'fitted',['CORE_analysistables_' S.sname '.mat']), 'out');
+%save(fullfile(S.path.hgf,'fitted',['CORE_analysistables_' S.sname '.mat']), 'out');
 
 % group model comparison
 %S.perc_models=1:8;

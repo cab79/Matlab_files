@@ -148,13 +148,13 @@ r.c_sim.prc_model = prc_model;
 prc_config_fun = [prc_model, '_config'];
 
 % Read configuration of perceptual model
-try
+%try
     prc_config_fun=str2func(prc_config_fun);
     S=varargin{3};
     r.c_prc = prc_config_fun(S);
-catch
-    r.c_prc = [];
-end
+%catch
+%    r.c_prc = [];
+%end
 
 % Store perceptual parameters
 prc_namep_fun = str2func([prc_model, '_namep']);

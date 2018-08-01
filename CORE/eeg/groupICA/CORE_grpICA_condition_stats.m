@@ -18,9 +18,9 @@ cond_idx = {
 contrast_rows = {[1 3],[2 4]}; % row of above cond_idx to contrast
 total_samples = -200:799;
 select_samples = 0:600;
-smooth_samples = 0;
-dsample = 1;
-analysis_type='multicomp'; % comp is considerably faster for LDA than comp_recon (latter reconstructs all channels)
+smooth_samples = 1;
+dsample = 4;
+analysis_type='comp_recon'; % comp is considerably faster for LDA than comp_recon (latter reconstructs all channels)
 
 % non-parametric independent samples rank test
 ranksum_on=0;
@@ -31,6 +31,7 @@ tfce_nperm=100; % for initial testing, between 100 and 1000. 5000 is most robust
 
 % LDA settings
 lda_on=1;
+balance_dataset_and_partitions =1;
 nRandSamp = 1;
 nfold=10;
 ndec=12;
@@ -139,17 +140,23 @@ for f = 1:length(compfiles)
             pvals=matlab_tfce('independent',1,img1,img2,'nperm',tfce_nperm);
             stats.tfce(f,c) = min(pvals);
         end
-
+        
+        %Linear Discriminant Analysis
         if lda_on
-            % Linear Discriminant Analysis on balanced trials
-            nT = cell2mat(cellfun(@size,conData,'UniformOutput',0)');
-            [minT,minI] = min(nT(:,3));
-            [maxT,maxI] = max(nT(:,3));
+            if balance_dataset_and_partitions 
+                if c==1 % use same balancing for all components
+                    nT = cell2mat(cellfun(@size,conData,'UniformOutput',0)');
+                    [minT,minI] = min(nT(:,3));
+                    [maxT,maxI] = max(nT(:,3));
+                    reduced_idx = randsample(maxT,minT);
+                end
+            end
 
             randData = conData;
-            for n = 1:nRandSamp
-                disp(['rep ' num2str(n) ' /' num2str(nRandSamp)])
-                randData{maxI} = conData{maxI}(:,:,randsample(maxT,minT));
+            %for n = 1:nRandSamp
+            n=1;
+                %disp(['rep ' num2str(n) ' /' num2str(nRandSamp)])
+                randData{maxI} = conData{maxI}(:,:,reduced_idx);
                 datmat = cat(2,reshape(randData{1},[],minT),reshape(randData{2},[],minT))';
                 groups = [ones(minT,1);2*ones(minT,1)];
                 try
@@ -164,9 +171,9 @@ for f = 1:length(compfiles)
                     stats.lda(f,c,n) = out;
                     disp('LDA complete')
                 end
-                stats.lda_cv_error(f,c) = mean(stats.lda(f,c).ldaCVErr);
+                stats.lda_cv_acc(f,c) = mean(1-stats.lda(f,c).ldaCVErr);
                 clear out datmat
-            end
+            %end
             clear data randData conData
         end
     end
@@ -191,7 +198,7 @@ if tfce_on
 end
 if lda_on
     figure
-    imagesc(stats.lda_cv_error,[0.4 0.6])
+    imagesc(stats.lda_cv_acc,[0.4 0.6])
     colormap(parula(10))
     colorbar
 end

@@ -104,6 +104,8 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     % Extract trajectories of interest from infStates
     mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
+    dau = r.traj.(r.c_obs.model).dau;
+    ep1 = r.traj.(r.c_obs.model).epsi(:,1);
     da1 = r.traj.(r.c_obs.model).da(:,1);
     ep2 = r.traj.(r.c_obs.model).epsi(:,2);
     if l>1
@@ -119,6 +121,10 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     
     % prediction error
     % ~~~~~~~~
+    daureg = abs(dau);
+    daureg(r.irr) = [];
+    ep1reg = abs(ep1);
+    ep1reg(r.irr) = [];
     da1reg = abs(da1);
     da1reg(r.irr) = [];
     ep2reg = abs(ep2);
@@ -160,23 +166,15 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
         pv(r.irr) = [];
     end
     
-%     trajmat =[surp,bernv,inferv,da1reg,ep2reg,da2reg,ep3reg];
-%     % determine numcomponent by doing an eig on the covariance matrix
-%     covar = trajmat'*trajmat;
-%     [V, D] = eig(covar);
-%     [D,ind] = sort(diag(D),'descend');
-%     D = D ./ sum(D);
-%     Dcum = cumsum(D);
-%     numcomp = find(Dcum>.9999,1,'first');
 
     % Calculate predicted log-response
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if l>2
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*da1reg +be6.*ep2reg +be7.*da2reg +be8.*ep3reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg;
     elseif l>1
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*da1reg +be6.*ep2reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg;
     else
-        logresp = be0 +be1.*surp +be2.*bernv +be5.*da1reg +be6.*ep2reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg;
     end
 
     % Calculate log-probabilities for non-irregular trials

@@ -9,6 +9,10 @@ dbstop if error
 if ~exist(S.path.hgf,'dir')
     mkdir(S.path.hgf)
 end
+if ~isfield(S.HGF,'plottraj')
+    S.HGF.plottraj=0;
+end
+
 sdate = datestr(now,30);
 
     
@@ -19,7 +23,21 @@ pmodel = strrep(prc_model,'_config','');
 obs_model = S.obs_config;
 opt_algo = 'tapas_quasinewton_optim_config';
 
+% checkp = gcp('nocreate')
+% if S.parallel
+%     if isempty(checkp)
+%         myPool = parpool
+%     end
+%     parforArg = Inf;
+% else
+%     parforArg = 0;
+% end
+% 
+% parfor (d = 1:length(D),parforArg)
+
 for d = 1:length(D)
+    
+    disp(['testing perc model ' num2str(S.perc_model) ', resp model ' num2str(S.resp_model) ', subject ' num2str(d) '/' num2str(length(D))])
 
     if isempty(S.nstim)
         nst=length(D(d).HGF(1).u);
@@ -45,8 +63,9 @@ for d = 1:length(D)
                 sim_param = S.sim;
             elseif isfield(D.HGF,'fit') 
                 sim_param = D(d).HGF(yn).fit.p_prc;
+                sim_obs_param = D(d).HGF(yn).fit.p_obs;
             end
-            sim(d) = tapas_simModel_CAB(D(d).HGF(1).u(1:nst,:), pmodel, sim_param, obs_model, [], S);
+            sim(d) = tapas_simModel_CAB(D(d).HGF(1).u(1:nst,:), pmodel, sim_param, obs_model, sim_obs_param, S);
         elseif S.bayes_opt
             fit(d) = tapas_fitModel_CAB([], D(d).HGF(1).u(1:nst,:), prc_model, obs_model, opt_algo,S); %BAYES OPTIMAL
         elseif strfind(S.prc_config,'tapas')
@@ -97,14 +116,14 @@ for d = 1:length(D)
     % Save
     if sim_on==1
         plotstruct=sim(d);
-        sname = [S(1).select.subjects{1, d} '_' sdate '_sim.mat'];
-        save(fullfile(S.path.hgf,sname),'sim');
+        %sname = [S(1).select.subjects{1, d} '_' sdate '_sim.mat'];
+        %save(fullfile(S.path.hgf,sname),'sim');
         %varargout={sim(d)};
         D(d).HGF(yn).sim = sim(d);
     else
         plotstruct=fit(d);
-        sname = [S(1).select.subjects{1, d} '_' sdate '_fit.mat'];
-        save(fullfile(S.path.hgf,sname),'fit');
+        %sname = [S(1).select.subjects{1, d} '_' sdate '_fit.mat'];
+        %save(fullfile(S.path.hgf,sname),'fit');
         %varargout={fit(d)};
         D(d).HGF(yn).fit = fit(d);
     end

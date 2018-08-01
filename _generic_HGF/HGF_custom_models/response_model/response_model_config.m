@@ -119,7 +119,7 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
         c.reg.be4mu = 0;
         c.reg.be4sa = 0;
     end
-
+    
     % Beta_5
     if any(c.params==5)
         c.reg.be5mu = 0;
@@ -137,16 +137,11 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
         c.reg.be6mu = 0;
         c.reg.be6sa = 0;
     end
-    
+
     % Beta_7
     if any(c.params==7)
-        if l>2
-            c.reg.be7mu = 0;
-            c.reg.be7sa = 4;
-        else
-            c.reg.be7mu = 0;
-            c.reg.be7sa = 0;
-        end
+        c.reg.be7mu = 0;
+        c.reg.be7sa = 4;
     else
         c.reg.be7mu = 0;
         c.reg.be7sa = 0;
@@ -154,16 +149,39 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
     
     % Beta_8
     if any(c.params==8)
-        if l>2
-            c.reg.be8mu = 0;
-            c.reg.be8sa = 4;
-        else
-            c.reg.be8mu = 0;
-            c.reg.be8sa = 0;
-        end
+        c.reg.be8mu = 0;
+        c.reg.be8sa = 4;
     else
         c.reg.be8mu = 0;
         c.reg.be8sa = 0;
+    end
+    
+    % Beta_9
+    if any(c.params==9)
+        if l>2
+            c.reg.be9mu = 0;
+            c.reg.be9sa = 4;
+        else
+            c.reg.be9mu = 0;
+            c.reg.be9sa = 0;
+        end
+    else
+        c.reg.be9mu = 0;
+        c.reg.be9sa = 0;
+    end
+    
+    % Beta_10
+    if any(c.params==10)
+        if l>2
+            c.reg.be10mu = 0;
+            c.reg.be10sa = 4;
+        else
+            c.reg.be10mu = 0;
+            c.reg.be10sa = 0;
+        end
+    else
+        c.reg.be10mu = 0;
+        c.reg.be10sa = 0;
     end
 
     % Zeta

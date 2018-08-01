@@ -1,18 +1,33 @@
-function out = run_cosmo_machine(cos,S)
+function [out,S] = run_cosmo_machine(cos,S)
 % multivariate classification between two groups
 % using linear discriminant analysis
+dbstop if error
 
-cos.sa.samples=round(cos.sa.samples,S.ndec);
-rm=all(isnan(dcos.sa.samples),1) | all(diff(cos.sa.samples)==0); % remove nans and constants
-cos.sa.samples(:,rm)=[];
+cos.samples=round(cos.samples,S.ndec);
+rm=all(isnan(cos.samples),1) | all(diff(cos.samples)==0); % remove nans and constants
+cos.samples(:,rm)=[];
+cos.fa.chan(rm)=[];
+cos.fa.time(rm)=[];
 
-if isempty(cos.sa.samples)
+if isempty(cos.samples)
     out.empty=1;
     return
 end
 
 % balance trials
-[cos,idxs,classes]=cosmo_balance_dataset(cos);
+if S.balance_dataset_and_partitions
+    if isempty(S.balance_idx)
+        [cos,S.balance_idx,classes]=cosmo_balance_dataset(cos);
+    else
+        idx = (S.balance_idx(:));
+        cos.sa.trialinfo = cos.sa.trialinfo(idx,:);
+        cos.sa.targets = cos.sa.targets(idx);
+        cos.sa.chunks = cos.sa.chunks(idx);
+        cos.samples = cos.samples(idx,:);
+    end
+else
+    S.balance_idx=[];
+end
 
 % get rid of features with at least one NaN value across samples
 fa_nan_mask=sum(isnan(cos.samples),1)>0;
@@ -26,7 +41,7 @@ if strcmp(S.use_chunks,'balance_targets')
 end
 
 % just to check everything is ok before analysis
-cosmo_check_dataset(cos);
+%cosmo_check_dataset(cos);
 fprintf('The input has feature dimensions %s\n', ...
         cosmo_strjoin(cos.a.fdim.labels,', '));
     
@@ -53,8 +68,8 @@ elseif strcmp(S.parti,'splithalf')
 elseif strcmp(S.parti,'oddeven')
     partitions = cosmo_oddeven_partitioner(cos);
     partitions=cosmo_balance_partitions(partitions, cos);
-elseif strcmp(S.parti,'nfold')
-    partitions=cosmo_nchoosek_partitioner(cos,S.nchunks);
+elseif strcmp(S.parti,'nchunks')
+    partitions=cosmo_nfold_partitioner(cos);
     if S.balance_dataset_and_partitions
         partitions=cosmo_balance_partitions(partitions, cos);
     end
@@ -69,7 +84,6 @@ fprintf('# test samples:%s\n', sprintf(' %d', cellfun(@numel, ...
                                     
 measure_args=struct();
 if strcmp(S.use_measure,'crossvalidation')
-    %% measure: LDA
     % Use the cosmo_cross_validation_measure and set its parameters
     % (classifier and partitions) in a measure_args struct.
     measure = @cosmo_crossvalidation_measure_CAB;
@@ -78,7 +92,7 @@ if strcmp(S.use_measure,'crossvalidation')
         measure_args.average_train_resamplings =S.average_train_resamplings;
     %end
     measure_args.priors = []; % leave blank to calculate from data
-    if ~balance_dataset_and_partitions
+    if ~S.balance_dataset_and_partitions
         measure_args.check_partitions=0;
         %average_train_count = 1; % average over this many trials
         %average_train_resamplings = 1; % reuse trials this many times
@@ -101,6 +115,7 @@ if strcmp(S.use_classifier,'LDA')
     measure_args.logist = S.logist;
     measure_args.classifier = @cosmo_classify_lda_CAB;
     measure_args.regularization =S.regularization;
+    measure_args.output_weights = S.output_weights;
 elseif strcmp(S.use_classifier,'GP')
     measure_args.classifier=@cosmo_gpml_CAB;
 elseif strcmp(S.use_classifier,'Bayes')
@@ -108,51 +123,75 @@ elseif strcmp(S.use_classifier,'Bayes')
 elseif strcmp(S.use_classifier,'SVM')
     measure_args.classifier=@cosmo_classify_svm;
 end
-
 measure_args.partitions=partitions;
 
-% print measure and arguments
-fprintf('Searchlight measure:\n');
-cosmo_disp(measure);
-fprintf('Searchlight measure arguments:\n');
-cosmo_disp(measure_args);
+if S.search_radius==Inf
+    
+    % get predictions for each fold
+    %[pred,accuracy]=cosmo_crossvalidate(cos, measure_args.classifier, measure_args.partitions);
+    %cosmo_crossvalidation_measure_CAB;
+    out=measure(cos, measure_args);
+    %out.accuracy=accuracy;
+    %out.predictions=pred;
+else
+    % print measure and arguments
+    fprintf('Measure:\n');
+    cosmo_disp(measure);
+    fprintf('Measure arguments:\n');
+    cosmo_disp(measure_args);
 
-% define neighborhood
-time_nbrhood=cosmo_interval_neighborhood(cos,'time',...
-                                        'radius',S.search_radius);
-if strcmp(S.SL_type,'time')
-    nbrhood=time_nbrhood;
-    nbrhood_nfeatures=cellfun(@numel,nbrhood.neighbors);
-    center_ids=find(nbrhood_nfeatures>0);
-elseif strcmp(S.SL_type,'time_chan')
+    % define neighborhood
+    time_nbrhood=cosmo_interval_neighborhood(cos,'time',...
+                                            'radius',S.search_radius);
 
-    % define the neighborhood for channels
-    cfg.senstype ='EEG';
-    cfg.method = 'triangulation';
-    cfg.elecfile=cfglayout;
-    cfg.layout=cfgoutput;
-    ft_nbrs = ft_prepare_neighbours(cfg);
-    chan_nbrhood=cosmo_meeg_chan_neighborhood(ds_tl, ft_nbrs);
+    if strcmp(S.SL_type,'time')
+        nbrhood=time_nbrhood;
+        nbrhood_nfeatures=cellfun(@numel,nbrhood.neighbors);
+        center_ids=find(nbrhood_nfeatures>0);
+    elseif strcmp(S.SL_type,'time_chan')
 
-    % cross neighborhoods for chan-time searchlight
-    nbrhood=cosmo_cross_neighborhood(ds_tl,{chan_nbrhood,...
-                                        time_nbrhood});
-    % print some info
-    nbrhood_nfeatures=cellfun(@numel,nbrhood.neighbors);
-    fprintf('Features have on average %.1f +/- %.1f neighbors\n', ...
-                mean(nbrhood_nfeatures), std(nbrhood_nfeatures));
+        % define the neighborhood for channels
+        cfg.senstype ='EEG';
+        cfg.method = 'triangulation';
+        cfg.elecfile=S.cfglayout;
+        cfg.layout=S.cfgoutput;
+        ft_nbrs = ft_prepare_neighbours(cfg);
+        chan_nbrhood=cosmo_meeg_chan_neighborhood(cos, ft_nbrs);
 
-    % only keep features with at least 10 neighbors
-    center_ids=find(nbrhood_nfeatures>10);
+        % cross neighborhoods for chan-time searchlight
+        nbrhood=cosmo_cross_neighborhood(cos,{chan_nbrhood,...
+                                            time_nbrhood});
+        % print some info
+        nbrhood_nfeatures=cellfun(@numel,nbrhood.neighbors);
+        fprintf('Features have on average %.1f +/- %.1f neighbors\n', ...
+                    mean(nbrhood_nfeatures), std(nbrhood_nfeatures));
+
+        % only keep features with at least 10 neighbors
+        center_ids=find(nbrhood_nfeatures>10);
+    end
+
+
+    % run the searchlight using the measure, measure arguments, and
+    % neighborhood defined above.
+    % Note that while the input has both 'chan' and 'time' as feature
+    % dimensions, the output only has 'time' as the feature dimension
+
+    out=cosmo_searchlight_CAB(cos,nbrhood,measure,measure_args,...
+                                              'center_ids',center_ids);
 end
-
-
-% run the searchlight using the measure, measure arguments, and
-% neighborhood defined above.
-% Note that while the input has both 'chan' and 'time' as feature
-% dimensions, the output only has 'time' as the feature dimension
-
-out=cosmo_searchlight_CAB(cos,nbrhood,measure,measure_args,...
-                                          'center_ids',center_ids);
-                                 
-                          
+% % get confusion matrix for each fold
+% confusion_matrix_folds=cosmo_confusion_matrix(ds.sa.targets,pred);
+% 
+% % sum confusion for each ground-truth target and prediction,
+% % resulting in an nclasses x nclasses matrix
+% confusion_matrix=sum(confusion_matrix_folds,3);
+% figure
+% imagesc(confusion_matrix,[0 10])
+% cfy_label=underscore2space(func2str(classifier));
+% title_=sprintf('%s using %s: accuracy=%.3f', ...
+%                 underscore2space(mask_label), cfy_label, accuracy);
+% title(title_)
+% set(gca,'XTick',1:nlabels,'XTickLabel',labels);
+% set(gca,'YTick',1:nlabels,'YTickLabel',labels);
+% ylabel('target');
+% xlabel('predicted');

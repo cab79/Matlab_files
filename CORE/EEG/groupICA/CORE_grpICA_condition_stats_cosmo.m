@@ -1,12 +1,15 @@
 clear all
 dbstop if error
 
-addpath('C:\Matlab\CoSMoMVPA\mvpa')
-addpath('C:\Matlab_files\CORE\EEG\cosmo\modified functions')
+addpath('C:\Data\Matlab\CoSMoMVPA\mvpa')
+addpath('C:\Data\Matlab\Matlab_files\CORE\EEG\cosmo\modified functions')
+addpath(genpath('C:\Data\Matlab\PRoNTo_dev-2.0.1'));
 addpath(genpath('C:\Data\Matlab\TFCE'));
 S.icaDir = 'C:\Data\CORE\eeg\ana\groupICA';
-S.compname = {'CORE_part2_ica_c','-1.mat'};
-S.infoname = {'fileinfo_','.mat'};
+%S.compname = {'CORE_part2_ica_c','-1.mat'};
+S.compname = {'CORE','_2_merged_cleaned_grp-ica_c.mat'};
+%S.infoname = {'fileinfo_','.mat'};
+S.infoname = {'CORE','_2_merged_cleaned_grp-fileinfo_.mat'};
 S.cond_idx = {
 %     [1 2 9 10 17 18] %left hand, mismatch
 %     [3 4 11 12 19 20] %left hand, standard
@@ -20,9 +23,10 @@ S.cond_idx = {
 S.contrast_rows = {[1 3],[2 4]}; % row of above cond_idx to contrast
 S.total_samples = -200:799;
 S.select_samples = 0:600;
-S.smooth_samples = 0;
-S.dsample = 1;
+S.smooth_samples = 1;
+S.dsample = 4;
 S.analysis_type='multicomp'; % comp is considerably faster for LDA than comp_recon (latter reconstructs all channels)
+S.ndec=8;
 
 % non-parametric independent samples rank test
 S.ranksum_on=0;
@@ -38,12 +42,13 @@ S.SL_type = 'time';
 S.search_radius = Inf;
 S.use_measure = 'crossvalidation';
 S.balance_dataset_and_partitions =1;
-S.parti='take-one-out'; % 'take-one-out', 'splithalf', 'oddeven'
-S.use_classifier = 'LDA'; S.regularization = 0.5; S.matlab_lda = 0;
+S.parti='nchunks'; % 'take-one-out', 'splithalf', 'oddeven', 'nchunks'
+%S.use_classifier = 'LDA'; S.regularization = 0.5; S.matlab_lda = 0; S.logist = 0; S.output_weights = 1;
+S.use_classifier = 'GP'; 
 S.use_chunks = 'balance_targets';
-S.nchunks=10;
-S.average_train_count = 5;
-S.average_train_resamplings = 3;
+S.nchunks=4;
+S.average_train_count = 1;
+S.average_train_resamplings = 1;
 
 sname=datestr(now,30);
 
@@ -53,9 +58,9 @@ if S.dsample
     S.total_samples = downsample(S.total_samples',S.dsample)';
     S.select_samples = downsample(S.select_samples',S.dsample)';
 end
-for f = 1:length(S.compfiles)
-    currentFile = fullfile(S.icaDir,S.compfiles(f).name);
-    currentInfo = fullfile(S.icaDir,strrep(strrep(S.compfiles(f).name,S.compname{1},S.infoname{1}),S.compname{2},S.infoname{2}));
+for f = 1:length(compfiles)
+    currentFile = fullfile(S.icaDir,compfiles(f).name);
+    currentInfo = fullfile(S.icaDir,strrep(strrep(compfiles(f).name,S.compname{1},S.infoname{1}),S.compname{2},S.infoname{2}));
     
     fprintf('\n');
     disp(['Loading ', currentFile]);
@@ -71,7 +76,7 @@ for f = 1:length(S.compfiles)
     switch S.analysis_type
         case {'comp','comp_recon'} % process each ICA component separately
             iter = 1:size(timecourse,1);
-        case 'all_recon' % combine all ICs into a single reconstruction of the data
+        case 'recon' % combine all ICs into a single reconstruction of the data
             iter = 1;
         case 'multicomp' % consider ICs as multivariate data rather than separately
             iter = 1;
@@ -79,7 +84,7 @@ for f = 1:length(S.compfiles)
     
     for c=iter
         
-        disp(['file ' num2str(f) '/' num2str(length(S.compfiles)) ' , comp ' num2str(c) ' /' num2str(size(timecourse,1))])      
+        disp(['file ' num2str(f) '/' num2str(length(compfiles)) ' , comp ' num2str(c) ' /' num2str(size(timecourse,1))])      
         
         switch S.analysis_type
             case 'comp'
@@ -88,7 +93,7 @@ for f = 1:length(S.compfiles)
             case 'comp_recon'
                 comps = c;
                 data= topography(:,comps) * timecourse(comps,:); 
-            case 'all_recon'
+            case 'recon'
                 comps = 1:size(timecourse,1);
                 data= topography(:,comps) * timecourse(comps,:);  
             case 'multicomp'
@@ -117,7 +122,7 @@ for f = 1:length(S.compfiles)
 
         % create two sets of trials to contrast
         for con = 1:length(S.contrast_rows)
-            idx{con} = find(ismember(eventType,[cond_idx{S.contrast_rows{con},:}]));
+            idx{con} = find(ismember(eventType,[S.cond_idx{S.contrast_rows{con},:}]));
             conData{con} = data(:,:,idx{con});
 
             % reduce to Global Field Power
@@ -126,7 +131,7 @@ for f = 1:length(S.compfiles)
         end
 
         % non-parametric independent paired test
-        if ranksum_on
+        if S.ranksum_on
             for s = 1:length(S.select_samples)
                 [p,~,st]=ranksum(gfpData{1}(s,:),gfpData{2}(s,:));
                 stats.ranksum.all(f,c,s) = st.ranksum;
@@ -141,7 +146,7 @@ for f = 1:length(S.compfiles)
         end
         
         % TFCE test
-        if tfce_on
+        if S.tfce_on
             shiftd=4-ndims(gfpData{1});
             img1=permute(shiftdim(gfpData{1},-shiftd),[3 1 2 4]);
             img2=permute(shiftdim(gfpData{2},-shiftd),[3 1 2 4]);
@@ -153,29 +158,31 @@ for f = 1:length(S.compfiles)
             % create cosmo data struct
             conds = nan(1,length(eventType));
             for cn = 1:length(idx)
-                conds(idx{con}) = cn;
+                conds(idx{cn}) = cn;
             end
             cos = eeglab2cosmo(data,S.select_samples,conds);
+            
             % set the targets 
             cos.sa.targets=cos.sa.trialinfo(:,1);
 
             % set the chunks (independent measurements)
             cos.sa.chunks=[1:size(cos.samples,1)]'; % each trial is a chunk - CORRECT?
             
-            % run analysis
-            try
-                out = run_cosmo_machine(cos,S);
-            catch
-                out.empty=1;
-                disp('MVPA failed!')
+            if S.balance_dataset_and_partitions 
+                if c==1 % use same balancing for all components
+                    S.balance_idx=[];
+                end
             end
-            if isfield(out,'empty')
-                continue
-            else
+            
+            % run analysis
+            %try
+                [out,S] = run_cosmo_machine(cos,S);
                 stats.mvpa(f,c) = out;
                 stats.mvpa_cv_acc(f,c) = mean(stats.mvpa(f,c).samples);
                 disp('MVPA complete')
-            end
+            %catch
+            %    disp('MVPA failed!')
+            %end
         end
     end
     save(fullfile(S.icaDir,['stats_' sname '.mat']),'stats'); % temporary - will be overwritten. Allows re-starting a failed analysis.
@@ -202,6 +209,18 @@ if S.mvpa_on
     imagesc(stats.mvpa_cv_acc,[0.4 0.6])
     colormap(parula(10))
     colorbar
+    title([S.icaDir ' ' S.analysis_type])
+    figure
+    hold on
+    bar(1:c,mean(stats.mvpa_cv_acc,1))
+    errorbar(1:c,mean(stats.mvpa_cv_acc,1),std(stats.mvpa_cv_acc,[],1),'.')
+    plot(xlim,[0.6 0.6], 'k--')
+    ylim([0.5 0.6])
+    figure
+    hold on
+    bar(1:f,max(stats.mvpa_cv_acc,[],2))
+    plot(xlim,[0.6 0.6], 'k--')
+    ylim([0.5 0.7])
 end
 
 % group-level stats
