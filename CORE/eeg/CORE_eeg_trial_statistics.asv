@@ -46,10 +46,6 @@ for d = 1:length(S.select.subjects)
         
     % FIND THE FILES FOR THIS SUBJECT
     subfiles = S.filelist(find(not(cellfun('isempty', strfind(S.filelist,D.subname)))));
-    
-    if isempty(subfiles)
-        continue
-    end
 
     % CYCLE THROUGH EACH FILE FOR THIS SUBJECT
     % add data to D structure which has a common format for any data type
@@ -887,11 +883,11 @@ for d = 1:length(S.select.subjects)
                     
                     % decode
                     [orig, recons] = decode_unimod(data', S.pred_train{con}, S.trainidx{con}, S.testidx{con}, beta, sigma, R);
-                    test_corr = corr(orig(~isnan(S.pred_test{con}(S.testidx{con},S.biem_pred)),S.biem_pred),recons(~isnan(S.pred_test{con}(S.testidx{con},S.biem_pred)),S.biem_pred),'type','Spearman');
+                    test_corr = corr(orig(~isnan(S.pred_train{con}(:,S.biem_pred)),S.biem_pred),recons(~isnan(orig(:,S.biem_pred)),S.biem_pred),'type','Spearman');
                     disp(['correlation: ' num2str(test_corr)])
                     if grpweights
                         [grporig, grprecons] = decode_unimod(data', S.pred_train{con}, S.trainidx{con}, S.testidx{con}, grpbeta, grpsigma, R);
-                        test_grpcorr = corr(grporig(~isnan(S.pred_test{con}(S.testidx{con},S.biem_pred)),S.biem_pred),grprecons(~isnan(S.pred_test{con}(S.testidx{con},S.biem_pred)),S.biem_pred),'type','Spearman');
+                        test_grpcorr = corr(grporig(~isnan(S.pred_train{con}(:,S.biem_pred))),grprecons(~isnan(grporig)),'type','Spearman');
                         disp(['correlation from grp weights: ' num2str(test_grpcorr)])
                     end
                     

@@ -246,9 +246,16 @@ function [pred, accuracy, wei,off,prior,logl] = cosmo_crossvalidate_CAB(ds, clas
         
         if exist('model','var')
             if strcmp(model.type,'classification')
-                wei(1:size(model.class_weight,1),:,fold) = model.class_weight;
-                off(1:size(model.class_offset,1),fold) = model.class_offset;
-                prior(1:size(model.class_offset,1),fold) = model.class_prior;
+                s = functions(classifier);
+                if strcmp(s.function, 'cosmo_gpml_CAB')
+                    wei(1,:,fold) = output.class_weight{1};
+                    off(1,fold)=model.mtr;
+                    logl(1,fold)=model.nlml;
+                else
+                    wei(1:size(model.class_weight,1),:,fold) = model.class_weight;
+                    off(1:size(model.class_offset,1),fold) = model.class_offset;
+                    prior(1:size(model.class_offset,1),fold) = model.class_prior;
+                end
             else
                 wei(1,:,fold) = output.class_weight{1};
                 off(1,fold)=model.mtr;

@@ -70,7 +70,7 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
             
         case 'EEG'
             % Beta_0
-            c.reg.be0mu = log(0); 
+            c.reg.be0mu = 0; 
             c.reg.be0sa = 4;
     end
 
@@ -182,6 +182,29 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
     else
         c.reg.be10mu = 0;
         c.reg.be10sa = 0;
+    end
+    
+    % Beta_11
+    if any(c.params==11)
+        c.reg.be11mu = 0;
+        c.reg.be11sa = 4;
+    else
+        c.reg.be11mu = 0;
+        c.reg.be11sa = 0;
+    end
+    
+    % Beta_12
+    if any(c.params==12)
+        if l>2
+            c.reg.be12mu = 0;
+            c.reg.be12sa = 4;
+        else
+            c.reg.be12mu = 0;
+            c.reg.be12sa = 0;
+        end
+    else
+        c.reg.be12mu = 0;
+        c.reg.be12sa = 0;
     end
 
     % Zeta

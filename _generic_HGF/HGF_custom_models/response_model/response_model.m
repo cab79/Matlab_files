@@ -97,11 +97,12 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     u(r.irr) = [];
     
     % check inputs are logged
-    if any(yr>2)
-        error('inputs must be logged and not contain any extreme outliers')
-    end
+%     if any(yr>2)
+%         error('inputs must be logged and not contain any extreme outliers')
+%     end
 
     % Extract trajectories of interest from infStates
+    mu1 = r.traj.(r.c_obs.model).mu(:,1);
     mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
     dau = r.traj.(r.c_obs.model).dau;
@@ -116,6 +117,7 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
         mu3    = r.traj.(r.c_obs.model).mu(:,3);
         da2 = r.traj.(r.c_obs.model).da(:,2);
         ep3 = r.traj.(r.c_obs.model).epsi(:,3);
+        da3 = r.traj.(r.c_obs.model).da(:,3);
     end
     
     
@@ -134,7 +136,14 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
         da2reg(r.irr) = [];
         ep3reg = ep3;
         ep3reg(r.irr) = [];
+        da3reg = da3;
+        da3reg(r.irr) = [];
     end
+    
+    % Posterior expectation
+    % ~~~~~~~~
+    m1reg = mu1;
+    m1reg(r.irr) = [];
 
     % Surprise: informational
     % ~~~~~~~~
@@ -170,11 +179,11 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     % Calculate predicted log-response
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if l>2
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg +be11.*m1reg +be12.*da3reg ;
     elseif l>1
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg;
     else
-        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg;
     end
 
     % Calculate log-probabilities for non-irregular trials

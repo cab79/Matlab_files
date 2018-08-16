@@ -42,4 +42,6 @@ switch S.resp_modelspec.responses{:}
             cc_mean(d,1)=mean(cc);
         end
         varargout = {cc_mean};
+        
+        
 end

@@ -246,13 +246,12 @@ figure;imagesc(sum(stats.spear.alldata(con).fdr_masked,3));
 imagesc(stats.RR.gfp.b{1, 1});
 imagesc(squeeze(mean(stats.RR.alldata.b{1, 1},1)));
 
-load('stats_MVPA_all_chan_cond_arcsinh_20180815T124954.mat'); mvpastats=stats;
+load('stats_MVPA_all_chan_RT_arcsinh_20180815T112744.mat'); mvpastats=stats;
 load('stats_MVPA_all_chan_condRT_arcsinh_20180815T141558.mat'); mvpastats2=stats;
 load('stats_RR_all_chan_RT_arcsinh_20180730T174602.mat'); biemstats=stats;
 load('stats_BRR_all_chan_RT_arcsinh_20180802T073556.mat'); biemBRRstats=stats;
 load('stats_RR_all_chan_RT_arcsinh_20180802T151948.mat'); biemflipstats=stats; 
 load('stats_MR_all_chan_RT_arcsinh_20180803T153041.mat'); biemMRstats=stats; 
-load('stats_MR_all_chan_condRT_arcsinh_20180815T155650.mat'); biemMRstats2=stats; 
 
 % plot MVPA predictions
 figure; hold on
@@ -291,18 +290,18 @@ line([0 0], ylim(), 'Color', 'k');
 xlabel('MVPA weights test data predictive accuracy'); 
 ylabel('MVPA transweights test data predictive accuracy');
 
-% plot MVPA predictions vs. BIEM MR
+% plot MVPA predictions vs. BIEM BRR
 figure; hold on
-ds = size(mvpastats2.mvpa.alldata);
-x=mean(reshape([mvpastats2.mvpa.alldata.testdata_corrtrans],ds(1),ds(2)),2);
-ds = size(biemMRstats2.biem.alldata.rho);
-y=mean(reshape([biemMRstats2.biem.alldata.rho],ds(1),ds(2)),2);
+ds = size(mvpastats.mvpa.alldata);
+x=mean(reshape([mvpastats.mvpa.alldata.testdata_corr],ds(1),ds(2)),2);
+ds = size(biemBRRstats.biem.alldata.rho);
+y=mean(reshape([biemBRRstats.biem.alldata.rho],ds(1),ds(2)),2);
 scatter(x,y); 
 h=refline(1,0); h.Color = 'b';
 line(xlim(), [0,0], 'Color', 'k');
 line([0 0], ylim(), 'Color', 'k');
 xlabel('MVPA test data predictive accuracy'); 
-ylabel('BIEM MR test data predictive accuracy');
+ylabel('BIEM BRR test data predictive accuracy');
 
 % plot BIEM RR vs. BIEM BRR 
 figure; hold on

@@ -23,26 +23,19 @@ pmodel = strrep(prc_model,'_config','');
 obs_model = S.obs_config;
 opt_algo = 'tapas_quasinewton_optim_config';
 
-% checkp = gcp('nocreate')
-% if S.parallel
-%     if isempty(checkp)
-%         myPool = parpool
-%     end
-%     parforArg = Inf;
-% else
-%     parforArg = 0;
-% end
-% 
-% parfor (d = 1:length(D),parforArg)
 
 for d = 1:length(D)
     
     disp(['testing perc model ' num2str(S.perc_model) ', resp model ' num2str(S.resp_model) ', subject ' num2str(d) '/' num2str(length(D))])
 
-    if isempty(S.nstim)
+    if ~isfield(S,'nstim')
         nst=length(D(d).HGF(1).u);
     else
-        nst=S.nstim;
+        if isempty(S.nstim)
+            nst=length(D(d).HGF(1).u);
+        else
+            nst=S.nstim;
+        end
     end
     
     % when simulating there may be multiple y created
@@ -52,7 +45,9 @@ for d = 1:length(D)
         yn = 1;
     end
     
-    S.use_y_col = find([any(strcmp(S.resp_modelspec.responses,'Ch')), any(strcmp(S.resp_modelspec.responses,'RT')),any(strcmp(S.resp_modelspec.responses,'EEG'))]);
+    if ~S.bayes_opt
+        S.use_y_col = find([any(strcmp(S.resp_modelspec.responses,'Ch')), any(strcmp(S.resp_modelspec.responses,'RT')),any(strcmp(S.resp_modelspec.responses,'EEG'))]);
+    end
     
     %cycle through until VarApprox is valid
     fin=0;

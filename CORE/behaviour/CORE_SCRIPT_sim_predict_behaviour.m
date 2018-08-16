@@ -1,52 +1,34 @@
 %% Analysis: Perceptual model simulation and prediction of behaviour
-function CORE_sim_predict_behaviour(varargin)
-% use: CORE_sim_predict_behaviour(S,D_fit)
-% or: run as script
+dbstop if error
+clear all
+close all
+% add toolbox paths
+run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 
-if isempty(varargin)
-    dbstop if error
-    clear all
-    close all
-    clear S
-    % add toolbox paths
-    run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
-    
-    % FOLDER AND FILENAME DEFINITIONS
-    S.path.hgf = ['C:\Data\CORE\behaviour\hgf']; 
-    
-    % flilename prefix and extension
-    
-    % 100%
-    % CORE_fittedparameters_percmodel6_respmodel10_20180720T195113.mat
-    % CORE_fittedparameters_percmodel3_respmodel11_20180722T095006.mat
-    % CORE_fittedpredictions_percmodel2_respmodel12_20180722T095040.mat
-    
-    % 50%
-    % CORE_fittedparameters_percmodel8_respmodel10_20180719T131912.mat
-    % CORE_fittedparameters_percmodel8_respmodel11_20180726T074654.mat
-    % CORE_fittedparameters_percmodel8_respmodel12_20180726T220524.mat
-    
-%     fname_pref = 'CORE_fittedparameters_percmodel10_respmodel';
-%     fname_ext = '_fractrain0_20180731T224814.mat';
-    fname_pref = 'CORE_fittedparameters_percmodel';
-    fname_ext = '_respmodel10_20180719T131912.mat';
-    % which models?
-    S.resp_model=[10];
-    testmodels = [1:8];
+% FOLDER AND FILENAME DEFINITIONS
+S.path.hgf = 'C:\Data\CORE\behaviour\hgf'; 
+
+% filename prefix and extension
+fname_pref = 'CORE_fittedparameters_percmodel10_respmodel';
+fname_ext = '_fractrain0_20180802T180446.mat';
+%     fname_pref = 'CORE_fittedparameters_percmodel';
+%     fname_ext = '_respmodel10_20180719T131912.mat';
+
+% which models?
 %     S.resp_model=[10];
-%     testmodels = [12:17];
-else
-    S=varargin{1};
-    D_fit = varargin{2};
-end
+%     testmodels = [1:8];
+S.perc_model=[10];
+predictmodel = [16]; 
+testmodels = [16];
 
-for pm=1:length(testmodels)
-    S.perc_model = testmodels(pm);
-    load(fullfile(S.path.hgf,'fitted',[fname_pref num2str(S.perc_model) fname_ext])); 
 % for pm=1:length(testmodels)
-%     S.resp_model = testmodels(pm); 
-%     load(fullfile(S.path.hgf,'fitted',[fname_pref num2str(S.resp_model) fname_ext]));
+%     S.perc_model = testmodels(pm);
+%     load(fullfile(S.path.hgf,'fitted',[fname_pref num2str(S.perc_model) fname_ext])); 
+for pm=1:length(testmodels)
+    ls=load(fullfile(S.path.hgf,'fitted',[fname_pref num2str(testmodels(pm)) fname_ext]));
+    D_fit=ls.D_fit;
     
+    S.resp_model = predictmodel; 
     S.prc_config = 'GBM_config'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
     S=CORE_perceptual_models(S);
     S=CORE_response_models(S);
@@ -77,17 +59,17 @@ for pm=1:length(testmodels)
     end
     
     % add parameters to test data
-    if S.frac_train>0
-        for d=1:length(D_fit)
-            D_test(d).HGF.fit.p_prc = D_fit(d).HGF.fit.p_prc;
-        end
-    else
-        D_test=D_fit;
-    end
+%     if S.frac_train>0
+%         for d=1:length(D_fit)
+%             D_test(d).HGF.fit.p_prc = D_fit(d).HGF.fit.p_prc;
+%         end
+%     else
+%         D_test=D_fit;
+%     end
     
     % Simulations
     %S.resp_model = 12;S=CORE_response_models(S);
-    S.numsimrep = 100; % number of simulations to run per parameter combination
+    S.numsimrep = 1; % number of simulations to run per parameter combination
     S.sim=[];
     [D_sim,S] = HGF_sim(D_test,S); 
     switch S.resp_modelspec.responses{:}
@@ -105,12 +87,14 @@ for pm=1:length(testmodels)
                     for rep = 1:S.numsimrep
                         fitted_rt = D_sim(d).HGF(rep).sim.y(:,2);
                         for cn = 1:length(condnum)
-                            cond_rt(pm,d,cn,rep) = mean(fitted_rt(D_sim(1).dt.design(2,:)==condnum(cn)));
+                            cond_rt(pm,d,cn,rep) = nanmean(fitted_rt(D_sim(1).dt.design(2,:)==condnum(cn)));
                         end
                     end
                 end
-                cond_rt=mean(cond_rt,4);
+                cond_rt=nanmean(cond_rt,4);
             end
+%         case 'EEG'
+%             [cc(:,pm)]=HGF_test_model_predictions(D_test,D_sim,S);
     end
     
 end
@@ -135,8 +119,8 @@ switch S.resp_modelspec.responses{:}
         % plot correlation coefficients
         figure
         hold on
-        bar(testmodels,mean(cc,1))
-        errorbar(testmodels,mean(cc,1),std(cc,[],1),'.')
+        bar(testmodels,nanmean(cc,1))
+        errorbar(testmodels,nanmean(cc,1),nanstd(cc,[],1),'.')
         % plot condition effects
         figure
         x=repmat(testmodels,size(cc,1),1);

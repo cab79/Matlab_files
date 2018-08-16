@@ -43,8 +43,14 @@ S.RT.min = 0.2; % min RT to consider
 S.save.tables = 0;
 [S,D_prep]=CORE_data_process(S,D);  % specific function for CORE (bypasses SCIn_data_process)
 
+% Decoded EEG predictions import
+S.path.stats = 'C:\Data\CORE\eeg\ana\stats';
+S.file = 'stats_MR_all_chan_cond_arcsinh_20180804T144006.mat';
+S.use_group_recons = 0;
+[S,D_prep]=CORE_decEEG_import(S,D_prep,3);  % specific function for CORE (bypasses SCIn_data_process)
+
 % split data into training and testing sets (if we want to test for prediction of behaviour)
-S.frac_train = 0.5; % set to 0 to include all data in training set AND test set
+S.frac_train = 0; % set to 0 to include all data in training set AND test set
 D_train=D_prep;
 if S.frac_train>0
     for d=1:length(D_prep)
@@ -66,14 +72,14 @@ end
 % model fitting
 S.prc_config = 'GBM_config'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
 S.perc_model=[10];
-S.resp_models = [19]; 
+S.resp_models = [36]; 
 for rm=1:length(S.resp_models)
     S.resp_model = S.resp_models(rm); 
     S=CORE_perceptual_models(S);
     S=CORE_response_models(S);
     S.HGF.plottraj = 0; % turn off if doing multiple simulations!
     D_fit=HGF_run(D_train,S,0);
-    save(fullfile(S.path.hgf,'fitted',['CORE_fittedparameters_percmodel' num2str(S.perc_model) '_respmodel' num2str(S.resp_model) '_fractrain' num2str(S.frac_train) '_' S.sname '.mat']), 'D_fit', 'S');
+    save(fullfile(S.path.hgf,'fitted',['CORE_fittedparameters_percmodel' num2str(S.perc_model) '_respmodel' num2str(S.resp_model) '_grprecon' num2str(S.use_group_recons) '_fractrain' num2str(S.frac_train) '_' S.sname '.mat']), 'D_fit', 'S');
     
     % extract, tabulate and save parameters and summary stats of
     % trajectories
@@ -82,13 +88,21 @@ for rm=1:length(S.resp_models)
 end
 %save(fullfile(S.path.hgf,'fitted',['CORE_analysistables_' S.sname '.mat']), 'out');
 
-
-% group model comparison
 if 0
-S.perc_model=[10];
-S.resp_models = [12 16 17 19]; 
-S.sname='20180801T142901';
-[~,~,bmc.gposterior,bmc.gout]=HGF_group_model_comparison(S);
+    % group model comparison
+    S.fname_pref = 'CORE_fittedparameters_percmodel10_respmodel';
+    S.fname_ext = '.mat';
+    S.perc_model=[10];
+    S.resp_models = {
+        '22_fractrain0_20180806T171509'
+        '26_fractrain0_20180806T171509'
+        '28_fractrain0_20180806T171509'
+        '36_fractrain0_20180807T165634'
+        '37_fractrain0_20180807T165634'
+        '23_fractrain0_20180807T165634'
+        '36_grprecon1_fractrain0_20180807T165634'
+        }; 
+    [~,~,bmc.gposterior,bmc.gout]=HGF_group_model_comparison(S);
 end
 
 %CORE_sim_predict_behaviour(S,D_fit)

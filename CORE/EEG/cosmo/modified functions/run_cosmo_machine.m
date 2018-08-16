@@ -1,4 +1,4 @@
-function [out,S] = run_cosmo_machine(cos,S)
+ function [out,S] = run_cosmo_machine(cos,S)
 % multivariate classification between two groups
 % using linear discriminant analysis
 dbstop if error

@@ -93,6 +93,7 @@ if any(strcmp(r.c_obs.responses, 'RT'))
     u = r.u(:,1);
 
     % logRT: Extract trajectories of interest from infStates
+    mu1 = r.traj.(r.c_obs.model).mu(:,1);
     mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
     dau = r.traj.(r.c_obs.model).dau;
@@ -107,6 +108,7 @@ if any(strcmp(r.c_obs.responses, 'RT'))
         mu3    = r.traj.(r.c_obs.model).mu(:,3);
         da2 = r.traj.(r.c_obs.model).da(:,2);
         ep3 = r.traj.(r.c_obs.model).epsi(:,3);
+        da3 = r.traj.(r.c_obs.model).da(:,3);
     end
     
      % prediction error
@@ -118,7 +120,12 @@ if any(strcmp(r.c_obs.responses, 'RT'))
     if l>2
         da2reg = da2;
         ep3reg = ep3;
+        da3reg = da3;
     end
+    
+    % Posterior expectation
+    % ~~~~~~~~
+    m1reg = mu1;
 
     % Surprise: informational
     % ~~~~~~~~
@@ -149,11 +156,11 @@ if any(strcmp(r.c_obs.responses, 'RT'))
     % Calculate predicted log-reaction time
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if l>2
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg +be11.*m1reg +be12.*da3reg ;
     elseif l>1
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg;
     else
-        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg;
     end
     
     % Simulate

@@ -1,4 +1,5 @@
-function [posterior,out,gposterior,gout]=HGF_group_model_comparison(S)
+function varargout=HGF_group_model_comparison(S)
+% OUTPUT: varargout is {posterior,out,gposterior,gout}
 
 fitted_path = fullfile(S.path.hgf,'fitted');
 cd(fitted_path)
@@ -17,7 +18,8 @@ rc=cell(1,1);
 
 % testing response models
 for m = 1:length(S.resp_models)
-    load(fullfile(fitted_path,['CORE_fittedparameters_percmodel' num2str(S.perc_model) '_respmodel' num2str(S.resp_models(m)) '_fractrain' num2str(S.frac_train) '_' S.sname '.mat']));
+    ls = load(fullfile(fitted_path,[S.fname_pref S.resp_models{m} S.fname_ext]));
+    D_fit=ls.D_fit;
     % mean evidence for each fitted model over repetitions
     for d = 1:length(D_fit)
         try
@@ -45,7 +47,7 @@ for m = 1:length(S.resp_models)
     
     % separate into groups
     for g = 1:length(grpuni)
-        LMEgrp{1,g}(m,:) = LME(m,strcmp(grplist,grpuni{g}));;
+        LMEgrp{1,g}(m,:) = LME(m,strcmp(grplist,grpuni{g}));
     end
     
     % diagnostics: parameter correlations
@@ -57,6 +59,8 @@ end
 % compare models
 if length(LMEgrp)==1
     [posterior,out] = VBA_groupBMC(LME);
+    varargout(1:2) = {posterior,out};
 elseif length(LMEgrp)>1
     [gposterior,gout] = VBA_groupBMC_btwGroups(LMEgrp)
+    varargout(3:4) = {gposterior,gout};
 end

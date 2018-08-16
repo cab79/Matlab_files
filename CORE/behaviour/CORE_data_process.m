@@ -193,118 +193,119 @@ for d = 1:length(D)
         conds = sort(unique(bi));
 
         % RESPONSES
-        if S.fitsim==1
-            resp=D(d).RT.Output(1,:);
-        elseif S.fitsim==2
-            resp = D(d).Output; % for CORE this is always simulated
-        end
-        
-        if S.fitsim==1
-            ISI = 1.0;
-            thresh = S.RT.min; % min RT that is realistic
-            num_trial_lag = [1 1 1 1]; % number of trials over which response is allowed to lag for each of 0.1 prob, 0.3 prob, 0.5 prob.
+        if S.RT.on
+            if S.fitsim==1
+                resp=D(d).RT.Output(1,:);
+            elseif S.fitsim==2
+                resp = D(d).Output; % for CORE this is always simulated
+            end
 
-            for i = 1:size(design,2)-1
-                if any(cond1 == design(2,i)) || any(cond2 == design(2,i)) || any(cond3 == design(2,i)) || any(cond4 == design(2,i)) 
-                    lag = num_trial_lag(1);
-                elseif any(cond5 == design(2,i)) || any(cond6 == design(2,i)) || any(cond7 == design(2,i)) || any(cond8 == design(2,i)) 
-                    lag = num_trial_lag(2);
-                elseif any(cond9 == design(2,i)) || any(cond10 == design(2,i)) || any(cond11 == design(2,i)) || any(cond12 == design(2,i)) 
-                    lag = num_trial_lag(3);
-                elseif design(2,i)==0;
-                    lag = num_trial_lag(4);
-                end
+            if S.fitsim==1
+                ISI = 1.0;
+                thresh = S.RT.min; % min RT that is realistic
+                num_trial_lag = [1 1 1 1]; % number of trials over which response is allowed to lag for each of 0.1 prob, 0.3 prob, 0.5 prob.
 
-                resp(2,i)=0; % row 3 is the corrected response time on the corrected trial
-                if u(1,i)>0 % if the stimulus actually changed, but the response occured on the next trial, count it as occuring on the current trial but with a longer RT
-                    for j = 1:lag+1
-                        move=0;
-                        if resp(2,i)==0 && resp(1,i+(j-1))>0 && resp(2,i-1)~=ISI*1+resp(1,i+(j-1)) && resp(1,i+(j-1))+(j-1)*ISI>thresh
-                            if u(1,i+(j-1))==0 || j==1 % if we are considering the current trial only, or if there is no stimulus on the next trial, then it's always ok to register the response on te current trial.
-                                move=1;
-                            elseif u(1,i+(j-1))>0 && j>1 %if there is a stimulus on the next trial AND
-                                if resp(1,i+(j-1))>0 && resp(1,i+(j-1))<thresh % the response is less than threshold OR
+                for i = 1:size(design,2)-1
+                    if any(cond1 == design(2,i)) || any(cond2 == design(2,i)) || any(cond3 == design(2,i)) || any(cond4 == design(2,i)) 
+                        lag = num_trial_lag(1);
+                    elseif any(cond5 == design(2,i)) || any(cond6 == design(2,i)) || any(cond7 == design(2,i)) || any(cond8 == design(2,i)) 
+                        lag = num_trial_lag(2);
+                    elseif any(cond9 == design(2,i)) || any(cond10 == design(2,i)) || any(cond11 == design(2,i)) || any(cond12 == design(2,i)) 
+                        lag = num_trial_lag(3);
+                    elseif design(2,i)==0;
+                        lag = num_trial_lag(4);
+                    end
+
+                    resp(2,i)=0; % row 3 is the corrected response time on the corrected trial
+                    if u(1,i)>0 % if the stimulus actually changed, but the response occured on the next trial, count it as occuring on the current trial but with a longer RT
+                        for j = 1:lag+1
+                            move=0;
+                            if resp(2,i)==0 && resp(1,i+(j-1))>0 && resp(2,i-1)~=ISI*1+resp(1,i+(j-1)) && resp(1,i+(j-1))+(j-1)*ISI>thresh
+                                if u(1,i+(j-1))==0 || j==1 % if we are considering the current trial only, or if there is no stimulus on the next trial, then it's always ok to register the response on te current trial.
                                     move=1;
-                                elseif (u(1,i+j)==0 && resp(1,i+j)>0) % there is no stim on the subsequent trial but a response
-                                    move=1;
+                                elseif u(1,i+(j-1))>0 && j>1 %if there is a stimulus on the next trial AND
+                                    if resp(1,i+(j-1))>0 && resp(1,i+(j-1))<thresh % the response is less than threshold OR
+                                        move=1;
+                                    elseif (u(1,i+j)==0 && resp(1,i+j)>0) % there is no stim on the subsequent trial but a response
+                                        move=1;
+                                    end
                                 end
                             end
-                        end
-                        if move==1
-                            resp(2,i)=resp(1,i+(j-1)) + (j-1)*ISI; % adds on the ISI from RT on next trial and places it on the current trial
-                        end
-                    end
-                end
-                if u(1,i)==0 && resp(1,i)>0 && i>1 % if no stimulus change, but a response, 
-                    if ~any(u(1,i-(j-1):i)>0) % and there was no stim change on previous trial,, so it can't be a delayed response to a stim change
-                        if resp(1,i)>thresh;
-                            resp(2,i)=resp(1,i); % count it as a false positive response
-                        elseif resp(2,i-1)==0
-                            resp(2,i-1)=resp(1,i)+1*ISI; % or a response on the previous trial if too fast for current trial
+                            if move==1
+                                resp(2,i)=resp(1,i+(j-1)) + (j-1)*ISI; % adds on the ISI from RT on next trial and places it on the current trial
+                            end
                         end
                     end
+                    if u(1,i)==0 && resp(1,i)>0 && i>1 % if no stimulus change, but a response, 
+                        if ~any(u(1,i-(j-1):i)>0) % and there was no stim change on previous trial,, so it can't be a delayed response to a stim change
+                            if resp(1,i)>thresh;
+                                resp(2,i)=resp(1,i); % count it as a false positive response
+                            elseif resp(2,i-1)==0
+                                resp(2,i-1)=resp(1,i)+1*ISI; % or a response on the previous trial if too fast for current trial
+                            end
+                        end
+                    end
+                end 
+            end
+            if S.fitsim==1
+                y = double(resp(2,:)>0); % BINARY response
+                y(2,:) = resp(2,:); % RTs
+                rtnan = y(2,:);
+                rtnan(rtnan==0)=nan;
+                y(2,:) = rtnan;
+                y(2,:)=log(y(2,:)); % log RTs
+                D(d).HGF.y=y';
+            elseif S.fitsim==2
+                for op = 1:length(resp)
+                    y = double(resp(op).pressbutton>0)';
+                    D(d).HGF(op).y=y';
                 end
-            end 
-        end
-        if S.fitsim==1
-            y = double(resp(2,:)>0); % BINARY response
-            y(2,:) = resp(2,:); % RTs
-            rtnan = y(2,:);
-            rtnan(rtnan==0)=nan;
-            y(2,:) = rtnan;
-            y(2,:)=log(y(2,:)); % log RTs
-            D(d).HGF.y=y';
-        elseif S.fitsim==2
-            for op = 1:length(resp)
-                y = double(resp(op).pressbutton>0)';
-                D(d).HGF(op).y=y';
+                resp=y;
+                resp(2,:)=0;
             end
-            resp=y;
-            resp(2,:)=0;
-        end
 
-        for op = 1:length(D(d).HGF)
-            pc_corr = nan(length(conds),1);
-            rt_corr = nan(length(conds),1);
-            for c = conds
-                uyr=[];
-                uyr(1,:) = u(1,condi==c);
-                uyr(2,:) = y(1,condi==c);
-                uyr(3,:) = resp(2,condi==c);
-                uyr(4,:) = transi(condi==c);
-                uyr = uyr(:,uyr(4,:)==1);
+            for op = 1:length(D(d).HGF)
+                pc_corr = nan(length(conds),1);
+                rt_corr = nan(length(conds),1);
+                for c = conds
+                    uyr=[];
+                    uyr(1,:) = u(1,condi==c);
+                    uyr(2,:) = y(1,condi==c);
+                    uyr(3,:) = resp(2,condi==c);
+                    uyr(4,:) = transi(condi==c);
+                    uyr = uyr(:,uyr(4,:)==1);
 
-                pc_corr(c) = 100*sum(double(uyr(1,:)==uyr(2,:)))/size(uyr,2);
-                hit(c) = length(intersect(find(uyr(1,:)==1),find(uyr(2,:)==1)))/length(find(uyr(1,:)==1)); % hit rate for SDT
-                fa(c) = length(intersect(find(uyr(1,:)==0),find(uyr(2,:)==1)))/length(find(uyr(1,:)==0)); % false alarm rate for SDT
-                rt_corr(c) = mean(uyr(3,intersect(find(uyr(1,:)==1), find(uyr(2,:)==1))));
-                %hit(c+1) = length(intersect(find(u(:,1)==1),find(y==1)))/length(find(u(:,1)==1)); % hit rate for SDT
-                %fa(c+1) = length(intersect(find(u(:,1)==0),find(y==1)))/length(find(u(:,1)==0)); % false alarm rate for SDT
+                    pc_corr(c) = 100*sum(double(uyr(1,:)==uyr(2,:)))/size(uyr,2);
+                    hit(c) = length(intersect(find(uyr(1,:)==1),find(uyr(2,:)==1)))/length(find(uyr(1,:)==1)); % hit rate for SDT
+                    fa(c) = length(intersect(find(uyr(1,:)==0),find(uyr(2,:)==1)))/length(find(uyr(1,:)==0)); % false alarm rate for SDT
+                    rt_corr(c) = mean(uyr(3,intersect(find(uyr(1,:)==1), find(uyr(2,:)==1))));
+                    %hit(c+1) = length(intersect(find(u(:,1)==1),find(y==1)))/length(find(u(:,1)==1)); % hit rate for SDT
+                    %fa(c+1) = length(intersect(find(u(:,1)==0),find(y==1)))/length(find(u(:,1)==0)); % false alarm rate for SDT
+                end
+                [dp,cri] = signal_detection(hit,fa);
+                D(d).Processed(op).pc_corr = pc_corr;
+                D(d).Processed(op).rt_corr = rt_corr;
+                D(d).Processed(op).hit = hit;
+                D(d).Processed(op).fa = fa;
+                D(d).Processed(op).dp = dp;
+                D(d).Processed(op).cri = cri;
             end
-            [dp,cri] = signal_detection(hit,fa);
-            D(d).Processed(op).pc_corr = pc_corr;
-            D(d).Processed(op).rt_corr = rt_corr;
-            D(d).Processed(op).hit = hit;
-            D(d).Processed(op).fa = fa;
-            D(d).Processed(op).dp = dp;
-            D(d).Processed(op).cri = cri;
-        end
-        
-        if S.save.tables
-            acc_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
-            rt_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
-            dp_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
-            cri_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
-            hit_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
-            fa_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
 
-            acc_all(d+1,2:size(pc_corr,1)+1)=num2cell(pc_corr');
-            rt_all(d+1,2:size(rt_corr,1)+1)=num2cell(rt_corr');
-            dp_all(d+1,2:size(dp,2)+1)=num2cell(dp');
-            cri_all(d+1,2:size(cri,2)+1)=num2cell(cri');
-            hit_all(d+1,2:size(dp,2)+1)=num2cell(hit');
-            fa_all(d+1,2:size(cri,2)+1)=num2cell(fa');
-        end
+            if S.save.tables
+                acc_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
+                rt_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
+                dp_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
+                cri_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
+                hit_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
+                fa_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
+
+                acc_all(d+1,2:size(pc_corr,1)+1)=num2cell(pc_corr');
+                rt_all(d+1,2:size(rt_corr,1)+1)=num2cell(rt_corr');
+                dp_all(d+1,2:size(dp,2)+1)=num2cell(dp');
+                cri_all(d+1,2:size(cri,2)+1)=num2cell(cri');
+                hit_all(d+1,2:size(dp,2)+1)=num2cell(hit');
+                fa_all(d+1,2:size(cri,2)+1)=num2cell(fa');
+            end
 
 %     elseif strcmp(part,'part4')
 %         load(fullfile(cosdir,cosdirext{1},['CORE' C{2} cosname]));
@@ -341,41 +342,44 @@ for d = 1:length(D)
     %end
     
     
-    % average simualted data
-    if S.meansim && S.fitsim==2
-        S.mean_fields = {};
-        if S.accuracy.on
-            S.mean_fields = [S.mean_fields {'pc_corr','rt_corr','hit','fa','dp','cri'}];
-        end
-        for mf = 1:length(S.mean_fields)
-            if iscell(D(d).Processed(1).(S.mean_fields{mf}))
-                for i1 = 1:length(D(d).Processed(1).(S.mean_fields{mf}))
-                    if iscell(D(d).Processed(1).(S.mean_fields{mf}){i1})
-                        for i2 = 1:length(D(d).Processed(1).(S.mean_fields{mf}){i1})
+        % average simualted data
+        if S.meansim && S.fitsim==2
+            S.mean_fields = {};
+            if S.accuracy.on
+                S.mean_fields = [S.mean_fields {'pc_corr','rt_corr','hit','fa','dp','cri'}];
+            end
+            for mf = 1:length(S.mean_fields)
+                if iscell(D(d).Processed(1).(S.mean_fields{mf}))
+                    for i1 = 1:length(D(d).Processed(1).(S.mean_fields{mf}))
+                        if iscell(D(d).Processed(1).(S.mean_fields{mf}){i1})
+                            for i2 = 1:length(D(d).Processed(1).(S.mean_fields{mf}){i1})
+                                temp_mf=[];
+                                for op = 1:length(D(d).Processed)
+                                    temp_mf(op,:) = D(d).Processed(op).(S.mean_fields{mf}){i1}{i2};
+                                end
+                                D(d).Processed(1).(S.mean_fields{mf}){i1}{i2} = mean(temp_mf,1);
+                            end
+                        else
                             temp_mf=[];
                             for op = 1:length(D(d).Processed)
-                                temp_mf(op,:) = D(d).Processed(op).(S.mean_fields{mf}){i1}{i2};
+                                temp_mf(op,:) = D(d).Processed(op).(S.mean_fields{mf}){i1};
                             end
-                            D(d).Processed(1).(S.mean_fields{mf}){i1}{i2} = mean(temp_mf,1);
+                            D(d).Processed(1).(S.mean_fields{mf}){i1} = mean(temp_mf,1);
                         end
-                    else
-                        temp_mf=[];
-                        for op = 1:length(D(d).Processed)
-                            temp_mf(op,:) = D(d).Processed(op).(S.mean_fields{mf}){i1};
-                        end
-                        D(d).Processed(1).(S.mean_fields{mf}){i1} = mean(temp_mf,1);
                     end
+                else
+                    temp_mf=[];
+                    for op = 1:length(D(d).Processed)
+                        temp_mf(op,:) = D(d).Processed(op).(S.mean_fields{mf});
+                    end
+                    D(d).Processed(1).(S.mean_fields{mf}) = mean(temp_mf,1);
                 end
-            else
-                temp_mf=[];
-                for op = 1:length(D(d).Processed)
-                    temp_mf(op,:) = D(d).Processed(op).(S.mean_fields{mf});
-                end
-                D(d).Processed(1).(S.mean_fields{mf}) = mean(temp_mf,1);
             end
+            D(d).Processed = D(d).Processed(1);
         end
-        D(d).Processed = D(d).Processed(1);
+    
     end
+    
 end
 
 
