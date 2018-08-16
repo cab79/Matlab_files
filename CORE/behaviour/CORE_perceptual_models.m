@@ -168,4 +168,28 @@ switch S.perc_model
     S.perc_modelspec.priormodels.(modeltype).n_priorlevels = 2; % in prior hierarchy. For binary models, 2 is minimum; for continuous 1 is minimum.
     S.perc_modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
     
+    
+    %% DYNAMIC MODELS: one alpha per DC and per side
+    case 11
+    S.perc_modelspec.likelihood.type = 'binary'; % binary, continuous
+    S.perc_modelspec.likelihood.inputvar = 'uncertain_equal'; % uncertain_equal (variance), uncertain_unequal, certain
+    S.perc_modelspec.likelihood.n_inputcond = 4; % Number of conditions with unique input variance
+    S.perc_modelspec.response.priormodel = 'PR'; % Which model representations are used for the response model?
+    S.perc_modelspec.response.rep = 'mu0';
+    modeltype='PR'; % AL (associative learning), PL (perceptual learning), PR (priming)
+    S.perc_modelspec.priormodels.(modeltype).priortype = 'state'; % constant, hierarchical, state
+    S.perc_modelspec.priormodels.(modeltype).n_priorlevels = 0; % in prior hierarchy. For binary models, 2 is minimum; for continuous 1 is minimum.
+    S.perc_modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
+    
+    case 12
+    S.perc_modelspec.likelihood.type = 'binary'; % binary, continuous
+    S.perc_modelspec.likelihood.inputvar = 'uncertain_equal'; % uncertain_equal (variance), uncertain_unequal, certain
+    S.perc_modelspec.likelihood.n_inputcond = 4; % Number of conditions with unique input variance
+    S.perc_modelspec.response.priormodel = 'PL'; % Which model representations are used for the response model?
+    S.perc_modelspec.response.rep = 'mu0';
+    modeltype='PL'; % AL (associative learning), PL (perceptual learning), PR (priming)
+    S.perc_modelspec.priormodels.(modeltype).priortype = 'hierarchical'; % constant, hierarchical, state
+    S.perc_modelspec.priormodels.(modeltype).n_priorlevels = 2; % in prior hierarchy. For binary models, 2 is minimum; for continuous 1 is minimum.
+    S.perc_modelspec.priormodels.(modeltype).priorupdate = 'dynamic'; % static, dynamic (unique estimate on each trial)
+    
 end

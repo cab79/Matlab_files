@@ -150,9 +150,9 @@ for f=1:length(fnames)
     %% separate LME into groups
     grplist = ls.S.designmat(2:end,strcmp(ls.S.designmat(1,:),'groups'));
     grpuni = unique(grplist,'stable');
-    LME=[stats(f).BRR.logl];
+    LME=[stats(f).BRR.waic];
     for g = 1:length(grpuni)
-        LMEgrp{1,g}(f,:) = LME(strcmp(grplist,grpuni{g}));;
+        LMEgrp{1,g}(f,:) = LME(strcmp(grplist,grpuni{g}));
     end
     
     % put outputs into a matrix for plotting
