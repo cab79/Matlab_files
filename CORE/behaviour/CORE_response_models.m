@@ -17,25 +17,18 @@ S.resp_modelspec = struct;
 
 switch S.resp_model
     
-    case 1 % Choice
-    S.resp_modelspec.responses = {'Ch'}; % RT (response time), Ch (choice), or both
-    
-    case 2 % RT surprise
+    case 1 % RT surp
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
     S.resp_modelspec.params = [1]; % from betas 1 to 8 
     
-    case 3 % RT 
+    case 2 % 1st 2 levels of PEs (abs)
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [2]; % from betas 1 to 8 
+    S.resp_modelspec.params = [5:9]; % from betas 1 to 8 
     
-    case 4 % RT 
+    case 3 % RT surprise + 1st 2 levels of PEs (abs)
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [3]; % from betas 1 to 8 
+    S.resp_modelspec.params = [1 5:9]; % from betas 1 to 8 
     
-    case 5 % RT 
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [4]; % from betas 1 to 8 
-     
     case 6 % RT 
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
     S.resp_modelspec.params = [5]; % from betas 1 to 8 

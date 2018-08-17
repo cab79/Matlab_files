@@ -136,7 +136,7 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
         da2reg(r.irr) = [];
         ep3reg = abs(ep3);
         ep3reg(r.irr) = [];
-        da3reg = abs(da3);
+        da3reg = da3;
         da3reg(r.irr) = [];
     end
     
