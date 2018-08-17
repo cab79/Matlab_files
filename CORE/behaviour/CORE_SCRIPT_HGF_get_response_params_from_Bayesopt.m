@@ -110,15 +110,24 @@ S.trajmodels(3).traj{2} = {
  
 
 S.trajmodels(4).traj{1} = {
-     {'PL'},{'surp','dau','da','epsi'},{[0 0 0 0]},{[],[],[1:2],[]};
+     {'PL'},{'pv','inferv','surp'},{[0 0 0]},{[],[],[]};
+     }; 
+S.trajmodels(4).traj{2} = {
+     {'PL'},{'dau','da','epsi'},{[0 0 0]},{[],[],[]};
      }; 
  
 S.trajmodels(5).traj{1} = {
-     {'PL'},{'surp','dau','da','epsi'},{[0 1 1 1]},{[],[],[1:2],[]};
+     {'PL'},{'pv','inferv','surp'},{[0 0 0]},{[],[],[]};
+     }; 
+S.trajmodels(5).traj{2} = {
+     {'PL'},{'dau','da','epsi'},{[1 1 1]},{[],[],[]};
      }; 
  
 S.trajmodels(6).traj{1} = {
-     {'PL'},{'surp','dau','da','epsi'},{[0 2 2 2]},{[],[],[1:2],[]};
+     {'PL'},{'pv','inferv','surp'},{[0 0 0]},{[],[],[]};
+     }; 
+S.trajmodels(6).traj{2} = {
+     {'PL'},{'dau','da','epsi'},{[2 2 2]},{[],[],[]};
      }; 
  
 % beliefs
