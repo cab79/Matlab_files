@@ -34,8 +34,8 @@ S.load.suffix = {'*'};
 
 % model fitting
 S.prc_config = 'GBM_config'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
-S.perc_models=[1 3 9 10];
-S.resp_model = 16; S=CORE_response_models(S);
+S.perc_models=[1 3];
+S.resp_model = 1; S=CORE_response_models(S);
 for pm=1:length(S.perc_models)
     S.perc_model = S.perc_models(pm); 
     S=CORE_perceptual_models(S);
