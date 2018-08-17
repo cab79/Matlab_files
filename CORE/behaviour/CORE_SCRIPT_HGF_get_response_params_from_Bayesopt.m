@@ -87,97 +87,151 @@ D_fit=ls.D_fit;
 % 3rd col: 0=no transformation, 1=absolute, 2=rectified, 3=exp
 % 4th col: select levels
 
-% beliefs
 S.trajmodels(1).traj{1} = {
-     {'PL'},{'mu','muhat'},{[0 0]},{[],[]};
+     {'PL'},{'sa','sahat','pv','inferv','surp'},{[0 0 0 0 0]},{[],[],[],[],[]};
      }; 
+S.trajmodels(1).traj{2} = {
+     {'PL'},{'dau','da','epsi'},{[0 0 0]},{[],[],[]};
+     }; 
+ 
+S.trajmodels(2).traj{1} = {
+     {'PL'},{'sa','sahat','pv','inferv','surp'},{[0 0 0 0 0]},{[],[],[],[],[]};
+     }; 
+S.trajmodels(2).traj{2} = {
+     {'PL'},{'dau','da','epsi'},{[1 1 1]},{[],[],[]};
+     }; 
+ 
+S.trajmodels(3).traj{1} = {
+     {'PL'},{'sa','sahat','pv','inferv','surp'},{[0 0 0 0 0]},{[],[],[],[],[]};
+     }; 
+S.trajmodels(3).traj{2} = {
+     {'PL'},{'dau','da','epsi'},{[2 2 2]},{[],[],[]};
+     }; 
+ 
+
+S.trajmodels(4).traj{1} = {
+     {'PL'},{'surp','dau','da','epsi'},{[0 0 0 0]},{[],[],[1:2],[]};
+     }; 
+ 
+S.trajmodels(5).traj{1} = {
+     {'PL'},{'surp','dau','da','epsi'},{[0 1 1 1]},{[],[],[1:2],[]};
+     }; 
+ 
+S.trajmodels(6).traj{1} = {
+     {'PL'},{'surp','dau','da','epsi'},{[0 2 2 2]},{[],[],[1:2],[]};
+     }; 
+ 
+% beliefs
+% S.trajmodels(1).traj{1} = {
+%      {'PL'},{'mu','muhat'},{[0 0]},{[],[]};
+%      }; 
  
 % belief variances
-S.trajmodels(2).traj{1} = {
-     {'PL'},{'sa','sahat'},{[0 0]},{[],[]};
-     }; 
+% S.trajmodels(2).traj{1} = {
+%      {'PL'},{'sa',},{[0]},{[]};
+%      }; 
+%  
+% % belief variances
+% S.trajmodels(3).traj{1} = {
+%      {'PL'},{'sahat',},{[0]},{[]};
+%      }; 
  
-% beliefs and their variances
-S.trajmodels(3).traj{1} = {
-     {'PL'},{'mu','sa','muhat','sahat'},{[0 0 0 0]},{[],[],[],[]};
-     }; 
- 
-% prediction errors
-S.trajmodels(4).traj{1} = {
-     {'PL'},{'dau','da'},{[0 0]},{[],[]};
-     }; 
- 
-% prediction errors - abs
-S.trajmodels(5).traj{1} = {
-     {'PL'},{'dau','da'},{[1 1]},{[],[]};
-     }; 
- 
-% prediction errors - rectified
-S.trajmodels(6).traj{1} = {
-     {'PL'},{'dau','da'},{[2 2]},{[],[]};
-     }; 
- 
-% prediction errors (precision-weighted)
-S.trajmodels(7).traj{1} = {
-     {'PL'},{'psi','epsi'},{[0 0]},{[],[]};
-     }; 
- 
-% prediction errors - abs (precision-weighted)
-S.trajmodels(8).traj{1} = {
-     {'PL'},{'psi','epsi'},{[1 1]},{[],[]};
-     }; 
- 
-% prediction errors - rectified (precision-weighted)
-S.trajmodels(9).traj{1} = {
-     {'PL'},{'psi','epsi'},{[2 2]},{[],[]};
-     }; 
- 
-% combined
-S.trajmodels(10).traj{1} = {
-     {'PL'},{'mu','sa','muhat','sahat'},{[0 0 0 0]},{[],[],[],[]};
-     }; 
-S.trajmodels(10).traj{2} = {
-     {'PL'},{'da','dau','psi','epsi'},{[0 0 0 0]},{[],[],[],[]};
-     }; 
-
-% combined (abs)
-S.trajmodels(11).traj{1} = {
-     {'PL'},{'mu','sa','muhat','sahat'},{[0 0 0 0]},{[],[],[],[]};
-     }; 
-S.trajmodels(11).traj{2} = {
-     {'PL'},{'da','dau','psi','epsi'},{[1 1 1 1]},{[],[],[],[]};
-     }; 
- 
-% combined (rect)
-S.trajmodels(12).traj{1} = {
-     {'PL'},{'mu','sa','muhat','sahat'},{[0 0 0 0]},{[],[],[],[]};
-     }; 
-S.trajmodels(12).traj{2} = {
-     {'PL'},{'da','dau','psi','epsi'},{[2 2 2 2]},{[],[],[],[]};
-     }; 
- 
-% benchmark uncertainty model 1
-S.trajmodels(13).traj{1} = {
-     {'PL'},{'mu','sa','surp','sahat'},{[3 0 0 0]},{[3],[2],[],[1]}; % exp(mu3), sa2, surprise, sa1hat, 
-     }; 
-
-% benchmark uncertainty model 2
-S.trajmodels(14).traj{1} = {
-     {'PL'},{'pv','inferv','surp','sahat'},{[3 0 0 0]},{[3],[],[],[1]}; % pv, inferv, surprise, sa1hat, 
-     }; 
+% % prediction errors
+% S.trajmodels(4).traj{1} = {
+%      {'PL'},{'dau','da'},{[0 0]},{[],[1:2]};
+%      }; 
+%  
+% % prediction errors - abs
+% S.trajmodels(5).traj{1} = {
+%      {'PL'},{'dau','da'},{[1 1]},{[],[1:2]};
+%      }; 
+%  
+% % prediction errors - rectified
+% S.trajmodels(6).traj{1} = {
+%      {'PL'},{'dau','da'},{[2 2]},{[],[1:2]};
+%      }; 
+%  
+% % prediction errors (precision-weighted)
+% S.trajmodels(7).traj{1} = {
+%      {'PL'},{'epsi'},{[0]},{[1:2]};
+%      }; 
+%  
+% % prediction errors - abs (precision-weighted)
+% S.trajmodels(8).traj{1} = {
+%      {'PL'},{'epsi'},{[1]},{[1:2]};
+%      }; 
+%  
+% % prediction errors - rectified (precision-weighted)
+% S.trajmodels(9).traj{1} = {
+%      {'PL'},{'epsi'},{[2]},{[1:2]};
+%      }; 
+%  
+% % combined
+% S.trajmodels(10).traj{1} = {
+%      {'PL'},{'mu','sa','muhat','sahat'},{[0 0 0 0]},{[],[],[],[]};
+%      }; 
+% S.trajmodels(10).traj{2} = {
+%      {'PL'},{'da','dau','epsi'},{[0 0 0 0]},{[],[],[],[]};
+%      }; 
+% 
+% % combined (abs)
+% S.trajmodels(11).traj{1} = {
+%      {'PL'},{'mu','sa','muhat','sahat'},{[0 0 0 0]},{[],[],[],[]};
+%      }; 
+% S.trajmodels(11).traj{2} = {
+%      {'PL'},{'da','dau','epsi'},{[1 1 1 1]},{[],[],[],[]};
+%      }; 
+%  
+% % combined (rect)
+% S.trajmodels(12).traj{1} = {
+%      {'PL'},{'mu','sa','muhat','sahat'},{[0 0 0 0]},{[],[],[],[]};
+%      }; 
+% S.trajmodels(12).traj{2} = {
+%      {'PL'},{'da','dau','epsi'},{[2 2 2 2]},{[],[],[],[]};
+%      }; 
+%  
+% % benchmark uncertainty model 1
+% S.trajmodels(13).traj{1} = {
+%      {'PL'},{'mu','sa','surp','sahat'},{[3 0 0 0]},{[3],[2],[],[1]}; % exp(mu3), sa2, surprise, sa1hat, 
+%      }; 
+% 
+% % benchmark uncertainty model 2
+% S.trajmodels(14).traj{1} = {
+%      {'PL'},{'pv','inferv','surp','sahat'},{[0 0 0 0]},{[],[],[],[1]}; % pv, inferv, surprise, sa1hat, 
+%      }; 
+%  
+% % beliefs and their variances
+% S.trajmodels(15).traj{1} = {
+%      {'PL'},{'mu','sa','muhat','sahat'},{[0 0 0 0]},{[],[],[],[]};
+%      }; 
+%  
+% % beliefs and their variances
+% S.trajmodels(16).traj{1} = {
+%      {'PL'},{'sa','dau','da'},{[0 0 0]},{[],[],[1:2]};
+%      }; 
+%  
+% % comb
+% S.trajmodels(17).traj{1} = {
+%      {'PL'},{'sa','dau','da'},{[0 1 1]},{[],[],[1:2]};
+%      }; 
+%  
+% % combined
+% S.trajmodels(18).traj{1} = {
+%      {'PL'},{'sa','dau','da'},{[0 2 2]},{[],[],[1:2]};
+%      }; 
 
 % load and format HGF data
 % for each traj group... reformat into predictor matrix
-S.pred_transform = 'arcsinh'; % arcsinh, rank or notrans
+S.pred_transform = 'notrans'; % arcsinh, rank or notrans
 S.zscore = 1;
-S.trajmodelselect = 1:13;
+S.trajmodelselect = [1 2 3 4 5 6];
 
 for tm = S.trajmodelselect
     S.traj = S.trajmodels(tm).traj;
     [S] = HGF_traj2mat(S,D_fit(1));
 
     % remove nan columns from S.pred
-    rmnan = any(isnan(S.pred),1);
+    rmnan = all(isnan(S.pred),1);
     S.pred(:,rmnan)=[];
     S.pred_label(rmnan)=[];
     S.pred_group(rmnan)=[];
@@ -200,7 +254,6 @@ for tm = S.trajmodelselect
     Vcat = [];
 
     for d = 1:length(D_prep)
-        disp(['model ' num2str(tm) ',  subject ' num2str(d)])
         % add Bayes opt fit to D_prep containing the y struct
         D_prep(d).HGF.fit=D_fit.HGF.fit;
 
@@ -215,13 +268,14 @@ for tm = S.trajmodelselect
         Vmat(:,d)=V;
 
         % remove trials without V
-        rmtrial = isnan(V);
+        rmtrial = isnan(V) | any(isnan(S.pred),2);
         V(rmtrial,:)=[];
         pred = S.pred;
         pred(rmtrial,:)=[];
 
         % Regression
         stats(tm).BRR(d) = bayesreg_crossval(pred,V,S,S.pred_group);
+        disp(['model ' num2str(tm) ',  subject ' num2str(d) ', r2_brr = ' num2str(stats(tm).BRR(d).r2)])
 
         % concatentate
 %         predcat = cat(1,predcat,pred);
@@ -229,7 +283,7 @@ for tm = S.trajmodelselect
     end
     
     % separate LME into groups
-    grplist = ls.S.designmat(2:end,strcmp(ls.S.designmat(1,:),'groups'));
+    grplist = S.designmat(2:end,strcmp(S.designmat(1,:),'groups'));
     grpuni = unique(grplist,'stable');
     LME=[stats(tm).BRR.waic];
     for g = 1:length(grpuni)
@@ -241,12 +295,12 @@ for tm = S.trajmodelselect
 
     % average over subjects, remove nans, and regress
     Vavg = nanmean(Vmat,2);
-    rmtrial = isnan(Vavg);
+    rmtrial = isnan(Vavg) | any(isnan(S.pred),2);
     Vavg(rmtrial,:)=[];
     predavg = S.pred;
     predavg(rmtrial,:)=[];
     stats(tm).BRRgrpavg = bayesreg_crossval(predavg,Vavg,S,S.pred_group);
-    r2_brr=stats(tm).BRRgrpavg.r2
+    r2_brr_groupavg=stats(tm).BRRgrpavg.r2
 
     % identify params with greatest contribution (e.g. 75%)
     [sorted,si]=sort(abs(stats(tm).BRRgrpavg.muB),'descend');
@@ -305,11 +359,11 @@ for tm = S.trajmodelselect
     end
 
     % standard linear regression
-    X=predavg(:,si_max);
-    rmtrial = isnan(Vavg);
+    rmtrial = isnan(Vavg) | any(isnan(S.pred),2);
     Y=Vavg(~rmtrial);
+    X=S.pred(~rmtrial,si_max);
     [b_all,~,~,~,st] = regress(Y, [ones(length(X),1) X]);
-    r2_MR=st(1)
+    r2_MR_groupavg=st(1)
     
     % plot against residuals from standard linear regression
     b=[];
@@ -329,29 +383,7 @@ for tm = S.trajmodelselect
         ylabel('predicted variable')
         lsline
     end
-
-    % scatter max predictor
-    % [~,mi]=sort(abs(stats(tm).BRRgrpcat.muB),'descend')
-    % figure('name',['model ' num2str(tm) ' ']) 
-    % for sp = 1:9
-    %     subplot(3,3,sp)
-    %     scatter(predcat(:,mi(sp)),rtcat);
-    %     title(S.pred_label{mi(sp)})
-    %     ylabel('logRT')
-    % end
-
-    % 
-    % % separate LME into groups
-    % grplist = ls.S.designmat(2:end,strcmp(ls.S.designmat(1,:),'groups'));
-    % grpuni = unique(grplist,'stable');
-    % LME=[stats(tm)(em).BRR.logl];
-    % for g = 1:length(grpuni)
-    %     LMEgrp{1,g}(em,:) = LME(strcmp(grplist,grpuni{g}));;
-    % end
-    %     
-    % % group model comparison
-    % [bmc.gposterior,bmc.gout] = VBA_groupBMC_btwGroups(LMEgrp)
-    % 
+    
     % % save
     % save(fullfile(S.path.stats(tm),['stats(tm)_models' num2str(testEEGmodels) '_' S.pred_transform '_zscore' num2str(S.zscore) '_' S.sname '.mat']),'stats(tm)','bmc','S');
 end

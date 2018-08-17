@@ -22,10 +22,14 @@ for i = K : -1 : 1
     
     if S.brr.usegroups
         grps = unique(groupvec);
-        for g = grps
-            groups{g} = find(groupvec==g);
+        if length(grps)>1
+            for g = grps
+                groups{g} = find(groupvec==g);
+            end
+            [beta, beta0, stt(i)] = bayesreg(X(es_in,:),y(es_in),S.brr.model,S.brr.prior,'nsamples',S.brr.nsamples,'burnin',S.brr.burnin,'thin',S.brr.thin,'display',false,'waic', S.brr.waic, 'groups',groups);
+        else
+            [beta, beta0, stt(i)] = bayesreg(X(es_in,:),y(es_in),S.brr.model,S.brr.prior,'nsamples',S.brr.nsamples,'burnin',S.brr.burnin,'thin',S.brr.thin,'display',false,'waic', S.brr.waic);
         end
-        [beta, beta0, stt(i)] = bayesreg(X(es_in,:),y(es_in),S.brr.model,S.brr.prior,'nsamples',S.brr.nsamples,'burnin',S.brr.burnin,'thin',S.brr.thin,'display',false,'waic', S.brr.waic, 'groups',groups);
     else
         [beta, beta0, stt(i)] = bayesreg(X(es_in,:),y(es_in),S.brr.model,S.brr.prior,'nsamples',S.brr.nsamples,'burnin',S.brr.burnin,'thin',S.brr.thin,'display',false,'waic', S.brr.waic);
     end

@@ -1,6 +1,7 @@
 function CORE_addpaths
 %% ADD FUNCTIONS/TOOLBOXES TO MATLAB PATH
 paths = {
+    0, 'C:\Data\Matlab\Matlab_files';
     1, 'C:\Data\Matlab\Matlab_files\CORE';
     1, 'C:\Data\Matlab\Matlab_files\_generic_eeglab_batch\eeglab_batch_supporting_functions';
     1, 'C:\Data\Matlab\HGF\HGFv5.0';
