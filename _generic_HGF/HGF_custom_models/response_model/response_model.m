@@ -103,7 +103,7 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
 
     % Extract trajectories of interest from infStates
     mu1 = r.traj.(r.c_obs.model).mu(:,1);
-    mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
+    %mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
     dau = r.traj.(r.c_obs.model).dau;
     ep1 = r.traj.(r.c_obs.model).epsi(:,1);
@@ -147,14 +147,14 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
 
     % Surprise: informational
     % ~~~~~~~~
-    m1hreg = mu1hat;
-    m1hreg(r.irr) = [];
-    poo = m1hreg.^u.*(1-m1hreg).^(1-u); % probability of observed outcome
+    %m1hreg = mu1hat;
+    %m1hreg(r.irr) = [];
+    poo = m1reg.^u.*(1-m1reg).^(1-u); % probability of observed outcome
     surp = -log2(poo);
 
     % Bernoulli variance (aka irreducible uncertainty, risk) 
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    bernv = sa1hat;
+    bernv = sa1;
     bernv(r.irr) = [];
 
     if l>1 % CAB

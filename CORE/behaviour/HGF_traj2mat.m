@@ -18,9 +18,9 @@ for tg = 1:length(S.traj)
             catch
                 % derived traj
                 if strcmp(tr_name{:},'surp')
-                    m1h = D.HGF.fit.traj.(pm_name{:}).muhat(:,1);
+                    m1 = D.HGF.fit.traj.(pm_name{:}).mu(:,1);
                     u = D.HGF.u(:,1);
-                    poo = m1h.^u.*(1-m1h).^(1-u); % probability of observed outcome
+                    poo = m1.^u.*(1-m1).^(1-u); % probability of observed outcome
                     tr_dat = -log2(poo);
                 elseif strcmp(tr_name{:},'inferv')
                     mu2 = D.HGF.fit.traj.(pm_name{:}).mu(:,2);

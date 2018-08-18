@@ -103,7 +103,7 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
 
     % Extract trajectories of interest from infStates
     mu1 = r.traj.(r.c_obs.model).mu(:,1);
-    mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
+    %mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
     dau = r.traj.(r.c_obs.model).dau;
     ep1 = r.traj.(r.c_obs.model).epsi(:,1);
@@ -136,7 +136,7 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
         da2reg(r.irr) = [];
         ep3reg = abs(ep3);
         ep3reg(r.irr) = [];
-        da3reg = da3;
+        da3reg = abs(da3);
         da3reg(r.irr) = [];
     end
     
