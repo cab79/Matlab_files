@@ -108,27 +108,10 @@ S.trajmodels(3).traj{2} = {
      {'PL'},{'dau','da','epsi'},{[2 2 2]},{[],[],[]};
      }; 
  
-
 S.trajmodels(4).traj{1} = {
-     {'PL'},{'pv','inferv','surp'},{[0 0 0]},{[],[],[]};
+     {'PL'},{'sa','sahat','pv','inferv','surp'},{[0 0 0 0 0]},{[],[],[],[],[]};
      }; 
-S.trajmodels(4).traj{2} = {
-     {'PL'},{'dau','da','epsi'},{[0 0 0]},{[],[],[]};
-     }; 
- 
-S.trajmodels(5).traj{1} = {
-     {'PL'},{'pv','inferv','surp'},{[0 0 0]},{[],[],[]};
-     }; 
-S.trajmodels(5).traj{2} = {
-     {'PL'},{'dau','da','epsi'},{[1 1 1]},{[],[],[]};
-     }; 
- 
-S.trajmodels(6).traj{1} = {
-     {'PL'},{'pv','inferv','surp'},{[0 0 0]},{[],[],[]};
-     }; 
-S.trajmodels(6).traj{2} = {
-     {'PL'},{'dau','da','epsi'},{[2 2 2]},{[],[],[]};
-     }; 
+
  
 % beliefs
 % S.trajmodels(1).traj{1} = {
@@ -233,7 +216,7 @@ S.trajmodels(6).traj{2} = {
 % for each traj group... reformat into predictor matrix
 S.pred_transform = 'notrans'; % arcsinh, rank or notrans
 S.zscore = 1;
-S.trajmodelselect = [1 2 3 4 5 6];
+S.trajmodelselect = [4];
 
 for tm = S.trajmodelselect
     S.traj = S.trajmodels(tm).traj;

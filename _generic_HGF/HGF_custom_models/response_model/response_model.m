@@ -104,7 +104,8 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     % Extract trajectories of interest from infStates
     mu1 = r.traj.(r.c_obs.model).mu(:,1);
     %mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
-    sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
+    %sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
+    sa1 = r.traj.(r.c_obs.model).sa(:,1);
     dau = r.traj.(r.c_obs.model).dau;
     ep1 = r.traj.(r.c_obs.model).epsi(:,1);
     da1 = r.traj.(r.c_obs.model).da(:,1);
@@ -114,7 +115,7 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
         sa2    = r.traj.(r.c_obs.model).sa(:,2);
     end
     if l>2
-        mu3    = r.traj.(r.c_obs.model).mu(:,3);
+        mu3 = r.traj.(r.c_obs.model).mu(:,3);
         da2 = r.traj.(r.c_obs.model).da(:,2);
         ep3 = r.traj.(r.c_obs.model).epsi(:,3);
         da3 = r.traj.(r.c_obs.model).da(:,3);
@@ -161,25 +162,26 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
         % Inferential variance (aka informational or estimation uncertainty, ambiguity)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         %inferv = tapas_sgm(mu2, 1).*(1 -tapas_sgm(mu2, 1)).*sa2; % transform down to 1st level
-        %sigmoid_mu2 = 1./(1+exp(-mu2)); % transform down to 1st level
-        %inferv = sigmoid_mu2.*(1 -sigmoid_mu2).*sa2; 
-        inferv = sa2; 
+        sigmoid_mu2 = 1./(1+exp(-mu2)); % transform down to 1st level
+        inferv = sigmoid_mu2.*(1 -sigmoid_mu2).*sa2; 
+        %inferv = sa2; 
         inferv(r.irr) = [];
     end
 
     if l>2 % CAB
         % Phasic volatility (aka environmental or unexpected uncertainty)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        %pv = sigmoid_mu2.*(1-sigmoid_mu2).*exp(mu3); % transform down to 1st level
-        pv = exp(mu3); 
+        pv = sigmoid_mu2.*(1-sigmoid_mu2).*exp(mu3); % transform down to 1st level
+        %pv = exp(mu3); 
         pv(r.irr) = [];
+        
     end
     
 
     % Calculate predicted log-response
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if l>2
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg +be11.*m1reg +be12.*da3reg ;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg +be11.*m1reg +be12.*da3reg;
     elseif l>1
         logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg;
     else
