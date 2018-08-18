@@ -92,10 +92,11 @@ if any(strcmp(r.c_obs.responses, 'RT'))
 
     u = r.u(:,1);
 
-    % logRT: Extract trajectories of interest from infStates
+    % Extract trajectories of interest from infStates
     mu1 = r.traj.(r.c_obs.model).mu(:,1);
-    mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
+    %mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
+    sa1 = r.traj.(r.c_obs.model).sa(:,1);
     dau = r.traj.(r.c_obs.model).dau;
     ep1 = r.traj.(r.c_obs.model).epsi(:,1);
     da1 = r.traj.(r.c_obs.model).da(:,1);
@@ -105,62 +106,80 @@ if any(strcmp(r.c_obs.responses, 'RT'))
         sa2    = r.traj.(r.c_obs.model).sa(:,2);
     end
     if l>2
-        mu3    = r.traj.(r.c_obs.model).mu(:,3);
+        mu3 = r.traj.(r.c_obs.model).mu(:,3);
         da2 = r.traj.(r.c_obs.model).da(:,2);
         ep3 = r.traj.(r.c_obs.model).epsi(:,3);
         da3 = r.traj.(r.c_obs.model).da(:,3);
     end
     
-     % prediction error
+    
+    % prediction error
     % ~~~~~~~~
     daureg = abs(dau);
+    %daureg(r.irr) = [];
     ep1reg = abs(ep1);
+    %ep1reg(r.irr) = [];
     da1reg = abs(da1);
+    %da1reg(r.irr) = [];
     ep2reg = abs(ep2);
+    %ep2reg(r.irr) = [];
     if l>2
-        da2reg = da2;
-        ep3reg = ep3;
-        da3reg = da3;
+        da2reg = abs(da2);
+        %da2reg(r.irr) = [];
+        ep3reg = abs(ep3);
+        %ep3reg(r.irr) = [];
+        da3reg = abs(da3);
+        %da3reg(r.irr) = [];
     end
     
     % Posterior expectation
     % ~~~~~~~~
     m1reg = mu1;
+    %m1reg(r.irr) = [];
 
     % Surprise: informational
     % ~~~~~~~~
-    m1hreg = mu1hat;
-    poo = m1hreg.^u.*(1-m1hreg).^(1-u); % probability of observed outcome
+    %m1hreg = mu1hat;
+    %m1hreg(r.irr) = [];
+    poo = m1reg.^u.*(1-m1reg).^(1-u); % probability of observed outcome
     surp = -log2(poo);
 
     % Bernoulli variance (aka irreducible uncertainty, risk) 
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    bernv = sa1hat;
+    bernv = sa1;
+    %bernv(r.irr) = [];
+    
+    bernvhat = sa1hat;
+    %bernvhat(r.irr) = [];
 
     if l>1 % CAB
         % Inferential variance (aka informational or estimation uncertainty, ambiguity)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         %inferv = tapas_sgm(mu2, 1).*(1 -tapas_sgm(mu2, 1)).*sa2; % transform down to 1st level
-        %sigmoid_mu2 = 1./(1+exp(-mu2)); % transform down to 1st level
-        %inferv = sigmoid_mu2.*(1 -sigmoid_mu2).*sa2; 
-        inferv = sa2; 
+        sigmoid_mu2 = 1./(1+exp(-mu2)); % transform down to 1st level
+        inferv = sigmoid_mu2.*(1 -sigmoid_mu2).*sa2; 
+        %inferv = sa2; 
+        %inferv(r.irr) = [];
     end
 
     if l>2 % CAB
         % Phasic volatility (aka environmental or unexpected uncertainty)
         % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        %pv = sigmoid_mu2.*(1-sigmoid_mu2).*exp(mu3); % transform down to 1st level
-        pv = exp(mu3); % transform down to 1st level
+        pv = sigmoid_mu2.*(1-sigmoid_mu2).*exp(mu3); % transform down to 1st level
+        %pv = exp(mu3); 
+        %pv(r.irr) = [];
+        
     end
+    
 
-    % Calculate predicted log-reaction time
+    % Calculate predicted log-response
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if l>2
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg +be11.*m1reg +be12.*da3reg ;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg +be11.*m1reg +be12.*da3reg +be13.*bernvhat;
     elseif l>1
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg +be13.*bernvhat;
     else
-        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg;
+        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg +be13.*bernvhat;
     end
     
     % Simulate

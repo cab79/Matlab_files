@@ -206,6 +206,15 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
         c.reg.be12mu = 0;
         c.reg.be12sa = 0;
     end
+    
+    % Beta_13
+    if any(c.params==13)
+        c.reg.be13mu = 0;
+        c.reg.be13sa = 4;
+    else
+        c.reg.be13mu = 0;
+        c.reg.be13sa = 0;
+    end
 
     % Zeta
     c.reg.logzemu = log(log(20));
