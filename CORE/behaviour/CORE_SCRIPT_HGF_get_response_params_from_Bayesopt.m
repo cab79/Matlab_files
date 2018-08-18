@@ -112,6 +112,17 @@ S.trajmodels(4).traj{1} = {
      {'PL'},{'sa','sahat','pv','inferv','surp'},{[0 0 0 0 0]},{[],[],[],[],[]};
      }; 
 
+S.trajmodels(5).traj{1} = {
+     {'PL'},{'dau','da','epsi'},{[0 0 0]},{[],[],[]};
+     }; 
+ 
+S.trajmodels(6).traj{1} = {
+     {'PL'},{'dau','da','epsi'},{[1 1 1]},{[],[],[]};
+     }; 
+ 
+S.trajmodels(7).traj{1} = {
+     {'PL'},{'dau','da','epsi'},{[2 2 2]},{[],[],[]};
+     }; 
  
 % beliefs
 % S.trajmodels(1).traj{1} = {
