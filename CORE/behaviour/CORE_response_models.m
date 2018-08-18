@@ -19,7 +19,7 @@ switch S.resp_model
     
     case 1 % RT surp
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [1]; % from betas 1 to 8 
+    S.resp_modelspec.params = [1 2 3 4 13]; % from betas 1 to 8 
     
     case 2 % 1st 2 levels of PEs (abs)
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
@@ -27,7 +27,7 @@ switch S.resp_model
     
     case 3 % RT surprise + 1st 2 levels of PEs (abs)
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [1 5:9]; % from betas 1 to 8 
+    S.resp_modelspec.params = [1 2 3 4 13 5:9]; % from betas 1 to 8 
     
     case 6 % RT 
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
