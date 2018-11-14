@@ -64,17 +64,45 @@ trajfields = fieldnames(traj);
 for tf = 1:length(trajfields)
     for d = 1:length(traj)
     % create means and stds
-        tablecols.([trajfields{tf} '_mean'])(d,1) = nanmean(traj(d).(trajfields{tf}));
-        tablecols.([trajfields{tf} '_std'])(d,1) = nanstd(traj(d).(trajfields{tf}));
-        tablecols.([trajfields{tf} '_absmean'])(d,1) = nanmean(abs(traj(d).(trajfields{tf})));
-        tablecols.([trajfields{tf} '_absstd'])(d,1) = nanstd(abs(traj(d).(trajfields{tf})));
+        if any(strcmp(S.summary_stats,'mean'))
+            tablecols.([trajfields{tf} '_mean'])(d,1) = nanmean(traj(d).(trajfields{tf}));
+        end
+        if any(strcmp(S.summary_stats,'std'))
+            tablecols.([trajfields{tf} '_std'])(d,1) = nanstd(traj(d).(trajfields{tf}));
+        end
+        if any(strcmp(S.summary_stats,'absmean'))
+            tablecols.([trajfields{tf} '_absmean'])(d,1) = nanmean(abs(traj(d).(trajfields{tf})));
+        end
+        if any(strcmp(S.summary_stats,'absstd'))
+            tablecols.([trajfields{tf} '_absstd'])(d,1) = nanstd(abs(traj(d).(trajfields{tf})));
+        end
     end
 end
+
+if isfield(S,'condmean') && ~isempty(S.condmean)
+    condfields = fieldnames(S.cond);
+    for tf = 1:length(S.condmean)
+        for d = 1:length(traj)
+            conds = D(d).dt.design(2,:);
+            thistraj = traj(d).(S.condmean{tf});
+            for cf = 1:length(condfields)
+                tablecols.([S.condmean{tf} '_' condfields{cf}])(d,1) = nanmean(thistraj(ismember(conds,S.cond.(condfields{cf}))));
+            end
+        end
+    end
+end
+
 T = [T,struct2table(tablecols)];
 
 %get RTs too
-for d = 1:length(D)
-    rt(d).rt = D(d).HGF.y(find(D(d).HGF.u(:,1)),2);
+if isfield(D(1).HGF,'y')
+    for d = 1:length(D)
+        rt(d).rt = D(d).HGF.y(find(D(d).HGF.u(:,1)),2);
+    end
+else
+    for d = 1:length(D)
+        rt(d).rt = [];
+    end
 end
 
 % 

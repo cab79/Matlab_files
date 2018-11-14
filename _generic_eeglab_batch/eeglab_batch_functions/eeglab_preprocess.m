@@ -35,10 +35,19 @@ switch part
         % LOAD DATA
         EEG = pop_loadset('filename',filename,'filepath',S.path.file);
 
+        % Channel switching (a patch: unlikely to be needed)
+        if isfield(S.prep.chan,'switchhead') && ~isempty(S.prep.chan.switchhead)
+            load(fullfile(S.path.main,'chanlocs.mat'));
+            newchanind = 32+find(ismember({chanlocs.labels},{EEG.chanlocs.labels}));
+            chanlocs(64).labels = 'FCz';  
+            EEG.chanlocs = chanlocs(newchanind);
+        end
+        
         %ADD CHANNEL LOCATIONS 
-        if S.prep.chan.addloc && isempty(EEG.chanlocs(1).theta)
+        if S.prep.chan.addloc && any(cellfun(@isempty,{EEG.chanlocs(:).theta}))
             EEG=pop_chanedit(EEG, 'lookup',S.path.locfile);
         end
+        
 
         % SELECT TIME WINDOW TO ANALYSE
         if ~isempty(S.prep.cont.timewin)
@@ -96,12 +105,24 @@ switch part
 
         % EPOCH
         %create epochs if markers exist
-        try
-            EEG = pop_epoch( EEG, S.prep.epoch.markers, S.prep.epoch.timewin);
+        if ~isempty(S.prep.epoch.markers)
+            try
+                EEG = pop_epoch( EEG, S.prep.epoch.markers, S.prep.epoch.timewin);
+            end
         end
 
         % if markers don't exist, add markers and epoch
-        if S.prep.epoch.addmarker && isempty(EEG.epoch)
+        if isfield(S.prep.epoch,'importmarker') && ~isempty(S.prep.epoch.importmarker)
+            load(S.prep.epoch.importmarker);
+            [uMark, iM1, iM2] = unique(seq.condnum','rows');
+            eventind = find(ismember({EEG.event.code},'Stimulus') & ismember({EEG.event.type},S.prep.epoch.markers));
+            markers = cellstr([repmat('S ',length(iM2),1), num2str(iM2)]);
+            markers_present = find(~ismember(markers,{'S 16'}));
+            markers_missing = find(ismember(markers,{'S 16'}));
+            [EEG.event(eventind).type] = deal(markers{markers_present(1:length(eventind))});
+            [EEG.event(eventind(markers_missing)).type] = deal(markers{markers_missing});
+            EEG = pop_epoch( EEG, unique(markers), S.prep.epoch.timewin);
+        elseif S.prep.epoch.addmarker && isempty(EEG.epoch)
             Sr = EEG.srate; % sampling rate of data
             Ndp = Sr*(S.prep.epoch.timewin(2)-S.prep.epoch.timewin(1)+1);% number of data points per epoch
             Tdp = size(EEG.data,2);% total number of data points in file
@@ -209,10 +230,16 @@ switch part
                 % SAVE
                 if ~isempty(S.prep.select.sessions{a})
                     sessionname = [S.prep.select.sessions{a} '_'];
+                elseif length(S.prep.select.sessions)>1
+                    sessionname = 'allsessions_';
                 else
-                    sessionname = ['allsessions_'];
+                    sessionname = '';
                 end
-                sname = [S.prep.study{:} '_' S.prep.select.subjects{s} '_' sessionname S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+                if ~isempty(S.prep.study{:})
+                    sname = [S.prep.study{:} '_' S.prep.select.subjects{s} '_' sessionname S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+                else
+                    sname = [S.prep.select.subjects{s} '_' sessionname S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+                end
                 if ~exist(fullfile(S.path.prep,S.prep.save.suffix{:}),'dir')
                     mkdir(fullfile(S.path.prep,S.prep.save.suffix{:}));
                 end
@@ -240,7 +267,7 @@ switch part
         end
         S = getfilelist(S,S.prep.load.suffix);
 
-        loadpath = fullfile(S.path.prep,S.prep.load.suffix{:});
+        loadpath = S.path.file;
         for f = S.prep.startfile:length(S.prep.filelist)
             file = S.prep.filelist{f};
             EEG = pop_loadset('filename',file,'filepath',loadpath);
@@ -264,15 +291,16 @@ switch part
             end
 
             % SAVE
-            [pth nme ext] = fileparts(file); 
-            sname = [nme '_' S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+            %[pth nme ext] = fileparts(file); 
+            %sname = [nme '_' S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+            sname = strrep(file,S.prep.load.suffix{:},S.prep.save.suffix{:});
             if ~exist(fullfile(S.path.prep,S.prep.save.suffix{:}),'dir')
                 mkdir(fullfile(S.path.prep,S.prep.save.suffix{:}));
             end
             EEG = pop_saveset(EEG,'filename',sname,'filepath',fullfile(S.path.prep,S.prep.save.suffix{:})); 
         end
-    elseif exist(fullfile(S.path.prep,'manrej'),'dir')
-        S.prep.save.suffix{:} = 'manrej';
+    %elseif exist(fullfile(S.path.prep,S.prep.save.suffix{:}),'dir')
+    %    S.prep.save.suffix{:} = 'manrej';
     end
     
 %% separate prior to ICA
@@ -286,18 +314,20 @@ switch part
         S.path.file = fullfile(S.path.prep,S.prep.load.suffix{:});
         S = getfilelist(S,S.prep.load.suffix);
 
-        loadpath = fullfile(S.path.prep,S.prep.load.suffix{:});
+        loadpath = S.path.file;
         for f = S.prep.startfile:length(S.prep.filelist)
             file = S.prep.filelist{f};
             EEG = pop_loadset('filename',file,'filepath',loadpath);
+           
 
             %RUN ICA 
             numcomp = numcompeig(EEG);
             EEG = pop_runica(EEG, 'extended',1,'interupt','on','pca',numcomp);
 
             % SAVE
-            [pth nme ext] = fileparts(file);
-            sname = [nme '_' S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+            %[pth nme ext] = fileparts(file);
+            %sname = [nme '_' S.prep.save.suffix{:} '.' S.prep.fname.ext{:}];
+            sname = strrep(file,S.prep.load.suffix{:},S.prep.save.suffix{:});
             if ~exist(fullfile(S.path.prep,S.prep.save.suffix{:}),'dir')
                 mkdir(fullfile(S.path.prep,S.prep.save.suffix{:}));
             end

@@ -85,6 +85,10 @@ switch S.resp_model
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
     S.resp_modelspec.params = [5 6 7 8 9 10 11 12]; 
     
+    case 20 % 
+    S.resp_modelspec.responses = {'Ch','RT'}; % RT (response time), Ch (choice), or both
+    S.resp_modelspec.params = [5:10]; % from betas 1 to 8 
+    
     %% eeg
     
     case 22 % uncertainty

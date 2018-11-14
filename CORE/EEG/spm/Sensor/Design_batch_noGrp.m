@@ -42,7 +42,8 @@ D.identifier=''; % optional identifer to add to end of outputted SPM folder name
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % list of image names within each subject folder
-D.imglist = {'scondition_1.nii'
+D.imglist = {
+            'scondition_1.nii'
             'scondition_2.nii'
             'scondition_3.nii'
             'scondition_4.nii'

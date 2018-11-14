@@ -13,9 +13,9 @@ S.path.prep = ['C:\Data\MNP\behaviour\Pilots\' S.expt 'v' num2str(S.version) '\p
 S.path.hgf = ['C:\Data\MNP\behaviour\Pilots\' S.expt 'v' num2str(S.version) '\hgf']; % folder to save processed data
 S.fname.parts = {'prefix','subject','block','ext'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
 S.fname.ext = {'mat'}; 
-S.select.subjects = {'cab10'}; % either a single subject, or leave blank to process all subjects in folder
+S.select.subjects = {'cab15'}; % either a single subject, or leave blank to process all subjects in folder
 S.select.sessions = {};
-S.select.blocks = {['Sequence_' S.expt '_OptionAssoc*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
+S.select.blocks = {['Sequence_' S.expt '_OptionALPL*']}; % blocks to load (each a separate file) - empty means all of them, or not defined
 S.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
 S.path.datfile = ['C:\Data\MNP\participants\Participant_Data.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable

@@ -45,13 +45,27 @@ D.include_codes = [1];
 D.imglist = {
             'scondition_1.nii'
             'scondition_2.nii'
-            'scondition_3.nii'
-            'scondition_4.nii'
-            'scondition_5_flip.nii'
-            'scondition_6_flip.nii'
+            'scondition_3_flip.nii'
+            'scondition_4_flip.nii'
+            'scondition_5.nii'
+            'scondition_6.nii'
             'scondition_7_flip.nii'
             'scondition_8_flip.nii'
+            'scondition_9.nii'
+            'scondition_10.nii'
+            'scondition_11_flip.nii'
+            'scondition_12_flip.nii'
             };
+% D.imglist = {
+%             'scondition_1.nii'
+%             'scondition_2.nii'
+%             'scondition_3.nii'
+%             'scondition_4.nii'
+%             'scondition_5_flip.nii'
+%             'scondition_6_flip.nii'
+%             'scondition_7_flip.nii'
+%             'scondition_8_flip.nii'
+%             };
         
         
 %% analysis design and parameters
@@ -61,23 +75,38 @@ D.imglist = {
 % interaction with SnPM it will output all 2-way interactions (actually, t-tests on subtracted data)
 D.para = 1;
 % specify a time window to analyse
-D.time_ana = [0 600]; % applies a mask to the data
+D.time_ana = [0 800]; % applies a mask to the data
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
 D.cond_list = [
               1 1
               1 2
-              2 1
-              2 2
               1 1
               1 2
               2 1
               2 2
+              2 1
+              2 2
+              3 1
+              3 2
+              3 1
+              3 2
               ];
+
+% D.cond_list = [
+%               1 1
+%               1 2
+%               2 1
+%               2 2
+%               1 1
+%               1 2
+%               2 1
+%               2 2
+%               ];
           
 % factors and statistical model
-D.factors = {'Grp', 'Odd', 'DC', 'Subject'}; % must include a subject factor at the end
-D.factortype = {'g','w','w','s'}; % w = within, s = subject, g = subject group
+D.factors = {'CP', 'Grp', 'Odd', 'Subject'}; % must include a subject factor at the end
+D.factortype = {'w','g','w','s'}; % w = within, s = subject, g = subject group
 
 % Main effects and interactions: 
 %   - for spm, can specify the highest-level interaction to produc results
@@ -92,7 +121,7 @@ D.maineffects = [0 0 0 0]; % one column per factor
 
 % names of nuisance covariates
 %cov_names = {'Age','Gender'};
-D.cov_names = {};
+D.cov_names = {'Age'};
 
 D.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
 D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA
@@ -101,21 +130,46 @@ D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA
 D.GMsca = [0 0 0 0]; %grand mean scaling
 D.ancova = [0 0 0 0]; %covariate
 % after model estimation, constrasts to display (SPM, not SnPM)
+
 D.fcontrasts = {
-    [1 1 1 1 -1 -1 -1 -1], 'Grp'
-    [1 1 -1 -1 1 1 -1 -1], 'Odd'
-    [1 -1 1 -1 1 -1 1 -1], 'DC'
-    [1 1 -1 -1 -1 -1 1 1], 'Grp * Odd'
-    [1 -1 1 -1 -1 1 -1 1], 'Grp * DC'
-    [1 -1 -1 1 -1 1 1 -1], 'Grp * Odd * DC'
+    [1 -1 -1 1 -1 1 1 -1 0 0 0 0; 0 0 0 0 1 -1 -1 1 -1 1 1 -1], 'CP * Grp * Odd'
+    [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Grp'
+    [1 -1 1 -1 -1 1 -1 1 0 0 0 0; 0 0 0 0 1 -1 1 -1 -1 1 -1 1], 'CP * Odd'
+    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * Odd'
+    [1 1 1 1 -1 -1 -1 -1 0 0 0 0; 0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP'
+    [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp'
+    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'Odd'
+    [1 0 -1 0 1 0 -1 0 1 0 -1 0], 'Odd Grp'
+    [0 1 0 -1 0 1 0 -1 0 1 0 -1], 'Stan Grp'
     };
 D.tcontrasts = {
-    [1 1 1 1 -1 -1 -1 -1], 'CRPS'
-    [-1 -1 -1 -1 1 1 1 1], 'HC'
-    [1 1 -1 -1 1 1 -1 -1], 'Odd'
-    [1 1 -1 -1 -1 -1 1 1], 'CRPS odd > HC odd'
-    [-1 -1 1 1 1 1 -1 -1], 'HC odd > CRPS odd'
+    [-1 -1 1 1 1 1 -1 -1 0 0 0 0], 'CP12 * Grp'
+    [0 0 0 0 -1 -1 1 1 1 1 -1 -1], 'CP23 * Grp'
+    [-1 1 1 -1 -1 1 1 -1 -1 1 1 -1], 'Grp * Odd1'
+    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * Odd3'
+    [1 1 1 1 -1 -1 -1 -1 0 0 0 0], 'CP12'
+    [0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP23'
+    [-1 -1 1 1 -1 -1 1 1 -1 -1 1 1], 'Grp 1'
+    [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp 2'
+    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'Odd1'
+    [-1 1 -1 1 -1 1 -1 1 -1 1 -1 1], 'Odd3'
     };
+
+% D.fcontrasts = {
+%     [1 1 1 1 -1 -1 -1 -1], 'Grp'
+%     [1 1 -1 -1 1 1 -1 -1], 'Odd'
+%     [1 -1 1 -1 1 -1 1 -1], 'DC'
+%     [1 1 -1 -1 -1 -1 1 1], 'Grp * Odd'
+%     [1 -1 1 -1 -1 1 -1 1], 'Grp * DC'
+%     [1 -1 -1 1 -1 1 1 -1], 'Grp * Odd * DC'
+%     };
+% D.tcontrasts = {
+%     [1 1 1 1 -1 -1 -1 -1], 'CRPS'
+%     [-1 -1 -1 -1 1 1 1 1], 'HC'
+%     [1 1 -1 -1 1 1 -1 -1], 'Odd'
+%     [1 1 -1 -1 -1 -1 1 1], 'CRPS odd > HC odd'
+%     [-1 -1 1 1 1 1 -1 -1], 'HC odd > CRPS odd'
+%     };
 
 % the following are for SnPM, not SPM
 D.nPerm = 5000; % permutations

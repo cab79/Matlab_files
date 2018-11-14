@@ -1,4 +1,6 @@
 clear all
+restoredefaultpath
+run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 
 %% SPECIFY DATA
 filepath = 'C:\Data\CORE\EEG\ana\spm\SPMdata'; 
@@ -7,12 +9,12 @@ batchpath = 'C:\Data\Matlab\Matlab_files\CORE\EEG\spm\Sensor';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
-%fpref = 'spm12';conds=1:8; % PART 2
-fpref = 'spm12';conds=1:24; % PART 4
+fpref = 'spm12';conds=1:12; % PART 2
+%fpref = 'spm12';conds=1:24; % PART 4
 %fpref = 'spm12_blockmismatch';conds=1:12; 
 fmid = '';
-fsuff = '4_cleaned_tm.mat';
-%fsuff = '_2_merged_cleaned.mat';
+%fsuff = '4_cleaned_tm.mat';
+fsuff = '_2_merged_cleaned.mat';
 
 
 %% SPECIFY OPTIONS
@@ -39,8 +41,8 @@ mode = 'scalp x time';
 
 % time and frequecy windows
 freqwin = []; % empty if not requiring freq analysis
-%timewin = [-200 899]; % empty will include whole epoch
-timewin = [-200 299]; % empty will include whole epoch
+timewin = [-200 899]; % empty will include whole epoch
+%timewin = [-200 299]; % empty will include whole epoch
 basewin = [-200 0]; % empty will not baseline correct
 
 %smooth output images (specify FWHM or 0 for no smoothing)
@@ -48,8 +50,10 @@ spmsmooth = 20;
 delete_unsmoothed = 1;
 
 %% RUN
-files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
-files_ana=35:44%length(files);
+fname=[fpref '*' fmid  '*' fsuff];
+fname=strrep(fname,'**','*');
+files = dir(fullfile(filepath,fname));
+files_ana=1:length(files);
 
 for f = files_ana
     fname = files(f).name;

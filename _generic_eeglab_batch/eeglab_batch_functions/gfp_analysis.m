@@ -221,9 +221,11 @@ for ga = 1:length(S.(S.func).gadata)
     % create tables. first column is filename
     T_GFP=table;
     T_POW=table;
-    clear C_GFP C_POW
+    T_LAT=table;
+    clear C_GFP C_POW C_LAT
     C_GFP = ['Filename'; S.ga.gafiles{ga}'];
     C_POW=C_GFP;
+    C_LAT=C_GFP;
     
     for f = 1:length(S.ga.gafiles{ga}) 
         
@@ -309,14 +311,18 @@ for ga = 1:length(S.(S.func).gadata)
 
                 GFP = mean(GFP(1:ceil(length(GFP)*S.(S.func).topXpercent/100)));
                 POW = mean(POW(1:ceil(length(GFP)*S.(S.func).topXpercent/100)));
+                lat_range = timesRMSE(S.(S.func).GFP(ga).limits{p});
+                LAT = lat_range(GFPmaxLOC)*1000;
                 
                 col = col+1;
                 % add data to table
                 header = ['event' num2str(ev) '_peak' num2str(p)];
                 C_GFP{1,col} = header;
                 C_POW{1,col} = header;
+                C_LAT{1,col} = header;
                 C_GFP{f+1,col} = GFP;
                 C_POW{f+1,col} = POW;
+                C_LAT{f+1,col} = LAT;
 
             end
         end
@@ -325,8 +331,11 @@ for ga = 1:length(S.(S.func).gadata)
     T_GFP.Properties.VariableNames = C_GFP(1,:);
     T_POW=cell2table(C_POW(2:end,:));
     T_POW.Properties.VariableNames = C_POW(1,:);
+    T_LAT=cell2table(C_LAT(2:end,:));
+    T_LAT.Properties.VariableNames = C_LAT(1,:);
     datename = datestr(now,30); 
     cd(S.path.file)
     writetable(T_GFP,['gfp_results_' S.(S.func).ganame{ga} '_' datename '.xlsx']);
     writetable(T_POW,['pow_results_' S.(S.func).ganame{ga} '_' datename '.xlsx']);
+    writetable(T_LAT,['lat_results_' S.(S.func).ganame{ga} '_' datename '.xlsx']);
 end

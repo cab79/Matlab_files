@@ -32,12 +32,12 @@ S.sname=sname;
 % data import
 S.load.prefixes = {'RT','dt'};
 S.load.suffix = {'*'};
-[S,D]=SCIn_data_import(S);
+[S,D]=SCIn_data_import(S); 
 
 % model fitting
-S.prc_config = 'GBM_config'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
+S.prc_config = 'GBM_config_alpha08'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
 S.perc_model=[12]; % 1 3 9 10 11 12
-S.resp_models = [1 2 3]; 
+S.resp_models = [2]; % 1 2 3
 for rm=1:length(S.resp_models)
     S.resp_model = S.resp_models(rm); 
     S=CORE_perceptual_models(S);
@@ -54,7 +54,7 @@ for rm=1:length(S.resp_models)
     [S,D_prep]=CORE_data_process(S,D);  % specific function for CORE (bypasses SCIn_data_process)
 
     % split data into training and testing sets (if we want to test for prediction of behaviour)
-    S.frac_train = 0.5; % set to 0 to include all data in training set AND test set
+    S.frac_train = 0; % set to 0 to include all data in training set AND test set
     D_train=D_prep;
     if S.frac_train>0
         for d=1:length(D_prep)
@@ -77,20 +77,23 @@ for rm=1:length(S.resp_models)
     D_fit=HGF_run(D_train,S,0);
     save(fullfile(S.path.hgf,'fitted',['CORE_fittedparameters_percmodel' num2str(S.perc_model) '_respmodel' num2str(S.resp_model) '_fractrain' num2str(S.frac_train) '_' S.sname '.mat']), 'D_fit', 'S');
     
-    % extract, tabulate and save parameters and summary stats of
-    % trajectories
-    %[out(rm).T,out(rm).traj,out(rm).param,out(rm).rt] = CORE_extract_HGF_results(D_fit,S);
-    %[out(rm).stats] = CORE_HGF_groupstatistics(out(rm).T,{out(rm).traj});
 end
-%save(fullfile(S.path.hgf,'fitted',['CORE_analysistables_' S.sname '.mat']), 'out');
 
 
 % group model comparison
 if 0
-S.perc_model=[10];
-S.resp_models = [12 16 17 19]; 
-S.sname='20180801T142901';
-[~,~,bmc.gposterior,bmc.gout]=HGF_group_model_comparison(S);
+    close all
+    S.perc_models=[1 3 9 10 11 12];
+    S.resp_models = [1 2 3]; 
+    S.sname='0_20180821T134505'; % 100% training
+    %S.sname='0.5_20180818T070202'; % 50% training
+    S.fname_pref= 'CORE_fittedparameters';
+    S.fname_ext= ['_fractrain' S.sname '.mat'];
+    [bmc.pm_out,bmc.rm_out]=HGF_group_model_comparison(S);
+    
+    % model freq and exceedence prob for families (both groups pooled)
+    pm_ff  = bmc.pm_out{1,1}.families.Ef
+    pm_fep = bmc.pm_out{1,1}.families.ep
+    rm_ff  = bmc.rm_out{1,1}.families.Ef
+    rm_fep = bmc.rm_out{1,1}.families.ep
 end
-
-%CORE_sim_predict_behaviour(S,D_fit)

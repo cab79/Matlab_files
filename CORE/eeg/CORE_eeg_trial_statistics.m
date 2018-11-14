@@ -167,13 +167,12 @@ for d = 1:length(S.select.subjects)
             disp('USING ONE HGF FOR ALL SUBJECTS')
             ind=1;
         end
-        D.HGF.dat = D_fit(ind).HGF;
-        [Stemp] = HGF_traj2mat(S,D)
+        D.HGF = D_fit(ind).HGF;
+        [Stemp] = HGF_traj2mat(S,D);
         predtemp=Stemp.pred;
         predgroup=Stemp.pred_group;
         predlabel=Stemp.pred_label;
-        predtt={};
-        predtt(1:length(predlabel))=S.pred_type_traintest(strcmp(S.pred_type,'HGF'));
+        predtt=repmat(S.pred_type_traintest(strcmp(S.pred_type,'HGF')),1,length(predlabel));
 %         for tg = 1:length(S.traj)
 %             for pm = 1:size(S.traj{tg})
 %                 pm_name = S.traj{tg}{pm,1};
@@ -427,6 +426,8 @@ for d = 1:length(S.select.subjects)
             stats.trialinfo{con}.trainidx{d,c}=S.trainidx{con};
             stats.trialinfo{con}.testidx{d,c}=S.testidx{con};
             stats.trialinfo{con}.ntrials_traintest(d,c,:)= [length(S.trainidx{con}),length(S.testidx{con})];
+            stats.trialinfo{con}.pred_train{d,c}= S.pred_train{con};
+            stats.trialinfo{con}.pred_test{d,c}= S.pred_test{con};
             
         end
 
@@ -563,19 +564,26 @@ for d = 1:length(S.select.subjects)
                 
                 % zscore OVER TRIALS
                 if S.zscore
-                    S.pred_train{con}(S.trainidx{con},:) = zscore(S.pred_train{con}(S.trainidx{con},:));
-                    conData{con}(:,:,S.trainidx{con}) = zscore(conData{con}(:,:,S.trainidx{con}),[],3);
-                    gfpData{con}(:,S.trainidx{con}) = zscore(gfpData{con}(:,S.trainidx{con}),[],2);
+%                     S.pred_train{con}(S.trainidx{con},:) = zscore(S.pred_train{con}(S.trainidx{con},:));
+%                     conData{con}(:,:,S.trainidx{con}) = zscore(conData{con}(:,:,S.trainidx{con}),[],3);
+%                     gfpData{con}(:,S.trainidx{con}) = zscore(gfpData{con}(:,S.trainidx{con}),[],2);
+                    predX=zscore(S.pred_train{con}(S.trainidx{con},:));
+                    conX=zscore(conData{con}(:,:,S.trainidx{con}),[],3);
+                    gfpX=zscore(gfpData{con}(:,S.trainidx{con}),[],2);
+                else
+                    predX=S.pred_train{con}(S.trainidx{con},:);
+                    conX=conData{con}(:,:,S.trainidx{con});
+                    gfpX=gfpData{con}(:,S.trainidx{con});
                 end
                 
-                predX=[ones(size(S.pred_train{con},1),1) S.pred_train{con}];
+                predX=[ones(size(predX,1),1) predX];
                 %S.pred_label = ['constant' S.pred_label];
                 %S.pred_group = [0 S.pred_group];
                 
                 if any(strcmp(S.data_form,'GFP'))
                     % GFP data
                     for s = 1:length(S.select_samples)
-                        [beta,~,~,~,stt] = regress(gfpData{con}(s,S.trainidx{con})',predX(S.trainidx{con},:));
+                        [beta,~,~,~,stt] = regress(gfpX(s,:)',predX);
                         stats.MR.GFP(con).R2{d,c}(s) = stt(1);
                         stats.MR.GFP(con).F{d,c}(s) = stt(2);
                         stats.MR.GFP(con).p{d,c}(s) = stt(3);
@@ -588,9 +596,9 @@ for d = 1:length(S.select.subjects)
 
                     % TFCE test
                     if isfield(S,'tfce_on') && S.tfce_on
-                        shiftd=4-ndims(gfpData{con});
-                        img=permute(shiftdim(gfpData{con},-shiftd),[3 1 2 4]);
-                        varargout=matlab_tfce('regression',S.tfce_tail,img,[],S.pred_train{con}(S.trainidx{con},:), S.tfce_nperm,[],[],[],[],[],zeros(1,size(S.pred_train{con},2)));
+                        shiftd=4-ndims(gfpX);
+                        img=permute(shiftdim(gfpX,-shiftd),[3 1 2 4]);
+                        varargout=matlab_tfce('regression',S.tfce_tail,img,[],predX, S.tfce_nperm,[],[],[],[],[],zeros(1,size(predX,2)));
                         if ~iscell(varargout); varargout = {varargout}; end
                         % for each (pos and neg):
                         for v = 1:length(varargout)
@@ -601,26 +609,40 @@ for d = 1:length(S.select.subjects)
                 
                 if any(strcmp(S.data_form,'alldata'))
                     % all data
-                    if ndims(conData{con})==3
-                        alldata = reshape(conData{con},[],size(conData{con},3));
+                    if ndims(conX)==3
+                        alldata = reshape(conX,[],size(conX,3));
                         for s = 1:size(alldata,1)
-                            [beta,~,~,~,stt] = regress(alldata(s,S.trainidx{con})',predX(S.trainidx{con},:));
+                            [beta,~,resid,~,stt] = regress(alldata(s,:)',predX);
                             stats.MR.alldata(con).R2{d,c}(s) = stt(1);
                             stats.MR.alldata(con).F{d,c}(s) = stt(2);
                             stats.MR.alldata(con).p{d,c}(s) = stt(3);
                             stats.MR.alldata(con).s{d,c}(s) = stt(4);
                             stats.MR.alldata(con).b{d,c}(s,:) = beta(2:end); % remove constant
+                            stats.MR.alldata(con).hnorm{d,c}(s)=kstest(resid);
+                            stats.MR.alldata(con).skew{d,c}(s)=skewness(resid);
+                            stats.MR.alldata(con).kurt{d,c}(s)=kurtosis(resid);
+                            if S.save_residuals
+                                stats.MR.alldata(con).resid{d,c}(s,:) = resid;
+                            end
+
                         end
                         % FDR correction
                         [fdr_thresh,fdr_masked] = fdr(stats.MR.alldata(con).p{d,c},0.05);
                         % reshape
-                        stats.MR.alldata(con).R2{d,c}=reshape(stats.MR.alldata(con).R2{d,c},size(conData{con},1),size(conData{con},2),[]);
-                        stats.MR.alldata(con).p{d,c}=reshape(stats.MR.alldata(con).p{d,c},size(conData{con},1),size(conData{con},2),[]);
-                        stats.MR.alldata(con).F{d,c}=reshape(stats.MR.alldata(con).F{d,c},size(conData{con},1),size(conData{con},2),[]);
-                        stats.MR.alldata(con).b{d,c}=reshape(stats.MR.alldata(con).b{d,c},size(conData{con},1),size(conData{con},2),[]);
-                        stats.MR.alldata(con).s{d,c}=reshape(stats.MR.alldata(con).s{d,c},size(conData{con},1),size(conData{con},2),[]);
+                        stats.MR.alldata(con).R2{d,c}=reshape(stats.MR.alldata(con).R2{d,c},size(conX,1),size(conX,2),[]);
+                        stats.MR.alldata(con).p{d,c}=reshape(stats.MR.alldata(con).p{d,c},size(conX,1),size(conX,2),[]);
+                        stats.MR.alldata(con).F{d,c}=reshape(stats.MR.alldata(con).F{d,c},size(conX,1),size(conX,2),[]);
+                        stats.MR.alldata(con).b{d,c}=reshape(stats.MR.alldata(con).b{d,c},size(conX,1),size(conX,2),[]);
+                        stats.MR.alldata(con).s{d,c}=reshape(stats.MR.alldata(con).s{d,c},size(conX,1),size(conX,2),[]);
+                        stats.MR.alldata(con).skew{d,c}=reshape(stats.MR.alldata(con).skew{d,c},size(conX,1),size(conX,2),[]);
+                        stats.MR.alldata(con).kurt{d,c}=reshape(stats.MR.alldata(con).kurt{d,c},size(conX,1),size(conX,2),[]);
+                        stats.MR.alldata(con).hnorm{d,c}=reshape(stats.MR.alldata(con).hnorm{d,c},size(conX,1),size(conX,2),[]);
                         stats.MR.alldata(con).fdr_thresh{d,c}=fdr_thresh;
-                        stats.MR.alldata(con).fdr_masked{d,c}=reshape(fdr_masked,size(conData{con},1),size(conData{con},2),[]);
+                        stats.MR.alldata(con).fdr_masked{d,c}=reshape(fdr_masked,size(conX,1),size(conX,2),[]);
+                        if S.save_residuals
+                            stats.MR.alldata(con).resid{d,c} = reshape(stats.MR.alldata(con).resid{d,c},size(conX,1),size(conX,2),[]);
+                        end
+                        
                     end
                 end
             end
@@ -811,6 +833,22 @@ for d = 1:length(S.select.subjects)
             
              for con = 1:length(conData)
                  
+                 % update according to whether data should be averaged
+                 if ~isempty(S.biem_trialavg_pre)
+                     for ii = 1:length(S.biem_trialavg_pre)
+                         trialind = find(ismember(eventType,S.biem_trialavg_pre{ii}));
+                        datatemp(:,:,ii) = mean(conData{con}(:,:,trialind),3);
+                        pred_train_temp(ii,:) = mean(S.pred_train{con}(trialind,:),1);
+                        pred_test_temp(ii,:) = mean(S.pred_test{con}(trialind,:),1);
+                     end
+                         
+                    conData{con} = datatemp;
+                    S.pred_train{con} = pred_train_temp;
+                    S.trainidx{con} = 1:length(S.biem_trialavg_pre);
+                    S.pred_test{con} = pred_test_temp;
+                    S.testidx{con} = 1:length(S.biem_trialavg_pre);
+                 end
+                 
                 % prior: examples x features
                 % prior = rand(100,size(S.pred_train,2));
                 if strcmp(S.biem_prior,'subject_training')
@@ -820,11 +858,12 @@ for d = 1:length(S.select.subjects)
                 end
                 
                 % normalize prior
-                prior = zscore(double(prior));
+                prior_nonan = ~isnan(prior);
+                prior(prior_nonan) = zscore(double(prior(prior_nonan)));
                 
                 % calculate the covariance of the prior
                 % Prior is a multivariate Gaussian with zero mean
-                R = cov(prior);
+                R = cov(prior(prior_nonan));
                 if 0%numel(R)>1
                     figure; imagesc(R);colormap('hot');
                 end
@@ -849,8 +888,8 @@ for d = 1:length(S.select.subjects)
                     if ~isempty(S.biem_groupweights)
                         grpstats=load(fullfile(S.path.stats,S.biem_groupweights));
                         try
-                            grpbeta = grpstats.stats.(S.analysis_type).(datatype).b_mean;
-                            grpsigma = grpstats.stats.(S.analysis_type).(datatype).s_mean;
+                            grpbeta = grpstats.stats.(S.biem_group_analysis_type).(datatype).b_mean;
+                            grpsigma = grpstats.stats.(S.biem_group_analysis_type).(datatype).s_mean;
                         catch
                             disp('no group weights!!')
                             grpweights=0;
@@ -887,29 +926,76 @@ for d = 1:length(S.select.subjects)
                     
                     % decode
                     [orig, recons] = decode_unimod(data', S.pred_train{con}, S.trainidx{con}, S.testidx{con}, beta, sigma, R);
-                    test_corr = corr(orig(~isnan(S.pred_test{con}(S.testidx{con},S.biem_pred)),S.biem_pred),recons(~isnan(S.pred_test{con}(S.testidx{con},S.biem_pred)),S.biem_pred),'type','Spearman');
-                    disp(['correlation: ' num2str(test_corr)])
                     if grpweights
                         [grporig, grprecons] = decode_unimod(data', S.pred_train{con}, S.trainidx{con}, S.testidx{con}, grpbeta, grpsigma, R);
-                        test_grpcorr = corr(grporig(~isnan(S.pred_test{con}(S.testidx{con},S.biem_pred)),S.biem_pred),grprecons(~isnan(S.pred_test{con}(S.testidx{con},S.biem_pred)),S.biem_pred),'type','Spearman');
-                        disp(['correlation from grp weights: ' num2str(test_grpcorr)])
+                    end
+                    
+                    % post-decoding averaging
+                     if ~isempty(S.biem_trialavg_post)
+                         for ii = 1:length(S.biem_trialavg_post)
+                             trialind = find(ismember(eventType,S.biem_trialavg_post{ii}));
+                            origtemp(ii,:) = mean(orig(trialind,:),1);
+                            recontemp(ii,:) = mean(recons(trialind,:),1);
+                            pred_train_temp(ii,:) = mean(S.pred_train{con}(trialind,:),1);
+                            pred_test_temp(ii,:) = mean(S.pred_test{con}(trialind,:),1);
+                            if grpweights
+                                grporigtemp(ii,:) = mean(grporig(trialind,:),1);
+                                grprecontemp(ii,:) = mean(grprecons(trialind,:),1);
+                            end
+                         end
+
+                        orig = origtemp;
+                        recons = recontemp;
+                        S.trainidx{con} = 1:length(S.biem_trialavg_post);
+                        S.testidx{con} = 1:length(S.biem_trialavg_post);
+                        
+                        if grpweights
+                            grporig = grporigtemp;
+                            grprecons = grprecontemp;
+                        end
+                     end
+                    
+                    % test correlations
+                    clear testvar
+                    if isequal(S.pred_train{con},S.pred_test{con})
+                        testvar=orig;
+                        nonan = ~isnan(testvar(:,S.biem_pred));
+                    elseif size(S.pred_test{con}(S.testidx{con}),2)==1
+                        testvar=S.pred_test{con}(S.testidx{con});
+                        nonan = ~isnan(testvar(:,1));
+                    else
+                        error('check input variables')
+                    end
+                    
+                    test_corr=[];test_grpcorr=[];
+                    if size(recons,1)>1
+                        for pn = 1:min(length(S.biem_pred),size(recons,2))
+                            test_corr(pn) = corr(testvar(nonan),recons(nonan,S.biem_pred(pn)),'type','Spearman');
+                            disp(['correlation: ' num2str(test_corr(pn))])
+                        end
+                        if grpweights
+                            for pn = 1:length(S.biem_pred)
+                                test_grpcorr(pn) = corr(testvar(nonan),grprecons(nonan,S.biem_pred(pn)),'type','Spearman');
+                                disp(['correlation from grp weights: ' num2str(test_grpcorr(pn))])
+                            end
+                        end
                     end
                     
                     % store results
                     if S.num_runs>1
-                        stats.biem.(datatype)(c).rho(d,con) = test_corr;
+                        stats.biem.(datatype)(c).rho{d,con} = test_corr;
                         stats.biem.(datatype)(c).recons{d,con} = recons;
-                        stats.biem.(datatype)(c).orig{d,con} = orig;
+                        stats.biem.(datatype)(c).orig{d,con} = testvar;
                     else
-                        stats.biem.(datatype)(con).rho(d,c) = test_corr;
+                        stats.biem.(datatype)(con).rho{d,c} = test_corr;
                         stats.biem.(datatype)(con).recons{d,c} = recons;
-                        stats.biem.(datatype)(con).orig{d,c} = orig;
+                        stats.biem.(datatype)(con).orig{d,c} = testvar;
                     end
                     if grpweights
                         if S.num_runs>1
-                            stats.biem.(datatype)(c).grprho(d,con) = test_grpcorr;
+                            stats.biem.(datatype)(c).grprho{d,con} = test_grpcorr;
                         else
-                            stats.biem.(datatype)(con).grprho(d,c) = test_grpcorr;
+                            stats.biem.(datatype)(con).grprho{d,c} = test_grpcorr;
                             stats.biem.(datatype)(con).grprecons{d,c} = grprecons;
                         end
                     end

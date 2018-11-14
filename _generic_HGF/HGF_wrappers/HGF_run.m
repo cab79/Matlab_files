@@ -56,6 +56,7 @@ for d = 1:length(D)
         if sim_on==1
             if isfield(S,'sim') && ~isempty(S.sim)
                 sim_param = S.sim;
+                sim_obs_param=[];
             elseif isfield(D.HGF,'fit') 
                 sim_param = D(d).HGF(yn).fit.p_prc;
                 sim_obs_param = D(d).HGF(yn).fit.p_obs;

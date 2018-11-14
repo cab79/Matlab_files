@@ -53,12 +53,7 @@ S.path=struct;% clears the field
 S.path.main = 'C:\Data\CORE\eeg\ana';
 S.path.eeg = [S.path.main '\prep\cleaned\part2'];
 S.path.stats = [S.path.main '\stats']; % folder to save outputs
-%S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel10_respmodel12_fractrain0.5_20180801T142901_v1.mat']; 
-%S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel10_respmodel16_fractrain0.5_20180801T142901.mat']; 
-%S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel10_respmodel16_fractrain0_20180802T180446.mat'];
-%S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel10_bayesopt_20180805T093044.mat'];
-%S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel10_respmodel36_fractrain0_20180807T165634.mat']; 
-S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel10_respmodel28_fractrain0_20180806T171509.mat']; 
+S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20180821T134505.mat']; 
 S.path.design = ['C:\Data\CORE\design']; % 
 S.path.datfile = 'C:\Data\CORE\Participants\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 S.path.chanlocs = 'C:\Data\CORE\eeg\ana\prep\chanlocs.mat';
@@ -143,8 +138,8 @@ S.balance_conds =1; % random training trials balanced across conditions
 S.num_runs = 1; % run analysis this many times, each time with a different random choice of training/test data
 
 % Predictor variables
-S.pred_type = {'cond','RT'}; % cond, RT or HGF
-S.pred_type_traintest = {'train','test'}; % 'train' or 'test' for each pred_type. 'train' also performs testing if set by S.traintest.
+S.pred_type = {'cond','HGF'}; % cond, RT or HGF
+S.pred_type_traintest = {'train','train'}; % 'train' or 'test' for each pred_type. 'train' also performs testing if set by S.traintest.
 %S.pred_type = {'cond'}; % cond, RT or HGF
 % if S.pred_type='cond':
 S.cond = {[2 4],[1 3]};
@@ -155,7 +150,7 @@ S.cond = {[2 4],[1 3]};
     %{'PR'},{'da','dau','psi','epsi'};
 %    }; % prediction errors, updates and learning rates
  S.traj{1} = {
-     {'PL'},{'dau'},{[2]},{[1]};
+     {'PL'},{'dau','da','epsi'},{[1 1 1]},{[],[1:2],[]};
 %     {'PR'},{'mu','sa','muhat','sahat'};
      }; % beliefs and their variance
 % S.traj{2} = {
@@ -171,6 +166,9 @@ S.cosmo_tfce_on = 0; % use cosmo if analysing clusters over channels/frequencies
 S.tfce_tail = 2;
 S.tfce_nperm=100; % for initial testing, between 100 and 1000. 5000 is most robust, but slow
 
+% Multiple regression settings
+S.save_residuals=0;
+
 % Ridge regression settings
 S.rr.df_num = 100; % number of lambdas to do cross-val on
 S.rr.folds = 5; % number of folds in the traindata for cross-validation
@@ -180,7 +178,7 @@ S.rr.sigma=0; % save sigma? RESULTS IN LARGE MATRICES AND MEMORY PROBLEMS
 % Bayesian regularised regression (BRR) settings
 S.brr.folds = 0;            % number of folds in the traindata. Set to 0 to not conduct predictive cross-validation.
 S.brr.model = 'gaussian';   % error distribution - string, one of {'gaussian','laplace','t','binomial'}
-S.brr.prior = 'g';        %- string, one of {'g','ridge','lasso','horseshoe','horseshoe+'}
+S.brr.prior = 'horseshoe+';        %- string, one of {'g','ridge','lasso','horseshoe','horseshoe+'}
 S.brr.nsamples = 100;   %- number of posterior MCMC samples (Default: 1000)  
 S.brr.burnin = 100;     %- number of burnin MCMC samples (Default: 1000)
 S.brr.thin = 5;       %- level of thinning (Default: 5)

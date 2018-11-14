@@ -1,6 +1,11 @@
 clear all
 % for part 2 data - averaged over the prob factor as data is noisy
 
+dbstop if error
+% add toolbox paths
+restoredefaultpath
+run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
+
 %% SPECIFY DATA
 
 % path of EEGLAB .set files after preprocessing, path of SPM outputs, and
@@ -25,23 +30,39 @@ timewin = [-200 900]; % part2
 %timewin = [-200 300]; % part4
 
 % conditions within each marker
+% mark = {
+%     [1 9 17]; % left, Odd, DC1
+%     [2 10 18]; % left, Odd, DC3
+%     [3 11 19]; % left, stan, DC1
+%     [4 12 20]; % left, stan, DC3
+%     [5 13 21]; % right, Odd
+%     [6 14 22]; % right, Odd
+%     [7 15 23]; % right, stan
+%     [8 16 24]; % right, Stan
+% };
 mark = {
-    [1 9 17]; % left, Odd, DC1
-    [2 10 18]; % left, Odd, DC3
-    [3 11 19]; % left, stan, DC1
-    [4 12 20]; % left, stan, DC3
-    [5 13 21]; % right, Odd
-    [6 14 22]; % right, Odd
-    [7 15 23]; % right, stan
-    [8 16 24]; % right, Stan
+    [1 2]; % CP10, left, Odd
+    [3 4]; % CP10, left, stan
+    [5 6]; % CP10, right, Odd
+    [7 8]; % CP10, right, stan
+    [9 10]; % CP30, left, Odd
+    [11 12]; % CP30, left, stan
+    [13 14]; % CP30, right, Odd
+    [15 16]; % CP30, right, Stan
+    [17 18]; % CP50, left, Odd
+    [19 20]; % CP50, left, stan
+    [21 22]; % CP50, right, Odd
+    [23 24]; % CP50, right, Stan
 };
 
 %% LOAD AND CONVERT
-files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
+fname=[fpref '*' fmid  '*' fsuff];
+fname=strrep(fname,'**','*');
+files = dir(fullfile(filepath,fname));
 cd(outpath)
 
 %for f = sort(1:length(files),'descend')
-for f=38:length(files)
+for f=1:length(files)
     S=struct;
     S.dataset = fullfile(filepath,files(f).name);
     [pth nme ext] = fileparts(files(f).name);

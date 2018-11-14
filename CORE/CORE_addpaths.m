@@ -7,16 +7,17 @@ paths = {
     1, 'C:\Data\Matlab\HGF\HGFv5.0';
     1, 'C:\Data\Matlab\Matlab_files\_generic_HGF';
     1, 'C:\Data\Matlab\Matlab_files\_generic_SCIn_data_process';
+    1, 'C:\Data\Matlab\Matlab_files\_generic_spm_batch';
     1, 'C:\Data\Matlab\VBA-toolbox-master';
     1, 'C:\Data\Matlab\Matlab_files\CORE\EEG\cosmo\modified functions';
     1, 'C:\Data\Matlab\TFCE';
 	1, 'C:\Data\Matlab\eeglab14_1_1b';
     1, 'C:\Data\Matlab\PRoNTo_dev-2.0.1\machines\gpml';
     1, 'C:\Data\Matlab\CoSMoMVPA';
-    0, 'C:\Data\Matlab\fieldtrip-20180320';
+    %0, 'C:\Data\Matlab\fieldtrip-20180320';
     1, 'C:\Data\Matlab\bayesreg';
     1, 'C:\Data\Matlab\RR_encode';
-    0, 'C:\Data\Matlab\spm12';
+    1, 'C:\Data\Matlab\spm12';
     };
 
 for p = 1:length(paths)

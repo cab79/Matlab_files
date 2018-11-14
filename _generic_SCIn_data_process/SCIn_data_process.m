@@ -17,7 +17,7 @@ if S.fitsim==1
             S.signal.target = 1; % which row of signal is the target being responded to?
             S.signal.cue = 0;
         case {2 3}
-            S.accuracy.target_resp = {[1 2],[2 1]}; % for each target (1st cell) which is the correct response (2nd cell)
+            S.accuracy.target_resp = {[1 2],[1 2]}; % for each target (1st cell) which is the correct response (2nd cell)
             S.signal.target = 2; % which row of signal is the target being responded to?
             S.signal.cue = 1;
             S.accuracy.cond_stimtype = [1 2]; % which stimtypes to include when summarising results within conditions?
@@ -54,11 +54,11 @@ for d = 1:length(D)
             
             % what are the correct responses?
             D(d).Processed(op).correct_resp = D(d).Sequence.signal(S.signal.target,:);
-            D(d).Processed(op).correct_resp_new = D(d).Processed(op).correct_resp;
+            correct_resp_new = D(d).Processed(op).correct_resp;
             for i = 1:length(S.accuracy.target_resp{1})
-                D(d).Processed(op).correct_resp_new(D(d).Processed(op).correct_resp==S.accuracy.target_resp{1}(i)) = S.accuracy.target_resp{2}(i);
+                correct_resp_new(D(d).Processed(op).correct_resp==S.accuracy.target_resp{1}(i)) = S.accuracy.target_resp{2}(i);
             end
-            D(d).Processed(op).correct_resp = D(d).Processed(op).correct_resp_new;
+            D(d).Processed(op).correct_resp = correct_resp_new;
             
             % compare actual responses to correct responses - which were
             % correct?
@@ -76,22 +76,27 @@ for d = 1:length(D)
                     % This allows testing of how many trials are needed to
                     % produce robust condition differences.
             condnum={};
-            conds = unique(D(d).Sequence.condnum);
+            if ~isempty(S.select.condtype)
+                condind = D(d).Sequence.(S.select.condtype).condnum;
+            else
+                condind = D(d).Sequence.condnum;
+            end
+            conds = unique(condind);
             if ~isempty(S.trialmax)
                 for tm = 1:length(S.trialmax)
                     trialmax = S.trialmax{tm};
                     % reduce the number of trials per condition-pair to S.trialmax
-                    for i = 1:length(conds)/2
+                    for i = 1:ceil(length(conds)/2)
                         ind = (i-1)*2+1:(i-1)*2+2; % condition pair indices, e.g. 1 2, 3 4, 5 6
-                        trialind = find(ismember(D(d).Sequence.condnum,conds(ind)));
+                        trialind = find(ismember(condind,conds(ind(ismember(ind,conds)))));
                         trialind_new = trialind(1:min(trialmax,length(trialind)));
-                        condnum_orig{tm} = D(d).Sequence.condnum;
+                        condnum_orig{tm} = condind;
                         condnum{tm}(trialind) = nan;
                         condnum{tm}(trialind_new) = condnum_orig{tm}(trialind_new);
                     end
                 end
             else
-                condnum{1} = D(d).Sequence.condnum;
+                condnum{1} = condind;
             end
 
             % for each version of condnum (diff number of trials in each),
@@ -193,22 +198,22 @@ for d = 1:length(D)
                     % This allows testing of how many trials are needed to
                     % produce robust condition differences.
             condnum={};
-            conds = unique(D(d).Sequence.condnum);
+            conds = unique(condind);
             if ~isempty(S.trialmax)
                 for tm = 1:length(S.trialmax)
                     trialmax = S.trialmax{tm};
                     % reduce the number of trials per condition-pair to S.trialmax
-                    for i = 1:length(conds)/2
+                    for i = 1:ceil(length(conds)/2)
                         ind = (i-1)*2+1:(i-1)*2+2; % condition pair indices, e.g. 1 2, 3 4, 5 6
-                        trialind = find(ismember(D(d).Sequence.condnum,conds(ind)));
+                        trialind = find(ismember(condind,conds(ind(ismember(ind,conds)))));
                         trialind_new = trialind(1:min(trialmax,length(trialind)));
-                        condnum_orig{tm} = D(d).Sequence.condnum;
+                        condnum_orig{tm} = condind;
                         condnum{tm}(trialind) = nan;
                         condnum{tm}(trialind_new) = condnum_orig{tm}(trialind_new);
                     end
                 end
             else
-                condnum{1} = D(d).Sequence.condnum;
+                condnum{1} = condind;
             end
 
             % for each version of condnum (diff number of trials in each),

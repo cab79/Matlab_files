@@ -28,7 +28,7 @@ switch type
     S = getfilelist(S);
 
     % show outlier-ness
-    if exist(fullfile(S.path.file,'Outliers.mat'),'file');
+    if exist(fullfile(S.path.file,'Outliers.mat'),'file')
         load(fullfile(S.path.file,'Outliers.mat'));
         subs = S.(S.func).designmat(2:end,find(strcmp(S.(S.func).designmat(1,:),'subjects')));
     end
@@ -37,6 +37,22 @@ switch type
 
         file = S.(S.func).filelist{i};
         load(file)
+        
+        % select events
+        if iscell(S.ploterp.select.events)
+            for ev = 1:length(S.ploterp.select.events)
+                newdata{ev} = tldata{1};
+                selectdata = tldata(S.ploterp.select.events{ev});
+                datstruct = cell2mat(selectdata(~cellfun(@isempty,selectdata)));
+                datmat = cat(1,datstruct(:).trial);
+                newdata{ev}.trial = datmat;
+                newdata{ev}.avg = squeeze(mean(newdata{ev}.trial,1));
+            end
+            tldata=newdata;
+        else
+            tldata = tldata(S.ploterp.select.events);
+        end
+        
         noemp = find(~cellfun(@isempty,tldata));
         tldata = tldata(noemp);
         avgdata = tldata{1};
@@ -99,23 +115,30 @@ f=figure('units','normalized','outerposition',[0 0 1 1]);
 cfg = [];
 cfg.layout = S.ploterp.layout;
 cfg.ylim = [prctile(datmat(:),0.1),prctile(datmat(:),99.9)];%S.ploterp.ylim;
+if ~isfield(S.ploterp,'event_labels') || isempty(S.ploterp.event_labels)
+    temp=1:length(tldata);
+    labels = cellstr(num2str(temp(:)))';
+else
+    labels = S.ploterp.event_labels;
+end
 if isfield(tldata{1},'trial')
     for d = 1:length(tldata)
-        cfg.dataname{d} = ['num trials: ' num2str(size(tldata{d}.trial,1))];
+        cfg.dataname{d} = ['event: ' labels{d} ', num trials: ' num2str(size(tldata{d}.trial,1))];
     end
 else
     for d = 1:length(tldata)
-        cfg.dataname{d} = ['event: ' num2str(d)];
+        cfg.dataname{d} = ['event: ' labels{d}];
     end
 end
 ft_multiplotER_cab(cfg, tldata);
 title(file)
 
-f2 = figure('units','normalized','outerposition',[0 0.8 0.1*length(S.ploterp.times) 0.2]);
+f2 = figure('units','normalized','outerposition',[0 0.7 0.1*length(S.ploterp.times) 0.3]);
 for t = 1:length(S.ploterp.times)
     subplot(1,length(S.ploterp.times),t);
     tim = dsearchn(avgdata.time',S.ploterp.times{t}');
     topoplot(mean(avgdata.avg(:,tim(1):tim(2)),2),S.(S.func).chanlocs(S.(S.func).inclchan));
+    title([num2str(S.ploterp.times{t}(1)) ':' num2str(S.ploterp.times{t}(2))])
 end
 %cfg = [];                            
 %cfg.xlim = [0.3 0.5];                

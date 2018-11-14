@@ -49,7 +49,7 @@ for f = 1:length(S.(S.func).filelist)
     actlabs = {EEG.chanlocs.labels};
     missing = find(~ismember(labs,actlabs));
     if ~isempty(missing)
-        for m = 1:length(missing);
+        for m = 1:length(missing)
             EEG.chanlocs(missing(m)+1:end+1) = EEG.chanlocs(missing(m):end);
             EEG.chanlocs(missing(m)) = chanlocs(missing(m));
             EEG.data(missing(m)+1:end+1,:,:) = EEG.data(missing(m):end,:,:);
@@ -66,11 +66,11 @@ for f = 1:length(S.(S.func).filelist)
     if any(ecgchan)
         EEG = pop_select(EEG,'nochannel',find(ecgchan));
     end
-    
+   
     
     % LINEAR DETREND
-    if 1%S.(S.func).detrend
-        tim = dsearchn(EEG.times',[-4000 2000]');
+    if S.(S.func).epoch.detrend
+        tim = dsearchn(EEG.times',S.(S.func).detrend'); 
         for i = 1:EEG.trials, EEG.data(:,tim(1):tim(2),i) = detrend(EEG.data(:,tim(1):tim(2),i)')'; end
     end
     % remove baseline
@@ -92,22 +92,32 @@ for f = 1:length(S.(S.func).filelist)
         [conds, tnums, fnums, bnums] = get_markers(EEG);
     end
     
+    % flip channels right to left (e.g. CORE study)
+    if isfield(S.(S.func),'flipchans') && ~isempty(S.(S.func).flipchans)
+        flipidx = find(ismember(fnums,S.(S.func).flipchans));
+        EEG.data(:,:,flipidx) = flipchan(EEG.data(:,:,flipidx),EEG.chanlocs);
+    end
+    
     % switch to selected analysis
     switch S.(S.func).select.datatype
         case 'ERP'
             EEGall=EEG;
             for mt = 1:S.(S.func).nMarkType
                 if S.(S.func).epoch.combinemarkers
-                    if exist(conds,'var') % EGI
-                        % not yet complete
+                    if any(find(strcmp('STIM',EEG.epoch(1).eventtype))) % EGI
+                        % not complete
                     else
                         EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers);
                     end
                 else
-                    try
-                        EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers{mt});
-                    catch
-                        continue
+                    if any(find(strcmp('STIM',EEG.epoch(1).eventtype))) % EGI
+                        % not complete
+                    else
+                        try
+                            EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers{mt});
+                        catch
+                            continue
+                        end
                     end
                 end
                 
@@ -116,8 +126,11 @@ for f = 1:length(S.(S.func).filelist)
                 FTEEG.event=EEG.event;
                 
                 % ERP: timelocked (evoked) data
+                if ~isfield(S.(S.func).epoch,'keeptrials')
+                    S.(S.func).epoch.keeptrials = 'no';
+                end
                 cfg = [];
-                cfg.keeptrials = 'yes';
+                cfg.keeptrials = S.(S.func).epoch.keeptrials;
                 cfg.feedback = 'textbar';
                 tldata{mt} = ft_timelockanalysis(cfg,FTEEG);
 

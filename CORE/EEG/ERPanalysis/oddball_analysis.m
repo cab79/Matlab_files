@@ -1,6 +1,8 @@
 %% ODDBALL ANALYSIS
-%% Settings
+% Extracts waveforms from spatiotemporal clusters obtained from condition
+% contrast
 
+%% Settings
 clear all
 close all
 %dbstop if error

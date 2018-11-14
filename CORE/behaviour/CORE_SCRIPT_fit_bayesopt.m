@@ -34,22 +34,23 @@ S.load.prefixes = {'RT','dt'};
 S.load.suffix = {'*'};
 [S,D]=SCIn_data_import(S);
 
-% response data processing
-S.fitsim=1; % is the analysis of recorded data (1) or simulated data (2)?
-S.meansim=0; % set to 1 to average results over repeated simulations (DONT USE FOR MODEL RECOVERY, ONLY FOR PLOTTING)
-S.accuracy.on = 0;
-S.RT.on = 0;
-S.save.tables = 0;
-[S,D_prep]=CORE_data_process(S,D);  % specific function for CORE (bypasses SCIn_data_process)
-
 % model fitting
 S.prc_config = 'GBM_config'; S.obs_config = 'bayes_optimal_binary_CAB_config';
-S.perc_models=[10];
+S.perc_models=[12];
 S.resp_model=0;
 S.bayes_opt=1;
 for pm=1:length(S.perc_models)
     S.perc_model = S.perc_models(pm); 
     S=CORE_perceptual_models(S);
+    
+    % response data processing
+    S.fitsim=1; % is the analysis of recorded data (1) or simulated data (2)?
+    S.meansim=0; % set to 1 to average results over repeated simulations (DONT USE FOR MODEL RECOVERY, ONLY FOR PLOTTING)
+    S.accuracy.on = 0;
+    S.RT.on = 0;
+    S.save.tables = 0;
+    [S,D_prep]=CORE_data_process(S,D);  % specific function for CORE (bypasses SCIn_data_process)
+    
     S.HGF.plottraj = 1; % turn off if doing multiple simulations!
     D_fit=HGF_run(D_prep,S,0);
     save(fullfile(S.path.hgf,'fitted',['CORE_fittedparameters_percmodel' num2str(S.perc_model) '_bayesopt_' S.sname '.mat']), 'D_fit', 'S');

@@ -1,5 +1,11 @@
 %% setup design batch function for factorial design and estimation
 clear all
+
+dbstop if error
+% add toolbox paths
+restoredefaultpath
+run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
+
 %files required: participant data file with columns headed 'Subject' (should be characters, e.g. S1),
 %'Group' (can be described by numbers or characters, but numbers recommended), 'Include' (must be numbers 
 %with 0 meaning to exclude subject from analysis) and if you have covariates, columns headed with each
@@ -42,7 +48,8 @@ D.identifier=''; % optional identifer to add to end of outputted SPM folder name
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % list of image names within each subject folder
-D.imglist = {'scondition_1.nii'
+D.imglist = {
+            'scondition_1.nii'
             'scondition_2.nii'
             'scondition_3.nii'
             'scondition_4.nii'
@@ -148,7 +155,7 @@ D.maineffects = [0 0 0 0]; % one column per factor
 
 % names of nuisance covariates
 %cov_names = {'Age','Gender'};
-D.cov_names = {};
+D.cov_names = {'Age'};
 
 D.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
 D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA

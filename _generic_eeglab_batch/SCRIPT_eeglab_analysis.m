@@ -193,10 +193,12 @@ S.tf.select.blocks = {'ECA'}; % blocks to load (each a separate file) - empty me
 S.tf.select.conds = {'1','1O','10','10O'}; % conditions to load (each a separate file) - empty means all of them, or not defined
 S.tf.select.datatype = 'ERP'; %'Freq','TF','Coh','ERP'
 % general settings
+S.tf.flipchans = [5:8]; % specific to CORE - fnums to flip
 S.tf.epoch.basewin = [-0.2 0]; % baseline window
 S.tf.epoch.rmbase = 1; % remove baseline prior to frequency/ERP
 S.tf.epoch.markers = {'S  1','S  2','S  3','S  4','S  5','S  6','S  7','S  8', 'S  9'}; % marker types to analyse
 S.tf.epoch.combinemarkers = 0; %include all events in a single condition.
+S.tf.epoch.keeptrials = 'no'; % yes or no
 % ERP settings
 S.tf.CSD.apply=0; % Apply CSD (leave as 0 unless you know what you are doing!)
 S.tf.CSD.montage = 'C:\Data\NTIP\CSDmontage_64.mat';

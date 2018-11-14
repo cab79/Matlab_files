@@ -25,6 +25,8 @@ D.Ndat_in = 2;
 D.Nhead = 1; 
 % OUTPUT factor numbers to NOT average data over (blank does no averaging)
 D.avg = []; 
+% do std instead of average on the above factors
+D.std = 0; 
 % average over any non-unique rows in output
 D.mean_nonunique=0;
 

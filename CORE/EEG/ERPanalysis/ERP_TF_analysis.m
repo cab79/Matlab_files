@@ -1,11 +1,11 @@
 clear all
 close all
 
-filepath = 'C:\Data\CORE\Preprocessed_100Hz';
+filepath = 'C:\Data\CORE\eeg\ana\prep\cleaned\part4';
 cd(filepath);
 filesuff = ('_merged_cleaned.set');
-load('C:\Data\CORE\Preprocessed_100Hz\chanlocs.mat');
-load('C:\Data\CORE\Preprocessed_100Hz\groupsublist.mat');
+load('C:\Data\CORE\eeg\ana\prep\chanlocs.mat');
+%load('C:\Data\CORE\Preprocessed_100Hz\groupsublist.mat');
 subjlists={};
 sublist_grp = {'CORE'}; grplist = [1]; sublist_side = {'LR'}; expts = {'4'}; 
 hand_nme = {'L','R'};

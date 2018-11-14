@@ -83,11 +83,10 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     end
     
     % switch the data input column
-    switch r.c_obs.responses{:}
-        case 'RT'
-            ycol=2;
-        case 'EEG'
-            ycol=3;
+    if any(strcmp(r.c_obs.responses, 'RT'))
+        ycol=2;
+    elseif any(strcmp(r.c_obs.responses, 'EEG'))
+        ycol=3;
     end
 
     % Weed irregular trials out from responses and inputs

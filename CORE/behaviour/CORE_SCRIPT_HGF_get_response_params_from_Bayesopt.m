@@ -227,7 +227,7 @@ S.trajmodels(7).traj{1} = {
 % for each traj group... reformat into predictor matrix
 S.pred_transform = 'notrans'; % arcsinh, rank or notrans
 S.zscore = 1;
-S.trajmodelselect = [4];
+S.trajmodelselect = [1:7];
 
 for tm = S.trajmodelselect
     S.traj = S.trajmodels(tm).traj;

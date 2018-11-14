@@ -62,13 +62,11 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
     % Sufficient statistics of Gaussian parameter priors
     
     % set the constant parameter
-    switch c.responses{:}
-        case 'RT'
+    if any(strcmp(c.responses, 'RT'))
             % Beta_0
             c.reg.be0mu = log(0.5); 
             c.reg.be0sa = 4;
-            
-        case 'EEG'
+    elseif any(strcmp(c.responses, 'EEG'))
             % Beta_0
             c.reg.be0mu = 0; 
             c.reg.be0sa = 4;

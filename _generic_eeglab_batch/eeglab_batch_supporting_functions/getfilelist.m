@@ -221,6 +221,7 @@ for g = 1:length(grps)
                     genname = strrep(genname,'****','*');
                     genname = strrep(genname,'***','*');
                     genname = strrep(genname,'**','*');
+                    genname = strrep(genname,'__.','.');
                     genname = strrep(genname,'_.','.');
                     %genname = regexprep(genname,{'\.','set'},{'','.set'});
                     
@@ -236,6 +237,7 @@ for g = 1:length(grps)
                         subdir = '';
                     end
                     
+                    disp(['loading: ' fullfile(S.path.file,grpdir,subdir,genname)])
                     file = dir(fullfile(S.path.file,grpdir,subdir,genname));
                     if length(file)~=1
                         disp(['No unique file named ' genname])

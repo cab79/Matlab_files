@@ -25,15 +25,17 @@ for s = 1:length(S.select.subjects)
         
     % FIND THE FILES FOR THIS SUBJECT
     subfiles = S.filelist(find(not(cellfun('isempty', strfind(S.filelist,D(s).subname)))));
+    dirnames = S.dirlist(find(not(cellfun('isempty', strfind(S.filelist,D(s).subname)))));
 
     % CYCLE THROUGH EACH FILE FOR THIS SUBJECT
     for f = 1:length(subfiles)
         filename = subfiles{f};
+        dirname = dirnames{f};
         S.load.prefix = S.load.prefixes{1};
         fprintf('\nProcessing %s.\n\n', filename);
 
         % assume only one field in loaded file
-        temp = load(filename);
+        temp = load(fullfile(dirname,filename));
         fename = fieldnames(temp(f));
         if isstruct(temp.(fename{1}))
             outstruct = temp.(fename{1});
@@ -48,7 +50,7 @@ for s = 1:length(S.select.subjects)
             filename = strrep(filename,S.load.prefixes{1},S.load.prefix);
 
             % assume only one field in loaded file
-            temp = load(filename);
+            temp = load(fullfile(dirname,filename));
             fename = fieldnames(temp(f));
             D(s).(S.load.prefix)(f) = temp.(fename{1});
         end

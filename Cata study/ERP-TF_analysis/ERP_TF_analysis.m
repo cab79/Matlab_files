@@ -3,7 +3,7 @@
 % per subject) - i.e after preprocess part 2
 % Before running this, check data quality using "Plot_ALLEEG.m"
 % Requires Fieldtrip to be in the Matlab path
-% Save ALL SUBJECTS' data in one huge data file
+% Saves ALL SUBJECTS' data in one huge data file
 
 clear all
 close all

@@ -1,7 +1,8 @@
-function [stats] = CORE_HGF_groupstatistics(T,Vec)
+function [stats] = CORE_HGF_groupstatistics(T,Vec,S)
 % T is a table containing subject and group information as well as column
 % variables for analysis (scalar values per variables and participant).
-% V is a structure containing variables (fields) as vectors per participant.
+% Vec: cell array. Use trajectories from Vec(1) with names defined from
+% Vec(2). If empty, uses traj defined from S.condmean and S.cond
 
 % group indices
 grps = unique(T.groups,'stable');
@@ -29,22 +30,63 @@ for stf = 1:length(Stfields)
     
     pvec(:,stf)=[St(:).(Stfields{stf})]';
 end
+stats.mvc.param = lda_class(pvec,T.groups,length(T.groups),5,0);
 
-stats.mvc.param = lda_class(pvec,T.groups,length(T.groups),5);
+%for vi = 1:length(Vec)
 
-for vi = 1:length(Vec)
-
-    V=Vec{vi};
-    
-    % concatenate vector for multivariate classification
-    Vfields = fieldnames(V);
-    vcat=nan(length(V),length(V(1).(Vfields{1})));
-    for v = 1:length(V)
-        for vf = 1:length(Vfields)
-            vcat(v,:) = V(v).(Vfields{vf})';
+if ~isempty(Vec)
+    % use trajectories from Vec(1) with names defined from Vec(2)
+    if length(Vec)>1
+        Vfields_all = Vec{2};
+    else
+        Vfields_all = fieldnames(Vec{1});
+    end
+    Vec = Vec(1);
+else
+    % use traj defined by S.condmean and S.cond
+    conds = fieldnames(S.cond);
+    Vfields_all = {};
+    for cm = 1:length(S.condmean)
+        Vfields_all{cm} = S.condmean{cm};
+        vcell={};
+        for cd = 1:length(conds)
+            vcell = [vcell,{[S.condmean{cm} '_' conds{cd}]}];
+        end
+        for stf=1:length(vcell)
+            for sub = 1:length(St)
+                Vec{1}(sub).(Vfields_all{cm})(stf) = St(sub).(vcell{stf});
+            end
         end
     end
-    
-    stats.mvc.traj(vi) = lda_class(vcat,T.groups,length(T.groups),5);
-
+end
+%for cm = 1:length(Vfields_all)
+    Vfields=Vfields_all;
+    V=Vec{1};
+    for vf = 1:length(Vfields)
+        dat=[];
+        for sub = 1:length(V)
+            dat(sub,:) = V(sub).(Vfields{vf})';
+        end
+        out = lda_class(dat,T.groups,length(T.groups),5,0);
+        try
+            stats.mvc.traj.error.(Vfields{vf}) = out.ldaCVErr;
+            
+            if S.nperm
+                perm_results=[];
+                for np = 1:S.nperm
+                    ix = randperm(length(V));
+                    out = lda_class(dat(ix,:),T.groups,length(T.groups),5);
+                    perm_results(np) = out.ldaCVErr;
+                    disp(['LDA: ' Vfields{vf} ', perm ' num2str(np) ', error = ' num2str(perm_results(np))])
+                end
+                stats.mvc.traj.p_value.(Vfields{vf}) = sum(abs(perm_results) < abs(stats.mvc.traj.error.(Vfields{vf}))) / length(perm_results);
+            else
+                stats.mvc.traj.p_value.(Vfields{vf}) = [];
+            end
+            
+        catch
+            stats.mvc.traj.error.(Vfields{vf}) = [];
+            stats.mvc.traj.p_value.(Vfields{vf}) = [];
+        end
+    end
 end

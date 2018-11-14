@@ -1,12 +1,15 @@
 
 function S=eeglab_separate_files(S)
+
+sname_ext = 'separated';
+
 % separate files that were originally combined before ICA
 if S.(S.func).separatefiles.on
     % GET FILE LIST
     S.path.file = fullfile(S.path.prep,'cleaned');
-    S = getfilelist(S,'combined_manrej_ICA_cleaned');
+    S = getfilelist(S,'ICA_cleaned');
 
-    loadpath = fullfile(S.path.prep,sname_ext);
+    loadpath = S.path.file;
     for f = 1:length(S.(S.func).filelist)
         file = S.(S.func).filelist{f};
         INEEG = pop_loadset('filename',file,'filepath',loadpath);

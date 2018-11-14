@@ -70,7 +70,7 @@ if S.accuracy.on
             plotind = find(~isnan(D.Processed.blockcorrectmovavg{1}{b}));
             if ~isempty(plotind) && any(D.Processed.blockcorrectmovavg{1}{b}(plotind)) && length(plotind)>S.movingavg
                 ii=ii+1;
-                subplot(2,2,ii)
+                subplot(2,4,ii)
                 Y=D.Processed.blockcorrectmovavg{1}{b};
                 Yind = 1:length(Y);
                 % clear leading zeros
@@ -110,8 +110,8 @@ if S.accuracy.on
                 case 1
                     %labels = {'adaptive: low','adaptive: high','low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',};
                     labels = {'low prob: low','low prob: high','equal prob: low','equal prob: high','high prob: low','high prob: high',}; % v1
-                case {2 3}
-                    labels = {'high prob: pair 1','low prob: pair 2','equal prob: pair 1','equal prob: pair 2','high prob: pair 2','low prob: pair 1',}; % v2
+                %case {2 3}
+                %    labels = {'high prob: pair 1','low prob: pair 2','equal prob: pair 1','equal prob: pair 2','high prob: pair 2','low prob: pair 1',}; % v2
             end
             set(gca,'xticklabel', labels)
             %title([D(d).subname ', trial number: ' num2str(S.trialmax{tm})])
