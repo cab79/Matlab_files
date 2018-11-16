@@ -22,7 +22,10 @@ set(0,'DefaultFigureVisible','on')
 % 3 dipoles
 %file = 'ECD_out_20181113T050045.mat'; % peak 1
 %file = 'ECD_out_20181113T013209.mat'; % peak 2
-file = 'ECD_out_20181113T020012.mat'; % peak 3
+%file = 'ECD_out_20181113T020012.mat'; % peak 3
+% wider prior var
+%file = 'ECD_out_20181116T013936.mat'; % peak 1
+file = 'ECD_out_20181116T020812.mat'; % peak 2
 
 load(file);
 

@@ -1,13 +1,25 @@
 function S = flat_channel_reject(S,EEG)
-varthresh = S.prep.clean.flatchan.varthresh;
+% function maximises the amount of data remaining after removing flat
+% channels (on certain trials)
+
+% Planned future updates:
+% add topographic plots showing locations of channels to be interpolated.
+
+% OLD
+% std threshold - less variance than this per trial will be rejected
+% varthresh = S.prep.clean.flatchan.varthresh;
+
 results = [];
 idx={};
 
+% inverse variance over data points on each trial and channel
 invvar = 1./squeeze(std(EEG.data,[],2));
-%imagesc(invvar)
 
-% order variance over trials
+% order variance over trials: trialind is an index of which trials have the
+% least variance
 [~,trialind]=sort(sum(invvar,1),'descend');
+
+% cycle through every combination of trial and channel removal
 row=0;
 for t = 1:length(trialind)
     
@@ -31,12 +43,8 @@ for t = 1:length(trialind)
             idx{row} = {trialind(1:t),chanind(1:c)};
             continue
         end
-        
-        % for every combination of trial and channel removal, 
-
     end
 end
-
 
 trial_weight = S.prep.clean.flatchan.trial_weight;
 chan_weight = S.prep.clean.flatchan.chan_weights;

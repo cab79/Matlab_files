@@ -34,7 +34,7 @@ S.include_codes = [1];
 S.grps = {1;2}; %inversion on each group separately: separate with colon. Otherwise separate with comma
 % time and frequecy windows
 S.freqwin = [0 100]; % high pass and low pass filter (not applied for ECD)
-S.timewin_file = {'C:\Data\CORE\eeg\ana\ERP\lat_results_grandavg_20181110T114702.xlsx','event1_peak3',5};%[30 50]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest. ECD averages over this window so should be short. Can be a single number.
+S.timewin_file = {'C:\Data\CORE\eeg\ana\ERP\lat_results_grandavg_20181110T114702.xlsx','event1_peak1',5};%[30 50]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest. ECD averages over this window so should be short. Can be a single number.
 S.cond = {{'1'},{'2'},{'3'},{'4'},{'5'},{'6'},{'7'},{'8'}}; % ECD: finds separate dipoles for each
 %S.cond = {{'8'}};
 S.basewin = [-200 0]; % empty will not baseline correct and will not produce a baseline image.
@@ -203,8 +203,8 @@ for tw = tw_run
 %             try, D{i}.inv{D{i}.val} = rmfield(D{i}.inv{D{i}.val},'inverse' ); end
 %             try, D{i}.inv{D{i}.val} = rmfield(D{i}.inv{D{i}.val},'contrast'); end
             
-            inv = D{i}.inv(1);
-            D{i} = rmfield(D{i},'inv'); 
+            try, inv = D{i}.inv(1);end
+            try, D{i} = rmfield(D{i},'inv'); end
             try, inv{1} = rmfield(inv{1},'inverse' );end
             try, inv{1} = rmfield(inv{1},'inverse' );end
             D{i}.inv = inv;

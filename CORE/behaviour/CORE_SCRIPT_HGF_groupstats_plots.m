@@ -64,10 +64,10 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted';
 %fname = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181109T200546.mat'; % ommu3=-6
 
 % alphas
-fname = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181111T193305.mat'; % alpha 0.1
-%fname = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181111T193319.mat'; % alpha 0.2
-%fname = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181111T193331.mat'; % alpha 0.4
-%fname = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181111T193346.mat'; % alpha 0.8
+fname = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181114T173639.mat'; % alpha 0.1
+%fname = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181114T173746.mat'; % alpha 0.2
+%fname = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181114T173907.mat'; % alpha 0.4
+%fname = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181114T173922.mat'; % alpha 0.8
 
 %S.path.hgf = 'C:\Data\CORE\behaviour\hgf\sim';
 %fname = 'CORE_sim_percmodel12_20181019T101036.mat'; % Al*2, om2+2, om3-2

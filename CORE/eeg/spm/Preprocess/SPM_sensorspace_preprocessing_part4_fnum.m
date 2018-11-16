@@ -23,13 +23,13 @@ spmart = 0;
 % use FT manual artefact rejection
 ftart = 0;
 % output images?
-imout=1;
+imout=0;
 % transform
 arcsinh_data = 0;
-arcsinh_images=1;
+arcsinh_images=0;
 
 % output type: 'average' (to create average) 'useaverage' (to use existing averaged file) or 'singletrial'
-outputtype = 'useaverage'; % CAREFUL WITH USEAVERAGE: data might not be baselined correctly
+outputtype = 'average'; % CAREFUL WITH USEAVERAGE: data might not be baselined correctly
 
 % mode - type of images to generate. One of:
 %                'scalp x time'
@@ -57,7 +57,7 @@ delete_unsmoothed = 1;
 fname=[fpref '*' fmid  '*' fsuff];
 fname=strrep(fname,'**','*');
 files = dir(fullfile(filepath,fname));
-files_ana=1:length(files);
+files_ana=25%1:length(files);
 
 for f = files_ana
     fname = files(f).name;

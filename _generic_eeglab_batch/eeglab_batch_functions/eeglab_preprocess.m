@@ -273,7 +273,7 @@ switch part
             EEG = pop_loadset('filename',file,'filepath',loadpath);
 
             % REMOVE FLAT CHANNELS using 1/var
-            if isfield(S.prep.clean,'flatchan') && S.prep.clean.flatchan.varthresh > 0
+            if isfield(S.prep.clean,'flatchan') && (any(S.prep.clean.flatchan.trial_weight>0) && any(S.prep.clean.flatchan.chan_weights>0))
                 S = flat_channel_reject(S,EEG);
                 EEG = eeg_interp(EEG, S.prep.clean.flatchan.rejchan);
                 if length(EEG.chanlocs)>EEG.nbchan
