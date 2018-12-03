@@ -57,7 +57,10 @@ S.path.stats = [S.path.main '\stats']; % folder to save outputs
 %S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel20_fractrain0_20181021T093241.mat']; % FITTED
 %S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_bayesopt_20181013T140052.mat'];
 %S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181023T212308.mat'; %alpha prior = 1
-S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181023T202826.mat'; %alpha prior = 0.2
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181023T202826.mat'; %alpha prior = 0.2
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091427.mat'; % 'GBM_config_alpha4BO_var2_bo'
+S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091331.mat'; % 'GBM_config_alphaBO_var2_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091401.mat'; % 'GBM_config_alpha2BO_var2_bo'
 S.path.design = ['C:\Data\CORE\design']; % 
 S.path.datfile = 'C:\Data\CORE\Participants\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 S.path.chanlocs = 'C:\Data\CORE\eeg\ana\prep\chanlocs.mat';
@@ -143,8 +146,8 @@ S.balance_conds =1; % random training trials balanced across conditions
 S.num_runs = 1; % run analysis this many times, each time with a different random choice of training/test data
 
 % Predictor variables
-S.pred_type = {'cond','HGF'}; % cond, RT or HGF
-S.pred_type_traintest = {'train','train'}; % 'train' or 'test' for each pred_type. 'train' also performs testing if set by S.traintest.
+S.pred_type = {'HGF'}; % cond, RT or HGF
+S.pred_type_traintest = {'train'}; % 'train' or 'test' for each pred_type. 'train' also performs testing if set by S.traintest.
 %S.pred_type = {'cond'}; % cond, RT or HGF
 % if S.pred_type='cond':
 S.cond = {[2 4],[1 3]};
@@ -191,7 +194,7 @@ S.rr.sigma=0; % save sigma? RESULTS IN LARGE MATRICES AND MEMORY PROBLEMS
 % Bayesian regularised regression (BRR) settings
 S.brr.folds = 0;            % number of folds in the traindata. Set to 0 to not conduct predictive cross-validation.
 S.brr.model = 't';   % error distribution - string, one of {'gaussian','laplace','t','binomial'}
-S.brr.prior = 'hs+';        %- string, one of {'g','ridge','lasso','horseshoe','horseshoe+'}
+S.brr.prior = 'g';        %- string, one of {'g','ridge','lasso','horseshoe','horseshoe+'}
 S.brr.nsamples = 100;   %- number of posterior MCMC samples (Default: 1000)  
 S.brr.burnin = 100;     %- number of burnin MCMC samples (Default: 1000)
 S.brr.thin = 5;       %- level of thinning (Default: 5)

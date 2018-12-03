@@ -34,7 +34,7 @@ S.include_codes = [1];
 S.grps = {1;2}; %inversion on each group separately: separate with colon. Otherwise separate with comma
 % time and frequecy windows
 S.freqwin = [0 100]; % high pass and low pass filter (not applied for ECD)
-S.timewin_file = {'C:\Data\CORE\eeg\ana\ERP\lat_results_grandavg_20181110T114702.xlsx','event1_peak1',5};%[30 50]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest. ECD averages over this window so should be short. Can be a single number.
+S.timewin_file = {'C:\Data\CORE\eeg\ana\ERP\lat_results_grandavg_20181110T114702.xlsx','event1_peak2',5};%[30 50]; % empty will include whole epoch. Best to narrow this as much as possible to the range of interest. ECD averages over this window so should be short. Can be a single number.
 S.cond = {{'1'},{'2'},{'3'},{'4'},{'5'},{'6'},{'7'},{'8'}}; % ECD: finds separate dipoles for each
 %S.cond = {{'8'}};
 S.basewin = [-200 0]; % empty will not baseline correct and will not produce a baseline image.
@@ -67,15 +67,23 @@ S.log_images = 1;
 
 % ECD options
 S.prior(1).prior_loc = [39.4 -27.6 63.3]; % dipole prior location in MNI. Leave empty to have a non-informative prior.
-S.prior(1).prior_var = 3*[10.4 8.0 6.1]; % dipole prior location variance in MNI (mm).
+S.prior(1).prior_var = [10.4 8.0 6.1]; % dipole prior location variance in MNI (mm).
 S.prior(1).prior_mom = []; % prior moment
 S.prior(1).prior_momvar = []; % prior moment variance
 S.prior(1).sym = 1; % 1=single dipole, 2 = symmetric pair
-S.prior(2).prior_loc = [54 -20 20]; % dipole prior location in MNI. Leave empty to have a non-informative prior.
-S.prior(2).prior_var = 3*[10 10 10]; % dipole prior location variance in MNI (mm).
+S.prior(2).prior_loc_file = {'ECD_out_20181117T025754.mat',2}; % get locs from file (filename, dipole index)
+%S.prior(2).prior_loc = [54 -20 20]; % dipole prior location in MNI. Leave empty to have a non-informative prior.
+S.prior(2).prior_var = [0 0 0];%3*[10 10 10]; % dipole prior location variance in MNI (mm).
 S.prior(2).prior_mom = []; % prior moment
 S.prior(2).prior_momvar = []; % prior moment variance
-S.prior(2).sym = 2; % 1=single dipole, 2 = symmetric pair
+S.prior(2).sym = 1; % 1=single dipole, 2 = symmetric pair
+S.prior(3).prior_loc_file = {'ECD_out_20181117T025754.mat',3}; % get locs from file (filename, dipole index)
+%S.prior(3).prior_loc = [54 -20 20]; % dipole prior location in MNI. Leave empty to have a non-informative prior.
+S.prior(3).prior_var = [0 0 0];%3*[10 10 10]; % dipole prior location variance in MNI (mm).
+S.prior(3).prior_mom = []; % prior moment
+S.prior(3).prior_momvar = []; % prior moment variance
+S.prior(3).sym = 1; % 1=single dipole, 2 = symmetric pair
+
 S.Niter = 10;
 
 % run options
@@ -358,6 +366,16 @@ for tw = tw_run
                     S.timewin = timewin(subind,:);
                     disp(['time window: ' num2str(S.timewin)]);
                 end
+                
+                % add prior locations from a file, if specified
+                for np = 1:length(S.prior)
+                    if isfield(S.prior(np),'prior_loc_file') && iscell(S.prior(np).prior_loc_file)
+                        locfile = load(S.prior(np).prior_loc_file{1});
+                        locs = squeeze(mean(locfile.mniloc{g}(i,:,:,S.prior(np).prior_loc_file{2}),2));
+                        S.prior(np).prior_loc = locs';
+                    end
+                end
+                
                 D{i} = spm_eeg_inv_vbecd_cab(D{i},S);
             end
             

@@ -24,8 +24,14 @@ set(0,'DefaultFigureVisible','on')
 %file = 'ECD_out_20181113T013209.mat'; % peak 2
 %file = 'ECD_out_20181113T020012.mat'; % peak 3
 % wider prior var
-%file = 'ECD_out_20181116T013936.mat'; % peak 1
-file = 'ECD_out_20181116T020812.mat'; % peak 2
+file = 'ECD_out_20181116T013936.mat'; % peak 1
+%file = 'ECD_out_20181116T020812.mat'; % peak 2
+% fixed prior on S1, variable on S2
+%file = 'ECD_out_20181117T024804.mat'; % peak 1
+%file = 'ECD_out_20181117T025754.mat'; % peak 2
+% fixed on S2 from previous analysis
+%file = 'ECD_out_20181118T084002.mat';  % peak 1
+%file = 'ECD_out_20181118T082301.mat';% peak 2
 
 load(file);
 
@@ -43,6 +49,11 @@ for g = 1:2 % groups
     for h = 1:2 % hand
         for sub = 1:nsub
             X = squeeze(mniloc{g}(sub,hand{h},:,dipole));
+            
+            % relative to a coordinate
+            relcoord = [39.4 -27.6 63.3];
+            X = repmat(relcoord,size(X,1),1) + (X-repmat(mean(X,1),size(X,1),1));
+            
             for d = 1:size(X,1) % digit pair
                 loc(h,d).grp{g}(sub,:) = X(d,:);
             end

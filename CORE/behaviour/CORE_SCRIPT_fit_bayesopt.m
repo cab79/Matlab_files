@@ -35,8 +35,8 @@ S.load.suffix = {'*'};
 [S,D]=SCIn_data_import(S);
 
 % model fitting
-S.prc_config = 'GBM_config'; S.obs_config = 'bayes_optimal_binary_CAB_config';
-S.perc_models=[12];
+S.prc_config = 'GBM_config_alpha04_var4'; S.obs_config = 'bayes_optimal_binary_CAB_config';
+S.perc_models=[3];
 S.resp_model=0;
 S.bayes_opt=1;
 for pm=1:length(S.perc_models)

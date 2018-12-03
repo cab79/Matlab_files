@@ -35,8 +35,8 @@ S.load.suffix = {'*'};
 [S,D]=SCIn_data_import(S); 
 
 % model fitting
-S.prc_config = 'GBM_config_alpha08'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
-S.perc_model=[12]; % 1 3 9 10 11 12
+S.prc_config = 'GBM_config_alpha8BO_var1_bo'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
+S.perc_model=[3]; % 1 3 9 10 11 12
 S.resp_models = [2]; % 1 2 3
 for rm=1:length(S.resp_models)
     S.resp_model = S.resp_models(rm); 

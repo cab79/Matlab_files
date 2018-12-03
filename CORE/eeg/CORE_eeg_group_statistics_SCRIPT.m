@@ -99,7 +99,7 @@ sfiles = {
 
 %     'stats_BRR_all_chan_cond_arcsinh_20180923T171935.mat' % t dist, cond, g prior
 %     'stats_BRR_all_chan_HGF_arcsinh_20180925T161430.mat' % abs PE, t dist
-%     'stats_BRR_all_chan_HGF_arcsinh_20180925T161455.mat' % real PE, t dist
+     'stats_BRR_all_chan_HGF_arcsinh_20180925T161455.mat' % real PE, t dist
 %     'stats_BRR_all_chan_HGF_arcsinh_20180926T070703.mat' % abs Dau, t dist
 %     'stats_BRR_all_chan_HGF_arcsinh_20180926T070557.mat' % real Dau, t dist
 %     'stats_BRR_all_chan_HGF_arcsinh_20180926T215653.mat' % epsi 1/2, t dist
@@ -130,8 +130,11 @@ sfiles = {
  %'stats_BRR_all_chan_HGF_arcsinh_20181022T212551.mat' % hs+, t, PE
  
 % response model 2, alternative HGF priors
-'stats_BRR_all_chan_condHGF_arcsinh_20181025T082046.mat' % alpha=0.2, t dist, real PE, hs+
+%'stats_BRR_all_chan_condHGF_arcsinh_20181025T082046.mat' % alpha=0.2, t dist, real PE, hs+
 %'stats_BRR_all_chan_condHGF_arcsinh_20181024T172020.mat' % alpha = 1, t dist, real PE, hs+
+
+%'stats_BRR_all_chan_condHGF_arcsinh_20181130T080045.mat' % 'GBM_config_alpha4BO_var2_bo', t dist, real PE, hs+
+'stats_BRR_all_chan_HGF_arcsinh_20181130T080120.mat'; % 'GBM_config_alpha4BO_var2_bo', t dist, real PE, g
 
     };
 subtract = [];
@@ -141,7 +144,7 @@ statfield = {'beta','b','s','rho','weights','transweights','kurt','skew'}; % for
 clims = []; % t value limits for plotting
 xticks = 0:4:600;
 topo_range = [0 600];
-param=[1]; % multiple param's betas are summed
+param=[6]; % multiple param's betas are summed
 load('C:\Data\CORE\eeg\ana\prep\chanlocs.mat')
 
 

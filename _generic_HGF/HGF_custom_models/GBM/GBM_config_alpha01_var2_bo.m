@@ -50,8 +50,8 @@ switch S.perc_modelspec.likelihood.type
                 c.like.logal1var = true; % this is a variance parameter
             case 'uncertain_equal'
                 % only specify al0
-                c.like.logal0mu = repmat(log(0.8),1,c.n_inputcond);
-                c.like.logal0sa = repmat(4^2,1,c.n_inputcond); % unfixed
+                c.like.logal0mu = repmat(log(0.1),1,c.n_inputcond);
+                c.like.logal0sa = repmat(2^2,1,c.n_inputcond); % unfixed
                 c.like.logal0var = true; % this is a variance parameter
             case 'certain'
                 % only specify al0
@@ -144,7 +144,7 @@ for m = 1:c.nModels
 
                 % Format: row vector of length n_levels.
                 % Undefined (therefore NaN) at the first level.
-                c.(type).ommu = [NaN, repmat(-3-S.failed, 1, length(c.(type).mu_0mu)-2),-6]; % -2 -3 is min
+                c.(type).ommu = [NaN, repmat(-5.75-S.failed, 1, length(c.(type).mu_0mu)-2),-5.34];
                 c.(type).omsa = [NaN, repmat(4^2, 1, length(c.(type).mu_0mu)-1)]; %abs(c.(type).ommu);
             end
 
