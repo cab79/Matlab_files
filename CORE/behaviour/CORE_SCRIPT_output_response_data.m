@@ -24,7 +24,7 @@ S.path.datfile = ['C:\Data\CORE\participants\Participant_data.xlsx']; % .xlsx fi
 %save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
 % add paths
-CORE_addpaths
+run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 
 % data import
 S.load.prefixes = {'RT','dt'};
@@ -37,5 +37,6 @@ S.meansim=0; % set to 1 to average results over repeated simulations (DONT USE F
 S.accuracy.on = 1;
 S.RT.on = 1;
 S.RT.min = 0.2; % min RT to consider
+S.RT.fill_non_response = 0; % RT value to add to trials in which there was no response: acts to include inaccurary info within RT data. Resulting accuracy data are errors of comission only.
 S.save.tables = 1;
 [S,D]=CORE_data_process(S,D);  % specific function for CORE (bypasses SCIn_data_process)

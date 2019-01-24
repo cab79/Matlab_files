@@ -19,11 +19,11 @@ end
 f1=figure
 pln=0;
 
-%if isfield(P,'selectlev')
-%    D.Fi_ind = find(D.Fi(:,1)==P.selectlev); % indices of Fi (and wf) for each plot
+if isfield(P,'selectlev')
+    D.Fi_ind = find(D.Fi(:,1)==P.selectlev); % indices of Fi (and wf) for each plot
 %else
 %    D.Fi_ind = find(D.Fi(:,1)); % indices of Fi (and wf) for each plot
-%end
+end
 
 y=DATa(D.Fi_ind);
 y=y(D.fi);
@@ -39,11 +39,13 @@ else
     unicond = unique(condind)';
 end
 
+% gather data
+plotchans=1:length(D.chanlocs);
+plotchans(P.no_plot_ele)=[];
+dat=struct;
 for cn = 1:length(cond) 
     peakdata=y(condind==cn);
     peakdata = mean(cat(3,peakdata{:}),3);
-    plotchans=1:length(D.chanlocs);
-    plotchans(P.no_plot_ele)=[];
     %[~,markchans] = intersect(plotchans,tp);
     if any(P.topo_subtimewin) && length(P.topo_subtimewin)==1 % multiple plots within a range
         cluswin = D.E_val(end)-D.E_val(1);
@@ -58,27 +60,42 @@ for cn = 1:length(cond)
         for ln = 1:length(lats)-1
             pln = pln+1;
             lat=lats(ln:ln+1);
-            ax(pln) = subplot(length(cond),length(lats)-1,pln); plottopotype(mean(peakdata(:,lat(1):lat(2)),2),D.chanlocs,plotchans,P.topotype)
+            dat(pln).peakdata = mean(peakdata(:,min(lat):max(lat)),2);
+            ax(pln) = subplot(length(cond),length(lats)-1,pln); 
         end
     elseif any(P.topo_subtimewin) && length(P.topo_subtimewin)==2 % specified time window
         pln = pln+1;
         lat = dsearchn(D.EEGtimes',P.topo_subtimewin');
-        ax(pln) = subplot(length(unicond),1,pln); plottopotype(mean(peakdata(:,lat),2),D.chanlocs,plotchans,P.topotype)
+        dat(pln).peakdata = mean(peakdata(:,min(lat):max(lat)),2);
+        ax(pln) = subplot(length(unicond),1,pln); 
     else
         pln = pln+1;
         lat = find(D.EEGtimes==D.E_val(1));
-        ax(pln) = subplot(length(unicond),1,pln); plottopotype(mean(peakdata(:,lat),2),D.chanlocs,plotchans,P.topotype) 
+        dat(pln).peakdata = mean(peakdata(:,min(lat):max(lat)),2);
+        ax(pln) = subplot(length(unicond),1,pln); 
     end
     %title(num2str(D.EEGtimes(lat)),'fontsize',P.fontsize)
+end
+
+% equate scales
+alldat=[dat(:).peakdata];
+plotmin = min(alldat(:));
+plotmax = max(alldat(:));
+
+plotchans=1:length(D.chanlocs);
+plotchans(P.no_plot_ele)=[];
+for pln = 1:length(dat) 
+    axes(ax(pln))
+    plottopotype(dat(pln).peakdata,D.chanlocs,plotchans,P.topotype,[plotmin plotmax]) 
 end
 linkaxes(ax,'xy')
 end
 
-function plottopotype(dat,chanlocs,plotchans,topotype)
+function plottopotype(dat,chanlocs,plotchans,topotype,minmax)
 
 switch topotype
     case 'eeglab'
-        topoplot(dat, chanlocs,'maplimits','absmax','electrodes','off','style','map','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
+        topoplot(dat, chanlocs,'maplimits',minmax,'electrodes','off','style','map','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
     case 'pcolor' % UNFINISHED
         topo = nanmean(R(f2).Vdv(:,:,tw),3);
         figure

@@ -600,7 +600,7 @@ for m=1:nModels
 
     % Psi (precision weights on prediction errors)
     psi        = NaN(n-1,l(m)+1);
-    psi(:,1)   = 1./(al(:,:,m).*pi(:,1,m)); % dot multiply only if al is a vector
+    psi(:,1)   = 1./(al(:,:,m).*pi(:,1,m)); % dot multiply only if al is a vector. More simply: psi1 = precision of input ./ 1st level precision
     if state(m); psi(:,2)   = 1./pi(:,1,m);end
     if l(m)>1; psi(:,2)   = 1./pi(:,2,m);end
     if l(m)>2; psi(:,3:l(m)) = pihat(:,2:l(m)-1,m)./pi(:,3:l(m),m);end

@@ -110,15 +110,15 @@ for f = 1:length(S.(S.func).filelist)
                         EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers);
                     end
                 else
-                    if any(find(strcmp('STIM',EEG.epoch(1).eventtype))) % EGI
+                    %if any(find(strcmp('STIM',EEG.epoch(1).eventtype))) % EGI
                         % not complete
-                    else
+                    %else
                         try
                             EEG = pop_selectevent(EEGall,'type',S.(S.func).epoch.markers{mt});
                         catch
                             continue
                         end
-                    end
+                    %end
                 end
                 
                 % convert to Fieldtrip

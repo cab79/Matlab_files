@@ -8,7 +8,7 @@ paths = {
     1, 'C:\Data\Matlab\Matlab_files\_generic_HGF';
     1, 'C:\Data\Matlab\Matlab_files\_generic_SCIn_data_process';
     1, 'C:\Data\Matlab\Matlab_files\_generic_spm_batch';
-    1, 'C:\Data\Matlab\VBA-toolbox-master';
+    1, 'C:\Data\Matlab\VBA-toolbox';
     1, 'C:\Data\Matlab\Matlab_files\CORE\EEG\cosmo\modified functions';
     1, 'C:\Data\Matlab\TFCE';
 	1, 'C:\Data\Matlab\eeglab14_1_1b';

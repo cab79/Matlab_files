@@ -1,5 +1,11 @@
 %% setup design batch function for factorial design and estimation
 clear all
+
+dbstop if error
+% add toolbox paths
+restoredefaultpath
+run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
+
 %files required: participant data file with columns headed 'Subject' (should be characters, e.g. S1),
 %'Group' (can be described by numbers or characters, but numbers recommended), 'Include' (must be numbers 
 %with 0 meaning to exclude subject from analysis) and if you have covariates, columns headed with each
@@ -15,7 +21,7 @@ D.ffbatch = 'C:\Data\CORE\EEG\ana\spm\SPMstats\matlabbatch_flexiblefactorial_tem
 %  template SnPM matlabbatch
 D.npbatch = 'C:\Data\CORE\EEG\ana\spm\SPMstats\matlabbatch_SnPM_template';
 % root directory in which subject-specific folders are located
-D.data_path = 'C:\Data\CORE\EEG\ana\spm\SPMdata\sensorimages';
+D.data_path = 'C:\Data\CORE\EEG\ana\spm\SPMdata\sensorimages_std';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\CORE\EEG\ana\spm\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
@@ -37,7 +43,7 @@ D.subdirpref = '_mspm12_'; % generic prefix for the SPM file type
 D.subdirsuff = '_2_merged_cleaned'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier=''; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_std'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -121,7 +127,7 @@ D.maineffects = [0 0 0 0]; % one column per factor
 
 % names of nuisance covariates
 %cov_names = {'Age','Gender'};
-D.cov_names = {'Age'};
+D.cov_names = {};
 
 D.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
 D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA
@@ -136,15 +142,20 @@ D.fcontrasts = {
     [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Grp'
     [1 -1 1 -1 -1 1 -1 1 0 0 0 0; 0 0 0 0 1 -1 1 -1 -1 1 -1 1], 'CP * Odd'
     [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * Odd'
+    [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Grp'
     [1 1 1 1 -1 -1 -1 -1 0 0 0 0; 0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP'
     [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp'
     [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'Odd'
     [1 0 -1 0 1 0 -1 0 1 0 -1 0], 'Odd Grp'
     [0 1 0 -1 0 1 0 -1 0 1 0 -1], 'Stan Grp'
+    [1 1 -1 -1 0 0 0 0 0 0 0 0], 'CP10 Grp'
+    [0 0 0 0 1 1 -1 -1 0 0 0 0], 'CP30 Grp'
+    [0 0 0 0 0 0 0 0 1 1 -1 -1], 'CP50 Grp'
     };
 D.tcontrasts = {
     [-1 -1 1 1 1 1 -1 -1 0 0 0 0], 'CP12 * Grp'
     [0 0 0 0 -1 -1 1 1 1 1 -1 -1], 'CP23 * Grp'
+    [-1 -1 1 1 0 0 0 0 1 1 -1 -1], 'CP13 * Grp'
     [-1 1 1 -1 -1 1 1 -1 -1 1 1 -1], 'Grp * Odd1'
     [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * Odd3'
     [1 1 1 1 -1 -1 -1 -1 0 0 0 0], 'CP12'

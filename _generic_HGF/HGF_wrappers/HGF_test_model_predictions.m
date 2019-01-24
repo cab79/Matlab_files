@@ -1,6 +1,27 @@
 function varargout=HGF_test_model_predictions(D_act,D_sim,S) 
 % outputs summary stats of model predictions of behaviour over trials
 
+% Bayesian regularised regression (BRR) settings
+S.brr.folds = 0;            % number of folds in the traindata. Set to 0 to not conduct predictive cross-validation.
+S.brr.model = 'gaussian';   % error distribution - string, one of {'gaussian','laplace','t','binomial'}
+S.brr.prior = 'g';        %- string, one of {'g','ridge','lasso','horseshoe','horseshoe+'}
+S.brr.nsamples = 1000;   %- number of posterior MCMC samples (Default: 1000)  
+S.brr.burnin = 1000;     %- number of burnin MCMC samples (Default: 1000)
+S.brr.thin = 5;       %- level of thinning (Default: 5)
+S.brr.catvars = [];    %- vector of variables (as column numbers of X) to treat
+%                       as categorical variables, with appropriate expansion. 
+%                       See examples\br_example5 (Default: none)
+S.brr.nogrouping = false; %- stop automatic grouping of categorical predictors
+%                       that is enabled with the 'catvars' options. (Default: false)
+S.brr.usegroups = 0;     % ****Specified by S.traj cells**** - create groups of predictors. Grouping of variables
+%                       works only with HS, HS+ and lasso prior
+%                       distributions. The same variable can appear in
+%                       multiple groups. See examples\br_example[9,10,11,12]  (Default: { [] } )  
+S.brr.waic = true;       %- whether to calculate the WAIC -- disabling can lead
+%                       to large speed-ups, especially for Gaussian models with large n
+%                       (default: true)
+S.zscore = 1;
+
 switch S.resp_modelspec.responses{:}
     case 'Ch' % choices
         for d = 1:length(D_act)
@@ -38,10 +59,14 @@ switch S.resp_modelspec.responses{:}
                 
                 %correlate
                 cc(rep) = corr(fitted_rt(ii),actual_rt(ii),'type','Spearman');
+                
+                % bayes reg
+                brr(d,rep) = bayesreg_crossval(fitted_rt(ii),actual_rt(ii),S,0);
+                
             end
             cc_mean(d,1)=mean(cc);
         end
-        varargout = {cc_mean};
+        varargout = {cc_mean,brr};
         
         
 end

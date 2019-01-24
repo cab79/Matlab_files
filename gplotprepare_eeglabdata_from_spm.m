@@ -36,7 +36,7 @@ for f = 1:length(fnames)
         if S.use_flipped
             EEGflip = flipchanEGI(EEGall);
             for i = S.flipcond
-                trialind = find(conds==i);
+                trialind = find(ismember(conds,S.mark{i}));
                 EEGall.data(:,:,trialind)= EEGflip.data(:,:,trialind);
             end
             clear EEGflip
@@ -50,7 +50,7 @@ for f = 1:length(fnames)
            EEG = pop_selectevent(EEGall,'type',condlabels{e});
            D.DAT{filecondind(e),1} = mean(EEG.data,3);
         elseif exist('conds','var') % EGI
-           EEG = pop_select(EEGall,'trial',find(conds==condlabels(e)));
+           EEG = pop_select(EEGall,'trial',find(ismember(conds,S.mark{e})));
            D.DAT{filecondind(e),1} = mean(EEG.data,3);
         end
         D.filenames(filecondind(e),:) = {fnames{f},condlabels(e)};

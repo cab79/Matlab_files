@@ -12,13 +12,13 @@ run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 % prefix of output files
 filepath = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2'; 
 outpath = 'C:\Data\CORE\EEG\ana\spm\SPMdata'; 
-outprefix = 'spm12_';
+outprefix = 'spm12_DCavg_';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
 fpref = '';
 fmid = '';
-fsuff = '_2_merged_cleaned.set';
+fsuff = '_2_cleaned_tm.set';
 %fsuff = '_4_merged_cleaned.set';
 
 % set data type: 'epoched' or 'continuous'

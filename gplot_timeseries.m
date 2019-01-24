@@ -17,7 +17,7 @@ function g = gplot_timeseries(g,P)
 %y = y(end:-1:1);
 g(P.xy(1),P.xy(2))=gramm('x',P.x,'y',P.y,'color',P.cond,'size',P.condsize);
 g(P.xy(1),P.xy(2)).set_names('x',P.xaxisname,'y',P.yaxisname,'color',P.fact_names{end},'column','','row','');
-g(P.xy(1),P.xy(2)).set_order_options('color',-1);
+g(P.xy(1),P.xy(2)).set_order_options('color',1);
 g(P.xy(1),P.xy(2)).set_color_options('map',P.colours,'chroma_range',[30 90]);
 g(P.xy(1),P.xy(2)).set_point_options('base_size',3);
 g(P.xy(1),P.xy(2)).set_title(P.ptitle);

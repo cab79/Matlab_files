@@ -56,11 +56,32 @@ S.path.stats = [S.path.main '\stats']; % folder to save outputs
 %S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20180821T134505.mat']; 
 %S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel20_fractrain0_20181021T093241.mat']; % FITTED
 %S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_bayesopt_20181013T140052.mat'];
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181023T212308.mat'; %alpha prior = 1
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181023T202826.mat'; %alpha prior = 0.2
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091427.mat'; % 'GBM_config_alpha4BO_var2_bo'
-S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091331.mat'; % 'GBM_config_alphaBO_var2_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_bayesopt_20181127T093607.mat'; % one alpha
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T112500.mat'; % 'GBM_config_alpha1.5BO_var1.5_bo'
 %S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091401.mat'; % 'GBM_config_alpha2BO_var2_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T112310.mat'; % 'GBM_config_alpha3BO_var3_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181127T094159.mat'; % 'GBM_config_alpha4BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T112129.mat'; % 'GBM_config_alpha5BO_var5_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T111915.mat'; % 'GBM_config_alpha6BO_var6_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T111853.mat'; % 'GBM_config_alpha7BO_var7_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T110417.mat'; % 'GBM_config_alpha8BO_var8_bo'
+
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T070954.mat'; %'GBM_config_alpha05BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071046.mat'; %'GBM_config_alpha1BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071111.mat' %'GBM_config_alpha1.1BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071147.mat'; %'GBM_config_alpha1.5BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071217.mat'; %'GBM_config_alpha2BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071303.mat'; %'GBM_config_alpha4BO_var4_bo'
+
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093231.mat'; %'GBM_config_alpha1BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093251.mat'; %'GBM_config_alpha1.5BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093310.mat'; %'GBM_config_alpha2BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093329.mat'; %'GBM_config_alpha4BO_var4_bo'
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093342.mat'; %'GBM_config_alpha8BO_var4_bo'
+
+%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel128_respmodel15_fractrain0_20181228T104344.mat'; %'GBM_config_8BO_al4_alvar1'
+S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it14.mat'; 
+
 S.path.design = ['C:\Data\CORE\design']; % 
 S.path.datfile = 'C:\Data\CORE\Participants\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 S.path.chanlocs = 'C:\Data\CORE\eeg\ana\prep\chanlocs.mat';
@@ -158,16 +179,20 @@ S.cond = {[2 4],[1 3]};
     %{'PR'},{'da','dau','psi','epsi'};
 %    }; % prediction errors, updates and learning rates
  S.traj{1} = {
-     %{'PL'},{'dau'},{[0]},{[]};
-%      {'PL'},{'epsi'},{[0]},{[1]};
+%     {'PL'},{'dau'},{[0]},{[]};
+%     {'PL'},{'da'},{[0]},{[1]};
+%     {'PL'},{'da'},{[0]},{[2]};
+%       {'PL'},{'epsi'},{[0]},{[1]};
 %      {'PL'},{'epsi'},{[1]},{[1]};
 %      {'PL'},{'epsi'},{[0]},{[2]};
 %      {'PL'},{'epsi'},{[1]},{[2]};
 %      {'PL'},{'epsi'},{[0]},{[3]};
 %      {'PL'},{'epsi'},{[1]},{[3]};
-     %{'PL'},{'dau','da'},{[1,1]},{[],[1:2]};
-     %{'PL'},{'epsi'},{[1]},{[]};
-     {'PL'},{'dau','da','epsi'},{[0,0,0]},{[],[1:2],[]};
+%      {'PL'},{'mu','dau','da'},{[0,0,0]},{[1],[],[1:2]};
+%      {'PL'},{'epsi'},{[0]},{[]};
+%     {'PL'},{'ud'},{[0]},{[]};
+    {'PL'},{'mu'},{[0]},{[]};
+     %{'PL'},{'dau','da','epsi'},{[0,0,0]},{[],[1:2],[]};
      }; % beliefs and their variance
 % S.traj{2} = {
 %     {'PL'},{'da','dau','ud','psi','epsi','wt'};
@@ -194,7 +219,7 @@ S.rr.sigma=0; % save sigma? RESULTS IN LARGE MATRICES AND MEMORY PROBLEMS
 % Bayesian regularised regression (BRR) settings
 S.brr.folds = 0;            % number of folds in the traindata. Set to 0 to not conduct predictive cross-validation.
 S.brr.model = 't';   % error distribution - string, one of {'gaussian','laplace','t','binomial'}
-S.brr.prior = 'g';        %- string, one of {'g','ridge','lasso','horseshoe','horseshoe+'}
+S.brr.prior = 'ridge';        %- string, one of {'g','ridge','lasso','horseshoe','horseshoe+'}
 S.brr.nsamples = 100;   %- number of posterior MCMC samples (Default: 1000)  
 S.brr.burnin = 100;     %- number of burnin MCMC samples (Default: 1000)
 S.brr.thin = 5;       %- level of thinning (Default: 5)

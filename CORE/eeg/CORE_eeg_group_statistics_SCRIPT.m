@@ -97,30 +97,26 @@ sfiles = {
 %     'stats_BRR_all_chan_HGF_arcsinh_20180901T124507.mat' % real Dau epsi2
 %     %'stats_BRR_all_chan_condHGF_arcsinh_20180901T102103.mat' % real Dau epsi2
 
-%     'stats_BRR_all_chan_cond_arcsinh_20180923T171935.mat' % t dist, cond, g prior
 %     'stats_BRR_all_chan_HGF_arcsinh_20180925T161430.mat' % abs PE, t dist
-     'stats_BRR_all_chan_HGF_arcsinh_20180925T161455.mat' % real PE, t dist
+ %    'stats_BRR_all_chan_HGF_arcsinh_20180925T161455.mat' % real PE, t dist
 %     'stats_BRR_all_chan_HGF_arcsinh_20180926T070703.mat' % abs Dau, t dist
 %     'stats_BRR_all_chan_HGF_arcsinh_20180926T070557.mat' % real Dau, t dist
 %     'stats_BRR_all_chan_HGF_arcsinh_20180926T215653.mat' % epsi 1/2, t dist
 %     'stats_BRR_all_chan_HGF_arcsinh_20180926T215735.mat'% abs epsi 1/2, t dist
 %    'stats_BRR_all_chan_condHGF_arcsinh_20181013T141703.mat' % t dist, real PE
     %'stats_BRR_all_chan_HGF_arcsinh_20181013T141528.mat'  % bayesopt, t dist, real PE
-%    'stats_BRR_all_chan_cond_arcsinh_20181015T171840.mat' % t dist, cond, hs+
     %'stats_BRR_all_chan_HGF_arcsinh_20181015T171749.mat' % t dist, abs PE, hs+
     %'stats_BRR_all_chan_HGF_arcsinh_20181014T100638.mat'  % t dist, real PE, hs+
-    %'stats_BRR_all_chan_condHGF_arcsinh_20181014T101006.mat'  % t dist, real PE, hs+
+%     'stats_BRR_all_chan_condHGF_arcsinh_20181014T101006.mat'  % t dist, real PE, hs+
     %'stats_BRR_all_chan_condHGF_arcsinh_20181014T210924.mat' % t dist, Dau/Da, hs+
-    %'stats_BRR_all_chan_condHGF_arcsinh_20181014T211017.mat' % t dist, epsi, hs+
+%    'stats_BRR_all_chan_condHGF_arcsinh_20181014T211017.mat' % t dist, epsi, hs+
     %'stats_BRR_all_chan_condHGF_arcsinh_20181015T084814.mat' % t dist, dau & epsi2/3, hs+
     %'stats_BRR_all_chan_condHGF_arcsinh_20181016T174019.mat'  % t dist, real Dau, ridge
     %'stats_BRR_all_chan_condHGF_arcsinh_20181016T174126.mat'  % t dist, real Dau, lasso
-    %'stats_BRR_all_chan_condHGF_arcsinh_20181017T180759.mat'  % t dist, real PE, ridge
-    %'stats_BRR_all_chan_condHGF_arcsinh_20181017T180714.mat'  % t dist, real PE, lasso
+%     'stats_BRR_all_chan_condHGF_arcsinh_20181017T180759.mat'  % t dist, real PE, ridge
+%     'stats_BRR_all_chan_condHGF_arcsinh_20181017T180714.mat'  % t dist, real PE, lasso
     %'stats_BRR_all_chan_HGF_arcsinh_20181018T191420.mat' % t dist, real PE, ridge
     %'stats_BRR_all_chan_HGF_arcsinh_20181018T191439.mat' % t dist, real PE, lasso
-    %'stats_BRR_all_chan_cond_arcsinh_20181019T173732.mat' % t dist, cond, ridge
-    %'stats_BRR_all_chan_cond_arcsinh_20181019T173649.mat' % t dist, cond, lasso
     
 %    'stats_MR_all_chan_condHGF_arcsinh_20181013T121111.mat' % epsi 1/2, t dist
 %    'stats_MR_all_chan_condHGF_arcsinh_20181013T121146.mat' % abs epsi 1/2, t dist
@@ -134,19 +130,75 @@ sfiles = {
 %'stats_BRR_all_chan_condHGF_arcsinh_20181024T172020.mat' % alpha = 1, t dist, real PE, hs+
 
 %'stats_BRR_all_chan_condHGF_arcsinh_20181130T080045.mat' % 'GBM_config_alpha4BO_var2_bo', t dist, real PE, hs+
-'stats_BRR_all_chan_HGF_arcsinh_20181130T080120.mat'; % 'GBM_config_alpha4BO_var2_bo', t dist, real PE, g
+%'stats_BRR_all_chan_HGF_arcsinh_20181130T080120.mat'; % 'GBM_config_alpha4BO_var2_bo', t dist, real PE, g
+%'stats_BRR_all_chan_HGF_arcsinh_20181130T213247.mat'; % 'GBM_config_alpha2BO_var2_bo', t dist, real PE, g
+%'stats_BRR_all_chan_condHGF_arcsinh_20181130T195313.mat'; % 'GBM_config_alpha2BO_var2_bo', t dist, real PE, hs+
+%'stats_BRR_all_chan_condHGF_arcsinh_20181201T084634.mat'; % 'GBM_config_alphaBO_var2_bo', t dist, real PE, hs+
+
+%  t dist, real PE, g
+% 'stats_BRR_all_chan_HGF_arcsinh_20181212T200316.mat'; %BO
+% 'stats_BRR_all_chan_HGF_arcsinh_20181208T103646.mat'; % 'GBM_config_alpha1.5BO_var1.5_bo'
+% 'stats_BRR_all_chan_HGF_arcsinh_20181130T213247.mat'; % 'GBM_config_alpha2BO_var2_bo'
+% 'stats_BRR_all_chan_HGF_arcsinh_20181208T103828.mat'; % 'GBM_config_alpha3BO_var3_bo'
+% 'stats_BRR_all_chan_HGF_arcsinh_20181204T104843.mat'; % 'GBM_config_alpha4BO_var4_bo'
+% 'stats_BRR_all_chan_HGF_arcsinh_20181208T212332.mat'; % 'GBM_config_alpha5BO_var5_bo'
+% 'stats_BRR_all_chan_HGF_arcsinh_20181208T212341.mat'; % 'GBM_config_alpha6BO_var6_bo'
+% 'stats_BRR_all_chan_HGF_arcsinh_20181209T074338.mat'; % 'GBM_config_alpha7BO_var7_bo'
+% 'stats_BRR_all_chan_HGF_arcsinh_20181209T074426.mat'; % 'GBM_config_alpha8BO_var8_bo'
+% 
+% 'stats_BRR_all_chan_HGF_arcsinh_20181215T202635.mat'; %'GBM_config_alpha2BO_var4_bo' logvar
+% 'stats_BRR_all_chan_HGF_arcsinh_20181215T204047.mat'; %'GBM_config_alpha4BO_var4_bo' logvar
+
+% t dist, real Dau, g
+%'stats_BRR_all_chan_HGF_arcsinh_20181218T122215.mat'; % BO
+%'stats_BRR_all_chan_HGF_arcsinh_20181218T122230.mat'; %'GBM_config_alpha1BO_var4_bo'
+%'stats_BRR_all_chan_HGF_arcsinh_20181218T122307.mat'; %'GBM_config_alpha1.5BO_var4_bo'
+%'stats_BRR_all_chan_HGF_arcsinh_20181218T122415.mat'; %'GBM_config_alpha2BO_var4_bo'
+%'stats_BRR_all_chan_HGF_arcsinh_20181218T122503.mat'; %'GBM_config_alpha4BO_var4_bo'
+%'stats_BRR_all_chan_HGF_arcsinh_20181218T122532.mat'; %'GBM_config_alpha8BO_var4_bo'
+    
+%      'stats_BRR_all_chan_cond_arcsinh_20180923T171935.mat' % t dist, cond, g prior
+%    'stats_BRR_all_chan_cond_arcsinh_20181015T171840.mat' % t dist, cond, hs+
+%      'stats_BRR_all_chan_cond_arcsinh_20181019T173732.mat' % t dist, cond, ridge
+    %'stats_BRR_all_chan_cond_arcsinh_20181019T173649.mat' % t dist, cond, lasso
+    
+%     'stats_BRR_all_chan_HGF_arcsinh_20190115T215155.mat' % t dist, Dau, real, g prior, CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it14.mat
+%     'stats_BRR_all_chan_HGF_arcsinh_20190117T075855.mat' % Da1
+%     'stats_BRR_all_chan_HGF_arcsinh_20190116T145135.mat' % Da2
+%     'stats_BRR_all_chan_HGF_arcsinh_20190115T215243.mat' % t dist, Epsi1, real, g prior, CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it14.mat
+%     'stats_BRR_all_chan_HGF_arcsinh_20190116T145202.mat' % epsi2
+%     'stats_BRR_all_chan_HGF_arcsinh_20190117T075334.mat' % epsi3
+     'stats_BRR_all_chan_HGF_arcsinh_20190116T231951.mat' % t dist, Dau/Da1-2, ridge
+%     'stats_BRR_all_chan_HGF_arcsinh_20190116T232149.mat' % t dist, epsi1-3, ridge
+%     'stats_BRR_all_chan_condHGF_arcsinh_20190117T180646.mat' % t dist, Dau/Da1-2, ridge
+%     'stats_BRR_all_chan_condHGF_arcsinh_20190117T154534.mat' % t dist, epsi1-3, ridge
+%     'stats_BRR_all_chan_HGF_arcsinh_20190117T234711.mat' % t dist, Dau/Da1-2, g
+%     'stats_BRR_all_chan_HGF_arcsinh_20190118T042700.mat' % t dist, epsi1-3, g
+
+% 'stats_BRR_all_chan_condHGF_arcsinh_20190118T145255.mat' % t dist, Dau/Da1-2, hs+
+% 'stats_BRR_all_chan_HGF_arcsinh_20190118T092602.mat' % t dist, Dau/Da1-2, hs+
+%'stats_BRR_all_chan_HGF_arcsinh_20190118T185327.mat' % t dist, Mu1 Dau/Da1-2, hs+
+
+% 'stats_BRR_all_chan_HGF_arcsinh_20190119T093237.mat' % t dist, Mu, ridge
+% 'stats_BRR_all_chan_HGF_arcsinh_20190119T093021.mat' % t dist, Ud, ridge
+
+    
 
     };
+
 subtract = [];
 encoding_types = {'spear','MR','PEB','RR','BRR','mvpa'}; % only these will be analysed
-statfield = {'beta','b','s','rho','weights','transweights','kurt','skew'}; % for t-test stats
+statfield = {'beta','b','rho','weights','transweights','kurt','skew'}; % for t-test stats
+%statfield = {'beta','b','s','rho','weights','transweights','kurt','skew'}; % for t-test stats
 %statfield = {'s','r2'};
 clims = []; % t value limits for plotting
 xticks = 0:4:600;
 topo_range = [0 600];
-param=[6]; % multiple param's betas are summed
+plotsmooth = 10;
+no_plot_ele = [];
+param=[1]; % multiple param's betas are summed
 load('C:\Data\CORE\eeg\ana\prep\chanlocs.mat')
-
+cmap=colormap('parula');
 
 % get data
 allstat={};
@@ -285,20 +337,45 @@ for f = 1:length(sfiles)
                     end
                     
                     figure(h2)
-                    hold on
-                    pl2=pl2+1;
-                    subplot(length(da)*2,2,pl2)
+                    npeaks = 5;
+                    subplot(length(da)*3,10,[1:5])
                     imagesc(xticks,[],t,clim); 
-                    [~,mi]=max(mean(abs(t(:,trange(1):trange(2))),1));
+                   % meanabs = mean(abs(t(:,trange(1):trange(2))),1);
+                    tval_std = std(t(:,trange(1):trange(2)),[],1);
+                    tval_std = smooth(tval_std,plotsmooth,'moving');
+                    [ma,mi]=findpeaks(tval_std,'MinPeakWidth',2);
                     mi=mi+trange(1)-1;
-                    line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
+                    % highest peaks, plot as lines
+                    [maxma,maxmi]=sort(ma,'descend');
+                    maxmi = maxmi(1:min(npeaks,length(maxmi)));
+                    peaks = sort(mi(maxmi));
+                    hold on
+                    for mii=1:length(peaks)
+                        plot(xticks(mi(maxmi)*[1 1]),[1 92],'k:','linewidth',1)
+                    end
                     title([statfield{sf} ', t values for one-sample t-test']);
-                    colorbar
+                    ylabel('channel')
+                    %colorbar
+                    
+                    subplot(length(da)*3,10,[11:15])
+                    plot(xticks,tval_std,'b'); 
+                    hold on
+                    for mii=1:length(peaks)
+                        plot(xticks(mi(maxmi(mii))*[1 1]),[0 ma(maxmi(mii))],'k:','linewidth',0.5)
+                    end
+                    title([statfield{sf} ', std over channels of t values']);
+                    ylabel('standard deviation')
+                    xlabel('post-stimulus time (ms)')
 
-                    pl2=pl2+1;
+                    % plot 4 highest peaks
                     if ~any(sizdat==1) 
-                        subplot(length(da)*2,2,pl2)
-                        topoplot(t(:,mi),chanlocs,'maplimits',clim);
+                        for mii = 1:npeaks
+                            subplot(length(da)*3,10,20+mii)
+                            try
+                                topoplot(t(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
+                                title([num2str(xticks(peaks(mii))) ' ms'])
+                            end
+                        end
                     end
                     
                     if isempty(clims)
@@ -310,19 +387,43 @@ for f = 1:length(sfiles)
                         clim=clims;
                     end
 
-                    pl2=pl2+1;
-                    subplot(length(da)*2,2,pl2)
+                    subplot(length(da)*3,10,[6:10])
                     imagesc(xticks,[],fdr_t,clim); 
-                    [~,mi]=max(mean(abs(fdr_t(:,trange(1):trange(2))),1));
+                    %tval_std = mean(abs(fdr_t(:,trange(1):trange(2))),1);
+                    tval_std = std(fdr_t(:,trange(1):trange(2)),[],1);
+                    tval_std = smooth(tval_std,plotsmooth,'moving');
+                    [ma,mi]=findpeaks(tval_std,'MinPeakWidth',2);
                     mi=mi+trange(1)-1;
-                    line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
+                    % 4 highest peaks, plot as lines
+                    [maxma,maxmi]=sort(ma,'descend');
+                    maxmi = maxmi(1:min(npeaks,length(maxmi)));
+                    peaks = sort(mi(maxmi));
+                    hold on
+                    for mii=1:length(peaks)
+                        plot(xticks(mi(maxmi(mii))*[1 1]),[1 92],'k:','linewidth',1)
+                    end
                     title([statfield{sf} ', fdr thresholded t values']);
-                    colorbar
+                    ylabel('channel')
+                    %colorbar
+                    
+                    subplot(length(da)*3,10,[16:20])
+                    plot(xticks,tval_std,'b'); 
+                    hold on
+                    for mii=1:length(peaks)
+                        plot(xticks(mi(maxmi(mii))*[1 1]),[0 ma(maxmi(mii))],'k:','linewidth',0.5)
+                    end
+                    title([statfield{sf} ', std over channels of fdr-thresholded t values']);
+                    ylabel('standard deviation')
+                    xlabel('post-stimulus time (ms)')
 
-                    pl2=pl2+1;
                     if ~any(sizdat==1) 
-                        subplot(length(da)*2,2,pl2)
-                        topoplot(fdr_t(:,mi),chanlocs,'maplimits',clim);
+                        for mii = 1:npeaks
+                            subplot(length(da)*3,10,25+mii)
+                            try
+                                topoplot(fdr_t(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
+                                title([num2str(xticks(peaks(mii))) ' ms'])
+                            end
+                        end
                     end
                     
                     %% two-sample t-test
@@ -432,12 +533,12 @@ for f = 1:length(sfiles)
                         end
                         
                         % separate WAIC into groups for model comparison
-                        WAIC=[stats.BRR.alldata.waic];
+                        LME=[stats.BRR.alldata.waic];
                         for g = 1:length(grpuni)
-                            WAICall=WAIC(strcmp(grplist,grpuni{g}));
-                            WAICmat = cat(3,WAICall{:});
-                            WAICmean =double(squeeze(mean(mean(WAICmat,1),2)));
-                            WAICgrp{1,g}(f,:) = WAICmean;
+                            LMEall=LME(strcmp(grplist,grpuni{g}));
+                            LMEmat = cat(3,LMEall{:});
+                            LMEmean =double(squeeze(mean(mean(LMEmat,1),2)));
+                            LMEgrp{1,g}(f,:) = -LMEmean;
                         end
                     end
                 end
@@ -490,9 +591,10 @@ end
     
 % group model comparison
 if strcmp(an{a},'BRR')
-    runvar=WAICgrp;
-    if exist('WAICgrp','var') && size(runvar{1},1)>1
-        [bmc.gposterior,bmc.gout] = VBA_groupBMC_btwGroups(runvar)
+    runvar=LMEgrp;
+    if exist('LMEgrp','var') && size(runvar{1},1)>1
+        pep_flag=1;
+        [bmc.gposterior,bmc.gout] = VBA_groupBMC_btwGroups_CAB(runvar,[],pep_flag)
     end
 end
 

@@ -12,11 +12,12 @@ clear all
 %% file info
 D.format = 'long'; %CURRENT format of data
 % file path and name
-D.pdatfile = 'C:\Data\CORE\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm\Odd_clusters\VOI_c1.xlsx';
+D.pdatfile = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Grp_Odd_Subject_Age_2_merged_cleaned_spm\Grp_clusters\VOI_c1.xlsx';
+
 % columns to sort INPUT by, in order. negative will sort descending.
 D.sortby_in = []; 
 % factors to sort OUTPUT by, in order (can include old and new factors). Negative will sort descending.
-D.sortby_out = [2];
+D.sortby_out = [];
 % number of factors in the input (should all be leftmost columns):
 D.Nfact_in = 4;
 % number of data columns in the input (should all be rightmost column):
@@ -30,7 +31,7 @@ D.mean_nonunique=1;
 
 %% enter info for converting from LONG to SHORT (only runs if data is currently long format):
 % columns of factors to remove:
-D.fact_rm = [2 3]; 
+D.fact_rm = [1 3]; 
 
 %% enter info for converting from SHORT to LONG (only runs if data is currently short format):
 % name the new factors to create:
@@ -40,7 +41,7 @@ D.Nlev_fact_new = [3 2 2];
 
 %% create factor averages for data outputs in short format
 % turn on this feature (1 = on, 0 = off)
-D.factavg = 1; 
+D.factavg = 0; 
 % name the factor averages to create (must be *all* the factors in short form in the output):
 D.factavg_new = {'Oddball effect','Digit Change'}; % strings must be contained within the factor names in the file header
 % number of levels of each new factor
@@ -48,7 +49,7 @@ D.factavg_lev = [2 2];
 
 %% apply operation (e.g. subtraction) to levels of one factor for data outputs in short format
 % 1 = turn on, 0 = turn off
-D.applyop = 1;
+D.applyop = 0;
 % name ALL factors in short format in the output:
 D.factshort = {'Oddball effect','Digit Change'}; % strings must be contained within the factor names in the file header
 % number of levels of each current short-form factor

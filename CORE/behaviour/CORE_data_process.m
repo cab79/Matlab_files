@@ -227,12 +227,12 @@ for d = 1:length(D)
                         lag = num_trial_lag(4);
                     end
 
-                    resp(2,i)=0; % row 3 is the corrected response time on the corrected trial
+                    resp(2,i)=0; % row 2 is the corrected response time on the corrected trial
                     if u(1,i)>0 % if the stimulus actually changed, but the response occured on the next trial, count it as occuring on the current trial but with a longer RT
                         for j = 1:lag+1
                             move=0;
                             if resp(2,i)==0 && resp(1,i+(j-1))>0 && resp(2,i-1)~=ISI*1+resp(1,i+(j-1)) && resp(1,i+(j-1))+(j-1)*ISI>thresh
-                                if u(1,i+(j-1))==0 || j==1 % if we are considering the current trial only, or if there is no stimulus on the next trial, then it's always ok to register the response on te current trial.
+                                if (u(1,i+(j-1))==0 && resp(1,i+(j-1))<S.RT.max) || j==1 % if we are considering the current trial only, or if there is no stimulus on the next trial, then it's always ok to register the response on te current trial.
                                     move=1;
                                 elseif u(1,i+(j-1))>0 && j>1 %if there is a stimulus on the next trial AND
                                     if resp(1,i+(j-1))>0 && resp(1,i+(j-1))<thresh % the response is less than threshold OR
@@ -257,6 +257,14 @@ for d = 1:length(D)
                         end
                     end
                 end 
+                % fill in estimated RT for non-responses
+                if S.RT.fill_non_response
+                    for i = 1:size(design,2)-1
+                        if u(1,i)>0 && resp(2,i)==0 % if no corrected response when there is a change
+                            resp(2,i)=S.RT.fill_non_response;
+                        end
+                    end
+                end
             end
             if S.fitsim==1
                 y = double(resp(2,:)>0); % BINARY response

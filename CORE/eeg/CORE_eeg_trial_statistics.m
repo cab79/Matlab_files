@@ -805,8 +805,8 @@ for d = 1:length(S.select.subjects)
                         end
                         
                         parfor (s = 1:size(alldata,1),parforArg)
-                        
                         %for s = 1:size(alldata,1)
+                        
                             disp(['Data sample ' num2str(s) '/' num2str(size(alldata,1))])
                             out(s) = bayesreg_crossval(S.pred_train{con}(S.trainidx{con},:),alldata(s,S.trainidx{con})',S,S.pred_group);
                         end

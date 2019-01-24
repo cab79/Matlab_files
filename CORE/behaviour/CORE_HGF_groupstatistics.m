@@ -25,12 +25,33 @@ for stf = 1:length(Stfields)
             gdat{g}(d) = St(grpind{g}(d)).(Stfields{stf});
         end
     end
-    stats.ranksum.(Stfields{stf})= ranksum(gdat{1},gdat{2});
+    [stats.ranksum.p.(Stfields{stf}),~,stst] = ranksum(gdat{1},gdat{2},'method','approximate');
+    stats.ranksum.z.(Stfields{stf}) = stst.zval;
     stats.signtest.(Stfields{stf})= signtest([St(:).(Stfields{stf})]);
     
     pvec(:,stf)=[St(:).(Stfields{stf})]';
 end
-stats.mvc.param = lda_class(pvec,T.groups,length(T.groups),5,0);
+if any(strcmp(S.lda,'para'))
+    % remove nans
+    pvec = reshape(pvec(~isnan(pvec)),size(pvec,1),{});
+    % remove constants
+    pvec = pvec(:,~var(pvec,[],1)==0);
+    out = lda_class(pvec,T.groups,length(T.groups),5,0);
+    try
+        stats.mvc.param.error = out.ldaCVErr;
+
+        if S.nperm
+            perm_results = lda_perm(S,1:size(pvec),'params',pvec,T,out,stats);
+            stats.mvc.param.p_value = sum(abs(perm_results) < abs(stats.mvc.param.error)) / length(perm_results);
+        else
+            stats.mvc.param.p_value = [];
+        end
+
+    catch
+        stats.mvc.param.error = [];
+        stats.mvc.param.p_value = [];
+    end
+end
 
 %for vi = 1:length(Vec)
 
@@ -60,33 +81,66 @@ else
     end
 end
 %for cm = 1:length(Vfields_all)
+
+if any(strcmp(S.lda,'traj_conds'))
+    fn = fieldnames(S.cond);
     Vfields=Vfields_all;
-    V=Vec{1};
     for vf = 1:length(Vfields)
         dat=[];
-        for sub = 1:length(V)
-            dat(sub,:) = V(sub).(Vfields{vf})';
+        for cond = 1:length(fn)
+            dat(:,cond) = T.([Vfields{vf} '_' fn{cond}]);
         end
         out = lda_class(dat,T.groups,length(T.groups),5,0);
-        try
-            stats.mvc.traj.error.(Vfields{vf}) = out.ldaCVErr;
-            
-            if S.nperm
-                perm_results=[];
-                for np = 1:S.nperm
-                    ix = randperm(length(V));
-                    out = lda_class(dat(ix,:),T.groups,length(T.groups),5);
-                    perm_results(np) = out.ldaCVErr;
-                    disp(['LDA: ' Vfields{vf} ', perm ' num2str(np) ', error = ' num2str(perm_results(np))])
+        stats.mvc.traj.error.(Vfields{vf}) = out.ldaCVErr;
+    end
+end
+
+if any(strcmp(S.lda,'traj_trials'))
+    try
+        Vfields=Vfields_all;
+        V=Vec{1};
+        for vf = 1:length(Vfields)
+            dat=[];
+            for sub = 1:length(V)
+                dat(sub,:) = V(sub).(Vfields{vf})';
+            end
+            out = lda_class(dat,T.groups,length(T.groups),5,0);
+            try
+                stats.mvc.traj.error.(Vfields{vf}) = out.ldaCVErr;
+
+                if S.nperm
+                    perm_results = lda_perm(S,V,Vfields{vf},dat,T,out, stats);
+                    stats.mvc.traj.p_value.(Vfields{vf}) = sum(abs(perm_results) < abs(stats.mvc.traj.error.(Vfields{vf}))) / length(perm_results);
+                else
+                    stats.mvc.traj.p_value.(Vfields{vf}) = [];
                 end
-                stats.mvc.traj.p_value.(Vfields{vf}) = sum(abs(perm_results) < abs(stats.mvc.traj.error.(Vfields{vf}))) / length(perm_results);
-            else
+
+            catch
+                stats.mvc.traj.error.(Vfields{vf}) = [];
                 stats.mvc.traj.p_value.(Vfields{vf}) = [];
             end
             
-        catch
-            stats.mvc.traj.error.(Vfields{vf}) = [];
-            stats.mvc.traj.p_value.(Vfields{vf}) = [];
+            % univariate stats
+            for i = 1:size(dat,2)
+                stats.ranksum.([Vfields{vf} '_trials'])(i)= ranksum(dat(strcmp(T.groups,grps{1}),i),dat(strcmp(T.groups,grps{2}),i));
+            end
+            stats.ranksum.([Vfields{vf} '_sigtrials']) = find(stats.ranksum.([Vfields{vf} '_trials'])<0.05);
+            
         end
+    catch
+        return
     end
+end
+end
+
+function perm_results = lda_perm(S,V,testname,dat,T,in, stats)
+
+perm_results=[];
+for np = 1:S.nperm
+    ix = randperm(length(V));
+    out = lda_class(dat(ix,:),T.groups,length(T.groups),5, 1);
+    perm_results(np) = out.ldaCVErr;
+    disp(['LDA: ' testname ', perm ' num2str(np) ', error = ' num2str(perm_results(np))])
+end
+
 end

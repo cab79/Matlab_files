@@ -116,8 +116,10 @@ if (ploty == true) && ~isempty(find(strcmp(fieldnames(r),'y'))) && ~isempty(r.y)
         y = r.y(:,1) -0.5; y = 1.16 *y; y = y +0.5; % stretch
         if ~isempty(find(strcmp(fieldnames(r),'irr')))
             y(r.irr) = NaN; % weed out irregular responses
-            plot(ts(r.irr),  1.08.*ones([1 length(r.irr)]), 'x', 'Color', [1 0.7 0], 'Markersize', 11, 'LineWidth', 2); % irregular responses
-            plot(ts(r.irr), -0.08.*ones([1 length(r.irr)]), 'x', 'Color', [1 0.7 0], 'Markersize', 11, 'LineWidth', 2); % irregular responses
+            if sum(isnan(y))<0.5*length(y)
+                plot(ts(r.irr),  1.08.*ones([1 length(r.irr)]), 'x', 'Color', [1 0.7 0], 'Markersize', 11, 'LineWidth', 2); % irregular responses
+                plot(ts(r.irr), -0.08.*ones([1 length(r.irr)]), 'x', 'Color', [1 0.7 0], 'Markersize', 11, 'LineWidth', 2); % irregular responses
+            end
         end
     end
     plot(ts(2:end), y, '.', 'Color', [1 0.7 0]); % responses

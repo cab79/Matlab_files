@@ -125,6 +125,11 @@ function r = tapas_fitModel_CAB(responses, inputs, varargin)
 % Store responses, inputs, and information about irregular trials in newly
 % initialized structure r
 S=varargin{4};
+try
+    failed=varargin{5};
+catch
+    failed = 0;
+end
 r = dataPrep(responses, inputs, S);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -134,15 +139,15 @@ r = dataPrep(responses, inputs, S);
 %
 % Default perceptual model
 % ~~~~~~~~~~~~~~~~~~~~~~~~
-r.c_prc = tapas_hgf_binary_config;
+%r.c_prc = tapas_hgf_binary_config;
 
 % Default observation model
 % ~~~~~~~~~~~~~~~~~~~~~~~~~
-r.c_obs = tapas_unitsq_sgm_config;
+%r.c_obs = tapas_unitsq_sgm_config;
 
 % Default optimization algorithm
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-r.c_opt = tapas_quasinewton_optim_config;
+%r.c_opt = tapas_quasinewton_optim_config;
 
 % END OF CONFIGURATION
 %
@@ -150,13 +155,19 @@ r.c_opt = tapas_quasinewton_optim_config;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Override default settings with arguments from the command line
-if nargin > 2 && ~isempty(varargin{1})
-    r.c_prc = eval([varargin{1} '(S)']); % runs the config function
+if nargin > 2 && ~isempty(varargin{1}) && ~isfield(S,'c_prc')
+    r.c_prc = eval([varargin{1} '(S,failed)']); % runs the config function
+elseif isfield(S,'c_prc') % e.g. when using MFX model with empirical priors
+    r.c_prc = S.c_prc;
 end
 
 if nargin > 3 && ~isempty(varargin{2})
     if isempty(strfind(varargin{2},'tapas'))
-        r.c_obs = eval([varargin{2} '(r,S)']); % CAB
+        if ~isfield(S,'c_obs') 
+            r.c_obs = eval([varargin{2} '(r,S)']); % CAB
+        else
+            r.c_obs = S.c_obs; % e.g. when using MFX model with empirical priors
+        end
     else
         r.c_obs = eval(varargin{2});
     end

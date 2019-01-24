@@ -1,4 +1,4 @@
-function out = bayesreg_crossval(X,y,S,groupvec);
+function out = bayesreg_crossval(X,y,S,groupvec)
 
 if S.zscore
     [X, X_mean, X_stand_de] = zscore(X, [], 1);

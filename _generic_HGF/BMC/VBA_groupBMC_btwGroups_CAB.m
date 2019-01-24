@@ -1,4 +1,4 @@
-function [h,p,varargout] = VBA_groupBMC_btwGroups_CAB(Ls,options)
+function [h,p,varargout] = VBA_groupBMC_btwGroups_CAB(Ls,options,pep_flag)
 % test for between-groups difference in model frequencies
 % function [h,p] = VBA_groupBMC_btwGroups(Ls,options)
 % IN:
@@ -23,20 +23,20 @@ if length(Ls)==2
 elseif length(Ls)==3
     L = [Ls{1} Ls{2} Ls{3}];
 end
-[posterior,out] = VBA_groupBMC(L,options);
+[posterior,out] = VBA_groupBMC_cab(L,options,pep_flag);
 Fe = out.F(end);
 varargout = {out};
 
 % separate frequencies
 if length(Ls)==2
-    [posterior1,out1] = VBA_groupBMC(Ls{1},options);
-    [posterior2,out2] = VBA_groupBMC(Ls{2},options);
+    [posterior1,out1] = VBA_groupBMC_cab(Ls{1},options,pep_flag);
+    [posterior2,out2] = VBA_groupBMC_cab(Ls{2},options,pep_flag);
     Fd = out1.F(end) + out2.F(end);
     varargout = {[varargout,{out1},{out2}]};
 elseif length(Ls)==3
-    [posterior1,out1] = VBA_groupBMC(Ls{1},options);
-    [posterior2,out2] = VBA_groupBMC(Ls{2},options);
-    [posterior3,out3] = VBA_groupBMC(Ls{3},options);
+    [posterior1,out1] = VBA_groupBMC_cab(Ls{1},options,pep_flag);
+    [posterior2,out2] = VBA_groupBMC_cab(Ls{2},options,pep_flag);
+    [posterior3,out3] = VBA_groupBMC_cab(Ls{3},options,pep_flag);
     Fd = out1.F(end) + out2.F(end) + out3.F(end);
     varargout = {[varargout,{out1},{out2},{out3}]};
 end

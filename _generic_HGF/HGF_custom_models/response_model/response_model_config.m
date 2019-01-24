@@ -42,6 +42,13 @@ c.priorsas=[];
 c.st = [];
 c.pn=0;
 
+% for prediction error, use abs?
+try
+    c.abs = S.resp_modelspec.PE_abs;
+catch
+    c.abs = 1;
+end
+
 if any(strcmp(c.responses , 'Ch'))
     % USE SOFTMAX MODEL
     
@@ -182,10 +189,16 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
         c.reg.be10sa = 0;
     end
     
+    
     % Beta_11
     if any(c.params==11)
-        c.reg.be11mu = 0;
-        c.reg.be11sa = 4;
+        if l>2
+            c.reg.be11mu = 0;
+            c.reg.be11sa = 4;
+        else
+            c.reg.be11mu = 0;
+            c.reg.be11sa = 0;
+        end
     else
         c.reg.be11mu = 0;
         c.reg.be11sa = 0;
@@ -193,13 +206,8 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
     
     % Beta_12
     if any(c.params==12)
-        if l>2
-            c.reg.be12mu = 0;
-            c.reg.be12sa = 4;
-        else
-            c.reg.be12mu = 0;
-            c.reg.be12sa = 0;
-        end
+        c.reg.be12mu = 0;
+        c.reg.be12sa = 4;
     else
         c.reg.be12mu = 0;
         c.reg.be12sa = 0;
@@ -207,12 +215,61 @@ if any(strcmp(c.responses, 'RT')) || any(strcmp(c.responses, 'EEG'))
     
     % Beta_13
     if any(c.params==13)
-        c.reg.be13mu = 0;
-        c.reg.be13sa = 4;
+        if l>1
+            c.reg.be13mu = 0;
+            c.reg.be13sa = 4;
+        else
+            c.reg.be13mu = 0;
+            c.reg.be13sa = 0;
+        end
     else
         c.reg.be13mu = 0;
         c.reg.be13sa = 0;
     end
+    
+    % Beta_14
+    if any(c.params==14)
+        if l>2
+            c.reg.be14mu = 0;
+            c.reg.be14sa = 4;
+        else
+            c.reg.be14mu = 0;
+            c.reg.be14sa = 0;
+        end
+    else
+        c.reg.be14mu = 0;
+        c.reg.be14sa = 0;
+    end
+    
+    % Beta_15
+    if any(c.params==15)
+        if l>1
+            c.reg.be15mu = 0;
+            c.reg.be15sa = 4;
+        else
+            c.reg.be15mu = 0;
+            c.reg.be15sa = 0;
+        end
+    else
+        c.reg.be15mu = 0;
+        c.reg.be15sa = 0;
+    end
+    
+    
+    % Beta_16
+    if any(c.params==16)
+        if l>1
+            c.reg.be16mu = 0;
+            c.reg.be16sa = 4;
+        else
+            c.reg.be16mu = 0;
+            c.reg.be16sa = 0;
+        end
+    else
+        c.reg.be16mu = 0;
+        c.reg.be16sa = 0;
+    end
+    
 
     % Zeta
     c.reg.logzemu = log(log(20));

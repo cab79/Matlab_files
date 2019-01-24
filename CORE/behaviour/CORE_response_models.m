@@ -16,78 +16,39 @@ S.resp_modelspec = struct;
 % 11: posterior expectation
 
 switch S.resp_model
-    
-    case 1 % RT surp
+ 
+    case 1 % RT Prediction error, unweighted, real
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [1 2 3 4 13]; % from betas 1 to 8 
+    S.resp_modelspec.params = [5 7 9]; 
+    S.resp_modelspec.PE_abs = 0;
     
-    case 2 % 1st 2 levels of PEs (abs)
+    case 2 % RT Prediction error, unweighted, abs
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [5:10]; % from betas 1 to 8 
+    S.resp_modelspec.params = [5 7 9]; 
+    S.resp_modelspec.PE_abs = 1;
     
-    case 3 % RT surprise + 1st 2 levels of PEs (abs)
+    case 3 % RT Prediction error, weighted, real
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [1 2 3 4 13 5:10]; % from betas 1 to 8 
+    S.resp_modelspec.params = [6 8 10]; 
+    S.resp_modelspec.PE_abs = 0;
     
-    case 6 % RT 
+    case 4 % RT Prediction error, weighted, abs
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [5]; % from betas 1 to 8 
+    S.resp_modelspec.params = [6 8 10]; 
+    S.resp_modelspec.PE_abs = 1;
     
-    case 7 % RT 
+    case 5 % RT uncertainty, 3 para
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [6]; % from betas 1 to 8 
+    S.resp_modelspec.params = [2 3 4]; 
     
-    case 8 % RT 
+    case 6 % RT uncertainty, 4 para
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [7]; % from betas 1 to 8 
+    S.resp_modelspec.params = [1 2 3 4]; 
     
-    case 9 % RT 
+    case 7 % RT Mu
     S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [8]; % from betas 1 to 8 
+    S.resp_modelspec.params = [12 13 14]; 
     
-    case 10 % RT 
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [9]; % from betas 1 to 8 
-    
-    case 11 % RT 
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [10]; % from betas 1 to 8 
-    
-    case 12 % RT uncertainty
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [1 2 3 4]; % from betas 1 to 8 
-    
-    case 13 % RT Prediction error
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [5 6]; 
-    
-    case 14 % RT Prediction error
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [7 8]; 
-    
-    case 15 % RT Prediction error
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [9 10]; 
-    
-    case 16 % RT Prediction error
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [5 6 7 8 9 10]; 
-    
-    case 17 % RT Uncertainy & PE
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [1:10]; 
-    
-    case 18 % RT perception
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [11]; 
-    
-    case 19 % PE plus Mu
-    S.resp_modelspec.responses = {'RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [5 6 7 8 9 10 11 12]; 
-    
-    case 20 % 
-    S.resp_modelspec.responses = {'Ch','RT'}; % RT (response time), Ch (choice), or both
-    S.resp_modelspec.params = [5:10]; % from betas 1 to 8 
     
     %% eeg
     

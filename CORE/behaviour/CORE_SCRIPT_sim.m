@@ -45,7 +45,7 @@ S.save.tables = 0;
 % model fitting
 S.prc_config = 'GBM_config'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
 S.perc_model=[12]; % 1 3 9 10 11 12
-S.resp_model = [2];
+S.resp_model = [15];
 S=CORE_perceptual_models(S);
 S=CORE_response_models(S);
 S.HGF.plottraj = 1; % turn off if doing multiple simulations!
@@ -53,9 +53,10 @@ S.HGF.plottraj = 1; % turn off if doing multiple simulations!
 % which parameters?
 %S.sim=[]; % specify here? or use generic parameters: S=CORE_sim_parameters(S)
 %S=CORE_sim_parameters(S);
-%S.fitted_hgf = 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20180821T134505.mat'; 
-S.fitted_hgf = 'CORE_fittedparameters_percmodel12_bayesopt_20181019T083824.mat';
-S=CORE_get_mean_params_from_fitted(S);
-
+S.fitted_hgf = 'CORE_fittedparameters_percmodel128_respmodel15_fractrain0_20181228T193827.mat'; 
+%S.fitted_hgf = 'CORE_fittedparameters_percmodel12_bayesopt_20181019T083824.mat';
+S=CORE_get_median_params_from_fitted(S,[1:22]); %group 1
 D_sim=HGF_run(D_prep,S,1);
-save(fullfile(S.path.hgf,'sim',['CORE_sim_percmodel' num2str(S.perc_model) '_' S.sname '.mat']), 'D_sim', 'S');
+S=CORE_get_median_params_from_fitted(S,[23:44]); %group 2
+D_sim=HGF_run(D_prep,S,1);
+%save(fullfile(S.path.hgf,'sim',['CORE_sim_percmodel' num2str(S.perc_model) '_' S.sname '.mat']), 'D_sim', 'S');

@@ -26,6 +26,9 @@ nme=r.c_obs.pnames;
 nme_gen=r.c_obs.pnames_gen;
 idx=r.c_obs.priormusi;
 
+% real or abs?
+abs_switch = r.c_obs.abs;
+
 %% SOFTMAX
 if any(strcmp(r.c_obs.responses, 'Ch'))
 
@@ -102,7 +105,7 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
 
     % Extract trajectories of interest from infStates
     mu1 = r.traj.(r.c_obs.model).mu(:,1);
-    %mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
+    mu1hat = r.traj.(r.c_obs.model).muhat(:,1);
     sa1hat = r.traj.(r.c_obs.model).sahat(:,1);
     sa1 = r.traj.(r.c_obs.model).sa(:,1);
     dau = r.traj.(r.c_obs.model).dau;
@@ -112,6 +115,8 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     if l>1
         mu2    = r.traj.(r.c_obs.model).mu(:,2);
         sa2    = r.traj.(r.c_obs.model).sa(:,2);
+        mu2hat = r.traj.(r.c_obs.model).muhat(:,2);
+        sa2hat = r.traj.(r.c_obs.model).sahat(:,2);
     end
     if l>2
         mu3 = r.traj.(r.c_obs.model).mu(:,3);
@@ -123,27 +128,50 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     
     % prediction error
     % ~~~~~~~~
-    daureg = abs(dau);
-    daureg(r.irr) = [];
-    ep1reg = abs(ep1);
-    ep1reg(r.irr) = [];
-    da1reg = abs(da1);
-    da1reg(r.irr) = [];
-    ep2reg = abs(ep2);
-    ep2reg(r.irr) = [];
-    if l>2
-        da2reg = abs(da2);
-        da2reg(r.irr) = [];
-        ep3reg = abs(ep3);
-        ep3reg(r.irr) = [];
-        da3reg = abs(da3);
-        da3reg(r.irr) = [];
+    if abs_switch
+        daureg = abs(dau);
+        daureg(r.irr) = [];
+        ep1reg = abs(ep1);
+        ep1reg(r.irr) = [];
+        da1reg = abs(da1);
+        da1reg(r.irr) = [];
+        ep2reg = abs(ep2);
+        ep2reg(r.irr) = [];
+        if l>2
+            da2reg = abs(da2);
+            da2reg(r.irr) = [];
+            ep3reg = abs(ep3);
+            ep3reg(r.irr) = [];
+            da3reg = abs(da3);
+            da3reg(r.irr) = [];
+        end
+    else
+        daureg = dau;
+        daureg(r.irr) = [];
+        ep1reg = ep1;
+        ep1reg(r.irr) = [];
+        da1reg = da1;
+        da1reg(r.irr) = [];
+        ep2reg = ep2;
+        ep2reg(r.irr) = [];
+        if l>2
+            da2reg = da2;
+            da2reg(r.irr) = [];
+            ep3reg = ep3;
+            ep3reg(r.irr) = [];
+            da3reg = da3;
+            da3reg(r.irr) = [];
+        end
     end
     
     % Posterior expectation
     % ~~~~~~~~
     m1reg = mu1;
     m1reg(r.irr) = [];
+    m2reg = mu2;
+    m2reg(r.irr) = [];
+    m3reg = mu3;
+    m3reg(r.irr) = [];
 
     % Surprise: informational
     % ~~~~~~~~
@@ -159,6 +187,9 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     
     bernvhat = sa1hat;
     bernvhat(r.irr) = [];
+    
+    mu1hreg = mu1hat;
+    mu1hreg(r.irr) = [];
 
     if l>1 % CAB
         % Inferential variance (aka informational or estimation uncertainty, ambiguity)
@@ -168,6 +199,11 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
         inferv = sigmoid_mu2.*(1 -sigmoid_mu2).*sa2; 
         %inferv = sa2; 
         inferv(r.irr) = [];
+        
+        mu2hreg = mu2hat;
+        mu2hreg(r.irr) = [];
+        sa2hreg = sa2hat;
+        sa2hreg(r.irr) = [];
     end
 
     if l>2 % CAB
@@ -183,11 +219,11 @@ if any(strcmp(r.c_obs.responses, 'RT')) || any(strcmp(r.c_obs.responses, 'EEG'))
     % Calculate predicted log-response
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if l>2
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg +be11.*m1reg +be12.*da3reg +be13.*bernvhat;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be4.*pv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be9.*da2reg +be10.*ep3reg +be11.*da3reg +be12.*m1reg +be13.*m2reg +be14.*m3reg +be15.*sa2hreg +be16.*mu2hreg;
     elseif l>1
-        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg +be13.*bernvhat;
+        logresp = be0 +be1.*surp +be2.*bernv +be3.*inferv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be12.*m1reg +be13.*m2reg +be15.*sa2hreg +be16.*mu2hreg;
     else
-        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be11.*m1reg +be13.*bernvhat;
+        logresp = be0 +be1.*surp +be2.*bernv +be5.*daureg +be6.*ep1reg +be7.*da1reg +be8.*ep2reg +be12.*m1reg;
     end
 
     % Calculate log-probabilities for non-irregular trials

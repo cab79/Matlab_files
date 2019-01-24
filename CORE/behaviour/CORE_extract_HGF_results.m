@@ -6,7 +6,12 @@ T = cell2table(S.designmat(2:end,:),...
 
 % fields to include/exclude
 fitfields = {'p_prc','p_obs','traj'};
+%fitfields = {'p_prc','traj'};
 ignorefields = {'p','ptrans'};
+
+if size(S.condmean,1)>1
+    S.condmean = S.condmean(:);
+end
 
 % compile parameters and trajectories into  param and traj structures
 for d = 1:length(D) 
@@ -64,35 +69,51 @@ trajfields = fieldnames(traj);
 for tf = 1:length(trajfields)
     for d = 1:length(traj)
     % create means and stds
-        if any(strcmp(S.summary_stats,'mean'))
-            tablecols.([trajfields{tf} '_mean'])(d,1) = nanmean(traj(d).(trajfields{tf}));
+        if any(strcmp(S.summary_stats,'trial_mean'))
+            tablecols.([trajfields{tf} '_trial_mean'])(d,1) = nanmean(traj(d).(trajfields{tf}));
         end
-        if any(strcmp(S.summary_stats,'std'))
-            tablecols.([trajfields{tf} '_std'])(d,1) = nanstd(traj(d).(trajfields{tf}));
+        if any(strcmp(S.summary_stats,'trial_std'))
+            tablecols.([trajfields{tf} '_trial_std'])(d,1) = nanstd(traj(d).(trajfields{tf}));
         end
-        if any(strcmp(S.summary_stats,'absmean'))
-            tablecols.([trajfields{tf} '_absmean'])(d,1) = nanmean(abs(traj(d).(trajfields{tf})));
+        if any(strcmp(S.summary_stats,'trial_absmean'))
+            tablecols.([trajfields{tf} '_trial_absmean'])(d,1) = nanmean(abs(traj(d).(trajfields{tf})));
         end
-        if any(strcmp(S.summary_stats,'absstd'))
-            tablecols.([trajfields{tf} '_absstd'])(d,1) = nanstd(abs(traj(d).(trajfields{tf})));
+        if any(strcmp(S.summary_stats,'trial_absstd'))
+            tablecols.([trajfields{tf} '_trial_absstd'])(d,1) = nanstd(abs(traj(d).(trajfields{tf})));
         end
     end
 end
 
 if isfield(S,'condmean') && ~isempty(S.condmean)
     condfields = fieldnames(S.cond);
-    for tf = 1:length(S.condmean)
-        for d = 1:length(traj)
+    for tf = 1:length(S.condmean) % for each traj
+        for d = 1:length(traj) % for each subject
             conds = D(d).dt.design(2,:);
             thistraj = traj(d).(S.condmean{tf});
-            for cf = 1:length(condfields)
-                tablecols.([S.condmean{tf} '_' condfields{cf}])(d,1) = nanmean(thistraj(ismember(conds,S.cond.(condfields{cf}))));
+            uni_cond = unique(conds);
+            uni_cond(uni_cond==0) = [];
+            all_conds = [];
+            for c = 1:length(uni_cond) % for each cond
+                all_conds(uni_cond(c)) = nanmean(thistraj(ismember(conds,uni_cond(c))));
+            end
+            for cf = 1:length(condfields) % for each average
+                if iscell(S.cond.(condfields{cf}))
+                    if length(S.cond.(condfields{cf}))==2
+                        tablecols.([S.condmean{tf} '_' condfields{cf}])(d,1) = nanmean(all_conds(S.cond.(condfields{cf}){1}) - nanmean(all_conds(S.cond.(condfields{cf}){2})));
+                    elseif length(S.cond.(condfields{cf}))==4
+                        tablecols.([S.condmean{tf} '_' condfields{cf}])(d,1) = (nanmean(all_conds(S.cond.(condfields{cf}){1})) - nanmean(all_conds(S.cond.(condfields{cf}){2}))) - (nanmean(all_conds(S.cond.(condfields{cf}){3})) - nanmean(all_conds(S.cond.(condfields{cf}){4})));
+                    end
+                else
+                    tablecols.([S.condmean{tf} '_' condfields{cf}])(d,1) = nanmean(all_conds(S.cond.(condfields{cf})));
+                end
             end
         end
     end
 end
 
-T = [T,struct2table(tablecols)];
+try
+    T = [T,struct2table(tablecols)];
+end
 
 %get RTs too
 if isfield(D(1).HGF,'y')
