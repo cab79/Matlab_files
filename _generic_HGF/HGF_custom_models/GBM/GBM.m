@@ -152,10 +152,10 @@ end
 % end
 
 % find out if certain variables exist or not
-no_al1=0;
-if ~exist('al1','var')
-    no_al1=1;
-end
+% no_al1=0;
+% if ~exist('al1','var')
+%     no_al1=1;
+% end
 no_rb=0;
 if ~exist('rb','var')
     no_rb=1;
@@ -190,7 +190,8 @@ for m=1:r.c_prc.nModels
         PL(m)=1;
     end
 end
-n_inputcond=r.c_prc.n_inputcond;
+inputfactors=r.c_prc.inputfactors;
+n_inputfactors=length(inputfactors);
 nModels=r.c_prc.nModels;
 
 % ignore trials
@@ -262,33 +263,33 @@ for k=2:1:n
             dau(k,1,m) = u(k,1) -muhat(k,1,m);
 
             % set alpha
-            if no_al1
-                al1=al0;
-            end
-            if n_inputcond >1
-                if u(k,1)==0
-                    al(k,1,m)=al0(u(k,2));
-                elseif u(k,1)==1
-                    al(k,1,m)=al1(u(k,2));
-                end
-            else
-                if u(k,1)==0
-                    al(k,1,m)=al0;
-                elseif u(k,1)==1
-                    al(k,1,m)=al1;
+%             if no_al1
+%                 al1=al0;
+%             end
+            al(k,1,m)=al0(1);
+            if n_inputfactors >0
+                % apply gain to alpha according to input factors
+                % alpha multipliers are not variances, but have to be positive
+                if_str = num2str(u(k,2));
+                for nif = 1:n_inputfactors 
+                    if strcmp(if_str(inputfactors(nif)),'1')
+                        al(k,1,m)=al(k,1,m) * al0(inputfactors(nif)+1);
+                    end
                 end
             end
             % 
             if hierarchical(m)
                 % Likelihood functions: one for each
                 % possible signal
-                if n_inputcond >1
-                    und1 = exp(-(u(k) -eta1)^2/(2*al1(u(k,2))));
-                    und0 = exp(-(u(k) -eta0)^2/(2*al0(u(k,2))));
-                else
-                    und1 = exp(-(u(k) -eta1)^2/(2*al1));
-                    und0 = exp(-(u(k) -eta0)^2/(2*al0));
-                end
+%                 if n_inputcond >1
+%                     und1 = exp(-(u(k) -eta1)^2/(2*al1(u(k,2))));
+%                     und0 = exp(-(u(k) -eta0)^2/(2*al0(u(k,2))));
+%                 else
+%                     und1 = exp(-(u(k) -eta1)^2/(2*al1));
+%                     und0 = exp(-(u(k) -eta0)^2/(2*al0));
+%                 end
+                und1 = exp(-(u(k) -eta1)^2/(2*al(k,1,m)));
+                und0 = exp(-(u(k) -eta0)^2/(2*al(k,1,m)));
 
                 if AL(m)
                     if u(k,3)==2

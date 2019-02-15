@@ -1,3 +1,4 @@
+%function CORE_eeg_trial_regression_statistics_SCRIPT_HGFvCond
 % Analysis script for Encoding and Decoding models
 % This is a general script that can be tailored to specific analyses
 
@@ -39,52 +40,43 @@
 % Predictor variables are RTs or HGF-estimated belief and prediction error
 % trajectories.
 
-clear all
 close all
+clear all
 dbstop if error % optional instruction to stop at a breakpoint if there is an error - useful for debugging
 restoredefaultpath
 
-%% add toolbox paths
-run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
+% condor settings - if on, input files are saved for Condor, but stats not
+% run yet
+S.condor.on = 0;
+S.condor.chunksize = 2500; % max value: auto re-adjusts into equal portions
 
-%% SET DATA PATHS/NAMES: EEG .set files
-clear S
+%- use parallel processing
+S.parallel=1;
+
+%% add toolbox paths
+if ~S.condor.on 
+    run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
+else
+    pth=pwd;
+    addpath(genpath(fullfile(pth, 'dependencies')))
+    addpath(genpath(fullfile(pth, 'Data')))
+end
+
+%% SET PATHS
 S.path=struct;% clears the field
+S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted'; 
+S.file.hgf = 'D_fit_r1_it7_pm3_rm4.mat';
+S.file.get_dt = 'CORE_fittedparameters_percmodel2_respmodel4_fractrain0_20190211T074650.mat';
+% S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_bayesopt_20190112T075922.mat';
+
+% ERP
 S.path.main = 'C:\Data\CORE\eeg\ana';
 S.path.eeg = [S.path.main '\prep\cleaned\part2'];
 S.path.stats = [S.path.main '\stats']; % folder to save outputs
-%S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20180821T134505.mat']; 
-%S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_respmodel20_fractrain0_20181021T093241.mat']; % FITTED
-%S.path.hgf = ['C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel12_bayesopt_20181013T140052.mat'];
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_bayesopt_20181127T093607.mat'; % one alpha
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T112500.mat'; % 'GBM_config_alpha1.5BO_var1.5_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091401.mat'; % 'GBM_config_alpha2BO_var2_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T112310.mat'; % 'GBM_config_alpha3BO_var3_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181127T094159.mat'; % 'GBM_config_alpha4BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T112129.mat'; % 'GBM_config_alpha5BO_var5_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T111915.mat'; % 'GBM_config_alpha6BO_var6_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T111853.mat'; % 'GBM_config_alpha7BO_var7_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T110417.mat'; % 'GBM_config_alpha8BO_var8_bo'
-
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T070954.mat'; %'GBM_config_alpha05BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071046.mat'; %'GBM_config_alpha1BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071111.mat' %'GBM_config_alpha1.1BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071147.mat'; %'GBM_config_alpha1.5BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071217.mat'; %'GBM_config_alpha2BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071303.mat'; %'GBM_config_alpha4BO_var4_bo'
-
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093231.mat'; %'GBM_config_alpha1BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093251.mat'; %'GBM_config_alpha1.5BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093310.mat'; %'GBM_config_alpha2BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093329.mat'; %'GBM_config_alpha4BO_var4_bo'
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093342.mat'; %'GBM_config_alpha8BO_var4_bo'
-
-%S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel128_respmodel15_fractrain0_20181228T104344.mat'; %'GBM_config_8BO_al4_alvar1'
-S.path.hgf = 'C:\Data\CORE\behaviour\hgf\fitted\CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it14.mat'; 
-
 S.path.design = ['C:\Data\CORE\design']; % 
 S.path.datfile = 'C:\Data\CORE\Participants\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 S.path.chanlocs = 'C:\Data\CORE\eeg\ana\prep\chanlocs.mat';
+S.path.GSNlocs = 'C:\Data\CORE\eeg\GSN-HydroCel-128-Flipmap.mat';
 S.fname.parts = {'subject','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
 S.fname.ext = {'set'}; 
 S.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
@@ -93,6 +85,24 @@ S.select.blocks = {}; % blocks to load (each a separate file) - empty means all 
 S.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
 S.load.suffixes = {'2_merged_cleaned'}; 
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+
+% FREQ
+% S.path.main = 'C:\Data\CORE\eeg\ana';
+% S.path.eeg = [S.path.main '\TF'];
+% S.path.stats = [S.path.main '\stats']; % folder to save outputs
+% S.path.design = ['C:\Data\CORE\design']; % 
+% S.path.datfile = 'C:\Data\CORE\Participants\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+% S.path.chanlocs = 'C:\Data\CORE\eeg\ana\prep\chanlocs.mat';
+% S.path.GSNlocs = 'C:\Data\CORE\eeg\GSN-HydroCel-128-Flipmap.mat';
+% S.fname.parts = {'subject','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
+% S.fname.ext = {'mat'}; 
+% S.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+% S.select.sessions = {};
+% S.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
+% S.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
+% S.select.freq = 1; 
+% S.load.suffixes = {'2_merged_cleaned_TF'}; 
+% save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
 %% SET DATA PATHS/NAMES: ICs
 % clear S
@@ -112,7 +122,24 @@ save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time
 % S.load.suffixes = {'2_merged_cleaned_grp-ica_c', '2_merged_cleaned_grp-fileinfo_'}; 
 % save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
+%% SET DATA PATHS/NAMES: Residuals
+% S.path.main = 'C:\Data\CORE\eeg\ana';
+% S.path.stats = [S.path.main '\stats']; % folder to save outputs
+% S.path.eeg = [S.path.stats '\residuals'];
+% S.path.design = ['C:\Data\CORE\design']; % 
+% S.path.datfile = 'C:\Data\CORE\Participants\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+% S.path.chanlocs = 'C:\Data\CORE\eeg\ana\prep\chanlocs.mat';
+% S.fname.parts = {'subject','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
+% S.fname.ext = {'mat'}; 
+% S.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
+% S.select.sessions = {};
+% S.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
+% S.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
+% S.load.suffixes = {'2_merged_cleaned_resid_comp1_con1_20190131T065454'}; 
+% save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
+
+%%
 % layouts for cosmo
 S.cfglayout = 'C:\Data\Matlab\Matlab_files\CORE\cosmo\modified functions\GSN92.sfp';
 S.cfgoutput = 'C:\Data\Matlab\Matlab_files\CORE\cosmo\modified functions\GSN92.lay';
@@ -149,15 +176,48 @@ S.contrast_rows = {}; % empty - all pooled into one (e.g. for regression)
 %S.contrast_rows = {[1:4]}; % include all (e.g. correlating with HGF traj)
 %S.contrast_rows = {[1:4],[1:4]}; % include all (e.g. correlating with HGF traj) and test on all
 
-% other EEG data operations
-S.flipchan = [3 4]; % rows of S.cond_idx containing trial types to flip channels right to left 
-S.total_samples = -200:799;
-S.select_samples = 0:600;
-S.smooth_samples = 10;
-S.dsample = 4;
-S.transform = 'arcsinh'; % arcsinh or notrans
-S.zscore = 1;
-S.ndec=8; % trim data to a number of decimal places
+
+if strfind(S.path.eeg,'residuals')
+    % other EEG data operations: residuals
+    S.flipchan = []; % rows of S.cond_idx containing trial types to flip channels right to left 
+    S.total_samples = 0:20:600; %residuals
+    S.select_samples = 0:600;
+    S.smooth_samples = 0;
+    S.dsample = 0;
+    S.zscore = 1;
+    S.ndec=8; % trim data to a number of decimal places
+    
+    % Multiple regression settings
+    S.save_residuals=0;
+elseif isfield(S.select,'freq')
+    % other EEG data operations
+    S.flipchan = [3 4]; % rows of S.cond_idx containing trial types to flip channels right to left 
+    S.total_samples = -200:8:792;
+    S.select_samples = 0:799;
+    S.smooth_samples = 10;
+    S.dsample = 0;
+    S.zscore = 1;
+    S.ndec=8; % trim data to a number of decimal places
+    
+    % Multiple regression settings
+    S.save_residuals=0;
+else
+    % other EEG data operations
+    S.flipchan = [3 4]; % rows of S.cond_idx containing trial types to flip channels right to left 
+    S.total_samples = -200:799;
+    S.select_samples = 0:799;
+    S.smooth_samples = 10;
+    S.dsample = 20;
+    S.zscore = 1;
+    S.ndec=8; % trim data to a number of decimal places
+    
+    % Multiple regression settings
+    S.save_residuals=0;
+end
+
+% transforms
+S.transform = 'notrans'; % EEG transform: arcsinh or notrans
+S.pred_transform = 'arcsinh'; % Predictor transform: arcsinh, rank or notrans
 
 % run options
 % for testing decoders: random, 0.5 fraction, balanced, 10 runs.
@@ -167,11 +227,13 @@ S.balance_conds =1; % random training trials balanced across conditions
 S.num_runs = 1; % run analysis this many times, each time with a different random choice of training/test data
 
 % Predictor variables
-S.pred_type = {'HGF'}; % cond, RT or HGF
+S.pred_type = {'HGF'}; % null, cond, RT or HGF
 S.pred_type_traintest = {'train'}; % 'train' or 'test' for each pred_type. 'train' also performs testing if set by S.traintest.
-%S.pred_type = {'cond'}; % cond, RT or HGF
+
 % if S.pred_type='cond':
-S.cond = {[2 4],[1 3]};
+% S.cond = {[2 4],[1 3]};
+S.cond = {[1 3]};
+
 % if S.pred_type = 'HGF': HGF trajectories, grouped
 %S.traj{1} = {
     %{'PL'},{'epsi'},{[0]},{[1:3]}; %3rd col: absolute values; 
@@ -183,22 +245,24 @@ S.cond = {[2 4],[1 3]};
 %     {'PL'},{'da'},{[0]},{[1]};
 %     {'PL'},{'da'},{[0]},{[2]};
 %       {'PL'},{'epsi'},{[0]},{[1]};
-%      {'PL'},{'epsi'},{[1]},{[1]};
 %      {'PL'},{'epsi'},{[0]},{[2]};
-%      {'PL'},{'epsi'},{[1]},{[2]};
 %      {'PL'},{'epsi'},{[0]},{[3]};
+%      {'PL'},{'epsi'},{[1]},{[1]};
+%      {'PL'},{'epsi'},{[1]},{[2]};
 %      {'PL'},{'epsi'},{[1]},{[3]};
-%      {'PL'},{'mu','dau','da'},{[0,0,0]},{[1],[],[1:2]};
-%      {'PL'},{'epsi'},{[0]},{[]};
-%     {'PL'},{'ud'},{[0]},{[]};
-    {'PL'},{'mu'},{[0]},{[]};
-     %{'PL'},{'dau','da','epsi'},{[0,0,0]},{[],[1:2],[]};
+%      {'PL'},{'dau','da'},{[0,0]},{[],[1:2]};
+     {'PL'},{'epsi'},{[0]},{[]};
+%     {'PL'},{'ud'},{[0]},{[1]};
+%     {'PL'},{'ud'},{[0]},{[2]};
+%     {'PL'},{'ud'},{[0]},{[3]};
+%     {'PL'},{'mu'},{[0]},{[]};
+%      {'PL'},{'dau','da','epsi'},{[0,0,0]},{[],[1:2],[]};
+%      {'PL'},{'dau','da','epsi','mu','sa'},{[0,0,0,0,0]},{[],[1:2],[],[],[]}; % UPDATES UD ARE REDUNDANT - SAME AS Da1/Ep2
      }; % beliefs and their variance
 % S.traj{2} = {
 %     {'PL'},{'da','dau','ud','psi','epsi','wt'};
 %     {'PR'},{'da','dau','ud','psi','epsi','wt'};
 %     }; % prediction errors, updates and learning rates
-S.pred_transform = 'notrans'; % arcsinh, rank or notrans
 
 % TFCE settings
 S.tfce_on = 0; % for clustering over time only
@@ -206,9 +270,6 @@ S.cosmo_tfce_on = 0; % use cosmo if analysing clusters over channels/frequencies
 %S.tfce_test = S.analysis_type; % set to SC or MR above
 S.tfce_tail = 2;
 S.tfce_nperm=100; % for initial testing, between 100 and 1000. 5000 is most robust, but slow
-
-% Multiple regression settings
-S.save_residuals=0;
 
 % Ridge regression settings
 S.rr.df_num = 100; % number of lambdas to do cross-val on
@@ -235,7 +296,6 @@ S.brr.usegroups = 0;     % ****Specified by S.traj cells**** - create groups of 
 S.brr.waic = true;       %- whether to calculate the WAIC -- disabling can lead
 %                       to large speed-ups, especially for Gaussian models with large n
 %                       (default: true)
-S.parallel=1;       %- use parallel processing
 
 % %BIEM settings
 S.biem_on=0;
@@ -259,15 +319,15 @@ S.biem_pred = 1; % specify which predictor variable(s) to correlate with input
 
 % MVPA settings: classification
 S.mvpa_on=0;
-S.mvpa_type='class'; %'class' or 'regress'
+S.mvpa_type='regress'; %'class' or 'regress'
 S.SL_type = 'time';
-S.search_radius = Inf; % data points, not ms.  Set to Inf to analyse all data points at once.
+S.search_radius = 25; % data points, not ms.  Set to Inf to analyse all data points at once.
 S.use_measure = 'crossvalidation';
-S.balance_dataset_and_partitions =1; % turn on for classification, off for regression
-S.parti='nchunks'; % 'take-one-out', 'splithalf', 'oddeven', 'nchunks'
+S.balance_dataset_and_partitions =0; % turn on for classification, off for regression
+S.parti='take-one-out'; % 'take-one-out' (for regression), 'splithalf', 'oddeven', 'nchunks' (for classification)
 S.use_classifier = 'GP'; 
-S.use_chunks = 'balance_targets'; % 'balance_targets' (over chunks) or 'none'. Not needed for 'take-one-out' option.
-S.nchunks=10;
+S.use_chunks = 'none'; % 'balance_targets' (over chunks) or 'none'. Not needed for 'take-one-out' option.
+S.nchunks=0; % for classification, 10 chunks; for regression, 0.
 S.average_train_count = 1;
 S.average_train_resamplings = 1;
 

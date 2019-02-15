@@ -23,7 +23,7 @@ c.priormus=[];
 c.priorsas=[];
 c.nModels = length(fieldnames(S.perc_modelspec.priormodels));
 c.modelnames = fieldnames(S.perc_modelspec.priormodels);
-c.n_inputcond = S.perc_modelspec.likelihood.n_inputcond;
+c.inputfactors = S.perc_modelspec.likelihood.inputfactors;
 c.response.priormodel = S.perc_modelspec.response.priormodel;
 c.response.rep = S.perc_modelspec.response.rep;
 c.st = [];
@@ -46,22 +46,20 @@ switch S.perc_modelspec.likelihood.type
 
         %% Input variance: Alpha
         switch S.perc_modelspec.likelihood.inputvar
-            case 'uncertain_unequal'
-                c.like.logal0mu = repmat(log(1),1,c.n_inputcond);
-                c.like.logal0sa = repmat(1,1,c.n_inputcond); % unfixed
-                c.like.logal0var = true; % this is a variance parameter
-                c.like.logal1mu = repmat(log(1),1,c.n_inputcond);
-                c.like.logal1sa = repmat(1,1,c.n_inputcond); % unfixed
-                c.like.logal1var = true; % this is a variance parameter
-            case 'uncertain_equal'
-                % only specify al0
-                c.like.logal0mu = log([0.0890,0.0963]);%repmat(log(1),1,c.n_inputcond);
-                c.like.logal0sa = repmat(2,1,c.n_inputcond); % unfixed
+%             case 'uncertain_unequal'
+%                 c.like.logal0mu = repmat(log(1),1,c.n_inputcond);
+%                 c.like.logal0sa = repmat(1,1,c.n_inputcond); % unfixed
+%                 c.like.logal0var = true; % this is a variance parameter
+%                 c.like.logal1mu = repmat(log(1),1,c.n_inputcond);
+%                 c.like.logal1sa = repmat(1,1,c.n_inputcond); % unfixed
+%                 c.like.logal1var = true; % this is a variance parameter
+            case 'uncertain'
+                c.like.logal0mu = log([0.0925 1 1]);%repmat(log(1),1,c.n_inputcond);
+                c.like.logal0sa = [1, 0, 1]; % unfixed
                 c.like.logal0var = true; % this is a variance parameter
             case 'certain'
-                % only specify al0
-                c.like.logal0mu = repmat(log(0),1,c.n_inputcond); 
-                c.like.logal0sa = repmat(0,1,c.n_inputcond); % fixed
+                c.like.logal0mu = repmat(log(0),1,length(c.inputfactors)+1); 
+                c.like.logal0sa = repmat(0,1,length(c.inputfactors)+1); % fixed
                 c.like.logal0var = true; % this is a variance parameter
         end
 end
@@ -149,7 +147,7 @@ for m = 1:c.nModels
 
                 % Format: row vector of length n_levels.
                 % Undefined (therefore NaN) at the first level.
-                c.(type).ommu = [NaN, repmat(-5.1166 -failed, 1, length(c.(type).mu_0mu)-2),-6.5222]; 
+                c.(type).ommu = [NaN, repmat(-5.1826 -failed, 1, length(c.(type).mu_0mu)-2),-6.8176];
                 c.(type).omsa = [NaN, repmat(4^2, 1, length(c.(type).mu_0mu)-1)]; %abs(c.(type).ommu);
             end
 

@@ -7,7 +7,7 @@ addpath('C:\Data\Matlab\export_fig')
 addpath('C:\Data\CORE\eeg')
 addpath(genpath('C:\Data\Matlab\gramm-master'))
 %% figure options
-fontsize = 10; % SENSITIVE TO SCREEN RESOLUTION, e.g. when using Teamviewer
+fontsize = 12; % SENSITIVE TO SCREEN RESOLUTION, e.g. when using Teamviewer
 save_figs=1;
 %savefigspath = 'C:\Data\CORE\EEG\ana\spm\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm\Grp_clusters';
 
@@ -35,7 +35,6 @@ S.fact_names = {
     %'Side';
     };
 S.cval={ %condition labels, i.e. levels of each condition, in the same order as in the SPM design matrix. One row per factor. second column is plotting order
-    
     {'Oddball','Standard'},[1 2];
     {'10%','30%','50%'},[1 2 3];
     %{'CRPS','HC'},[1 2];
@@ -43,6 +42,7 @@ S.cval={ %condition labels, i.e. levels of each condition, in the same order as 
     %{'Affected','Unaffected'}
     };
 S.xlimits = [-200 800];% time in ms
+D = gplotprepare_spmeegsensorcluster(S);
 
 %% prepare weights data for gplot
 %Sw.path = 'C:\Data\Catastrophising study\SPMstats\pronto\Group\Main effect\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_noperm';
@@ -84,6 +84,9 @@ if ~exist(fullfile(St.eeglab_path,St.ERPsavename),'file') || St.overwriteEEG
     E=gplotprepare_eeglabdata_from_spm(St,D(1));
 else
     load(fullfile(St.eeglab_path,St.ERPsavename));
+    for fn = fieldnames(D)'
+       E.(fn{1}) = D.(fn{1});
+    end
 end
 
 
@@ -107,6 +110,7 @@ for d = 1:length(S.plotclus)
         P(p).fact_names = D(d).fact_names;
         %P(p).colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red 
         P(p).colours = [0.5 0 0.5; 1 0.5 0; 0 0.5 0]; % purple, orange, green 
+        P(p).color_order = -1; % order of plotting: -1 or 1
         P(p).xlinedashed = [0];% vertical dashed lines to indicate events, time in ms
         P(p).timezero = 0;% change zero latency to this time
         P(p).xaxisname = {'peri-stimulus time (ms)'};
@@ -146,23 +150,24 @@ figname = 'EEG_plot';
 if save_figs; export_fig(fullfile(savefigspath,[figname '.png']), '-r1200'); end
 
 %% plot topographies
-clear P
-P.topotype='eeglab';
-P.no_plot_ele=[];
-P.topo_subtimewin=2000;%[-2265 -2265]; % time window length. single value: plots multiple topos in consecutive windows with this length. 2 values: specifies a window. 0 = whole cluster mean.
-P.fontsize=fontsize;
-P.cval = 0;
+Pt.topotype='eeglab';
+Pt.no_plot_ele=[];
+Pt.topo_subtimewin=2000;%[-2265 -2265]; % time window length. single value: plots multiple topos in consecutive windows with this length. 2 values: specifies a window. 0 = whole cluster mean.
+Pt.fontsize=fontsize;
+Pt.cval = 0;
+Pt.sub_order = -1;
+Pt.sub_order = P(p).color_order;
 for fn = fieldnames(D)'
    E.(fn{1}) = D.(fn{1});
 end
 for d = 1:length(D)
     for sl = S.cval{1,2}
-        P.selectlev=sl;
+        Pt.selectlev=sl;
         E.E_val = D(d).E_val;
         E.Fi_ind = D(d).Fi_ind;
         E.fi = D(d).fi;
         E.cond = D(d).cond;
-        plot_topo(P,E)
+        plot_topo(Pt,E)
         set(gcf,'color','w');
         set(gca,'fontsize', fontsize);
         set(gcf, 'Units', 'normalized', 'Position', [0.5,0.5,0.15,0.25]);

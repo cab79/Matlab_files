@@ -1,17 +1,17 @@
 function [S,D] = CORE_data_process(S,D)
 
 % change number of alphas
-if isfield(S,'perc_modelspec')
-    if S.perc_modelspec.likelihood.n_inputcond==2
-        ic = [1 2 1 2 nan nan nan]; 
-    elseif S.perc_modelspec.likelihood.n_inputcond==4
-        ic = [1 2 3 4 nan nan nan]; 
-    else
-        ic = [1 1 1 1 nan nan nan]; 
-    end
-else
-    ic = [1 1 1 1 nan nan nan]; 
-end
+% if isfield(S,'perc_modelspec')
+%     if S.perc_modelspec.likelihood.n_inputcond==2
+%         ic = [1 2 1 2 nan nan nan]; 
+%     elseif S.perc_modelspec.likelihood.n_inputcond==4
+%         ic = [1 2 3 4 nan nan nan]; 
+%     else
+%         ic = [1 1 1 1 nan nan nan]; 
+%     end
+% else
+%     ic = [1 1 1 1 nan nan nan]; 
+% end
 
 % event numbers for each condition (1st = change, 2nd = no change)
 cond1 = [1 3]; %0.1 prob, 1 digit change, left hand
@@ -152,33 +152,34 @@ for d = 1:length(D)
         
         % U2: INPUT TYPES
         % create labels for block transitions between hands and within hands
-        u2=zeros(1,size(u,2));
-        for i = 2:length(blockii) 
-            if hand(i) ~= hand(i-1) % label transitions between hands as 7
-                u2(blockii(i))=ic(7); 
-            elseif dc(i) ~= dc(i-1) % label transitions within hands (from DC1 to DC3) as 5 for left, 6 for right
-                if hand(i)==1
-                    u2(blockii(i))=ic(5); 
-                elseif hand(i)==2
-                    u2(blockii(i))=ic(6);
-                end
-            end
-        end
+        u2=nan(1,size(u,2));
+%         for i = 2:length(blockii) 
+%             if hand(i) ~= hand(i-1) % label transitions between hands as 7
+%                 u2(blockii(i))=ic(7); 
+%             elseif dc(i) ~= dc(i-1) % label transitions within hands (from DC1 to DC3) as 5 for left, 6 for right
+%                 if hand(i)==1
+%                     u2(blockii(i))=ic(5); 
+%                 elseif hand(i)==2
+%                     u2(blockii(i))=ic(6);
+%                 end
+%             end
+%         end
         u(1,blockii)=u2(1,blockii);
         for i = 1:length(u2)
             if design(2,i)~=0
                 ii = find(any(cell2mat(btypes(:,1))==design(2,i),2));
                 handval = btypes{ii,2};
                 dcval = btypes{ii,3};
-                if handval==1 && dcval==1
-                    u2(i)=ic(1);
-                elseif handval==1 && dcval==2
-                    u2(i)=ic(2);
-                elseif handval==2 && dcval==1
-                    u2(i)=ic(3);
-                elseif handval==2 && dcval==2
-                    u2(i)=ic(4);
-                end
+                u2(i) = str2double([num2str(handval) num2str(dcval)]);
+%                 if handval==1 && dcval==1
+%                     u2(i)=ic(1);
+%                 elseif handval==1 && dcval==2
+%                     u2(i)=ic(2);
+%                 elseif handval==2 && dcval==1
+%                     u2(i)=ic(3);
+%                 elseif handval==2 && dcval==2
+%                     u2(i)=ic(4);
+%                 end
             end
         end
 
@@ -194,7 +195,7 @@ for d = 1:length(D)
         u(1,isnan(u(2,:)))=NaN;
         D(d).HGF(1).u=u';
 
-        transi = ismember(u2,[1:4]); %use only transitions of interest (1-4 from u2)
+        transi = ~isnan(u2); %use only transitions of interest
         % create index of cond numbers corresponding to each trial
         condi =nan(1,length(u2));
         blockii_end = [blockii length(u2)+1];

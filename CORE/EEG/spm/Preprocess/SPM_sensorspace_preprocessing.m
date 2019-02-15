@@ -1,21 +1,23 @@
 clear all
+dbstop if error
 restoredefaultpath
 run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 
 %% SPECIFY DATA
 filepath = 'C:\Data\CORE\EEG\ana\spm\SPMdata'; 
-outpath = 'C:\Data\CORE\EEG\ana\spm\SPMdata\sensorimages_std'; 
+outpath = 'C:\Data\CORE\EEG\ana\spm\SPMdata\sensorimages'; 
 batchpath = 'C:\Data\Matlab\Matlab_files\CORE\EEG\spm\Sensor';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
-fpref = 'spm12_CPavg';conds=1:8; % PART 2
+% fpref = 'spm12_flip_DCavg';conds=1:12; % PART 2
+fpref = 'spm12_flip_CPavg';conds=1:8; % PART 2
 %fpref = 'spm12_DCavg';conds=1:12; % PART 2
 %fpref = 'spm12';conds=1:24; % PART 4
 %fpref = 'spm12_blockmismatch';conds=1:12; 
 fmid = '';
 %fsuff = '4_cleaned_tm.mat';
-fsuff = '_2_cleaned_tm.mat';
+fsuff = '_2_merged_cleaned_stats_BRR_all_chan_HGF_notrans_20190214T220715.mat';
 
 
 %% SPECIFY OPTIONS
@@ -27,7 +29,7 @@ ftart = 0;
 
 % output type: 'average' (to create average) 'useaverage' (to use existing
 % averaged file) or 'singletrial' or 'std'
-outputtype = 'std'; % CAREFUL WITH USEAVERAGE: data might not be baselined correctly
+outputtype = 'average'; % CAREFUL WITH USEAVERAGE: data might not be baselined correctly
 
 % mode - type of images to generate. One of:
 %                'scalp x time'
@@ -55,7 +57,10 @@ delete_unsmoothed = 1;
 fname=[fpref '*' fmid  '*' fsuff];
 fname=strrep(fname,'**','*');
 files = dir(fullfile(filepath,fname));
-files_ana=1:length(files);
+% files_ana=1:11;
+% files_ana=12:22;
+% files_ana=23:33;
+files_ana=34:44;
 
 for f = files_ana
     fname = files(f).name;

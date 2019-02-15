@@ -39,27 +39,27 @@ S.load.suffix = {'*'};
 % model fitting
 S.prc_config = 'GBM_config_CORE_percmodel2_BOpriors'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
 S.perc_models=[2]; 
-S.resp_models = [7]; 
-S.parallel = 1;
+S.resp_models = [6]; 
+S.parallel = 0;
 S.HGF.plottraj = 0; % turn off if doing multiple simulations!
+S.fitsim=1; % is the analysis of recorded data (1) or simulated data (2)?
+S.meansim=0; % set to 1 to average results over repeated simulations (DONT USE FOR MODEL RECOVERY, ONLY FOR PLOTTING)
+
+% response data processing
+S.accuracy.on = 1;
+S.RT.on = 1;
+S.RT.min = 0.2; % min RT to consider
+S.RT.max = 1;
+S.RT.fill_non_response = 0; % RT value to add to trials in which there was no response: acts to include inaccurary info within RT data
+S.save.tables = 0;
+[S,D_prep]=CORE_data_process(S,D);  % specific function for CORE (bypasses SCIn_data_process)
+
 for rm=1:length(S.resp_models)
     S.resp_model = S.resp_models(rm); 
     S.perc_model = S.perc_models(1); 
     S=CORE_perceptual_models(S);
     S=CORE_response_models(S);
     
-    % response data processing
-    % NOW OCCURS AFTER MODEL SPECIFICATION TO ALLOW MULTIPLE ALPHAS
-    S.fitsim=1; % is the analysis of recorded data (1) or simulated data (2)?
-    S.meansim=0; % set to 1 to average results over repeated simulations (DONT USE FOR MODEL RECOVERY, ONLY FOR PLOTTING)
-    S.accuracy.on = 1;
-    S.RT.on = 1;
-    S.RT.min = 0.2; % min RT to consider
-    S.RT.max = 1;
-    S.RT.fill_non_response = 0; % RT value to add to trials in which there was no response: acts to include inaccurary info within RT data
-    S.save.tables = 0;
-    [S,D_prep]=CORE_data_process(S,D);  % specific function for CORE (bypasses SCIn_data_process)
-
     % split data into training and testing sets (if we want to test for prediction of behaviour)
     S.frac_train = 0; % set to 0 to include all data in training set AND test set
     D_train=D_prep;
@@ -89,17 +89,19 @@ end
 % group model comparison
 if 0
     close all
-    S.sname='0_20190112T081048'; 
-    S.perc_models=[1 2 3];
-    S.resp_models = [1 2 3 4 5 6 7]; 
+    S.sname=''; 
+    S.perc_models=[1:3];
+    S.resp_models = [1:6]; 
     %S.perc_models=[1205 1210 1215 1220 1225 1225 1230 1235 1240 1245 1250]; S.sname='0_20190101T162309'; % alpha
     %S.perc_models=[121 122 124 128 1216 1232 1264]; S.sname='0_20181228T104344'; % alpha
     %S.perc_models=[1205 121 122]; S.sname='0_20181221T190047'; % om2
     %S.perc_models=[121]; S.sname='0_20181227T172306'; 
     %S.resp_models = [15]; 
     
-    S.fname_pref= 'CORE_fittedparameters';
-    S.fname_ext= ['_fractrain' S.sname '.mat'];
+%     S.fname_pref= 'CORE_fittedparameters';
+%     S.fname_ext= ['_fractrain' S.sname '.mat'];
+    S.fname_pref= 'D_fit';
+    S.fname_ext= ['.mat'];
     S.pep_flag = 1; % display PEP instead of EP
     S.family_on = 1;
     [~,~,bmc.pm_out,bmc.rm_out]=HGF_group_model_comparison(S);
@@ -107,6 +109,8 @@ if 0
     % model freq and exceedence prob for families (both groups pooled)
     pm_ff  = bmc.pm_out{1,1}.families.Ef
     pm_fep = bmc.pm_out{1,1}.families.ep
+    pm_fpep = bmc.pm_out{1,1}.families.pep
     rm_ff  = bmc.rm_out{1,1}.families.Ef
     rm_fep = bmc.rm_out{1,1}.families.ep
+    rm_fpep = bmc.rm_out{1,1}.families.pep
 end

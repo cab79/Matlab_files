@@ -39,11 +39,11 @@ D.spmstats_path = 'C:\Data\CORE\EEG\ana\spm\SPMstats';
 D.anapref = 't-200_899_b-200_0'; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
-D.subdirpref = '_mspm12_CPavg_'; % generic prefix for the SPM file type
-D.subdirsuff = '_2_cleaned_tm'; % generic suffix for the EEGLAB analysis file
+D.subdirpref = '_mspm12_flip_CPavg_'; % generic prefix for the SPM file type
+D.subdirsuff = '_2_merged_cleaned'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier='_stan'; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_odd'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -63,14 +63,14 @@ D.include_codes = [1];
 %             'scondition_12_flip.nii'
 %             };
 D.imglist = {
-            %'scondition_1.nii'
-            %'scondition_2.nii'
-            'scondition_3.nii'
-            'scondition_4.nii'
-            %'scondition_5_flip.nii'
-            %'scondition_6_flip.nii'
-            'scondition_7_flip.nii'
-            'scondition_8_flip.nii'
+            'scondition_1.nii'
+            'scondition_2.nii'
+%             'scondition_3.nii'
+%             'scondition_4.nii'
+            'scondition_5.nii'
+            'scondition_6.nii'
+%             'scondition_7.nii'
+%             'scondition_8.nii'
             };
         
         

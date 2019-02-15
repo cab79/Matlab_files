@@ -1,13 +1,17 @@
 clear all
 close all
+run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 addpath('C:\Data\Matlab\export_fig')
+addpath('C:\Data\CORE\eeg')
+addpath(genpath('C:\Data\Matlab\gramm-master'))
 %% figure options
 fontsize = 12; % SENSITIVE TO SCREEN RESOLUTION, e.g. when using Teamviewer
 save_figs=1;
 %savefigspath = 'C:\Data\CORE\EEG\ana\spm\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm\Grp_Odd_clusters';
 
 %% prepare SPM EEG data
-S.spm_path = 'C:\Data\CORE\EEG\ana\spm\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm';
+%S.spm_path = 'C:\Data\CORE\EEG\ana\spm\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm';
+S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_spm';
 %cluster directory name, which also specifies the constrast that will be
 %plotted (i.e. the characters before the underscore)
 S.clusdir='Grp_Odd_clusters';
@@ -16,7 +20,7 @@ S.clusdir='Grp_Odd_clusters';
 S.facplot={'Grp','Odd'};
 %S.facplot={'Exp'};
 % clusters to plot
-S.plotclus = {'c1_spm','c2_spm','c3_spm','c4_spm'};
+S.plotclus = {'c4_spm','c3_spm','c1_spm','c5_spm','c2_spm'};
 S.plotclus_sep = 1; % separate plots for each cluster
 S.wavetype = 'sensor'; % source or sensor?
 S.wfname = 'cluster_data.mat'; %generic cluster waveform file name
@@ -37,7 +41,7 @@ S.cval={ %condition labels, i.e. levels of each condition, in the same order as 
     %{'Affected','Unaffected'}
     };
 S.xlimits = [-200 800];% time in ms
-D = gplotprepare_spmeegsensorcluster(S)
+D = gplotprepare_spmeegsensorcluster(S);
 
 %% prepare weights data for gplot
 %Sw.path = 'C:\Data\Catastrophising study\SPMstats\pronto\Group\Main effect\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_noperm';
@@ -54,15 +58,25 @@ D = gplotprepare_spmeegsensorcluster(S)
 savefigspath = fullfile(S.spm_path,S.clusdir);
 St.eeglab_path = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2';
 St.eventtypes = [1:8];%{'c1','c3','c5','c7','c2a','c4a','c6a','c8a','c2b','c4b','c6b','c8b'};
-St.st_string='mspm12_';
+St.mark = {
+    [1 9 17]; % left, Odd, DC1
+    [2 10 18]; % left, Odd, DC3
+    [3 11 19]; % left, stan, DC1
+    [4 12 20]; % left, stan, DC3
+    [5 13 21]; % right, Odd
+    [6 14 22]; % right, Odd
+    [7 15 23]; % right, stan
+    [8 16 24]; % right, Stan
+};
+St.st_string='mspm12_flip_CPavg_';
 St.en_string='\scond';
-St.ERPsavename = 'ERP_DAT.mat';
+St.ERPsavename = 'ERP_DAT_CPavg.mat';
 St.plot_diff_wave = 1;
 St.use_flipped=1;
-St.flipcond = [5:8];
+St.flipcond = [5:8 13:16 21:24]; % EEGLAB markers
 St.overwriteEEG =0;
 if ~exist(fullfile(St.eeglab_path,St.ERPsavename),'file') || St.overwriteEEG
-    E=gplotprepare_eeglabdata_from_spm(St,D(1))
+    E=gplotprepare_eeglabdata_from_spm(St,D(1));
 else
     load(fullfile(St.eeglab_path,St.ERPsavename));
     for fn = fieldnames(D)'
@@ -71,14 +85,15 @@ else
 end
 
 
+
 %% set up ERP gplot
 clear P
 p=0;
-for d = 1:length(S.plotclus);
+for d = 1:length(S.plotclus)
     for sl = S.cval{1,2} % for each group
         p=p+1;
         S.selectlev = sl;
-        D = gplotprepare_spmeegsensorcluster(S)
+        D = gplotprepare_spmeegsensorcluster(S);
         P(p).xy = [p,1];
         P(p).x = D(d).x;
         P(p).y = D(d).y;
@@ -88,7 +103,9 @@ for d = 1:length(S.plotclus);
         P(p).poly = D(d).E_val;% polygon times
         P(p).ptitle = [];%D(p).ptitle;
         P(p).fact_names = D(d).fact_names;
-        P(p).colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red %CURRENTLY DOES NOT SUPPORT PLOTTING MORE THAN TWO FACTORS
+        %P(p).colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red 
+        P(p).colours = [0.5 0 0.5; 1 0.5 0]; % purple, orange, green 
+        P(p).color_order = -1; % order of plotting: -1 or 1
         P(p).xlinedashed = [0];% vertical dashed lines to indicate events, time in ms
         P(p).timezero = 0;% change zero latency to this time
         P(p).xaxisname = {'post-cue time (ms)'};
@@ -107,6 +124,7 @@ for d = 1:length(S.plotclus);
         Pt.fontsize=fontsize;
         Pt.selectlev=S.selectlev;
         Pt.cval = S.cval(2,:); % conditions
+        Pt.sub_order = -1;
         E.E_val = D(d).E_val;
         E.Fi_ind = D(d).Fi_ind;
         E.fi = D(d).fi;
@@ -124,7 +142,7 @@ end
 %% draw gplot
 g=gramm();
 for p = 1:length(P)
-    if ~isfield(P(p),'timezero'); 
+    if ~isfield(P(p),'timezero')
         P(p).timezero = [];
     end
     if ~isempty(P(p).timezero)

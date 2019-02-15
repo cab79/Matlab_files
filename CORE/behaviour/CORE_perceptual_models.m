@@ -65,8 +65,8 @@ switch S.perc_model
     
     case 1
     S.perc_modelspec.likelihood.type = 'binary'; % binary, continuous
-    S.perc_modelspec.likelihood.inputvar = 'uncertain_equal'; % uncertain_equal (variance), uncertain_unequal, certain
-    S.perc_modelspec.likelihood.n_inputcond = 1; % Number of conditions with unique input variance
+    S.perc_modelspec.likelihood.inputvar = 'uncertain'; % uncertain (variance), certain
+    S.perc_modelspec.likelihood.inputfactors = []; % Number of conditions with unique input variance
     S.perc_modelspec.response.priormodel = 'PL'; % Which model representations are used for the response model?
     S.perc_modelspec.response.rep = 'mu0';
     modeltype='PL'; % AL (associative learning), PL (perceptual learning), PR (priming)
@@ -159,8 +159,8 @@ switch S.perc_model
     
     case 2
     S.perc_modelspec.likelihood.type = 'binary'; % binary, continuous
-    S.perc_modelspec.likelihood.inputvar = 'uncertain_equal'; % uncertain_equal (variance), uncertain_unequal, certain
-    S.perc_modelspec.likelihood.n_inputcond = 2; % Number of conditions with unique input variance
+    S.perc_modelspec.likelihood.inputvar = 'uncertain'; % uncertain (variance), certain
+    S.perc_modelspec.likelihood.inputfactors = [2]; % Number of conditions with unique input variance
     S.perc_modelspec.response.priormodel = 'PL'; % Which model representations are used for the response model?
     S.perc_modelspec.response.rep = 'mu0';
     modeltype='PL'; % AL (associative learning), PL (perceptual learning), PR (priming)
@@ -183,8 +183,8 @@ switch S.perc_model
     
     case 3
     S.perc_modelspec.likelihood.type = 'binary'; % binary, continuous
-    S.perc_modelspec.likelihood.inputvar = 'uncertain_equal'; % uncertain_equal (variance), uncertain_unequal, certain
-    S.perc_modelspec.likelihood.n_inputcond = 4; % Number of conditions with unique input variance
+    S.perc_modelspec.likelihood.inputvar = 'uncertain'; % uncertain (variance), certain
+    S.perc_modelspec.likelihood.inputfactors = [1 2]; % Number of conditions with unique input variance
     S.perc_modelspec.response.priormodel = 'PL'; % Which model representations are used for the response model?
     S.perc_modelspec.response.rep = 'mu0';
     modeltype='PL'; % AL (associative learning), PL (perceptual learning), PR (priming)

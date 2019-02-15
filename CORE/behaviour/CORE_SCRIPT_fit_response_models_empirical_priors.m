@@ -382,10 +382,10 @@ S.path.hgf = ['C:\Data\CORE\behaviour\hgf']; % folder to save processed data
 Dbase = fullfile(S.path.hgf,'fitted');
 Sfile = 'CORE_fittedparameters_percmodel3_respmodel4_fractrain0_20190109T180357.mat'; % file to get S.designmat (i.e. all subjects)
 grp_files = {
-    'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_CRPS_it14.mat'
-    'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061503_HC_it14.mat'
+    'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_CPRS_it18.mat'
+    'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061503_HC_it18.mat'
     };
-sname = 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it14.mat'; % save file name
+sname = 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it18.mat'; % save file name
 load(fullfile(Dbase,Sfile),'S')
 for g=1:length(grp_files)
     d=load(fullfile(Dbase,grp_files{g}),'D_fit');

@@ -417,7 +417,7 @@ if ~isequal(S.mode, 'header')
         dat = read_eeglabdata(S.dataset, 'header', hdr, 'begtrial', 1, 'endtrial', ntrial, 'chanindx', chansel);
     end
     D.data(:,:,:) = dat;
-    D.timeOnset = S.timewin(1)/D.Fsample;
+    D.timeOnset = S.timewin(1)/1000;
     for i = 1:ntrial
         spm_progress_bar('Set','ylabel','reading...');
         if ~readalltrials
@@ -447,7 +447,7 @@ if ~isequal(S.mode, 'header')
                 end
                 D.trials(i).label = conditionlabels{i};
                 if isfield(S,'timewin')
-                    D.trials(i).onset  = S.timewin(1)/D.Fsample;
+                    D.trials(i).onset  = S.timewin(1)/1000;
                 else
                     D.trials(i).onset = trl(i, 1)./D.Fsample;
                 end

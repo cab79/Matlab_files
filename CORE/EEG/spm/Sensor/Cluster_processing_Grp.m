@@ -15,7 +15,7 @@ S.data_path = 'C:\Data\CORE\SPMdata\sensorimages';
 S.spmstats_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats';
 % specific folder containing the SPM stats for this analysis
 %S.spm_dir = 't-200_299_b-200_0_m_0_299_CP_Grp_Odd_Subject_4_cleaned_tm_spm';
-S.spm_dir = 't-200_899_b-200_0_m_0_800_CP_Grp_Odd_Subject_2_merged_cleaned_spm';
+S.spm_dir = 't-200_899_b-200_0_m_0_800_CP_Side_Grp_Subject_Age_2_merged_cleaned_spm_odd';
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
 S.batch = 'matlabbatch.mat';
@@ -44,8 +44,8 @@ S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','','';
 % design, but characters don't need to match anything.
 S.factlev = {
         {'CP'},{'Change Probability'},{'10%','30%','50%'};
+        {'Side'},{'Side'},{'Aff','Unaff'};
         {'Grp'},{'Group'},{'CRPS','HC'};
-        {'Odd'},{'Oddball effect'},{'Oddball','Standard'};
         {'Subject'},{'Subject'},{}; % can leave Subject levels empty as these will be populated by sub_info file.
     };
 S.subrow = 4; % row of above factlev containing the subject factor

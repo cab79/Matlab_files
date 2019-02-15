@@ -1,8 +1,12 @@
 function [T,traj,param,rt] = CORE_extract_HGF_results(D,S)
 
+if ~isfield(S,'summary_stats')
+    S.summary_stats = {};
+end
+
 % create results table
 T = cell2table(S.designmat(2:end,:),...
-    'VariableNames',S.designmat(1,:))
+    'VariableNames',S.designmat(1,:));
 
 % fields to include/exclude
 fitfields = {'p_prc','p_obs','traj'};

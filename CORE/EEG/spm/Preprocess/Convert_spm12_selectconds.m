@@ -12,7 +12,7 @@ run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 % prefix of output files
 filepath = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2'; 
 outpath = 'C:\Data\CORE\EEG\ana\spm\SPMdata'; 
-outprefix = 'spm12_DCavg_';
+outprefix = 'spm12_';
 
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
@@ -40,20 +40,20 @@ timewin = [-200 900]; % part2
 %     [7 15 23]; % right, stan
 %     [8 16 24]; % right, Stan
 % };
-mark = {
-    [1 2]; % CP10, left, Odd
-    [3 4]; % CP10, left, stan
-    [5 6]; % CP10, right, Odd
-    [7 8]; % CP10, right, stan
-    [9 10]; % CP30, left, Odd
-    [11 12]; % CP30, left, stan
-    [13 14]; % CP30, right, Odd
-    [15 16]; % CP30, right, Stan
-    [17 18]; % CP50, left, Odd
-    [19 20]; % CP50, left, stan
-    [21 22]; % CP50, right, Odd
-    [23 24]; % CP50, right, Stan
-};
+% mark = {
+%     [1 2]; % CP10, left, Odd
+%     [3 4]; % CP10, left, stan
+%     [5 6]; % CP10, right, Odd
+%     [7 8]; % CP10, right, stan
+%     [9 10]; % CP30, left, Odd
+%     [11 12]; % CP30, left, stan
+%     [13 14]; % CP30, right, Odd
+%     [15 16]; % CP30, right, Stan
+%     [17 18]; % CP50, left, Odd
+%     [19 20]; % CP50, left, stan
+%     [21 22]; % CP50, right, Odd
+%     [23 24]; % CP50, right, Stan
+% };
 
 %% LOAD AND CONVERT
 fname=[fpref '*' fmid  '*' fsuff];

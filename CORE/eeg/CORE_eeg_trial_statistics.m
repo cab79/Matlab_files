@@ -16,6 +16,12 @@ if ~isfield(S,'pred_transform')
     S.pred_transform = 'notrans';
 end
 
+% if S.condor.on  
+%     if ~exist(fullfile(S.path.eeg,'input_files'),'dir')
+%         mkdir(fullfile(S.path.eeg,'input_files'))
+%     end
+% end
+
 %% find data
 % get file names
 % get filename using only first input type (filename suffix)
@@ -36,6 +42,9 @@ end
 if S.dsample
     S.total_samples = downsample(S.total_samples',S.dsample)';
     S.select_samples = downsample(S.select_samples',S.dsample)';
+%     if ~any(ismember(S.select_samples,S.total_samples))
+%         error('selected samples not suitable for the sampling rate')
+%     end
 end
 
 %% run though all files in a loop and get data
@@ -89,13 +98,24 @@ for d = 1:length(S.select.subjects)
 
     switch S.fname.ext{:}
         case 'mat'
-            topography = D.topography.dat;
-            timecourse = D.timecourse.dat;
-            eventType = D.eventType.dat;
-            n_chans = D.n_chans.dat;
-            n_samples = D.n_samples.dat;
-            n_trials = D.n_trials.dat;
-            tnums=1:length(eventType); % assumes all trials present
+            if isfield(S.select,'freq')
+                timecourse = squeeze(D.fdata.dat{1, 1}.powspctrm(:,:,S.select.freq,:));
+                n_chans = length(D.fdata.dat{1, 1}.label);
+                n_samples = length(D.fdata.dat{1, 1}.time{1});
+                n_trials = length(D.fdata.dat{1, 1}.time);
+                timecourse = reshape(permute(timecourse,[2 3 1]),n_chans,[]);
+                eventType = D.fdata.dat{1, 1}.conds; tnums = D.fdata.dat{1, 1}.tnums; fnums = D.fdata.dat{1, 1}.fnums; bnums = D.fdata.dat{1, 1}.bnums;
+            else
+                try
+                    topography = D.topography.dat;
+                end
+                timecourse = D.timecourse.dat;
+                eventType = D.eventType.dat;
+                n_chans = D.n_chans.dat;
+                n_samples = D.n_samples.dat;
+                n_trials = D.n_trials.dat;
+                tnums=1:length(eventType); % assumes all trials present
+            end
         case 'set'
             [eventType,tnums, fnums, bnums] = get_markers(temp);
             
@@ -127,6 +147,14 @@ for d = 1:length(S.select.subjects)
     S.pred_group=[];
     S.pred_label={};
     S.pred_traintest={};
+    if any(strcmp(S.pred_type,'null'))
+        predtemp(1:n_trials,1)=1;
+        S.pred = [S.pred predtemp];
+        S.pred_group=[S.pred_group 1];
+        S.pred_label=[S.pred_label 'null'];
+        S.pred_traintest=[S.pred_traintest S.pred_type_traintest(strcmp(S.pred_type,'null'))];
+        clear predtemp predgroup predlabel
+    end
     if any(strcmp(S.pred_type,'cond'))
         % create sets of trials from S.cond_idx
         for con = 1:length(S.cond)
@@ -144,12 +172,15 @@ for d = 1:length(S.select.subjects)
         clear predtemp predgroup predlabel
     end
     if any(strcmp(S.pred_type,'RT'))
-        HGF=load(S.path.hgf); D_fit=HGF.D_fit; % prevents S loading.
+        HGF=load(fullfile(S.path.hgf,S.file.hgf)); D_fit=HGF.D_fit; % prevents S loading.
         ind = find(strcmp({D_fit(:).subname},D.subname));
         D.HGF.dat = D_fit(ind).HGF;
         predtemp = D.HGF.dat.y(:,2);
         
         % remove trials not in EEG and put in EEG trial order
+        if ~any(diff(tnums)>1)
+            error('tnums is probably wrong')
+        end
         predtemp=predtemp(tnums,:);
         
         S.pred = [S.pred predtemp];
@@ -161,7 +192,12 @@ for d = 1:length(S.select.subjects)
     if any(strcmp(S.pred_type,'HGF'))
         % load and format HGF data
         % for each traj group... reformat into predictor matrix
-        HGF=load(S.path.hgf); D_fit=HGF.D_fit; % prevents S loading.
+        HGF=load(fullfile(S.path.hgf,S.file.hgf)); D_fit=HGF.D_fit; % prevents S loading.
+        if ~isfield(D_fit,'dt')
+            dtfile = load(fullfile(S.path.hgf,S.file.get_dt));
+            [D_fit(:).dt]=deal(dtfile.D_fit(:).dt);
+            [D_fit(:).subname]=deal(dtfile.D_fit(:).subname);
+        end
         ind = find(strcmp({D_fit(:).subname},D.subname));
         if isempty(ind)
             disp('USING ONE HGF FOR ALL SUBJECTS')
@@ -216,11 +252,11 @@ for d = 1:length(S.select.subjects)
     end  
      
     % optionally plot the predictors (e.g. to compare two predictors)
-    if 0; 
+    if 0 
+        % normalise
+        normpred = zscore(S.pred);
         figure; 
-        plot(S.pred); 
-%         stats=struct; 
-%         continue 
+        plot(normpred); 
     end
     
     % remove all-NaN predictors
@@ -288,7 +324,7 @@ for d = 1:length(S.select.subjects)
                 flipidx = [flipidx find(ismember(eventType,S.cond_idx{S.flipchan(row)}))];
             end
             
-            data(:,:,flipidx) = flipchan(data(:,:,flipidx),chanlocs);
+            data(:,:,flipidx) = flipchan(data(:,:,flipidx),chanlocs,S);
         end
             
         % select samples
@@ -698,10 +734,30 @@ for d = 1:length(S.select.subjects)
                     % all data
                     if ndims(conData{con})==3
                         alldata = reshape(conData{con},[],size(conData{con},3));
-                        for s = 1:size(alldata,1)
+                        
+                        
+                        checkp = gcp('nocreate')
+                        if S.parallel
+                            if isempty(checkp)
+                                myPool = parpool
+                            end
+                            parforArg = Inf;
+                        else
+                            parforArg = 0;
+                        end
+                        
+                        parfor (s = 1:size(alldata,1),parforArg)
+                        %for s = 1:size(alldata,1)
+                        
+                            disp(['Data sample ' num2str(s) '/' num2str(size(alldata,1))])
                             [C,~,F(s)] = spm_PEB(alldata(s,S.trainidx{con})',P,lognormhyper);
                             CE(s,:)=full(C{2}.E);
                         end
+                        
+%                         for s = 1:size(alldata,1)
+%                             [C,~,F(s)] = spm_PEB(alldata(s,S.trainidx{con})',P,lognormhyper);
+%                             CE(s,:)=full(C{2}.E);
+%                         end
 
                         % reshape
                         stats.PEB.alldata(con).F{d,c}=reshape(F,size(conData{con},1),size(conData{con},2),[]);
@@ -804,11 +860,65 @@ for d = 1:length(S.select.subjects)
                             parforArg = 0;
                         end
                         
-                        parfor (s = 1:size(alldata,1),parforArg)
-                        %for s = 1:size(alldata,1)
-                        
-                            disp(['Data sample ' num2str(s) '/' num2str(size(alldata,1))])
-                            out(s) = bayesreg_crossval(S.pred_train{con}(S.trainidx{con},:),alldata(s,S.trainidx{con})',S,S.pred_group);
+                        if ~S.condor.on
+                            parfor (s = 1:size(alldata,1),parforArg)
+                            %for s = 1:size(alldata,1)
+
+                                disp(['Data sample ' num2str(s) '/' num2str(size(alldata,1))])
+                                out(s) = bayesreg_crossval(S.pred_train{con}(S.trainidx{con},:),alldata(s,S.trainidx{con})',S,S.pred_group);
+
+                                % residuals
+                                yhat = S.pred_train{con}(S.trainidx{con},:)*out(s).muB; % Predicted responses at each data point.
+                                resid = alldata(s,S.trainidx{con})'-yhat; % Residuals.
+                                try
+                                    hnorm(s)=kstest(resid);
+                                    skew(s)=skewness(resid);
+                                    kurt(s)=kurtosis(resid);
+                                    if S.save_residuals
+                                        resids(s,:) = resid;
+                                    end
+                                catch
+                                    hnorm(s)=NaN;
+                                    skew(s)=NaN;
+                                    kurt(s)=NaN;
+                                end
+                                
+                                % std
+                                sd(s) = std(alldata(s,S.trainidx{con}));
+                            end
+                        else
+                            % chunk the data for Condor - ideal run time is
+                            % about 10 mins. runs at about 250 samples per
+                            % minutes, per processor, so 2500 sample is
+                            % ideal.
+                            n_chunks = ceil(size(alldata,1)/S.condor.chunksize);
+                            chunksize = ceil(size(alldata,1)/n_chunks);
+                            
+                            for nc = 1:n_chunks
+                                chunk_index = chunksize*(nc-1)+1 : min(chunksize*nc,size(alldata,1));
+                                
+                                S.data_info.S=size(alldata,1);
+                                S.data_info.D=length(S.select.subjects);
+                                S.data_info.C=length(iter);
+                                S.data_info.CON=length(conData);
+                                S.data_info.n_chunks = n_chunks;
+                                S.data_info.chunk_index=chunk_index;
+                                S.data_info.d=d;
+                                S.data_info.c=c;
+                                S.data_info.con=con;
+                                S.data_info.dim=size(conData{con});
+                                X = S.pred_train{con}(S.trainidx{con},:);
+                                Y = alldata(chunk_index,S.trainidx{con})';
+
+                                % index
+                                condor_index = (d-1)*length(iter)*length(conData)*n_chunks +(c-1)*length(conData)*n_chunks +(con-1)*n_chunks +nc;
+                                index_length = length(S.select.subjects)*length(iter)*length(conData)*n_chunks;
+
+                                % save
+                                disp(['creating input file ' num2str(condor_index) '/' num2str(index_length)])
+                                save(fullfile(S.path.stats,['input' num2str(condor_index-1) '.mat']),'X','Y','S','stats');
+                            end
+                            continue
                         end
 
                         % reshape
@@ -819,7 +929,19 @@ for d = 1:length(S.select.subjects)
                         stats.BRR.alldata(con).r2{d,c} = reshape([out(:).r2],size(conData{con},1),size(conData{con},2),[]);
                         stats.BRR.alldata(con).neglike{d,c} = reshape([out(:).neglike],size(conData{con},1),size(conData{con},2),[]);
                         stats.BRR.alldata(con).r2test{d,c} = reshape([out(:).r2test],size(conData{con},1),size(conData{con},2),[]);
-                        clear out;
+                        stats.BRR.alldata(con).skew{d,c}=reshape(skew,size(conData{con},1),size(conData{con},2),[]);
+                        stats.BRR.alldata(con).kurt{d,c}=reshape(kurt,size(conData{con},1),size(conData{con},2),[]);
+                        stats.BRR.alldata(con).hnorm{d,c}=reshape(hnorm,size(conData{con},1),size(conData{con},2),[]);
+                        stats.BRR.alldata(con).sd{d,c}=reshape(sd,size(conData{con},1),size(conData{con},2),[]);
+                        stats.BRR.alldata(con).pred{d,c}=S.pred_train{con}(S.trainidx{con},:);
+                        if S.save_residuals
+                            timecourse = reshape(resids,size(conData{con},1),size(conData{con},2),[]);
+                            [n_chans,n_samples,n_trials] = size(timecourse);
+                            resid_sname = strrep(filename,['.' S.fname.ext{:}],['_resid_comp' num2str(c) '_con' num2str(con) '_' S.sname '.mat']);
+                            save(fullfile([S.path.stats '\residuals'], resid_sname),'timecourse','eventType','n_chans','n_samples','n_trials')
+                        end
+                        
+                        clear out hnorm skew kurt resids;
                     end
                 end
             end
@@ -1144,10 +1266,35 @@ for d = 1:length(S.select.subjects)
 %             stats.RR.GFP = rmfield(stats.RR.GFP,'s'); % sigma gets very large and will cause memory problems if accumulated
 %         end
 %     end
-    try
-        save(fullfile(S.path.stats,['stats_' S.analysis_type '_' S.data_type '_' S.pred_type{:} '_' S.transform '_' S.sname '.mat']),'stats','S');
-    catch
-        error('cannot save results')
+    if ~S.condor.on
+        try
+            save(fullfile(S.path.stats,['stats_' S.analysis_type '_' S.data_type '_' S.pred_type{:} '_' S.transform '_' S.sname '.mat']),'stats','S');
+        catch
+            error('cannot save results')
+        end
     end
 end
+if S.condor.on
+    create_job_submission_file(S.path.stats,index_length)
+    quit
+end
 
+function create_job_submission_file(pth,nf)
+
+disp('creating job submission file')
+A = {
+    'executable=CORE_condor_EEG_job.exe'
+    'indexed_input_files=input.mat'
+    'indexed_output_files=output.mat'
+    'indexed_stdout=CORE_condor_fit_job.out'
+    'indexed_stderr=CORE_condor_fit_job.err'
+    'indexed_log=CORE_condor_fit_job.log'
+    'max_run_time=60'
+    ['total_jobs=' num2str(nf)]
+};
+
+fid = fopen(fullfile(pth, ['CORE_condor_EEG_job_run.sub']),'w');
+for i = 1:size(A,1)
+    fprintf(fid,'%s\n',A{i});
+end
+fclose(fid);

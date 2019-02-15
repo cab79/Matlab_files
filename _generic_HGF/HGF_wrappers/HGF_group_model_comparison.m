@@ -53,8 +53,13 @@ for pm = 1:length(S.perc_models)
             end
 
             if ~LME_input
-                fname=[S.fname_pref '_percmodel' num2str(S.perc_models(pm)) '_respmodel' num2str(S.resp_models(rm)) S.fname_ext{om}];
-                ls = load(fullfile(fitted_path,fname));
+                try
+                    fname=[S.fname_pref '_percmodel' num2str(S.perc_models(pm)) '_respmodel' num2str(S.resp_models(rm)) S.fname_ext{om}];
+                    ls = load(fullfile(fitted_path,fname));
+                catch
+                    fname=[S.fname_pref '_pm' num2str(S.perc_models(pm)) '_rm' num2str(S.resp_models(rm)) S.fname_ext{om}];
+                    ls = load(fullfile(fitted_path,fname));
+                end
                 D_fit=ls.D_fit;
                 % mean evidence for each fitted model over repetitions
                 for d = 1:length(D_fit)
@@ -97,12 +102,12 @@ for mi = 1:size(LME,1)
 
     if ~LME_input
         % diagnostics: parameter correlations
-        tapas_fit_plotCorr_group(rs(mi,:));
-        title(['model ' num2str(mi) ', simple average'])
+%         tapas_fit_plotCorr_group(rs(mi,:));
+%         title(['model ' num2str(mi) ', simple average'])
         try 
             rc_out=tapas_bayesian_parameter_average_CAB(1,rc(mi,:));
-            tapas_fit_plotCorr(rc_out);
-            title(['model ' num2str(mi) ', bayesian average'])
+%             tapas_fit_plotCorr(rc_out);
+%             title(['model ' num2str(mi) ', bayesian average'])
         end
     else
         rc_out = [];
@@ -112,15 +117,39 @@ varargout={LMEgrp,rc_out};
 
 % plot mean LME; separate by groups
 if (rm>1 || pm>1) && om==1 
+    pLME = reshape(sum(cat(2,LMEgrp{:}),2),rm,pm);
+    clims = [min(pLME(:)), max(pLME(:))];
+    figure
+    ax1=subplot('Position',[0.1 0.2 0.3 0.6])
+    imagesc(pLME,clims)
+    ax1.XAxisLocation = 'top';
+    xlabel('perceptual models')
+    ylabel('response models')
+    title(['Log-model evidence'])
+    ax2=subplot('Position',[0.42 0.2 0.1 0.6])
+    imagesc(mean(pLME,2),clims)
+    set(gca,'XTick',1,'XTickLabel','mean')
+    set(gca,'YTick',[])
+%     ax2.YAxisLocation = 'right';
+    ax2.XAxisLocation = 'top';
+    ax3=subplot('Position',[0.1 0.08 0.3 0.1])
+    imagesc(mean(pLME,1),clims)
+    set(gca,'YTick',1,'YTickLabel','mean')
+    set(gca,'XTick',[])
+    colorbar('Position',[0.54 0.08 0.03 0.72])
+%     set(gca, 'XTick', 1:pm)
+%     set(gca, 'YTick', 1:rm)
+    
+    % plot mean LME; separate by groups
     for g = 1:length(grpuni)
         % mean over subjects
-        pLME = reshape(mean(LMEgrp{1,g},2),rm,pm);
+        pLME = reshape(sum(LMEgrp{1,g},2),rm,pm);
         figure
         imagesc(pLME)
         colorbar
         xlabel('perc models')
         ylabel('resp models')
-        title(['mean LME, group ' num2str(g)])
+        title(['sum LME, group ' num2str(g)])
     end
 end
 
@@ -133,6 +162,7 @@ end
 %     varargout(3:4) = {gposterior,gout};
 % end
 
+options.DisplayWin = 0;
 if S.family_on
     % compare perc model families
     options.families = pm_family;
@@ -160,6 +190,81 @@ else
     end
     varargout=[varargout {out}];
 end
+
+% plot Efs - model frequencies
+ef = pm_out{1}.Ef';
+ef_pm = pm_out{1}.families.Ef';
+ef_rm = rm_out{1}.families.Ef';
+ef = reshape(ef,rm,pm);
+clims = [min(ef(:)), max(ef(:))];
+figure
+ax1=subplot('Position',[0.1 0.2 0.3 0.6])
+imagesc(ef,clims)
+ax1.XAxisLocation = 'top';
+xlabel('perceptual models')
+ylabel('response models')
+title(['Estimated model frequencies'])
+ax2=subplot('Position',[0.42 0.2 0.1 0.6])
+imagesc(ef_rm',clims)
+set(gca,'XTick',1,'XTickLabel','family')
+set(gca,'YTick',[])
+%     ax2.YAxisLocation = 'right';
+ax2.XAxisLocation = 'top';
+ax3=subplot('Position',[0.1 0.08 0.3 0.1])
+imagesc(ef_pm,clims)
+set(gca,'YTick',1,'YTickLabel','family')
+set(gca,'XTick',[])
+colorbar('Position',[0.54 0.08 0.03 0.72])
+
+% plot EPs
+ep = pm_out{1}.ep;
+ep_pm = pm_out{1}.families.ep;
+ep_rm = rm_out{1}.families.ep;
+ep = reshape(ep,rm,pm);
+clims = [0 1];
+figure
+ax1=subplot('Position',[0.1 0.2 0.3 0.6])
+imagesc(ep,clims)
+ax1.XAxisLocation = 'top';
+xlabel('perceptual models')
+ylabel('response models')
+title(['Exceedence probability (EP)'])
+ax2=subplot('Position',[0.42 0.2 0.1 0.6])
+imagesc(ep_rm',clims)
+set(gca,'XTick',1,'XTickLabel','family')
+set(gca,'YTick',[])
+%     ax2.YAxisLocation = 'right';
+ax2.XAxisLocation = 'top';
+ax3=subplot('Position',[0.1 0.08 0.3 0.1])
+imagesc(ep_pm,clims)
+set(gca,'YTick',1,'YTickLabel','family')
+set(gca,'XTick',[])
+colorbar('Position',[0.54 0.08 0.03 0.72])
+
+% plot PEPs
+pep = pm_out{1}.pep;
+pep_pm = pm_out{1}.families.pep;
+pep_rm = rm_out{1}.families.pep;
+pep = reshape(pep,rm,pm);
+clims = [0 1];
+figure
+ax1=subplot('Position',[0.1 0.2 0.3 0.6])
+imagesc(pep,clims)
+ax1.XAxisLocation = 'top';
+xlabel('perceptual models')
+ylabel('response models')
+title(['Protected exceedence probability (PEP)'])
+ax2=subplot('Position',[0.42 0.2 0.1 0.6])
+imagesc(pep_rm',clims)
+set(gca,'XTick',1,'XTickLabel','family')
+set(gca,'YTick',[])
+%     ax2.YAxisLocation = 'right';
+ax2.XAxisLocation = 'top';
+ax3=subplot('Position',[0.1 0.08 0.3 0.1])
+imagesc(pep_pm,clims)
+set(gca,'YTick',1,'YTickLabel','family')
+set(gca,'XTick',[])
+colorbar('Position',[0.54 0.08 0.03 0.72])
 
 % plot num of unique priors
 % figure

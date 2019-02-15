@@ -35,8 +35,8 @@ for f = 1:length(fnames)
         [conds, tnums, fnums, bnums] = get_markers(EEGall);
         if S.use_flipped
             EEGflip = flipchanEGI(EEGall);
-            for i = S.flipcond
-                trialind = find(ismember(conds,S.mark{i}));
+            for i = length(S.flipcond)
+                trialind = find(ismember(conds,S.flipcond(i)));
                 EEGall.data(:,:,trialind)= EEGflip.data(:,:,trialind);
             end
             clear EEGflip

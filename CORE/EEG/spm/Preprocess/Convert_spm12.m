@@ -5,7 +5,7 @@ clear all
 
 % path of EEGLAB .set files after preprocessing, path of SPM outputs, and
 % prefix of output files
-filepath = 'C:\Data\CORE\EEG\ana\prep\cleaned_tm\part4'; 
+filepath = 'C:\Data\CORE\eeg\ana\prep\cleaned\part2'; 
 outpath = 'C:\Data\CORE\EEG\ana\spm\SPMdata'; 
 outprefix = 'spm12_';
 
@@ -14,22 +14,24 @@ outprefix = 'spm12_';
 fpref = '';
 fmid = '';
 %fsuff = '_2_merged_cleaned.set';
-fsuff = '_4_cleaned_tm.set';
+fsuff = '_2_cleaned_tm.set';
 
 % set data type: 'epoched' or 'continuous'
 dattype ='epoched';
 overwrite = 0;
 
 % set time window of interest in ms (advise whole epoch)
-%timewin = [-200 900]; % part2
-timewin = [-200 300]; % part4
+timewin = [-200 900]; % part2
+% timewin = [-200 300]; % part4
 
 %% LOAD AND CONVERT
-files = dir(fullfile(filepath,[fpref '*' fmid  '*' fsuff]));
+fname=[fpref '*' fmid  '*' fsuff];
+fname=strrep(fname,'**','*');
+files = dir(fullfile(filepath,fname));
 cd(outpath)
 
 %for f = sort(1:length(files),'descend')
-for f=34:37%length(files)
+for f=1:length(files)
     S=struct;
     S.dataset = fullfile(filepath,files(f).name);
     [pth nme ext] = fileparts(files(f).name);

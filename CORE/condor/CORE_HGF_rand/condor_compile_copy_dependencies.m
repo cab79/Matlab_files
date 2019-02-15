@@ -17,6 +17,7 @@ fnames = {
 fsname = {
     'C:\Data\Matlab\Matlab_files\_generic_HGF'
     'C:\Data\Matlab\HGF\HGFv5.0'
+    'C:\Data\Matlab\Matlab_files\CORE\behaviour\GBM_configs'
     };
 
 % name of folder to create to copy the files to

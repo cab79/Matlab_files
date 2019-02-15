@@ -2,7 +2,7 @@
 
 dbstop if error
 clear all
-%close all
+close all
 clear S
 
 % FOLDER AND FILENAME DEFINITIONS
@@ -24,6 +24,7 @@ S.path.datfile = ['C:\Data\CORE\participants\Participant_data.xlsx']; % .xlsx fi
 
 % add toolbox paths
 run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
+addpath('C:\Data\Matlab\cbrewer'); % (https://uk.mathworks.com/matlabcentral/fileexchange/34087-cbrewer---colorbrewer-schemes-for-matlab)
 
 % unique save name extension
 sname = datestr(now,30)
@@ -44,8 +45,8 @@ S.save.tables = 0;
 
 % model fitting
 S.prc_config = 'GBM_config'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
-S.perc_model=[12]; % 1 3 9 10 11 12
-S.resp_model = [15];
+S.perc_model=[3]; % 1 3 9 10 11 12
+S.resp_model = [4];
 S=CORE_perceptual_models(S);
 S=CORE_response_models(S);
 S.HGF.plottraj = 1; % turn off if doing multiple simulations!
@@ -53,10 +54,61 @@ S.HGF.plottraj = 1; % turn off if doing multiple simulations!
 % which parameters?
 %S.sim=[]; % specify here? or use generic parameters: S=CORE_sim_parameters(S)
 %S=CORE_sim_parameters(S);
-S.fitted_hgf = 'CORE_fittedparameters_percmodel128_respmodel15_fractrain0_20181228T193827.mat'; 
+S.fitted_hgf = 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it7.mat'; 
 %S.fitted_hgf = 'CORE_fittedparameters_percmodel12_bayesopt_20181019T083824.mat';
-S=CORE_get_median_params_from_fitted(S,[1:22]); %group 1
-D_sim=HGF_run(D_prep,S,1);
-S=CORE_get_median_params_from_fitted(S,[23:44]); %group 2
-D_sim=HGF_run(D_prep,S,1);
+condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3','PL_psi_1','PL_psi_2','PL_psi_3','PL_sa_1','PL_sa_2','PL_sa_3','PL_sahat_1','PL_sahat_2','PL_sahat_3','PL_mu_1','PL_mu_2','PL_mu_3','PL_muhat_1','PL_muhat_2','PL_muhat_3'};
+conds = [1:24];
+D_in.dt = D_prep.dt; 
+
+S_in1=CORE_get_median_params_from_fitted(S,[1:22]); %group 1
+D_sim(1)=HGF_run(D_prep,S_in1,1);
+S_in1.condmean = condmean; S_in1.cond.condmean = conds;
+D_in.HGF.fit = D_sim(1).HGF.sim;
+[out.T(1,:),~,~,~] = CORE_extract_HGF_results(D_in,S_in1);
+
+S_in2=CORE_get_median_params_from_fitted(S,[23:44]); %group 2
+D_sim(2)=HGF_run(D_prep,S_in2,1);
+S_in2.condmean = condmean; S_in2.cond.condmean = conds;
+D_in.HGF.fit = D_sim(2).HGF.sim;
+[out.T(2,:),~,~,~] = CORE_extract_HGF_results(D_in,S_in2);
 %save(fullfile(S.path.hgf,'sim',['CORE_sim_percmodel' num2str(S.perc_model) '_' S.sname '.mat']), 'D_sim', 'S');
+
+% replace parameters and simulate
+S_sim = S_in2;
+S_sim.sim.PL_om(2) = S_in1.sim.PL_om(2);
+D_sim(3)=HGF_run(D_prep,S_sim,1);
+S_sim.condmean = condmean; S_sim.cond.condmean = conds;
+D_in.HGF.fit = D_sim(3).HGF.sim;
+[out.T(3,:),~,~,~] = CORE_extract_HGF_results(D_in,S_sim);
+
+S_sim = S_in2;
+S_sim.sim.PL_om(3) = S_in1.sim.PL_om(3);
+D_sim(4)=HGF_run(D_prep,S_sim,1);
+S_sim.condmean = condmean; S_sim.cond.condmean = conds;
+D_in.HGF.fit = D_sim(4).HGF.sim;
+[out.T(4,:),~,~,~] = CORE_extract_HGF_results(D_in,S_sim);
+
+S_sim = S_in2;
+S_sim.sim.PL_om(2:3) = S_in1.sim.PL_om(2:3);
+D_sim(5)=HGF_run(D_prep,S_sim,1);
+S_sim.condmean = condmean; S_sim.cond.condmean = conds;
+D_in.HGF.fit = D_sim(5).HGF.sim;
+[out.T(5,:),~,~,~] = CORE_extract_HGF_results(D_in,S_sim);
+
+% plot
+y = [out.T.PL_epsi_1_condmean';
+    out.T.PL_epsi_2_condmean';
+    out.T.PL_epsi_3_condmean'];
+x = categorical({'epsi 1','epsi 2','epsi 3'});
+
+figure
+cb = cbrewer('qual', 'Set3', 10, 'pchip');
+col = [4 5 6 7 10];
+colormap(cb)
+b=bar(x,y,'EdgeColor',[1 1 1]);
+for k = 1:size(y,2)
+    set(b(k),'FaceColor',cb(col(k),:))
+end
+legend({'CRPS','HC','HC w/ CRPS Om2','HC w/ CRPS Om3','HC w/ CRPS Om2 & Om3'})
+box off
+set(gca,'FontSize',18)

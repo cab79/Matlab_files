@@ -31,7 +31,7 @@ for stf = 1:length(Stfields)
     
     pvec(:,stf)=[St(:).(Stfields{stf})]';
 end
-if any(strcmp(S.lda,'para'))
+if isfield(S,'lda') && any(strcmp(S.lda,'para'))
     % remove nans
     pvec = reshape(pvec(~isnan(pvec)),size(pvec,1),{});
     % remove constants
@@ -82,7 +82,7 @@ else
 end
 %for cm = 1:length(Vfields_all)
 
-if any(strcmp(S.lda,'traj_conds'))
+if isfield(S,'lda') && any(strcmp(S.lda,'traj_conds'))
     fn = fieldnames(S.cond);
     Vfields=Vfields_all;
     for vf = 1:length(Vfields)
@@ -95,7 +95,7 @@ if any(strcmp(S.lda,'traj_conds'))
     end
 end
 
-if any(strcmp(S.lda,'traj_trials'))
+if isfield(S,'lda') && any(strcmp(S.lda,'traj_trials'))
     try
         Vfields=Vfields_all;
         V=Vec{1};

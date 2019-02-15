@@ -43,7 +43,14 @@ end
 plotchans=1:length(D.chanlocs);
 plotchans(P.no_plot_ele)=[];
 dat=struct;
-for cn = 1:length(cond) 
+
+if P.sub_order == 1
+    plotorder = 1:length(cond);
+else
+    plotorder = length(cond):-1:1;
+end
+
+for cn = plotorder 
     peakdata=y(condind==cn);
     peakdata = mean(cat(3,peakdata{:}),3);
     %[~,markchans] = intersect(plotchans,tp);
@@ -95,7 +102,7 @@ function plottopotype(dat,chanlocs,plotchans,topotype,minmax)
 
 switch topotype
     case 'eeglab'
-        topoplot(dat, chanlocs,'maplimits',minmax,'electrodes','off','style','map','plotchans',plotchans);%,'emarker2',{markchans,'o','w',7,1}); 
+        topoplot(dat, chanlocs,'maplimits',minmax,'plotchans',plotchans,'electrodes','off','style','map','intrad',0.55,'colormap',colormap('parula'));%,'emarker2',{markchans,'o','w',7,1}); 
     case 'pcolor' % UNFINISHED
         topo = nanmean(R(f2).Vdv(:,:,tw),3);
         figure

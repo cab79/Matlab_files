@@ -1,17 +1,18 @@
 clear all
 close all
+dbstop if error
 restoredefaultpath
 run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 addpath('C:\Data\Matlab\export_fig')
 addpath('C:\Data\CORE\eeg')
 addpath(genpath('C:\Data\Matlab\gramm-master'))
 %% figure options
-fontsize = 10; % SENSITIVE TO SCREEN RESOLUTION, e.g. when using Teamviewer
+fontsize = 12; % SENSITIVE TO SCREEN RESOLUTION, e.g. when using Teamviewer
 save_figs=1;
 %savefigspath = 'C:\Data\CORE\EEG\ana\spm\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm\Grp_clusters';
 
 %% prepare SPM EEG data
-S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Grp_Odd_Subject_Age_2_merged_cleaned_spm';
+S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_spm';
 %cluster directory name, which also specifies the constrast that will be
 %plotted (i.e. the characters before the underscore)
 S.clusdir='Odd_clusters';
@@ -20,7 +21,8 @@ S.clusdir='Odd_clusters';
 S.facplot={'Odd'};
 %S.facplot={'Exp'};
 % clusters to plot
-S.plotclus = {'c1_spm','c2_spm','c3_spm','c4_spm','c5_spm','c6_spm'};
+%S.plotclus = {'c1_spm','c2_spm','c3_spm','c4_spm','c5_spm','c6_spm'};
+S.plotclus = {'c7_spm','c6_spm','c4_spm','c1_spm','c2_spm','c5_spm','c3_spm'}; % latency order
 S.plotclus_sep = 1; % separate plots for each cluster
 S.wavetype = 'sensor'; % source or sensor?
 S.wfname = 'cluster_data.mat'; %generic cluster waveform file name
@@ -58,29 +60,29 @@ D = gplotprepare_spmeegsensorcluster(S)
 savefigspath = fullfile(S.spm_path,S.clusdir);
 St.eeglab_path = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2';
 St.eventtypes = [1:12]; % condition labels in SPM files
-St.mark = { % translate SPM condition labels (rows) to EEGLAB marker labels. From SPM convert script.
-    [1 2]; % CP10, left, Odd
-    [3 4]; % CP10, left, stan
-    [5 6]; % CP10, right, Odd
-    [7 8]; % CP10, right, stan
-    [9 10]; % CP30, left, Odd
-    [11 12]; % CP30, left, stan
-    [13 14]; % CP30, right, Odd
-    [15 16]; % CP30, right, Stan
-    [17 18]; % CP50, left, Odd
-    [19 20]; % CP50, left, stan
-    [21 22]; % CP50, right, Odd
-    [23 24]; % CP50, right, Stan
+St.mark = {
+    [1 5]; % CP10, Odd, DC1
+    [2 6]; % CP10, Odd, DC3
+    [3 7]; % CP10, Stan, DC1
+    [4 8]; % CP10, Stan, DC3
+    [9 13]; % CP30, Odd, DC1
+    [10 14]; % CP30, Odd, DC3
+    [11 15]; % CP30, Stan, DC1
+    [12 16]; % CP30, Stan, DC3
+    [17 21]; % CP50, Odd, DC1
+    [18 22]; % CP50, Odd, DC3
+    [19 23]; % CP50, Stan, DC1
+    [20 24]; % CP50, Stan, DC3
 };
-St.st_string='mspm12_';
+St.st_string='mspm12_flip_Sideavg_';
 St.en_string='\scond';
-St.ERPsavename = 'ERP_DAT.mat';
+St.ERPsavename = 'ERP_DAT_Sideavg.mat';
 St.plot_diff_wave = 1;
 St.use_flipped=1;
-St.flipcond = [3 4 7 8 11 12]; % SPM labels, not EEGLAB
+St.flipcond = [5:8 13:16 21:24]; % EEGLAB markers
 St.overwriteEEG =0;
 if ~exist(fullfile(St.eeglab_path,St.ERPsavename),'file') || St.overwriteEEG
-    E=gplotprepare_eeglabdata_from_spm(St,D(1))
+    E=gplotprepare_eeglabdata_from_spm(St,D(1));
 else
     load(fullfile(St.eeglab_path,St.ERPsavename));
     for fn = fieldnames(D)'
@@ -92,7 +94,7 @@ end
 %% set up ERP gplot
 clear P
 % Subplots 1 to 4: SPM EEG clusters 1 to 4
-for p = 1:length(D);
+for p = 1:length(D)
     P(p).xy = [p,1];
     P(p).x = D(p).x;
     P(p).y = D(p).y;
@@ -102,8 +104,9 @@ for p = 1:length(D);
     P(p).poly = D(p).E_val;% polygon times
     P(p).ptitle = [];%D(p).ptitle;
     P(p).fact_names = D(p).fact_names;
-    %P(p).colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red %CURRENTLY DOES NOT SUPPORT PLOTTING MORE THAN TWO FACTORS
-    P(p).colours = [0.5 0 0.5; 1 0.5 0]; % purple, orange %CURRENTLY DOES NOT SUPPORT PLOTTING MORE THAN TWO FACTORS
+    %P(p).colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red 
+    P(p).colours = [0.5 0 0.5; 1 0.5 0]; % purple, orange, green 
+    P(p).color_order = -1; % order of plotting: -1 or 1
     P(p).xlinedashed = [0];% vertical dashed lines to indicate events, time in ms
     P(p).timezero = 0;% change zero latency to this time
     P(p).xaxisname = {'post-cue time (ms)'};
@@ -142,20 +145,21 @@ figname = 'EEG_plot';
 if save_figs; export_fig(fullfile(savefigspath,[figname '.png']), '-r1200'); end
 
 %% plot topographies
-clear P
-P.topotype='eeglab';
-P.no_plot_ele=[];
-P.topo_subtimewin=2000;%[-2265 -2265]; % time window length. single value: plots multiple topos in consecutive windows with this length. 2 values: specifies a window. 0 = whole cluster mean.
-P.fontsize=fontsize;
-P.cval = 0;
+Pt.topotype='eeglab';
+Pt.no_plot_ele=[];
+Pt.topo_subtimewin=2000;%[-2265 -2265]; % time window length. single value: plots multiple topos in consecutive windows with this length. 2 values: specifies a window. 0 = whole cluster mean.
+Pt.fontsize=fontsize;
+Pt.cval = 0;
+Pt.sub_order = P(p).color_order;
 for d = 1:length(D)
     E.E_val = D(d).E_val
-    plot_topo(P,E)
+    plot_topo(Pt,E)
     set(gcf,'color','w');
     set(gca,'fontsize', fontsize);
     set(gcf, 'Units', 'normalized', 'Position', [0.5,0.5,0.15,0.25]);
     figname = [S.plotclus{d} '_topo_plot_' num2str(E.E_val(1)) '-' num2str(E.E_val(end))];
     if save_figs; export_fig(fullfile(savefigspath,[figname '.png']), '-r1200'); end
 end
+
 
 

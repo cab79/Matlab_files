@@ -15,248 +15,7 @@ addpath('C:\Data\Matlab\cbrewer'); % (https://uk.mathworks.com/matlabcentral/fil
 S.path.hgf = 'C:\Data\CORE\behaviour\hgf'; 
 
 fnames = {
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20180821T134505.mat'; % FITTED %alpha prior = 0.5, cp50 effects
-% %'CORE_fittedparameters_percmodel12_respmodel20_fractrain0_20181021T093241.mat';
-% %'CORE_fittedparameters_percmodel12_bayesopt_20181019T083824.mat'; % BAYESOPT
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181023T212308.mat'; %alpha prior = 1
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181023T202826.mat'; %alpha prior = 0.2, cp50 effects
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181024T222027.mat'; %fitted with bayesopt priors
-% 
-% % comparison of prior variances: bayesopt omegas
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181026T171952.mat'; %fitted with bayesopt priors, var025 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181026T171959.mat'; %fitted with bayesopt priors, var05
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181026T171938.mat'; %fitted with bayesopt priors, var1, cp50 effects
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181026T172007.mat'; %fitted with bayesopt priors, var2, cp50 effects
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181026T172024.mat'; %fitted with bayesopt priors, var4
-% 
-% % prior on expected uncertainty = -2
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181028T082701.mat'; %fitted with bayesopt priors, var05
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181028T082725.mat'; %fitted with bayesopt priors, var1
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181028T082749.mat'; %fitted with bayesopt priors, var2
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181028T082828.mat'; %fitted with bayesopt priors, var4
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181028T082859.mat'; %fitted with bayesopt priors, var8
-% 
-% % alpha prior = 0.01
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181101T211928.mat'; %fitted with bayesopt priors, var05
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181101T211935.mat'; %fitted with bayesopt priors, var1
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181101T211950.mat'; %fitted with bayesopt priors, var2
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181101T211959.mat'; %fitted with bayesopt priors, var4
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181101T212006.mat'; %fitted with bayesopt priors, var8 Significant Dau MVA
-% % alpha prior = 1
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181102T192113.mat'; %fitted with bayesopt priors, var05 Dau MVA 0.34 cond
-%  'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181102T192126.mat'; %fitted with bayesopt priors, var1 Significant Dau MVA **
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181102T192137.mat'; %fitted with bayesopt priors, var2 Dau MVA 0.31 cond
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181102T192151.mat'; %fitted with bayesopt priors, var4 Dau MVA 0.34 cond
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181102T192201.mat'; %fitted with bayesopt priors, var8
-% % alpha prior = 0.5
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181104T172839.mat'; %fitted with bayesopt priors, var05
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181104T172830.mat'; %fitted with bayesopt priors, var1
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181104T172850.mat'; %fitted with bayesopt priors, var2 Significant Dau MVA
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181104T172900.mat'; %fitted with bayesopt priors, var4
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181104T172909.mat'; %fitted with bayesopt priors, var8
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181106T212138.mat'; %fitted with bayesopt priors, var10 Dau MVA 0.27 cond, oddball cond
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181106T211643.mat'; %fitted with bayesopt priors, var100
-% 
-% % ommu2 = -2
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181107T214827.mat'; % ommu3=-3 Significant Dau MVA, oddball cond
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181107T214552.mat'; % ommu3=-4
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181107T214842.mat'; % ommu3=-5
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181107T214441.mat'; % ommu3=-6
-% % ommu2 = -6
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181110T095244.mat'; % ommu3=-3
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181109T200448.mat'; % ommu3=-4
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181109T200514.mat'; % ommu3=-5
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181109T200546.mat'; % ommu3=-6
-% 
-% % alphas with minimum omega priors
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181114T173639.mat'; % alpha 0.1
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181114T173746.mat'; % alpha 0.2
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181114T173907.mat'; % alpha 0.4 % subtracted cond effects
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181114T173922.mat'; % alpha 0.8
-% 
-% %alphas with minimum omega -5
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181116T115736.mat'; % alpha 0.1 Dau MVA 0.34 cond
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181116T115701.mat'; % alpha 0.2
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181116T115619.mat'; % alpha 0.4
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181116T115537.mat'; % alpha 0.8
-% 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181119T111012.mat' % 'GBM_config_alpha01_var4'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181119T111020.mat' % 'GBM_config_alpha02_var4'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181119T111029.mat' % 'GBM_config_alpha04_var4'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181119T111044.mat' % 'GBM_config_alpha08_var4'
-% 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181117T214940.mat' % 'GBM_config_alpha01_var2'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181117T214948.mat' % 'GBM_config_alpha02_var2' , cp50 effects
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181117T214959.mat' % 'GBM_config_alpha04_var2' , cp50 effects
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181117T215010.mat' % 'GBM_config_alpha08_var2'
-% 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181119T211705.mat' % 'GBM_config_alpha01_var1'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181119T211717.mat' % 'GBM_config_alpha02_var1' , cp50 effects
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181119T211727.mat' % 'GBM_config_alpha04_var1'
-%  'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181119T211738.mat' % 'GBM_config_alpha08_var1' % subtracted cond effects
-% 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181121T004327.mat' % 'GBM_config_alpha01_var05'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181120T235241.mat' % 'GBM_config_alpha02_var05'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181121T024806.mat' % 'GBM_config_alpha04_var05' Significant Dau MVA
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181121T090841.mat' % 'GBM_config_alpha08_var05'
-% 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181121T151444.mat' % 'GBM_config_alpha01_var4_bo'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181121T232554.mat' % 'GBM_config_alpha02_var4_bo'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181121T223551.mat' % 'GBM_config_alpha04_var4_bo'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181121T124130.mat' % 'GBM_config_alpha08_var4_bo'
-% 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181122T211624.mat' % 'GBM_config_alpha01_var2_bo'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181122T211634.mat' % 'GBM_config_alpha02_var2_bo' oddball cond
-%  'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181122T211720.mat' % 'GBM_config_alpha04_var2_bo'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181122T213340.mat' % 'GBM_config_alpha08_var2_bo'
-% 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181123T111508.mat' % 'GBM_config_alpha01_var1_bo'
-%  'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181123T111519.mat' % 'GBM_config_alpha02_var1_bo' Dau MVA 0.27 cond
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181123T111527.mat' % 'GBM_config_alpha04_var1_bo'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181123T111534.mat' % 'GBM_config_alpha08_var1_bo' Significant Dau MVA ** Also 0.34 cond
-% 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181124T142822.mat' % 'GBM_config_alpha01_var05_bo'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181124T142836.mat' % 'GBM_config_alpha02_var05_bo'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181124T142849.mat' % 'GBM_config_alpha04_var05_bo'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181124T142907.mat' % 'GBM_config_alpha08_var05_bo' oddball cond, cp50 effects
-% 
-% % one alpha
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181126T085335.mat' % 'GBM_config_alpha01_var4'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181126T085344.mat' % 'GBM_config_alpha02_var4'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181126T085414.mat' % 'GBM_config_alpha04_var4'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181126T084833.mat' % 'GBM_config_alpha01_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181126T084924.mat' % 'GBM_config_alpha02_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181126T084948.mat' % 'GBM_config_alpha04_var4_bo'
-% % 
-% % one alpha BO
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181127T094048.mat'; % 'GBM_config_alphaBO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181127T094128.mat'; % 'GBM_config_alpha2BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181127T094159.mat'; % 'GBM_config_alpha4BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181127T094246.mat'; % 'GBM_config_alpha8BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091331.mat'; % 'GBM_config_alphaBO_var2_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091401.mat'; % 'GBM_config_alpha2BO_var2_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091427.mat'; % 'GBM_config_alpha4BO_var2_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091450.mat'; % 'GBM_config_alpha8BO_var2_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091518.mat'; % 'GBM_config_alphaBO_var1_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091544.mat'; % 'GBM_config_alpha2BO_var1_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091611.mat'; % 'GBM_config_alpha4BO_var1_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091646.mat'; % 'GBM_config_alpha8BO_var1_bo'
-% 
-% % S.path.hgf = 'C:\Data\CORE\behaviour\hgf\sim';
-% % fname = 'CORE_sim_percmodel12_20181019T101036.mat'; % Al*2, om2+2, om3-2
-% % fname = 'CORE_sim_percmodel12_20181019T102209.mat'; % Al*2
-% % fname = 'CORE_sim_percmodel12_20181019T102418.mat'; % om2+2
-% % fname = 'CORE_sim_percmodel12_20181019T102607.mat'; % om3-2
-% % fname = 'CORE_sim_percmodel12_20181019T102839.mat'; % om2+2, om3-2
-% % fname = 'CORE_sim_percmodel12_20181019T103111.mat'; % Al*2, om2+2
-% % fname = 'CORE_sim_percmodel12_20181019T103323.mat'; % Al*2, om3-2
-% % 
-% % one alpha BO
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T112500.mat'; % 'GBM_config_alpha1.5BO_var1.5_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181128T091401.mat'; % 'GBM_config_alpha2BO_var2_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T112310.mat'; % 'GBM_config_alpha3BO_var3_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181127T094159.mat'; % 'GBM_config_alpha4BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T112129.mat'; % 'GBM_config_alpha5BO_var5_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T111915.mat'; % 'GBM_config_alpha6BO_var6_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T111853.mat'; % 'GBM_config_alpha7BO_var7_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181207T110417.mat'; % 'GBM_config_alpha8BO_var8_bo'
-% % 
-% % %logvar
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T070954.mat'; %'GBM_config_alpha05BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071046.mat'; %'GBM_config_alpha1BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071111.mat' %'GBM_config_alpha1.1BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071147.mat'; %'GBM_config_alpha1.5BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071217.mat'; %'GBM_config_alpha2BO_var4_bo' % signifcant Dau using LDA
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181214T071303.mat'; %'GBM_config_alpha4BO_var4_bo'
-% % 
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093231.mat'; %'GBM_config_alpha1BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093251.mat'; %'GBM_config_alpha1.5BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093310.mat'; %'GBM_config_alpha2BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093329.mat'; %'GBM_config_alpha4BO_var4_bo'
-% % 'CORE_fittedparameters_percmodel3_respmodel2_fractrain0_20181216T093342.mat'; %'GBM_config_alpha8BO_var4_bo'
-% % 
-% % %resp model 21, one alpha
-% % 'CORE_fittedparameters_percmodel3_respmodel21_fractrain0_20181216T093231.mat' %'GBM_config_alpha1BO_var4_bo'
-% 
-% %4 alpha, 3 resp models
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181219T170032.mat'; %'GBM_config_alpha1BO_var4_bo4'
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181219T212858.mat'; %'GBM_config_alpha2BO_var4_bo4'
-% 'CORE_fittedparameters_percmodel12_respmodel21_fractrain0_20181219T170032.mat'; %'GBM_config_alpha1BO_var4_bo4'
-% 'CORE_fittedparameters_percmodel12_respmodel21_fractrain0_20181219T212858.mat'; %'GBM_config_alpha2BO_var4_bo4'
-% 'CORE_fittedparameters_percmodel12_respmodel12_fractrain0_20181219T170032.mat'; %'GBM_config_alpha1BO_var4_bo4'
-% 'CORE_fittedparameters_percmodel12_respmodel12_fractrain0_20181219T212858.mat'; %'GBM_config_alpha2BO_var4_bo4'
-% 
-% %4 increasing mean on all params, alpha var 1
-% 'CORE_fittedparameters_percmodel1205_respmodel2_fractrain0_20181223T102343.mat'; %'GBM_config_05BO_al4'
-% 'CORE_fittedparameters_percmodel121_respmodel2_fractrain0_20181223T102343.mat'; %'GBM_config_1BO_al4'
-% 'CORE_fittedparameters_percmodel122_respmodel2_fractrain0_20181223T102343.mat'; %'GBM_config_2BO_al4'
-% 'CORE_fittedparameters_percmodel124_respmodel2_fractrain0_20181223T102343.mat'; %'GBM_config_4BO_al4'
-% 'CORE_fittedparameters_percmodel128_respmodel2_fractrain0_20181223T102343.mat'; %'GBM_config_8BO_al4'
-% 'CORE_fittedparameters_percmodel1216_respmodel2_fractrain0_20181223T102343.mat'; %'GBM_config_16BO_al4'
-% 'CORE_fittedparameters_percmodel1232_respmodel2_fractrain0_20181223T102343.mat'; %'GBM_config_32BO_al4' 
-% 
-% %4 increasing mean on all params, alpha var 2
-% 'CORE_fittedparameters_percmodel1205_respmodel2_fractrain0_20181224T231959.mat'; %'GBM_config_05BO_al4'
-% 'CORE_fittedparameters_percmodel121_respmodel2_fractrain0_20181224T231959.mat'; %'GBM_config_1BO_al4'
-% 'CORE_fittedparameters_percmodel122_respmodel2_fractrain0_20181224T231959.mat'; %'GBM_config_2BO_al4'
-% 'CORE_fittedparameters_percmodel124_respmodel2_fractrain0_20181224T231959.mat'; %'GBM_config_4BO_al4'
-% 'CORE_fittedparameters_percmodel128_respmodel2_fractrain0_20181224T231959.mat'; %'GBM_config_8BO_al4'
-% 'CORE_fittedparameters_percmodel1216_respmodel2_fractrain0_20181224T231959.mat'; %'GBM_config_16BO_al4'
-% 'CORE_fittedparameters_percmodel1232_respmodel2_fractrain0_20181224T231959.mat'; %'GBM_config_32BO_al4' 
 
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181226T153015.mat' % 'GBM_config_1BO_al4_alvar1' max 1, fill 2
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181226T153145.mat' % 'GBM_config_1BO_al4_alvar2' max 1, fill 2
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181226T152946.mat' % 'GBM_config_1BO_al4_alvar1' max 0.2, fill 0
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181226T153159.mat' % 'GBM_config_1BO_al4_alvar2' max 0.2, fill 0
-% 'CORE_fittedparameters_percmodel12_respmodel2_fractrain0_20181226T153335.mat' % 'GBM_config_1BO_al4_alvar4' max 1, fill 0
-
-% is model 15 or 16 best?
-% 'CORE_fittedparameters_percmodel121_respmodel15_fractrain0_20181227T172306.mat' %'GBM_config_1BO_al4_alvar1'
-% 'CORE_fittedparameters_percmodel121_respmodel16_fractrain0_20181227T172306.mat' %'GBM_config_1BO_al4_alvar1'
-
-% % alpha om2/3 increasing
-% 'CORE_fittedparameters_percmodel121_respmodel15_fractrain0_20181228T104344.mat'; %'GBM_config_1BO_al4'
-% 'CORE_fittedparameters_percmodel122_respmodel15_fractrain0_20181228T104344.mat'; %'GBM_config_2BO_al4'
-% 'CORE_fittedparameters_percmodel124_respmodel15_fractrain0_20181228T104344.mat'; %'GBM_config_4BO_al4'
-% 'CORE_fittedparameters_percmodel128_respmodel15_fractrain0_20181228T104344.mat'; %'GBM_config_8BO_al4'
-% 'CORE_fittedparameters_percmodel1216_respmodel15_fractrain0_20181228T104344.mat'; %'GBM_config_16BO_al4' 
-% 'CORE_fittedparameters_percmodel1232_respmodel15_fractrain0_20181228T104344.mat'; %'GBM_config_32BO_al4'
-% 'CORE_fittedparameters_percmodel1264_respmodel15_fractrain0_20181228T104344.mat'; %'GBM_config_64BO_al4'
-% 
-% % alpha increasing
-% 'CORE_fittedparameters_percmodel121_respmodel15_fractrain0_20181228T193827.mat'; %'GBM_config_1BO_al4'
-% 'CORE_fittedparameters_percmodel122_respmodel15_fractrain0_20181228T193827.mat'; %'GBM_config_2BO_al4'
-% 'CORE_fittedparameters_percmodel124_respmodel15_fractrain0_20181228T193827.mat'; %'GBM_config_4BO_al4'
-% 'CORE_fittedparameters_percmodel128_respmodel15_fractrain0_20181228T193827.mat'; %'GBM_config_8BO_al4'
-% 'CORE_fittedparameters_percmodel1216_respmodel15_fractrain0_20181228T193827.mat'; %'GBM_config_16BO_al4' 
-% 'CORE_fittedparameters_percmodel1232_respmodel15_fractrain0_20181228T193827.mat'; %'GBM_config_32BO_al4' 
-% 'CORE_fittedparameters_percmodel1264_respmodel15_fractrain0_20181228T193827.mat'; %'GBM_config_64BO_al4' 
-
-% % % alpha variance increasing
-% 'CORE_fittedparameters_percmodel121_respmodel15_fractrain0_20181231T111657.mat'; %'GBM_config_BO_al4_alvar1'
-% 'CORE_fittedparameters_percmodel122_respmodel15_fractrain0_20181231T111657.mat'; %'GBM_config_BO_al4_alvar2'
-% 'CORE_fittedparameters_percmodel124_respmodel15_fractrain0_20181231T111657.mat'; %'GBM_config_BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel128_respmodel15_fractrain0_20181231T111657.mat'; %'GBM_config_BO_al4_alvar8'
-% 'CORE_fittedparameters_percmodel1216_respmodel15_fractrain0_20181231T111657.mat'; %'GBM_config_BO_al4_alvar16'  
-% 
-% % % alpha variance increasing
-% 'CORE_fittedparameters_percmodel121_respmodel15_fractrain0_20181231T120153.mat'; %'GBM_config_2BO_al4_alvar1'
-% 'CORE_fittedparameters_percmodel122_respmodel15_fractrain0_20181231T120153.mat'; %'GBM_config_2BO_al4_alvar2'
-% 'CORE_fittedparameters_percmodel124_respmodel15_fractrain0_20181231T120153.mat'; %'GBM_config_2BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel128_respmodel15_fractrain0_20181231T120153.mat'; %'GBM_config_2BO_al4_alvar8'
-% 'CORE_fittedparameters_percmodel1216_respmodel15_fractrain0_20181231T120153.mat'; %'GBM_config_2BO_al4_alvar16'  
-
-% % alpha mean increasing, alvar4
-% 'CORE_fittedparameters_percmodel1205_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_05BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel1210_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_10BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel1215_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_15BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel1220_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_20BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel1225_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_25BO_al4_alvar4' 
-% 'CORE_fittedparameters_percmodel1230_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_30BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel1235_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_35BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel1240_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_40BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel1245_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_45BO_al4_alvar4'
-% 'CORE_fittedparameters_percmodel1250_respmodel15_fractrain0_20190101T162309.mat'; %'GBM_config_50BO_al4_alvar4' 
 
 % empirical priors
 %'CORE_fittedparameters_percmodel12_respmodel15_fractrain1_20190106T120536_it5.mat'; %'GBM_config_BO_al4_alvar1'
@@ -278,8 +37,19 @@ fnames = {
 % 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it11.mat'
 % 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it12.mat'
 % 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it13.mat'
-'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it14.mat'
+% 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it14.mat'
+% 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it15.mat'
+% 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it16.mat'
+% 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it17.mat'
+% 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it18.mat'
+
+% 'CORE_fittedparameters_percmodel2_respmodel4_fractrain0_20190211T074650.mat'
+% 'D_fit_r1_it7_pm3_rm4.mat'
+'D_fit_r1_it7_pm2_rm5.mat'
+
 };
+
+get_dt = 'CORE_fittedparameters_percmodel2_respmodel4_fractrain0_20190211T074650.mat';
 
 ranksum_all_p = struct;
 ranksum_all_z = struct;
@@ -288,6 +58,14 @@ mva_all = struct;
 for f=1:length(fnames)
 
     load(fullfile(S.path.hgf,'fitted',fnames{f}));
+    if exist('GS','var')
+        if ~isfield(D_fit,'dt')
+            dtfile = load(fullfile(S.path.hgf,'fitted',get_dt));
+            [D_fit(:).dt]=deal(dtfile.D_fit(:).dt);
+            [D_fit(:).subname]=deal(dtfile.D_fit(:).subname);
+        end
+        S=GS(1);
+    end
     
     % which trial-wise stats to output for traj? Averages over trials
     % without weighting by condition
@@ -296,15 +74,15 @@ for f=1:length(fnames)
     % which traj to outputs to mean over conditions? First averages for
     % each condition, before creating further averages between conditions
     %S.condmean = {'PL_muhat_1','PL_dau','PL_sahat_1','PL_muhat_2','PL_sahat_2','PL_muhat_3','PL_sahat_3'};
-    %S.condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3','PL_psi_1','PL_psi_2','PL_psi_3','PL_sa_1','PL_sa_2','PL_sa_3','PL_sahat_1','PL_sahat_2','PL_sahat_3','PL_mu_1','PL_mu_2','PL_mu_3','PL_muhat_1','PL_muhat_2','PL_muhat_3'};
-    S.condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3'};
+    S.condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3','PL_psi_1','PL_psi_2','PL_psi_3','PL_sa_1','PL_sa_2','PL_sa_3','PL_sahat_1','PL_sahat_2','PL_sahat_3','PL_mu_1','PL_mu_2','PL_mu_3','PL_muhat_1','PL_muhat_2','PL_muhat_3'};
+    %S.condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3'};
     %S.condmean = {'PL_dau','PL_da_1','PL_da_2'};
     
 %% for trajectory plots (means and variances on separate rows of S.condmean) 
 %     S.condmean = {'PL_dau','PL_da_1','PL_da_2'; % for plotting traj: means
-%             'PL_psi_1','PL_psi_2','PL_psi_3'}; % for plotting traj: precisions
+%             'PL_psi_1','PL_psi_2','PL_psi_3'}; var_pi = 'pi'; % precision (pi) or variance (var)?
 %     S.condmean = {'PL_mu_1','PL_mu_2','PL_mu_3';
-%         'PL_sa_1','PL_sa_2','PL_sa_3'};
+%         'PL_sa_1','PL_sa_2','PL_sa_3'}; var_pi = 'var'; % precision (pi) or variance (var)?
 
 %%
     %S.condmean = {};
@@ -324,7 +102,7 @@ for f=1:length(fnames)
 %     S.cond.CP50_Sideunaff_DC3 = [22 24]; %0.5 prob, 3 digit change, right hand
 
 %% marginal means of interest
-%      S.cond.condmean = [1:24]; %0.5 prob, 3 digit change, right hand
+     S.cond.condmean = [1:24]; %0.5 prob, 3 digit change, right hand
 %     S.cond.odd = [1 5 9 13 17 21 2 6 10 14 18 22];  
 %     S.cond.stan = [3 7 11 15 19 23 4 8 12 16 20 24];  
 %      S.cond.odd_stan = {[1 5 9 13 17 21 2 6 10 14 18 22],[3 7 11 15 19 23 4 8 12 16 20 24]}; % expecting grp effects to depend on oddball vs. standard
@@ -342,15 +120,15 @@ for f=1:length(fnames)
 %      S.cond.odd_stan_DC = {[1 5 9 13 17 21],[3 7 11 15 19 23],[2 6 10 14 18 22],[4 8 12 16 20 24]}; % small DC effects on odd vs. stan 
 
 %% marginal means for violin plots
-    S.cond.CP10_Odd_DC1 = [1 5];
-    S.cond.CP10_Odd_DC3 = [2 6];
-    S.cond.CP30_Odd_DC1 = [9 13];
-    S.cond.CP30_Odd_DC3 = [10 14];
-    S.cond.CP50_Odd_DC1 = [17 21];
-    S.cond.CP50_Odd_DC3 = [18 22];
-    S.colour_code = [1 2 1 2 1 2];
-    S.x_pos = [1.2 1.8 3.2 3.8 5.2 5.8]; % x position of each violin
-    S.abs = 0;
+%     S.cond.CP10_Odd_DC1 = [1 5];
+%     S.cond.CP10_Odd_DC3 = [2 6];
+%     S.cond.CP30_Odd_DC1 = [9 13];
+%     S.cond.CP30_Odd_DC3 = [10 14];
+%     S.cond.CP50_Odd_DC1 = [17 21];
+%     S.cond.CP50_Odd_DC3 = [18 22];
+%     S.colour_code = [1 2 1 2 1 2];
+%     S.x_pos = [1.2 1.8 3.2 3.8 5.2 5.8]; % x position of each violin
+%     S.abs = 0;
 
 %% each cell of design: for outputting to excel for SPSS, or for plotting
 %       S.cond.CP10_SideA_Odd_DC1 = 1;
@@ -427,7 +205,7 @@ for f=1:length(fnames)
     [out.T,out.traj,out.param,out.rt] = CORE_extract_HGF_results(D_fit,S);
     
     %% save table
-    if 0 
+    if 0
         sname = strrep(fullfile(S.path.hgf,'fitted',fnames{f}),'.mat','_table.xlsx');
         writetable(out.T,sname)
     end
@@ -488,23 +266,41 @@ for f=1:length(fnames)
     end
 
     %% plot group differences for selected variables
-    if 0
+    if 1
         close all
         %vs={'PL_dau_odd','PL_dau_stan','PL_dau_odd_stan','PL_dau_odd_CP','PL_dau_stan_CP','PL_dau_odd_stan_CP','PL_epsi_1_odd','PL_epsi_2_odd','PL_epsi_3_odd','PL_epsi_1_stan','PL_epsi_2_stan','PL_epsi_3_stan','PL_psi_1_condmean','PL_psi_2_condmean','PL_psi_3_condmean','PL_psi_1_odd','PL_psi_2_odd','PL_psi_3_odd','PL_psi_1_stan','PL_psi_2_stan','PL_psi_3_stan','PL_epsi_1_odd_CP','PL_epsi_1_stan_CP','PL_epsi_1_odd_stan_CP','PL_dau_odd_DC','PL_dau_stan_DC','PL_dau_odd_stan_DC','PL_da_1_odd','PL_da_1_odd_CP','PL_da_1_odd_DC','PL_epsi_2_odd_CP','PL_epsi_2_stan_CP','PL_epsi_2_odd_stan_CP','PL_da_2_odd','PL_da_2_odd_CP','PL_da_2_odd_DC','PL_epsi_3_odd_CP','PL_epsi_3_stan_CP','PL_epsi_3_odd_stan_CP'};
         %vs={'like_al0_1','like_al0_2','like_al0_3','like_al0_4','PL_om_2','PL_om_3','PL_dau_mean','PL_da_1_mean','PL_da_2_mean','PL_epsi_1_mean','PL_epsi_2_mean','PL_epsi_3_mean','PL_psi_1_mean','PL_psi_2_mean','PL_psi_3_mean','PL_dau_odd','PL_dau_stan','PL_dau_odd_stan','PL_dau_odd_CP','PL_dau_stan_CP','PL_dau_odd_stan_CP','PL_dau_odd_DC','PL_dau_stan_DC','PL_dau_odd_stan_DC','PL_da_1_odd','PL_da_1_odd_CP','PL_da_1_odd_DC','PL_da_2_odd','PL_da_2_odd_CP','PL_da_2_odd_DC'};
         %vs={'like_al0','PL_om_2','PL_om_3','PL_sa_2_mean','PL_ud_1_mean','PL_ud_2_mean','PL_dau_mean','PL_epsi_2_mean','PL_epsi_3_mean'};
-        vs={'PL_dau_condmean','PL_da_1_condmean','PL_da_2_condmean','PL_psi_1_condmean','PL_psi_2_condmean','PL_psi_3_condmean'};
+        vs={'like_al0_1','like_al0_2','like_al0_3','PL_om_2','PL_om_3','PL_dau_condmean','PL_da_1_condmean','PL_da_2_condmean','PL_epsi_1_condmean','PL_epsi_2_condmean','PL_epsi_3_condmean','PL_mu_1_condmean','PL_mu_2_condmean','PL_mu_3_condmean','PL_sa_1_condmean','PL_sa_2_condmean','PL_sa_3_condmean'};
+        titles = {'alpha','alphaSide','alphaDC','omega','theta','dau','da 1','da 2','epsi 1','epsi 2','epsi 3','mu 1','mu 2','mu 3','sa 1','sa 2','sa 3'};
+        sp1 = 6; % rows
+        sp2 = 3; % columns
+        vn=0;figure
         for v=1:length(vs)
-            figure
-            %scatter(grpind,out.T.(vs{v}))
+            vn=vn+1;
+            subplot(sp1,sp2,vn)
             for g = 1:length(grps)
-                X{g}=out.T.(vs{v})(grpind==g);
+                % average over cell elements of vs
+                if iscell(vs{v})
+                    for vii = 1:length(vs{v})
+                        X{g}(:,vii)=out.T.(vs{v}{vii})(grpind==g);
+                    end
+                    X{g} = mean(X{g},2);
+                else
+                    X{g}=out.T.(vs{v})(grpind==g);
+                end
             end
-            n_rainclouds(X,cb(1:g,:))
-            %set(gca,'XTick',1:2)
-            %set(gca,'XTickLabel',grps)
-            title([vs{v} ', p = ' num2str(out.stats.ranksum.p.(vs{v}))])
+            [cb] = cbrewer('qual', 'Set1', g, 'pchip');
+            h = n_rainclouds(X,cb);
+            if exist('titles','var')
+                title(titles{v})
+            else
+                title([vs{v} ', p = ' num2str(out.stats.ranksum.p.(vs{v}))])
+            end
+            set(gca,'YTick',[],'fontsize',10,'ycolor',[1 1 1])
+            box off
         end
+        legend(grps)
     end
     
     %% HGF trajectories
@@ -512,7 +308,6 @@ for f=1:length(fnames)
         close all
         subplot_on = 1;
         plot_variance_type = 'mean_of_traj'; %{'mean_of_traj','var_over_subs'};
-        var_pi = 'pi'; % precision (pi) or variance (var)?
         
         % group indices
         for g = 1:length(grps)
@@ -570,14 +365,19 @@ for f=1:length(fnames)
 
                 % plot mean
                 ln(v) = plot(ts,mn,'Color',cb(v,:));
-                lim(g,v,:)=axis;
+                axval = axis;
+                lim(g,v,:)=[axval(1:2) min(lower) max(upper)];
                 if subplot_on
                     ylabel(vs{v})
                     if v==1
                         xlabel('Trial number')
+                    else
+                        set(gca, 'XTickLabel', [])
                     end
                 end
                 hold off
+                set(gca,'FontSize',18)
+                %tightfig
             end
             % plot inputs/design
             %plot(ts, D_fit(1).HGF.u(:,1), '.', 'Color', [0 0.6 0]); % inputs
@@ -600,7 +400,7 @@ for f=1:length(fnames)
 
 
     %% condition means of HGF trajectories
-    if 1
+    if 0
         vs=S.condmean;
         ucol = unique(S.colour_code);
         [cb] = cbrewer('qual', 'Set1', length(ucol), 'pchip');

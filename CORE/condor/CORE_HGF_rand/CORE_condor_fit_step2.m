@@ -299,6 +299,8 @@ in = dir('input*.mat');
 fin=0;
 while fin==0
     pause(10)
+    
+    % outputs
     out = dir('output*.mat');
     if length(out)==length(in)
         complete = [out(:).bytes]>0 & [out(:).datenum]>nowtime;
@@ -306,5 +308,40 @@ while fin==0
             fin=1;
         end
         disp(['number of outputs complete: ' num2str(sum(complete)) '/' num2str(length(complete))])
+    end
+    
+    
+    % errors
+    out = dir('*.err');
+    if ~isempty(out)
+        fsize = [out(:).bytes];
+        err_ind = find(fsize>0);
+        for n = 1:length(err_ind)
+            dat=importdata(out(err_ind(n)).name);
+            dat.textdata(~cellfun(@isempty,dat.textdata))
+        end
+    end
+end
+
+
+function which_stragglers
+% run this code manually
+stragglers = [153]+1;
+nmods = [1 6];
+nsub = 44;
+strag=struct;
+i=0;
+for pm = 1:nmods(1)
+    for rm = 1:nmods(2)
+        for d = 1:nsub
+            % input file index
+            ii = (pm-1)*nmods(2)*nsub + (rm-1)*nsub + d;
+            if any(stragglers==ii)
+                i=i+1;
+                strag(i).pm = pm;
+                strag(i).rm = rm;
+                strag(i).d = d;
+            end
+        end
     end
 end

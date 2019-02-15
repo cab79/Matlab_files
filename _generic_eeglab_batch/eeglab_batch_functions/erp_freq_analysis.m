@@ -66,7 +66,11 @@ for f = 1:length(S.(S.func).filelist)
     if any(ecgchan)
         EEG = pop_select(EEG,'nochannel',find(ecgchan));
     end
-   
+    
+    % downsample
+    if S.(S.func).epoch.downsample
+        EEG = pop_resample(EEG, S.(S.func).epoch.downsample);
+    end
     
     % LINEAR DETREND
     if S.(S.func).epoch.detrend
@@ -267,6 +271,8 @@ for f = 1:length(S.(S.func).filelist)
             end
             
             fdata=fdatat;
+            %include trial info
+            fdata{1}.conds = conds; fdata{1}.tnums = tnums; fdata{1}.fnums = fnums; fdata{1}.bnums = bnums;
             clear fdatat;
             % SAVE
             switch S.(S.func).select.datatype

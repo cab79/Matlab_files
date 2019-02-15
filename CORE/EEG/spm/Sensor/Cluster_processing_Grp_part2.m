@@ -13,7 +13,7 @@ S.data_path = 'C:\Data\CORE\EEG\ana\spm\SPMdata\sensorimages';
 % directory in which SPM analysis is saved 
 S.spmstats_path = 'C:\Data\CORE\EEG\ana\spm\SPMstats';
 % specific folder containing the SPM stats for this analysis
-S.spm_dir = 't-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm';
+S.spm_dir = 't-200_899_b-200_0_m_0_800_Side_Grp_DC_Subject_Age_2_merged_cleaned_spm_odd';
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
 S.batch = 'matlabbatch.mat';
@@ -41,9 +41,9 @@ S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','','';
 % input into SPM design matrix. Levels must be in the same order as SPM
 % design, but characters don't need to match anything.
 S.factlev = {
+        {'Side'},{'Side'},{'Aff','Unaff'};
         {'Grp'},{'Group'},{'CRPS','HC'};
-        %{'Side'},{'Side'},{'Aff','Unaff'};
-        {'Odd'},{'Odd'},{'Odd','Stan'};
+%         {'Odd'},{'Odd'},{'Odd','Stan'};
         {'DC'},{'DC'},{'DC1','DC3'};
         {'Subject'},{'Subject'},{}; % can leave Subject levels empty as these will be populated by sub_info file.
     };

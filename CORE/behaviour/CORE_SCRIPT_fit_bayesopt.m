@@ -36,7 +36,7 @@ S.load.suffix = {'*'};
 
 % model fitting
 S.prc_config = 'GBM_config_CORE_bayesopt'; S.obs_config = 'bayes_optimal_binary_CAB_config';
-S.perc_models=[3];
+S.perc_models=[1];
 S.resp_model=0;
 S.bayes_opt=1;
 for pm=1:length(S.perc_models)

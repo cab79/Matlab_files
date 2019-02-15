@@ -1,6 +1,15 @@
-function EEGdata = flipchan(EEGdata,chanlocs)
+function EEGdata = flipchan(EEGdata,chanlocs,varargin)
 
-load('C:\Data\CORE\eeg\GSN-HydroCel-128-Flipmap.mat')
+if nargin>2
+    S=varargin{1};
+    try
+        load(S.path.GSNlocs);
+    catch
+        load('C:\Data\CORE\eeg\GSN-HydroCel-128-Flipmap.mat');
+    end
+else
+    load('C:\Data\CORE\eeg\GSN-HydroCel-128-Flipmap.mat');
+end
 
 chanlabels = {chanlocs.labels};
 

@@ -4,171 +4,18 @@ dbstop if error
 restoredefaultpath
 run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 spath = 'C:\Data\CORE\eeg\ana\stats';
+addpath('C:\Data\Matlab\cbrewer'); % (https://uk.mathworks.com/matlabcentral/fileexchange/34087-cbrewer---colorbrewer-schemes-for-matlab)
 
 sfiles = {
     
-    % DRAFT MODELS
-
-    %'stats_SC_all_chan_RT_notrans_20180720T154154.mat' % absolute
-    %'stats_SC_all_chan_RT_arcsinh_20180720T150942.mat' % absolute
-    %'stats_SC_all_chan_RT_notrans_20180720T174428.mat' % relative mismatch
-    %'stats_SC_all_chan_RT_arcsinh_20180720T175126.mat' % relative mismatch
-    %'stats_SC_all_chan_RT_notrans_20180720T195507.mat' % mismatch, no smoothing/dsample
-    %'stats_MR_all_chan_RT_notrans_20180720T231023.mat'
-    %'stats_MR_all_chan_RT_arcsinh_20180720T225208.mat'
-    %'stats_PEB_all_chan_RT_arcsinh_20180720T222913.mat'
-    %'stats_RR_all_chan_RT_arcsinh_20180721T081753.mat'
-    %'stats_BRR_all_chan_RT_arcsinh_20180721T083416.mat' % 100 samples
-    %'stats_SC_comp_recon_RT_arcsinh_20180721T221137.mat'
-    %'stats_BRR_all_chan_RT_arcsinh_20180721T172647.mat' % 1000 samples
-    %'stats_RR_all_chan_RT_arcsinh_20180730T174602.mat' % includes decoded RTs
-    %'stats_RR_all_chan_cond_arcsinh_20180802T075724.mat' % mismatch effect, unflipped
-    %'stats_RR_all_chan_cond_arcsinh_20180802T115759.mat' % mismatch effect, chan flipped
-    %'stats_RR_all_chan_RT_arcsinh_20180802T122607.mat' % RR RT flipped
-    %'stats_RR_all_chan_RT_arcsinh_20180802T130052.mat' % contains sigma for group averaging
-    %'stats_RR_all_chan_HGF_arcsinh_20180802T182620.mat' % HGF resp model 16, perc model 10, PE predictors
-    %'stats_RR_all_chan_HGF_arcsinh_20180802T204720.mat'% epsi only
-    %'stats_RR_all_chan_HGF_arcsinh_20180802T222818.mat' % unsigned PE
-    %'stats_RR_all_chan_HGF_arcsinh_20180803T000144.mat' % unsigned EPSI
-    %'stats_RR_all_chan_HGF_arcsinh_20180803T072502.mat' % unsigned epsi2
-    %'stats_RR_all_chan_HGFcond_arcsinh_20180803T080350.mat' % unsigned epsi2 and mismatch
-    %'stats_RR_all_chan_HGFcond_arcsinh_20180803T082358.mat' % signed epsi2 and mismatch
-    %'stats_SC_all_chan_HGF_arcsinh_20180803T092935.mat' % SC signed epsi2
-    %'stats_MR_all_chan_HGF_arcsinh_20180803T095317.mat' % MR signed epsi2
-    %'stats_MR_all_chan_HGF_arcsinh_20180803T103810.mat' % MR signed epsi2 - arcsinh
-    %'stats_MR_all_chan_HGF_arcsinh_20180803T104102.mat' % MR signed epsi2 - rank
-    %'stats_MR_all_chan_HGFcond_arcsinh_20180803T130723.mat' % MR mismatch signed epsi2
-    %'stats_MR_all_chan_RT_arcsinh_20180803T102948.mat' % MR RT re-test of code
-    %'stats_MR_all_chan_cond_arcsinh_20180803T113032.mat' % MR mismatch
-    %'stats_MR_all_chan_HGF_arcsinh_20180803T113646.mat' % MR HGF, all PEs
-    %'stats_MR_all_chan_HGF_arcsinh_20180803T121754.mat' % MR HGF, EPSIs
-    %'stats_MR_all_chan_HGFcond_arcsinh_20180803T122143.mat' % MR HGF, all PEs and mismatch
-    %'stats_MR_all_chan_HGF_arcsinh_20180803T133437.mat' % 3 epsi respmodel 12
-    %'stats_MR_all_chan_HGF_arcsinh_20180803T143130.mat' % HGF beliefs
-    %'stats_MR_all_chan_HGFcond_arcsinh_20180803T151437.mat' % HGF beliefs & mismatch
-    %'stats_MR_all_chan_RT_arcsinh_20180803T233645.mat' % new, containing S.testidx
-    %'stats_MR_all_chan_HGF_arcsinh_20180803T233457.mat' % mu and epsi (0.5 train frac)
-    %'stats_MR_all_chan_HGF_arcsinh_20180804T081114.mat' % mu and epsi (1.0 train frac)
-    %'stats_MR_all_chan_cond_arcsinh_20180804T144006.mat' % repeat of MR mismatch, with decoding
-    %'stats_MR_all_chan_HGF_arcsinh_20180808T105013.mat' % Mu1 only with decoding
-    %'stats_MR_all_chan_HGF_arcsinh_20180808T161954.mat' % Dau
-    %'stats_MR_all_chan_HGF_arcsinh_20180808T164243.mat' % rectified Dau
-    %'stats_MR_all_chan_HGF_arcsinh_20180808T171340.mat' %Baysopt Dau
-    
-%     'stats_BRR_all_chan_cond_arcsinh_20180802T203757.mat'
-%     'stats_BRR_all_chan_HGF_arcsinh_20180808T220203.mat' % BRR Dau
-%     'stats_BRR_all_chan_HGF_arcsinh_20180808T220230.mat' % BRR rectified Dau
-%     'stats_BRR_all_chan_HGF_arcsinh_20180809T070051.mat' % BRR Dau bayesopt
-%     'stats_BRR_all_chan_HGF_arcsinh_20180809T074443.mat' % BRR rectified Dau bayesopt
-%     'stats_BRR_all_chan_HGF_arcsinh_20180809T135940.mat' % BRR Dau rectified, EEG estimated (model 36), controlling for design
-%     'stats_BRR_all_chan_HGF_arcsinh_20180809T135927.mat' % BRR Dau rectified, EEG estimated (model 28), controlling for design
-    
-    %'stats_MR_all_chan_condHGF_arcsinh_20180809T130038.mat' % Dau rectified, bayesopt, controlling for design
-    %'stats_MR_all_chan_condHGF_arcsinh_20180809T130159.mat' % Dau rectified, RT estimated, controlling for design
-    %'stats_MR_all_chan_condHGF_arcsinh_20180809T132920.mat' % Dau rectified, EEG estimated (model 36), controlling for design
-    %'stats_MR_all_chan_condHGF_arcsinh_20180809T133019.mat' % Dau rectified, EEG estimated (model 28), controlling for design
-    
-    
-    
-    %'stats_MVPA_all_chan_RT_arcsinh_20180815T073017.mat' % mismatch trials
-    %'stats_MVPA_all_chan_RT_arcsinh_20180815T073135.mat' % mismatch-standard
-    %'stats_MVPA_all_chan_cond_arcsinh_20180815T124954.mat'
-    %'stats_MR_all_chan_condRT_arcsinh_20180815T155650.mat'
-    %'stats_MR_all_chan_condRT_arcsinh_20180922T080308.mat'
-    
-    % FINAL VERION
-    
-    %'stats_BRR_all_chan_RT_arcsinh_20180813T211834.mat' % RT with subtracted mismatch-standard
-    %'stats_BRR_all_chan_RT_arcsinh_20180813T211745.mat' % RT with mismatch only
-    
-    %'stats_MR_all_chan_condHGF_arcsinh_20180830T122634.mat' 
-    %'stats_MR_all_chan_cond_arcsinh_20180830T130620.mat' % old
-    %'stats_MR_all_chan_cond_arcsinh_20180923T152816.mat' % new - with skew/kurt
-    %'stats_MR_all_chan_HGF_arcsinh_20180923T165454.mat' % full real PE
-    %'stats_subtractR2_MR_all_chan_cond_arcsinh_20180830T130620.mat'
-    
-%      'stats_BRR_all_chan_condHGF_arcsinh_20180830T195051.mat' % abs PE
-%     %'stats_subtractR2_BRR_all_chan_cond_arcsinh_20180830T145121.mat' % abs PE
-%      'stats_BRR_all_chan_condHGF_arcsinh_20180831T131157.mat' % real PE
-%     %'stats_subtractR2_BRR_all_chan_HGF_arcsinh_20180831T160611.mat' % real PE
-%     
-%     %'stats_BRR_all_chan_condHGF_arcsinh_20180831T104101.mat' % abs Dau
-%     %'stats_BRR_all_chan_condHGF_arcsinh_20180901T050543.mat' % real Dau
-%     'stats_BRR_all_chan_HGF_arcsinh_20180901T124507.mat' % real Dau epsi2
-%     %'stats_BRR_all_chan_condHGF_arcsinh_20180901T102103.mat' % real Dau epsi2
-
-%     'stats_BRR_all_chan_HGF_arcsinh_20180925T161430.mat' % abs PE, t dist
- %    'stats_BRR_all_chan_HGF_arcsinh_20180925T161455.mat' % real PE, t dist
-%     'stats_BRR_all_chan_HGF_arcsinh_20180926T070703.mat' % abs Dau, t dist
-%     'stats_BRR_all_chan_HGF_arcsinh_20180926T070557.mat' % real Dau, t dist
-%     'stats_BRR_all_chan_HGF_arcsinh_20180926T215653.mat' % epsi 1/2, t dist
-%     'stats_BRR_all_chan_HGF_arcsinh_20180926T215735.mat'% abs epsi 1/2, t dist
-%    'stats_BRR_all_chan_condHGF_arcsinh_20181013T141703.mat' % t dist, real PE
-    %'stats_BRR_all_chan_HGF_arcsinh_20181013T141528.mat'  % bayesopt, t dist, real PE
-    %'stats_BRR_all_chan_HGF_arcsinh_20181015T171749.mat' % t dist, abs PE, hs+
-    %'stats_BRR_all_chan_HGF_arcsinh_20181014T100638.mat'  % t dist, real PE, hs+
-%     'stats_BRR_all_chan_condHGF_arcsinh_20181014T101006.mat'  % t dist, real PE, hs+
-    %'stats_BRR_all_chan_condHGF_arcsinh_20181014T210924.mat' % t dist, Dau/Da, hs+
-%    'stats_BRR_all_chan_condHGF_arcsinh_20181014T211017.mat' % t dist, epsi, hs+
-    %'stats_BRR_all_chan_condHGF_arcsinh_20181015T084814.mat' % t dist, dau & epsi2/3, hs+
-    %'stats_BRR_all_chan_condHGF_arcsinh_20181016T174019.mat'  % t dist, real Dau, ridge
-    %'stats_BRR_all_chan_condHGF_arcsinh_20181016T174126.mat'  % t dist, real Dau, lasso
-%     'stats_BRR_all_chan_condHGF_arcsinh_20181017T180759.mat'  % t dist, real PE, ridge
-%     'stats_BRR_all_chan_condHGF_arcsinh_20181017T180714.mat'  % t dist, real PE, lasso
-    %'stats_BRR_all_chan_HGF_arcsinh_20181018T191420.mat' % t dist, real PE, ridge
-    %'stats_BRR_all_chan_HGF_arcsinh_20181018T191439.mat' % t dist, real PE, lasso
-    
-%    'stats_MR_all_chan_condHGF_arcsinh_20181013T121111.mat' % epsi 1/2, t dist
-%    'stats_MR_all_chan_condHGF_arcsinh_20181013T121146.mat' % abs epsi 1/2, t dist
-
-% response model 20
-% 'stats_BRR_all_chan_HGF_arcsinh_20181022T212651.mat' % g, t, PE
- %'stats_BRR_all_chan_HGF_arcsinh_20181022T212551.mat' % hs+, t, PE
- 
-% response model 2, alternative HGF priors
-%'stats_BRR_all_chan_condHGF_arcsinh_20181025T082046.mat' % alpha=0.2, t dist, real PE, hs+
-%'stats_BRR_all_chan_condHGF_arcsinh_20181024T172020.mat' % alpha = 1, t dist, real PE, hs+
-
-%'stats_BRR_all_chan_condHGF_arcsinh_20181130T080045.mat' % 'GBM_config_alpha4BO_var2_bo', t dist, real PE, hs+
-%'stats_BRR_all_chan_HGF_arcsinh_20181130T080120.mat'; % 'GBM_config_alpha4BO_var2_bo', t dist, real PE, g
-%'stats_BRR_all_chan_HGF_arcsinh_20181130T213247.mat'; % 'GBM_config_alpha2BO_var2_bo', t dist, real PE, g
-%'stats_BRR_all_chan_condHGF_arcsinh_20181130T195313.mat'; % 'GBM_config_alpha2BO_var2_bo', t dist, real PE, hs+
-%'stats_BRR_all_chan_condHGF_arcsinh_20181201T084634.mat'; % 'GBM_config_alphaBO_var2_bo', t dist, real PE, hs+
-
-%  t dist, real PE, g
-% 'stats_BRR_all_chan_HGF_arcsinh_20181212T200316.mat'; %BO
-% 'stats_BRR_all_chan_HGF_arcsinh_20181208T103646.mat'; % 'GBM_config_alpha1.5BO_var1.5_bo'
-% 'stats_BRR_all_chan_HGF_arcsinh_20181130T213247.mat'; % 'GBM_config_alpha2BO_var2_bo'
-% 'stats_BRR_all_chan_HGF_arcsinh_20181208T103828.mat'; % 'GBM_config_alpha3BO_var3_bo'
-% 'stats_BRR_all_chan_HGF_arcsinh_20181204T104843.mat'; % 'GBM_config_alpha4BO_var4_bo'
-% 'stats_BRR_all_chan_HGF_arcsinh_20181208T212332.mat'; % 'GBM_config_alpha5BO_var5_bo'
-% 'stats_BRR_all_chan_HGF_arcsinh_20181208T212341.mat'; % 'GBM_config_alpha6BO_var6_bo'
-% 'stats_BRR_all_chan_HGF_arcsinh_20181209T074338.mat'; % 'GBM_config_alpha7BO_var7_bo'
-% 'stats_BRR_all_chan_HGF_arcsinh_20181209T074426.mat'; % 'GBM_config_alpha8BO_var8_bo'
-% 
-% 'stats_BRR_all_chan_HGF_arcsinh_20181215T202635.mat'; %'GBM_config_alpha2BO_var4_bo' logvar
-% 'stats_BRR_all_chan_HGF_arcsinh_20181215T204047.mat'; %'GBM_config_alpha4BO_var4_bo' logvar
-
-% t dist, real Dau, g
-%'stats_BRR_all_chan_HGF_arcsinh_20181218T122215.mat'; % BO
-%'stats_BRR_all_chan_HGF_arcsinh_20181218T122230.mat'; %'GBM_config_alpha1BO_var4_bo'
-%'stats_BRR_all_chan_HGF_arcsinh_20181218T122307.mat'; %'GBM_config_alpha1.5BO_var4_bo'
-%'stats_BRR_all_chan_HGF_arcsinh_20181218T122415.mat'; %'GBM_config_alpha2BO_var4_bo'
-%'stats_BRR_all_chan_HGF_arcsinh_20181218T122503.mat'; %'GBM_config_alpha4BO_var4_bo'
-%'stats_BRR_all_chan_HGF_arcsinh_20181218T122532.mat'; %'GBM_config_alpha8BO_var4_bo'
-    
-%      'stats_BRR_all_chan_cond_arcsinh_20180923T171935.mat' % t dist, cond, g prior
-%    'stats_BRR_all_chan_cond_arcsinh_20181015T171840.mat' % t dist, cond, hs+
-%      'stats_BRR_all_chan_cond_arcsinh_20181019T173732.mat' % t dist, cond, ridge
-    %'stats_BRR_all_chan_cond_arcsinh_20181019T173649.mat' % t dist, cond, lasso
-    
+   
 %     'stats_BRR_all_chan_HGF_arcsinh_20190115T215155.mat' % t dist, Dau, real, g prior, CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it14.mat
 %     'stats_BRR_all_chan_HGF_arcsinh_20190117T075855.mat' % Da1
 %     'stats_BRR_all_chan_HGF_arcsinh_20190116T145135.mat' % Da2
 %     'stats_BRR_all_chan_HGF_arcsinh_20190115T215243.mat' % t dist, Epsi1, real, g prior, CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it14.mat
 %     'stats_BRR_all_chan_HGF_arcsinh_20190116T145202.mat' % epsi2
 %     'stats_BRR_all_chan_HGF_arcsinh_20190117T075334.mat' % epsi3
-     'stats_BRR_all_chan_HGF_arcsinh_20190116T231951.mat' % t dist, Dau/Da1-2, ridge
+%      'stats_BRR_all_chan_HGF_arcsinh_20190116T231951.mat' % t dist, Dau/Da1-2, ridge
 %     'stats_BRR_all_chan_HGF_arcsinh_20190116T232149.mat' % t dist, epsi1-3, ridge
 %     'stats_BRR_all_chan_condHGF_arcsinh_20190117T180646.mat' % t dist, Dau/Da1-2, ridge
 %     'stats_BRR_all_chan_condHGF_arcsinh_20190117T154534.mat' % t dist, epsi1-3, ridge
@@ -182,27 +29,161 @@ sfiles = {
 % 'stats_BRR_all_chan_HGF_arcsinh_20190119T093237.mat' % t dist, Mu, ridge
 % 'stats_BRR_all_chan_HGF_arcsinh_20190119T093021.mat' % t dist, Ud, ridge
 
-    
+% S.transform
+% S.pred_transform  
+% S.traj{1, 1}{1, 2}
+% S.brr.model
 
+% '' % no, no, lp, dau/da
+% 'stats_BRR_all_chan_HGF_notrans_20190126T101431.mat' % no, no, lp, epsi
+% '' % no, no, t, dau/da
+% 'stats_BRR_all_chan_HGF_notrans_20190126T080704.mat' % no, no, t, epsi
+% '' % no, arc, lp, dau/da
+% 'stats_BRR_all_chan_HGF_notrans_20190126T140224.mat' % no, arc, lp, epsi
+% '' % no, arc, t, dau/da
+% 'stats_BRR_all_chan_HGF_notrans_20190126T120000.mat' % no, arc, t, epsi *** BEST IN TERMS OF MODEL EVIDENCE
+% '' % arc, no, lp, dau/da
+% 'stats_BRR_all_chan_HGF_arcsinh_20190126T101431.mat' % arc, no, lp, epsi
+% '' % arc, no, t, dau/da
+% 'stats_BRR_all_chan_HGF_arcsinh_20190126T080844.mat' % arc, no, t, epsi
+% '' % arc, arc, lp, dau/da
+% 'stats_BRR_all_chan_HGF_arcsinh_20190126T140224.mat' % arc, arc, lp, epsi
+% '' % arc, arc, t, dau/da
+% 'stats_BRR_all_chan_HGF_arcsinh_20190126T120002.mat' % arc, arc, t, epsi
+    
+% 'stats_BRR_all_chan_HGF_notrans_20190126T160735.mat' % BRR, no, arc, epsi1, 20 downsample
+% 'stats_BRR_all_chan_HGF_notrans_20190126T180844.mat' % BRR, no, arc, epsi2, 20 downsample
+% 'stats_BRR_all_chan_HGF_notrans_20190126T200615.mat' % BRR, no, arc, epsi3, 20 downsample
+
+% 'stats_PEB_all_chan_null_arcsinh_20190125T213550.mat' %PEB, null
+
+% 'stats_PEB_all_chan_null_notrans_20190126T201046.mat' %PEB null
+% 'stats_PEB_all_chan_HGF_notrans_20190126T184044.mat' %PEB, no, arc, epsi3, 20 downsample
+% 'stats_PEB_all_chan_HGF_notrans_20190126T171529.mat' %PEB, no, arc, epsi2, 20 downsample
+% 'stats_PEB_all_chan_HGF_notrans_20190126T154728.mat' %PEB, no, arc, epsi1, 20 downsample
+% 'stats_PEB_all_chan_HGF_notrans_20190129T184033.mat' % ud3
+% 'stats_PEB_all_chan_HGF_notrans_20190129T165435.mat' % ud2
+% 'stats_PEB_all_chan_HGF_notrans_20190129T165351.mat' % ud1
+
+% 0 - 780ms
+% 'stats_BRR_all_chan_HGF_notrans_20190126T225906.mat' % ep1
+% 'stats_BRR_all_chan_HGF_notrans_20190127T013657.mat' % ep2
+% 'stats_BRR_all_chan_HGF_notrans_20190127T041903.mat' % ep3
+
+
+% 'stats_PEB_all_chan_condHGF_notrans_20190127T214945.mat' % condHGF with epsi x3
+% 'stats_PEB_all_chan_HGF_notrans_20190128T033817.mat' % minus cond
+% 'stats_PEB_all_chan_condHGF_notrans_20190127T215347.mat' % minus ep1
+% 'stats_PEB_all_chan_condHGF_notrans_20190128T030529.mat' % minus ep2
+% 'stats_PEB_all_chan_condHGF_notrans_20190128T075910.mat' % minus ep3
+
+% PEB  highres
+% 'stats_PEB_all_chan_HGF_notrans_20190127T095132.mat' %PEB, no, arc, epsi3
+% 'stats_PEB_all_chan_HGF_notrans_20190128T092123.mat' %PEB, no, arc, epsi2
+% 'stats_PEB_all_chan_HGF_notrans_20190127T095014.mat' %PEB, no, arc, epsi1
+% 'stats_PEB_all_chan_cond_notrans_20190128T092155.mat' %PEB, no, arc, cond
+% 'stats_PEB_all_chan_HGF_notrans_20190128T231850.mat' %Dau
+
+% BRR with residuals
+%'stats_BRR_all_chan_condHGF_notrans_20190130T220808.mat' % cond, mu1-3.
+% BRR on above residual data
+% 'stats_BRR_all_chan_HGF_notrans_20190131T102539.mat' %ep3
+% 'stats_BRR_all_chan_HGF_notrans_20190131T084414.mat' %ep2
+% 'stats_BRR_all_chan_HGF_notrans_20190131T084057.mat' %ep1
+
+% 'stats_BRR_all_chan_HGF_notrans_20190131T142456.mat'% BRR with full 15 traj HGF (psi), ridge t
+% 'stats_BRR_all_chan_HGF_notrans_20190131T175758.mat'% BRR with full 15 traj HGF (ud), ridge t
+% 'stats_BRR_all_chan_condHGF_notrans_20190131T215250.mat'
+% 'stats_BRR_all_chan_cond_notrans_20190131T170005.mat'%cond
+% 'stats_BRR_all_chan_HGF_notrans_20190201T194803.mat' % Dau
+% 'stats_BRR_all_chan_HGF_notrans_20190202T085955.mat' % dau abs
+% 'stats_BRR_all_chan_HGF_notrans_20190202T105718.mat' % dau rect
+% 'stats_BRR_all_chan_HGF_notrans_20190202T090539.mat' % epsi2 abs
+% 'stats_BRR_all_chan_HGF_notrans_20190202T110013.mat' %epsi2 rect 
+
+% downsample 4, 800ms
+% 'stats_BRR_all_chan_HGF_notrans_20190202T220500.mat'% BRR with full 15 traj HGF (ud), ridge t
+% 'stats_BRR_all_chan_condHGF_notrans_20190203T201944.mat' % 15 traj HGF (ud), ridge t
+% 'stats_BRR_all_chan_condHGF_notrans_20190203T133856.mat' % cond, 12 traj HGF (NO ud)
+% 'stats_BRR_all_chan_HGF_notrans_20190203T133828.mat' % 12 traj HGF (NO ud)
+
+% 'stats_BRR_all_chan_condHGF_notrans_20190206T220218.mat' % Dau/da
+% 'stats_BRR_all_chan_HGF_notrans_20190206T220406.mat' % Dau/da
+% 'stats_BRR_all_chan_condHGF_notrans_20190204T222014.mat' % cond, epsi1-3
+% 'stats_BRR_all_chan_HGF_notrans_20190204T222045.mat' % epsi1-3
+% 'stats_BRR_all_chan_condHGF_notrans_20190206T220526.mat' % All PE
+% 'stats_BRR_all_chan_HGF_notrans_20190206T220644.mat' % All PE
+
+% 'stats_BRR_all_chan_HGF_notrans_20190205T181917.mat' % epsi1-3 Lasso
+% 'stats_BRR_all_chan_condHGF_notrans_20190205T182003.mat' % t lasso, cond, epsi1-3
+% 'stats_BRR_all_chan_condHGF_notrans_20190206T093958.mat' % t hs+, cond, epsi1-3
+% 'stats_BRR_all_chan_condHGF_notrans_20190206T165012.mat' % gaus ridge, cond, epsi1-3 it14
+% 'stats_BRR_all_chan_condHGF_notrans_20190206T175108.mat' % gaus ridge, cond, epsi1-3 it7
+% 'stats_BRR_all_chan_condHGF_notrans_20190206T135013.mat' % gaus lasso, cond, epsi1-3
+% 'stats_BRR_all_chan_condHGF_notrans_20190206T094015.mat' % gaus hs+, cond, epsi1-3
+
+% 'stats_BRR_all_chan_cond_notrans_20190207T093201.mat' % no catvars
+% 'stats_BRR_all_chan_cond_notrans_20190207T093200.mat' % catvars
+
+% 'stats_BRR_all_chan_condHGF_notrans_20190208T113720.mat' % freq1
+% 'stats_BRR_all_chan_condHGF_notrans_20190207T181656.mat' % freq2
+% 'stats_BRR_all_chan_condHGF_notrans_20190207T181535.mat' % freq3
+% 'stats_BRR_all_chan_condHGF_notrans_20190207T181734.mat' % freq4
+
+% updated models; odd only
+% 'stats_BRR_all_chan_HGF_notrans_20190213T111930.mat' % all PE, ridge, t
+'stats_BRR_all_chan_HGF_notrans_20190213T135853.mat' % epsis, ridge, t
     };
 
 subtract = [];
 encoding_types = {'spear','MR','PEB','RR','BRR','mvpa'}; % only these will be analysed
-statfield = {'beta','b','rho','weights','transweights','kurt','skew'}; % for t-test stats
+% statfield = {'cE','beta','b','rho','weights','transweights'}; % for t-test stats
+statfield = {'b'}; % for t-test stats
+recon = []; % multiple beta by predictors specified here
+% statfield = {'waic','F',};
+% statfield = {'logl'}; % for PEB
 %statfield = {'beta','b','s','rho','weights','transweights','kurt','skew'}; % for t-test stats
 %statfield = {'s','r2'};
-clims = []; % t value limits for plotting
-xticks = 0:4:600;
-topo_range = [0 600];
+% xticks = 0:20:600;
+xticks = 0:20:780;
+% xticks = 0:4:796;
+% xticks = 0:8:792;
+% xticks = 0:4:600;
+topo_range = [min(xticks) max(xticks)];
 plotsmooth = 10;
 no_plot_ele = [];
-param=[1]; % multiple param's betas are summed
+% param={1}; % multiple param's betas are summed within each cell
+% param={[1],[2],[3],[4],[5],[6]}; % multiple param's betas are summed within each cell
+% param_legend = {'Dau','Da1','Da2','Ep1','Ep2','Ep3'};
+% param={[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13]}; % multiple param's betas are summed within each cell
+% param_legend = {'Cond','Dau','Da1','Da2','Ep1','Ep2','Ep3','Mu1','Mu2','Mu3','Sa1','Sa2','Sa3'};
+% param={[1],[2],[3],[4]}; % multiple param's betas are summed within each cell
+% param_legend = {};%'cond','Ep1','Ep2','Ep3'};
+param={[1],[2],[3]}; % multiple param's betas are summed within each cell
+param_legend = {'Ep1','Ep2','Ep3'};
 load('C:\Data\CORE\eeg\ana\prep\chanlocs.mat')
-cmap=colormap('parula');
+cmap=colormap('parula'); close all;
+chan_summary = 'std'; % mean or std
+test_models = [];%2:length(sfiles); % for comparing waic
+null_model = [];%1; % if more than one model (file), a null is created from the mean of them
+% test_models = 1:length(sfiles); 
+% null_model = 1:length(sfiles); % if more than one model (file), a null is created from the mean of them
+model_comparison = 'sum'; % none, sum, time, or chan_time
+options.DisplayWin = 0;
+F_smooth = 0; % variance of Gaussian filter
+save_stats = 0;
+grp_effect = 0;
+pos_neg = 1; % -1, 1, or 0 for both
 
 % get data
 allstat={};
 i=0; % index for fig handles
+if length(sfiles)>1
+    for tm=1:length(test_models)
+        h0m(tm)=figure('Name','overlap');
+    end
+end
+% for each model/file
 for f = 1:length(sfiles)
     load(fullfile(spath,sfiles{f}));
     allstat{f} = stats;
@@ -240,309 +221,413 @@ for f = 1:length(sfiles)
         allstat{f}.(an{a}).(da{d})(2:end) = [];
         
         for sf = 1:length(statfield)
-
+            
+            % number of columns
             nc = size(allstat{f}.(an{a}).(da{1}).(statfield{sf}),2);
             for c = 1:nc 
-                h1=figure('Name',['file_' num2str(f) '_' an{a} ', comp: ' num2str(c)]);pl = 0; % plot index
-                h2=figure('Name',['file_' num2str(f) '_' an{a} ', comp: ' num2str(c)]);pl2 = 0; % plot index
-                h3=figure('Name',['file_' num2str(f) '_' an{a} ', comp: ' num2str(c)]);pl3 = 0; % plot index
-                h4=figure('Name',['file_' num2str(f) '_' an{a} ', comp: ' num2str(c)]);pl4 = 0; % plot index
+                    
                 for d = 1:length(da)
                     disp(['file' num2str(f) ', analysis: ' an{a} ', data type: ' da{d}, ', comp: ' num2str(c)])
-
-                    nr = size(allstat{f}.(an{a}).(da{d}).(statfield{sf}),1);
-
-                    clear alldat h p ci t
-                    for r=1:nr
-                        dat=allstat{f}.(an{a}).(da{d}).(statfield{sf}){r,c};
-                        if ndims(dat)==3
-                            dat=sum(dat(:,:,param),3);
-                        elseif ndims(dat)==2 && strcmp(da{d},'GFP')
-                            dat=sum(dat(:,param),3);
-%                         else
-%                             dat = dat;
+                    
+                    % for each parameter
+                    if length(param)>1
+                        h0=figure('Name','overlap');
+                    end
+                    for np = 1:length(param)
+                        h1=figure;  
+                        h2=figure('Name',['file_' num2str(f) '_' an{a} ', comp: ' num2str(c)]);
+                        if grp_effect
+                            h3=figure('Name',['file_' num2str(f) '_' an{a} ', comp: ' num2str(c)]);pl3 = 0; % plot index
+                            h4=figure('Name',['file_' num2str(f) '_' an{a} ', comp: ' num2str(c)]);pl4 = 0; % plot index
                         end
-                        sizdat=size(dat);
-                        if ~any(sizdat==1) % if a matrix
-                            dat = reshape(dat,prod(sizdat),[]);
+
+                        % number of rows (e.g. subjects)
+                        nr = size(allstat{f}.(an{a}).(da{d}).(statfield{sf}),1);
+
+                        clear alldat h p ci t
+                        for r=1:nr
+                            dat=allstat{f}.(an{a}).(da{d}).(statfield{sf}){r,c};
+                            if strcmp(statfield{sf},'waic')
+                                dat = -dat;
+                            end
+                            if ndims(dat)==3
+                                dat=sum(dat(:,:,param{np}),3);
+                            elseif ndims(dat)==2 && strcmp(da{d},'GFP')
+                                dat=sum(dat(:,param{np}),3);
+    %                         else
+    %                             dat = dat;
+                            end
+                            sizdat=size(dat);
+                            if ~any(sizdat==1) % if a matrix
+                                dat = reshape(dat,prod(sizdat),[]);
+                            end
+                            if ~isempty(recon)
+                                pred=[stats.trialinfo{1}.pred_train{r}(:,recon)];
+                                dat = mean(pred*repmat(dat,1,length(recon))',1)';
+                            end
+                            alldat(r,:)=dat;
                         end
-                        alldat(r,:)=dat;
-                    end
-                    grpmeandat = mean(alldat,1);
-                    
-                    %% one-sample t-test (vs. zero) on beta weights
-                    for s=1:size(alldat,2)
-                        [h(s),p(s),~,stt] = ttest(double(alldat(:,s)));
-                        t(s)=stt.tstat;
-                    end
+                        grpmeandat{f} = mean(alldat,1);
 
-                    % remove NaNs
-                    t(isnan(t))=0;
-                    h(isnan(h))=0;
-                    p(isnan(p))=Inf;
-
-                    % FDR correction
-                    [~,fdr_mask] = fdr(p,0.05);
-                    fdr_p=p.*double(fdr_mask);
-                    fdr_t=t.*double(fdr_mask);
-                    % reshape
-                    if ~any(sizdat==1) 
-                        h=reshape(h,sizdat(1),sizdat(2));
-                        p=reshape(p,sizdat(1),sizdat(2));
-                        t=reshape(t,sizdat(1),sizdat(2));
-                        fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
-                        fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
-                        grpmeandat=reshape(grpmeandat,sizdat(1),sizdat(2));
-                    end
-                    % output
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_mean'])=reshape(mean(alldat,1)',sizdat(1),sizdat(2));
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).h=h;
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).p=p;
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).t=t;
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).fdr_t=fdr_t;
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).fdr_p=fdr_p;
-
-                    trange = dsearchn(xticks',[topo_range(1);topo_range(2)]);
-
-                    %% plot group mean of data
-
-                    if isempty(clims)
-                        clim=[min(grpmeandat(:)) max(grpmeandat(:))];
-                    else
-                        clim=clims;
-                    end
-                    
-                    figure(h1)
-                    hold on
-                    pl=pl+1;
-                    subplot(length(da)*2,2,pl)
-                    imagesc(xticks,[],grpmeandat,clim); 
-                    [~,mi]=max(mean(abs(grpmeandat(:,trange(1):trange(2))),1));
-                    mi=mi+trange(1)-1;
-                    line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
-                    title([statfield{sf} ', mean values']);
-                    colorbar
-
-                    pl=pl+1;
-                    if ~any(sizdat==1) 
-                        subplot(length(da)*2,2,pl)
-                        topoplot(grpmeandat(:,mi),chanlocs,'maplimits',clim);
-                    end
-                    
-                    %% plot t stats
-                    if isempty(clims)
-                        clim=[min(t(:)) max(t(:))];
-                    else
-                        clim=clims;
-                    end
-                    
-                    figure(h2)
-                    npeaks = 5;
-                    subplot(length(da)*3,10,[1:5])
-                    imagesc(xticks,[],t,clim); 
-                   % meanabs = mean(abs(t(:,trange(1):trange(2))),1);
-                    tval_std = std(t(:,trange(1):trange(2)),[],1);
-                    tval_std = smooth(tval_std,plotsmooth,'moving');
-                    [ma,mi]=findpeaks(tval_std,'MinPeakWidth',2);
-                    mi=mi+trange(1)-1;
-                    % highest peaks, plot as lines
-                    [maxma,maxmi]=sort(ma,'descend');
-                    maxmi = maxmi(1:min(npeaks,length(maxmi)));
-                    peaks = sort(mi(maxmi));
-                    hold on
-                    for mii=1:length(peaks)
-                        plot(xticks(mi(maxmi)*[1 1]),[1 92],'k:','linewidth',1)
-                    end
-                    title([statfield{sf} ', t values for one-sample t-test']);
-                    ylabel('channel')
-                    %colorbar
-                    
-                    subplot(length(da)*3,10,[11:15])
-                    plot(xticks,tval_std,'b'); 
-                    hold on
-                    for mii=1:length(peaks)
-                        plot(xticks(mi(maxmi(mii))*[1 1]),[0 ma(maxmi(mii))],'k:','linewidth',0.5)
-                    end
-                    title([statfield{sf} ', std over channels of t values']);
-                    ylabel('standard deviation')
-                    xlabel('post-stimulus time (ms)')
-
-                    % plot 4 highest peaks
-                    if ~any(sizdat==1) 
-                        for mii = 1:npeaks
-                            subplot(length(da)*3,10,20+mii)
+                        %% one-sample t-test (vs. zero) on beta weights
+                        for s=1:size(alldat,2)
                             try
-                                topoplot(t(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
-                                title([num2str(xticks(peaks(mii))) ' ms'])
+                                [h(s),p(s),~,stt] = ttest(double(alldat(:,s)));
+                                t(s)=stt.tstat;
+                            catch
+                                h(s)=NaN;
+                                p(s)=NaN;
+                                t(s)=NaN;
                             end
                         end
-                    end
-                    
-                    if isempty(clims)
-                        clim=[min(fdr_t(:)) max(fdr_t(:))];
-                        if ~any(clim)
-                            clim=[-5 5];
+
+                        % remove NaNs
+                        t(isnan(t))=0;
+                        h(isnan(h))=0;
+                        p(isnan(p))=Inf;
+
+                        % FDR correction
+                        [~,fdr_mask] = fdr(p,0.05);
+                        fdr_p=p.*double(fdr_mask);
+                        fdr_t=t.*double(fdr_mask);
+                        % reshape
+                        if ~any(sizdat==1) 
+                            h=reshape(h,sizdat(1),sizdat(2));
+                            p=reshape(p,sizdat(1),sizdat(2));
+                            t=reshape(t,sizdat(1),sizdat(2));
+                            fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
+                            fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
+                            grpmeandat{f}=reshape(grpmeandat{f},sizdat(1),sizdat(2));
                         end
-                    else
-                        clim=clims;
-                    end
+                        % output
+                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_mean'])=reshape(mean(alldat,1)',sizdat(1),sizdat(2));
+                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).h=h;
+                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).p=p;
+                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).t=t;
+                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).fdr_t=fdr_t;
+                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).fdr_p=fdr_p;
 
-                    subplot(length(da)*3,10,[6:10])
-                    imagesc(xticks,[],fdr_t,clim); 
-                    %tval_std = mean(abs(fdr_t(:,trange(1):trange(2))),1);
-                    tval_std = std(fdr_t(:,trange(1):trange(2)),[],1);
-                    tval_std = smooth(tval_std,plotsmooth,'moving');
-                    [ma,mi]=findpeaks(tval_std,'MinPeakWidth',2);
-                    mi=mi+trange(1)-1;
-                    % 4 highest peaks, plot as lines
-                    [maxma,maxmi]=sort(ma,'descend');
-                    maxmi = maxmi(1:min(npeaks,length(maxmi)));
-                    peaks = sort(mi(maxmi));
-                    hold on
-                    for mii=1:length(peaks)
-                        plot(xticks(mi(maxmi(mii))*[1 1]),[1 92],'k:','linewidth',1)
-                    end
-                    title([statfield{sf} ', fdr thresholded t values']);
-                    ylabel('channel')
-                    %colorbar
-                    
-                    subplot(length(da)*3,10,[16:20])
-                    plot(xticks,tval_std,'b'); 
-                    hold on
-                    for mii=1:length(peaks)
-                        plot(xticks(mi(maxmi(mii))*[1 1]),[0 ma(maxmi(mii))],'k:','linewidth',0.5)
-                    end
-                    title([statfield{sf} ', std over channels of fdr-thresholded t values']);
-                    ylabel('standard deviation')
-                    xlabel('post-stimulus time (ms)')
+                        trange = dsearchn(xticks',[topo_range(1);topo_range(2)]);
 
-                    if ~any(sizdat==1) 
-                        for mii = 1:npeaks
-                            subplot(length(da)*3,10,25+mii)
-                            try
-                                topoplot(fdr_t(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
-                                title([num2str(xticks(peaks(mii))) ' ms'])
-                            end
-                        end
-                    end
-                    
-                    %% two-sample t-test
-                    clear t h p stt
-                    for g = 1:length(grpuni)
-                        grpdat{g}=alldat(strcmp(grplist,grpuni{g}),:);
-                    end
-                    for s=1:size(alldat,2)
-                        [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
-                        t(s)=stt.tstat;
-                    end
+                        %% plot group mean of data
 
-                    % remove NaNs
-                    t(isnan(t))=0;
-                    h(isnan(h))=0;
-                    p(isnan(p))=Inf;
+                        figure(h1)
+                        clim=[min(grpmeandat{f}(:)) max(grpmeandat{f}(:))];
+                        if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
+                        subplot(length(sfiles),1,f)
+                        imagesc(xticks,[],grpmeandat{f},clim); 
+%                         [~,mi]=max(mean(abs(grpmeandat{f}(:,trange(1):trange(2))),1));
+%                         mi=mi+trange(1)-1;
+%                         line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
+%                         title([statfield{sf} ', group mean values']);
+                        colorbar
 
-                    % FDR correction
-                    [~,fdr_mask] = fdr(p,0.05);
-                    fdr_p=p.*double(fdr_mask);
-                    fdr_t=t.*double(fdr_mask);
-                    % reshape
-                    if ~any(sizdat==1) 
-                        h=reshape(h,sizdat(1),sizdat(2));
-                        p=reshape(p,sizdat(1),sizdat(2));
-                        t=reshape(t,sizdat(1),sizdat(2));
-                        fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
-                        fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
-                    end
-                    % output
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).h=h;
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).p=p;
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).t=t;
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).fdr_t=fdr_t;
-                    allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).fdr_p=fdr_p;
-
-                    trange = dsearchn(xticks',[topo_range(1);topo_range(2)]);
-                    
-                    if isempty(clims)
-                        clim=[min(t(:)) max(t(:))];
-                    else
-                        clim=clims;
-                    end
-
-                    figure(h3)
-                    hold on
-                    pl3=pl3+1;
-                    subplot(length(da)*2,2,pl3)
-                    imagesc(xticks,[],t,clim); 
-                    [~,mi]=max(mean(abs(t(:,trange(1):trange(2))),1));
-                    mi=mi+trange(1)-1;
-                    line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
-                    title([statfield{sf} ', t values for two-sample t-test']);
-                    colorbar
-
-                    pl3=pl3+1;
-                    if ~any(sizdat==1) 
-                        subplot(length(da)*2,2,pl3)
-                        topoplot(t(:,mi),chanlocs,'maplimits',clim);
-                    end
-                    
-                    if isempty(clims)
-                        clim=[min(fdr_t(:)) max(fdr_t(:))];
-                        if ~any(clim)
-                            clim=[-5 5];
-                        end
-                    else
-                        clim=clims;
-                    end
-
-                    pl3=pl3+1;
-                    subplot(length(da)*2,2,pl3)
-                    imagesc(xticks,[],fdr_t,clim); 
-                    [~,mi]=max(mean(abs(fdr_t(:,trange(1):trange(2))),1));
-                    mi=mi+trange(1)-1;
-                    line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
-                    title([statfield{sf} ', fdr thresholded t values']);
-                    colorbar
-
-                    pl3=pl3+1;
-                    if ~any(sizdat==1) 
-                        subplot(length(da)*2,2,pl3)
-                        topoplot(fdr_t(:,mi),chanlocs,'maplimits',clim);
-                    end
-                    
-                    figure(h4)
-                    pl4=pl4+1;
-                    subplot(length(da),1,pl4)
-                    scatdat=[];
-                    for g = 1:length(grpdat)
-                        dat=reshape(grpdat{g},[],sizdat(1),sizdat(2));
-                        scatdat=[scatdat;mean(abs(dat(:,:,mi)),2)];
-                    end
-                    scatter(iB,scatdat);
-                    set(gca,'xtick',1:2,'XTickLabel',grpuni);
-                    title('group difference in mean absolute EEG at time of greatest group difference')
-                    
-                    % model comparison
-                    if strcmp(an{a},'BRR')
-                        % separate LME into groups for model comparison
-                        LME=[stats.BRR.alldata.logl];
-                        for g = 1:length(grpuni)
-                            LMEall=LME(strcmp(grplist,grpuni{g}));
-                            LMEmat = cat(3,LMEall{:});
-                            LMEmean =double(squeeze(mean(mean(LMEmat,1),2)));
-                            LMEgrp{1,g}(f,:) = LMEmean;
-                        end
+%                         pl=pl+1;
+%                         if ~any(sizdat==1) 
+%                             subplot(3,2,3)
+%                             topoplot(grpmeandat{f}(:,mi),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
+%                         end
                         
-                        % separate WAIC into groups for model comparison
-                        LME=[stats.BRR.alldata.waic];
-                        for g = 1:length(grpuni)
-                            LMEall=LME(strcmp(grplist,grpuni{g}));
-                            LMEmat = cat(3,LMEall{:});
-                            LMEmean =double(squeeze(mean(mean(LMEmat,1),2)));
-                            LMEgrp{1,g}(f,:) = -LMEmean;
+%                         subplot(3,2,[5:6])
+%                         plot(xticks,mean(grpmeandat{f},1),'b'); 
+%                         title([statfield{sf} ', ' chan_summary ' over channels of group mean values']);
+%                         ylabel(chan_summary)
+%                         xlabel('post-stimulus time (ms)')
+
+                        %% plot t stats
+                        figure(h2)
+                        clim=[min(t(:)) max(t(:))];
+                        if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
+                        npeaks = 5;
+                        subplot(length(da)*3,10,[1:5])
+                        imagesc(xticks,[],t,clim); 
+                       % meanabs = mean(abs(t(:,trange(1):trange(2))),1);
+                       if strcmp(chan_summary,'std')
+                            tval_summ(np,:) = std(t(:,trange(1):trange(2)),[],1);
+                       elseif strcmp(chan_summary,'mean')
+                            tval_summ(np,:) = mean(t(:,trange(1):trange(2)),1);
+                       elseif strcmp(chan_summary,'absmean')
+                            tval_summ(np,:) = mean(abs(t(:,trange(1):trange(2))),1);
+                       end
+                        tval_summ(np,:) = smooth(tval_summ(np,:),plotsmooth,'moving');
+                        [ma,mi]=findpeaks(tval_summ(np,:),'MinPeakWidth',2);
+                        mi=mi+trange(1)-1;
+                        % highest peaks, plot as lines
+                        [maxma,maxmi]=sort(ma,'descend');
+                        maxmi = maxmi(1:min(npeaks,length(maxmi)));
+                        peaks = sort(mi(maxmi));
+                        hold on
+                        for mii=1:length(peaks)
+                            plot(xticks(mi(maxmi(mii))*[1 1]),[1 92],'k:','linewidth',1)
+                        end
+                        title([statfield{sf} ', t values for one-sample t-test']);
+                        ylabel('channel')
+                        %colorbar
+
+                        subplot(length(da)*3,10,[11:15])
+                        plot(xticks,tval_summ(np,:),'b'); 
+                        yl = ylim;
+                        hold on
+                        for mii=1:length(peaks)
+                            plot(xticks(mi(maxmi(mii))*[1 1]),[yl(1) ma(maxmi(mii))],'k:','linewidth',0.5)
+                        end
+                        title([statfield{sf} ', ' chan_summary ' over channels of t values']);
+                        ylabel(chan_summary)
+                        xlabel('post-stimulus time (ms)')
+
+                        % plot 4 highest peaks
+                        if ~any(sizdat==1) 
+                            for mii = 1:npeaks
+                                subplot(length(da)*3,10,20+mii)
+                                try
+                                    topoplot(t(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
+                                    title([num2str(xticks(peaks(mii))) ' ms'])
+                                end
+                            end
+                        end
+
+                        clim=[min(fdr_t(:)) max(fdr_t(:))];
+                        if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
+                        if ~any(clim)
+                            clim=[-5 5];
+                        end
+
+                        subplot(length(da)*3,10,[6:10])
+                        imagesc(xticks,[],fdr_t,clim); 
+                       if strcmp(chan_summary,'std')
+                            fdr_tval_summ(np,:) = std(fdr_t(:,trange(1):trange(2)),[],1);
+                       elseif strcmp(chan_summary,'mean')
+                            fdr_tval_summ(np,:) = mean(fdr_t(:,trange(1):trange(2)),1);
+                       elseif strcmp(chan_summary,'absmean')
+                            fdr_tval_summ(np,:) = mean(abs(fdr_t(:,trange(1):trange(2))),1);
+                       end
+                        fdr_tval_summ(np,:) = smooth(fdr_tval_summ(np,:),plotsmooth,'moving');
+                        [ma,mi]=findpeaks(fdr_tval_summ(np,:),'MinPeakWidth',2);
+                        mi=mi+trange(1)-1;
+                        % 4 highest peaks, plot as lines
+                        [maxma,maxmi]=sort(ma,'descend');
+                        maxmi = maxmi(1:min(npeaks,length(maxmi)));
+                        peaks = sort(mi(maxmi));
+                        hold on
+                        for mii=1:length(peaks)
+                            plot(xticks(mi(maxmi(mii))*[1 1]),[1 92],'k:','linewidth',1)
+                        end
+                        title([statfield{sf} ', fdr thresholded t values']);
+                        ylabel('channel')
+                        %colorbar
+
+                        subplot(length(da)*3,10,[16:20])
+                        plot(xticks,fdr_tval_summ(np,:),'b'); 
+                        yl=ylim;
+                        hold on
+                        for mii=1:length(peaks)
+                            plot(xticks(mi(maxmi(mii))*[1 1]),[yl(1) ma(maxmi(mii))],'k:','linewidth',0.5)
+                        end
+                        title([statfield{sf} ', ' chan_summary ' over channels of fdr-thresholded t values']);
+                        ylabel(chan_summary)
+                        xlabel('post-stimulus time (ms)')
+
+                        if ~any(sizdat==1) 
+                            for mii = 1:npeaks
+                                subplot(length(da)*3,10,25+mii)
+                                try
+                                    topoplot(fdr_t(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
+                                    title([num2str(xticks(peaks(mii))) ' ms'])
+                                end
+                            end
+                        end
+
+                        if grp_effect
+                            %% two-sample t-test
+                            clear t h p stt
+                            for g = 1:length(grpuni)
+                                grpdat{g}=alldat(strcmp(grplist,grpuni{g}),:);
+                            end
+                            for s=1:size(alldat,2)
+                                [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
+                                t(s)=stt.tstat;
+                            end
+
+                            % remove NaNs
+                            t(isnan(t))=0;
+                            h(isnan(h))=0;
+                            p(isnan(p))=Inf;
+
+                            % FDR correction
+                            [~,fdr_mask] = fdr(p,0.05);
+                            fdr_p=p.*double(fdr_mask);
+                            fdr_t=t.*double(fdr_mask);
+                            % reshape
+                            if ~any(sizdat==1) 
+                                h=reshape(h,sizdat(1),sizdat(2));
+                                p=reshape(p,sizdat(1),sizdat(2));
+                                t=reshape(t,sizdat(1),sizdat(2));
+                                fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
+                                fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
+                            end
+                            % output
+                            allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).h=h;
+                            allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).p=p;
+                            allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).t=t;
+                            allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).fdr_t=fdr_t;
+                            allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).fdr_p=fdr_p;
+
+                            trange = dsearchn(xticks',[topo_range(1);topo_range(2)]);
+
+                            clim=[min(t(:)) max(t(:))];
+
+                            figure(h3)
+                            hold on
+                            pl3=pl3+1;
+                            subplot(length(da)*2,2,pl3)
+                            imagesc(xticks,[],t,clim); 
+                            [~,mi]=max(mean(abs(t(:,trange(1):trange(2))),1));
+                            mi=mi+trange(1)-1;
+                            line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
+                            title([statfield{sf} ', t values for two-sample t-test']);
+                            colorbar
+
+                            pl3=pl3+1;
+                            if ~any(sizdat==1) 
+                                subplot(length(da)*2,2,pl3)
+                                topoplot(t(:,mi),chanlocs,'maplimits',clim);
+                            end
+
+                            clim=[min(fdr_t(:)) max(fdr_t(:))];
+                            if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
+                            if ~any(clim)
+                                clim=[-5 5];
+                            end
+
+                            pl3=pl3+1;
+                            subplot(length(da)*2,2,pl3)
+                            imagesc(xticks,[],fdr_t,clim); 
+                            [~,mi]=max(mean(abs(fdr_t(:,trange(1):trange(2))),1));
+                            mi=mi+trange(1)-1;
+                            line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
+                            title([statfield{sf} ', fdr thresholded t values']);
+                            colorbar
+
+                            pl3=pl3+1;
+                            if ~any(sizdat==1) 
+                                subplot(length(da)*2,2,pl3)
+                                topoplot(fdr_t(:,mi),chanlocs,'maplimits',clim);
+                            end
+% 
+
+                            figure(h4)
+                            pl4=pl4+1;
+                            subplot(length(da),1,pl4)
+                            scatdat=[];
+                            for g = 1:length(grpdat)
+                                dat=reshape(grpdat{g},[],sizdat(1),sizdat(2));
+                                scatdat=[scatdat;mean(abs(dat(:,:,mi)),2)];
+                            end
+                            scatter(iB,scatdat);
+                            set(gca,'xtick',1:2,'XTickLabel',grpuni);
+                            title('group difference in mean absolute EEG at time of greatest group difference')
+    % 
+                            
+                        end
+                        % model comparison
+                        if strcmp(an{a},'BRR')
+                            % separate LME into groups for model comparison
+%                             LME=[stats.BRR.alldata.logl];
+%                             for g = 1:length(grpuni)
+%                                 LMEall=LME(strcmp(grplist,grpuni{g}));
+%                                 LMEmat = cat(3,LMEall{:});
+%                                 LMEmean =double(squeeze(mean(mean(LMEmat,1),2)));
+%                                 LMEgrp{1,g}(f,:) = LMEmean;
+%                             end
+
+                            % separate WAIC into groups for model comparison
+                            LME=[stats.BRR.alldata.waic];
+                            for g = 1:length(grpuni)
+                                LMEall=LME(strcmp(grplist,grpuni{g}));
+                                LMEmat = cat(3,LMEall{:});
+                                LMEmean =double(squeeze(mean(mean(LMEmat,1),2)));
+                                LMEgrp{1,g}(f,:) = -LMEmean;
+                                LMEgrpmat{1,g}(f,:,:,:) = -LMEmat;
+                            end
+                        elseif strcmp(an{a},'PEB')
+                            % separate WAIC into groups for model comparison
+                            LME=[stats.PEB.alldata.F];
+                            for g = 1:length(grpuni)
+                                LMEall=LME(strcmp(grplist,grpuni{g}));
+                                LMEmat = cat(3,LMEall{:});
+
+                                if F_smooth
+                                    for s = 1:size(LMEmat,3)
+                                        LMEmat(:,:,s) = imgaussfilt(LMEmat(:,:,s),F_smooth);
+                                    end
+                                end
+
+                                LMEmean =double(squeeze(mean(mean(LMEmat,1),2)));
+                                LMEgrp{1,g}(f,:) = LMEmean;
+                                LMEgrpmat{1,g}(f,:,:,:) = LMEmat;
+                            end
                         end
                     end
+
+                    % overlapping summary stats over channels for each
+                    % param
+                    if exist('h0','var')
+                        figure(h0)
+                        subplot(2,1,1)
+                        nparam=size(tval_summ,1);
+                        [cb] = cbrewer('qual', 'Set2', nparam, 'pchip');
+                        for np = 1:nparam
+                            hold on
+                            plot(xticks,tval_summ(np,:),'color',cb(np,:),'Linewidth',2); 
+                        end
+                        title([statfield{sf} ', std over channels of t values']);
+                        ylabel('standard deviation')
+                        xlabel('post-stimulus time (ms)')
+                        subplot(2,1,2)
+                        for np = 1:nparam
+                            hold on
+                            plot(xticks,fdr_tval_summ(np,:),'color',cb(np,:),'Linewidth',2); 
+                        end
+                        title([statfield{sf} ', std over channels of fdr-thresholded t values']);
+                        ylabel('standard deviation')
+                        xlabel('post-stimulus time (ms)')
+                        try
+                            [~, hobj, ~, ~] = legend(param_legend);
+                        catch
+                            [~, hobj, ~, ~] = legend(cellfun(@num2str,param,'UniformOutput',0));
+                        end
+                        lh = findobj(hobj,'type','line');
+                        set(lh,'LineWidth',2);
+                    end
+                    
+                    
                 end
             end
+        end
+        
+        
+        % plot residuals
+        if isfield(allstat{f}.(an{a}).(da{1}),'resid')
+            resid=allstat{f}.(an{a}).(da{1}).resid;
+            % subject means
+            for i = 1:length(resid)
+                resid{i,1} = mean(resid{i,1},3);
+            end
+            % group mean
+            resid_mean = mean(cat(3,resid{:}),3);
+            % group std
+            resid_gfp = std(resid_mean,[],1);
+            
+            clim=[min(resid_mean(:)) max(resid_mean(:))];
+            if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
+            figure
+            subplot(2,2,[1 2])
+            imagesc(xticks,[],resid_mean,clim); 
+            title(['residuals, group mean']);
+            subplot(2,2,[3 4])
+            plot(xticks,resid_gfp,'b'); 
+            title(['residuals, group mean global field power']);
+            xlabel('post-stimulus time (ms)')
         end
         
         % compare groups regarding predictions
@@ -567,10 +652,38 @@ for f = 1:length(sfiles)
         
     end
     
-    stats=allstat{f};
-    sname = strrep(sfiles{f},'stats','stats_grp');
-    save(fullfile(spath,sname),'stats');
+    if save_stats
+        stats=allstat{f};
+        sname = strrep(sfiles{f},'stats','stats_grp');
+        save(fullfile(spath,sname),'stats');
+    end
     
+end
+
+% overlapping means
+if exist('h0m','var')
+    null = mean(cat(3,grpmeandat{null_model}),3);
+    test = grpmeandat(test_models);
+    for tm = 1:length(test)
+        grpmeandat_tm = test{tm} - null;
+        clim=[min(grpmeandat_tm(:)) max(grpmeandat_tm(:))];
+        if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
+        figure(h0m(tm))
+        hold on
+        subplot(2,2,[1 2])
+        imagesc(xticks,[],grpmeandat_tm,clim); 
+        [~,mi]=max(mean(abs(grpmeandat_tm(:,trange(1):trange(2))),1));
+        mi=mi+trange(1)-1;
+        line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
+        title([statfield{sf} ', group mean values']);
+        colorbar
+
+        subplot(2,2,[3 4])
+        plot(xticks,mean(grpmeandat_tm,1),'b'); 
+        title([statfield{sf} ', ' chan_summary ' over channels of group mean values']);
+        ylabel(chan_summary)
+        xlabel('post-stimulus time (ms)')
+    end
 end
 
 % subtract R2 between datasets
@@ -589,15 +702,97 @@ if ~isempty(subtract) && length(allstat)==2
     save(fullfile(spath,sname),'stats','S');
 end
     
-% group model comparison
-if strcmp(an{a},'BRR')
-    runvar=LMEgrp;
-    if exist('LMEgrp','var') && size(runvar{1},1)>1
-        pep_flag=1;
-        [bmc.gposterior,bmc.gout] = VBA_groupBMC_btwGroups_CAB(runvar,[],pep_flag)
-    end
+switch model_comparison
+    case 'sum'
+        %group model comparison
+        if exist('LMEgrp','var')
+            runvar=LMEgrp;
+            if exist('LMEgrp','var') && size(runvar{1},1)>1
+                pep_flag=1;
+                [~,bmc.gposterior,bmc.gout] = VBA_groupBMC_btwGroups_CAB(runvar,options,pep_flag)
+            end
+        end
+    case 'chan_time'
+        % group model comparison over chans/times
+        if exist('LMEgrp','var')
+            if exist('LMEgrpmat','var') && size(LMEgrpmat{1},1)>1
+                sz=size(LMEgrpmat{1});
+                ndat = sz(2)*sz(3);
+                pep_flag=1;
+                options.DisplayWin = 0;
+                for g = 1:length(LMEgrpmat)
+                    temp = reshape(LMEgrpmat{g},sz(1),ndat,sz(4));
+                    for n = 1:ndat
+                        runvar{n}{g}=squeeze(temp(:,n,:));
+                    end
+                end
+                for n = 1:ndat
+                    L = [runvar{n}{1} runvar{n}{2}]; % for now, don't separate groups
+                    [bmc(n).gposterior,bmc(n).gout] = VBA_groupBMC_cab(L,options,pep_flag);
+                end
+                for n = 1:ndat
+                    ep(n,:) = bmc(n).gout.ep;
+                    pep(n,:) = bmc(n).gout.pep;
+                end
+                for f = 1:size(ep,2)
+                    all_ep{f} = reshape(ep(:,f),sz(2),sz(3));
+                    all_pep{f} = reshape(pep(:,f),sz(2),sz(3));
+                end
+                thresh = 0.95;
+                figure
+                for f = 1:length(all_ep)
+                    subplot(length(all_ep),1,f)
+                    imagesc(xticks,[],all_ep{f},[thresh 1]); 
+                    set(gca,'fontsize',12)
+                end
+                figure
+                for f = 1:length(all_pep)
+                    subplot(length(all_pep),1,f)
+                    imagesc(xticks,[],all_pep{f},[thresh 1]); 
+                    set(gca,'fontsize',12)
+                end
+            end
+        end
+     case 'time'
+        % group model comparison over time
+        if exist('LMEgrp','var')
+            if exist('LMEgrpmat','var') && size(LMEgrpmat{1},1)>1
+                sz=size(LMEgrpmat{1});
+                ndat = sz(3);
+                pep_flag=1;
+                options.DisplayWin = 0;
+                for g = 1:length(LMEgrpmat)
+                    temp = squeeze(mean(LMEgrpmat{g},2));
+                    for n = 1:ndat
+                        runvar{n}{g}=squeeze(temp(:,n,:));
+                    end
+                end
+                for n = 1:ndat
+                    L = [runvar{n}{1} runvar{n}{2}]; % for now, don't separate groups
+                    [bmc(n).gposterior,bmc(n).gout] = VBA_groupBMC_cab(L,options,pep_flag);
+                end
+                for n = 1:ndat
+                    ep(n,:) = bmc(n).gout.ep;
+                    pep(n,:) = bmc(n).gout.pep;
+                end
+                for f = 1:size(ep,2)
+                    all_ep{f} = ep(:,f);
+                    all_pep{f} = pep(:,f);
+                end
+                thresh = 0.95;
+                figure
+                for f = 1:length(all_ep)
+                    hold on
+                    plot(xticks,all_ep{f}); 
+                end
+                figure
+                for f = 1:length(all_pep)
+                    hold on
+                    plot(xticks,all_pep{f}); 
+                end
+            end
+        end
 end
-
 % best predictors
 if 0
     for f = 1:length(allstat)
@@ -629,3 +824,4 @@ if 0
         title(['percent increase in r2'])
     end
 end
+
