@@ -193,7 +193,7 @@ switch S.resp_modelspec.responses{:}
         S.colour_code = repmat([1:6],1,3);
         ucol = unique(S.colour_code);
         [cb] = cbrewer('qual', 'Paired', max(length(ucol),max(ucol)), 'pchip');
-        violinplot(cc,1:tm,testmodels,'DotSize',36,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+        violinplot(cc,1:tm,testmodels,'DotSize',36,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
         ylabel('Spearman''s Rho'); xlabel('model')
         title('correlation between simulated and actual log(RT)')
         set(gca,'fontsize',18)
@@ -223,10 +223,19 @@ switch S.resp_modelspec.responses{:}
 %         h1=figure('Name','condition effects')
         h2=figure('Name','condition effects')
         plot_order = reshape(reshape(1:length(testmodels),length(S.resp_models),length(S.perc_models))',[],1);
-        S.colour_code = [9 10 7 8 3 4];
+        
+        % paired colours
+%         S.colour_code = [9 10 7 8 3 4];
+%         ucol = unique(S.colour_code);
+%         [cb] = cbrewer('qual', 'Paired', max(length(ucol),max(ucol)), 'pchip');
+%         [cb2] = cbrewer('qual', 'Paired', 6, 'pchip');
+        
+        % scale colours
+        S.colour_code = [1 2 3 4 5 6];
         ucol = unique(S.colour_code);
-        [cb] = cbrewer('qual', 'Paired', max(length(ucol),max(ucol)), 'pchip');
-        [cb2] = cbrewer('qual', 'Paired', 6, 'pchip');
+        cb([1 3 5],:) = [0.5 0.5 0.5; 0.3 0.3 0.3; 0.1 0.1 0.1]; % greys
+        cb([2 4 6],:) = [0.75 0 0; 0.5 0 0; 0.25 0 0]; % reds
+        
         for tm=1:length(testmodels)
             
             % bars
@@ -247,11 +256,11 @@ switch S.resp_modelspec.responses{:}
             plotdat = squeeze(marg_cond_rt(tm,:,:));
             if length(testmodels)>1
                 xlab = [];
-                violinplot(plotdat,xlab,S.x_pos,'DotSize',10,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+                violinplot(plotdat,xlab,S.x_pos,'DotSize',10,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
                 title(['model ' num2str(tm)])
             else
                 xlab = {'CP10, DC1','CP10, DC3','CP30, DC1','CP30, DC3','CP50, DC1','CP50, DC3'};
-                violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+                violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
                 title(['model ' num2str(tm)])
                 set(gca,'fontsize',12)
                 xtickangle(45)
@@ -274,7 +283,7 @@ switch S.resp_modelspec.responses{:}
         plotdat = mean(cat(3,actRT(:,[1 2 5 6 9 10]),actRT(:,[3 4 7 8 11 12])),3);
         xlab = {'CP10, DC1','CP10, DC3','CP30, DC1','CP30, DC3','CP50, DC1','CP50, DC3'};
         h3=figure('Name',['condition effects: RT']);
-        violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+        violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
         set(gca,'fontsize',12)
         xtickangle(45)
         ylabel('log(RT)')
@@ -288,7 +297,7 @@ switch S.resp_modelspec.responses{:}
         plotdat.(ugrps{2}) = mean(actRT(ismember(grps,ugrps(2)),1:12),2);
         xlab = grps;
         h3b=figure('Name',['group effects: RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb2([6 2],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
         set(gca,'fontsize',12)
         ylabel('log(RT)')
         title('response times')
@@ -302,7 +311,7 @@ switch S.resp_modelspec.responses{:}
         plotdat.([ugrps{2} 'unaff']) = mean(actRT(ismember(grps,ugrps(2)),[3 4 7 8 11 12]),2);
         xlab = {'CPRS aff','CRPS unaff','HC aff','HC unaff'};
         h3c=figure('Name',['group effects: RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb2([6 5 2 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 4 5 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
         set(gca,'fontsize',12)
         ylabel('log(RT)')
         title('response times')
@@ -311,7 +320,7 @@ switch S.resp_modelspec.responses{:}
         % violins of actual Acc
         plotdat = mean(cat(3,actACC(:,[1 2 5 6 9 10]),actACC(:,[3 4 7 8 11 12])),3);
         h4=figure('Name',['condition effects: Acc']);
-        violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+        violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
         set(gca,'fontsize',12)
         xtickangle(45)
         ylabel('% accuracy')
@@ -325,7 +334,7 @@ switch S.resp_modelspec.responses{:}
         plotdat.([ugrps{2} 'unaff']) = actDITRT(ismember(grps,ugrps(2)),[2]);
         xlab = {'CPRS aff','CRPS unaff','HC aff','HC unaff'};
         h3c=figure('Name',['group effects: DIT RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb2([6 5 2 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 4 5 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
         set(gca,'fontsize',12)
         ylabel('DIT completion time (s)')
         title('completion time')
@@ -338,7 +347,7 @@ switch S.resp_modelspec.responses{:}
         plotdat.([ugrps{2} 'unaff']) = actDITRT(ismember(grps,ugrps(2)),[2]);
         xlab = {'CPRS aff','CRPS unaff','HC aff','HC unaff'};
         h3c=figure('Name',['group effects: DIT RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb2([6 5 2 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 4 5 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
         set(gca,'fontsize',12)
         ylabel('DIT completion time (s)')
         title('completion time')
@@ -367,7 +376,7 @@ switch S.resp_modelspec.responses{:}
             m=squeeze(cond_rt(tm,:,:));
             simRTdiff=nanmean(m(:,[1:4]),2)-nanmean(m(:,[9:12]),2);
             rho=corr(simRTdiff,actRTdiff,'type','Spearman');
-            scatter(simRTdiff,actRTdiff,50,(1-rho)*ones(1,3),'filled');
+            scatter(simRTdiff,actRTdiff,50,(1-abs(rho))*ones(1,3),'filled');
             rho=num2str(rho);rho=rho(1:4);
             title(['model ' num2str(tm) ', rho = ' rho])
         end

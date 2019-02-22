@@ -23,6 +23,7 @@ S.facplot={'Odd','CP'};
 % clusters to plot
 S.plotclus = {'c1_spm','c2_spm'};
 S.plotclus_sep = 1; % separate plots for each cluster
+S.subplot_max = 4;
 S.wavetype = 'sensor'; % source or sensor?
 S.wfname = 'cluster_data.mat'; %generic cluster waveform file name
 S.batch = 'matlabbatch.mat'; %name of batch .mat file saved from design_batch.m and within same folder
@@ -109,16 +110,16 @@ for d = 1:length(S.plotclus)
         P(p).ptitle = [];%D(d).ptitle;
         P(p).fact_names = D(d).fact_names;
         %P(p).colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red 
-        P(p).colours = [0.5 0 0.5; 1 0.5 0; 0 0.5 0]; % purple, orange, green 
+        P(p).colours = [0.75 0 0; 0.25 0 0]; % red, black; % purple, orange, green 
         P(p).color_order = -1; % order of plotting: -1 or 1
         P(p).xlinedashed = [0];% vertical dashed lines to indicate events, time in ms
         P(p).timezero = 0;% change zero latency to this time
         P(p).xaxisname = {'peri-stimulus time (ms)'};
         P(p).yaxisname = {'amplitude (uV)'};
         P(p).plottype = 'stat_summary';
-        if p~=1
-            P(p).legend = 0;
-        end
+        %if p~=1
+            P(p).legend = 1;
+        %end
     end
 end
 %% draw gplot
@@ -136,18 +137,24 @@ for p = 1:length(P)
     g = gplot_timeseries(g,P(p));
 end
 
-%g.set_title('title');
-gap = 1.2; % 1.3 = 30% gap between plots
-adjustment = 1.05; % need to play with this to get it the same as other figures
-plotheightratio = length(g)/6 / adjustment; % compared to other figures, so each subplot is the same height across figures
-fig=figure;%('Position',[100 100 800 550]);
-set(fig, 'Units', 'normalized', 'Position', [0,0,0.4,1*plotheightratio]);
-g.set_text_options('base_size',fontsize,'legend_title_scaling',1);
-g.draw();
-drawnow
-g=align_gplots(g,gap); % custom function
-figname = 'EEG_plot';
-if save_figs; export_fig(fullfile(savefigspath,[figname '.png']), '-r1200'); end
+n_fig = ceil(length(g)/S.subplot_max);
+G=g;
+for nf = 1:n_fig
+    ind = (nf-1)*S.subplot_max + 1 : min((nf-1)*S.subplot_max + S.subplot_max, length(G));
+    g = G(ind);
+    %g.set_title('title');
+    gap = 1.2; % 1.3 = 30% gap between plots
+    adjustment = 1; % need to play with this to get it the same as other figures
+    plotheightratio = length(g)/S.subplot_max / adjustment; % compared to other figures, so each subplot is the same height across figures
+    fig=figure;%('Position',[100 100 800 550]);
+    set(fig, 'Units', 'normalized', 'Position', [0,0,0.4,1*plotheightratio]);
+    g.set_text_options('base_size',fontsize,'legend_title_scaling',1);
+    g.draw();
+    drawnow
+    g=align_gplots(g,gap); % custom function
+    figname = 'EEG_plot';
+    if save_figs; export_fig(fullfile(savefigspath,[figname '.png']), '-r1200'); end
+end
 
 %% plot topographies
 Pt.topotype='eeglab';

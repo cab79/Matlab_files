@@ -11,7 +11,7 @@ S.data_path = 'C:\Data\CORE\SPMdata\sensorimages';
 % directory in which SPM analysis is saved 
 S.spmstats_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats';
 % specific folder containing the SPM stats for this analysis
-S.spm_dir = 't-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_spm';
+S.spm_dir = 't-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4_spm';
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
 S.batch = 'matlabbatch.mat';

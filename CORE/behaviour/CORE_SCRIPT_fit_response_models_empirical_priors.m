@@ -28,6 +28,12 @@ S.select.conds = {}; % conditions to load (each a separate file) - empty means a
 S.path.datfile = ['C:\Data\CORE\participants\Participant_data.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 %save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
+% nuisance covariate
+% pdata = readtable(S.path.datfile);
+% Cov = {
+%    pdata.Age(find(pdata.Include & ismember(pdata.Group,'CRPS')));
+%     };
+
 % add toolbox paths
 run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 
@@ -216,6 +222,21 @@ while ~stop
         Vtheta{it}{d} = nan(length(mtheta{it}(:,d))); 
         Vtheta{it}{d}(ind.theta_in,ind.theta_in) = D_fit(d).HGF.fit.optim.Sigma(optim_prc_ind,optim_prc_ind);
     end
+    
+    % correct for Cov - not functional, Should include both group's data
+%     if ~isempty(Cov)
+%         covX=cell2mat(Cov);
+%         for i = 1:size(mphi{it},1)
+%             if std(mphi{it}(i,:))>0 && all(~isnan(mphi{it}(i,:)))
+%                 [~,~,mphi{it}(i,:),~,~] = regress(mphi{it}(i,:)',covX);
+%             end
+%         end
+%         for i = 1:size(mtheta{it},1)
+%             if std(mtheta{it}(i,:))>0 && all(~isnan(mtheta{it}(i,:)))
+%                 [~,~,mtheta{it}(i,:),~,~] = regress(mtheta{it}(i,:)',covX);
+%             end
+%         end
+%     end
     
     % update moments of the parent population distribution
     [p_group.muPhi,p_group.SigmaPhi,p_group.a_vPhi,p_group.b_vPhi] = ...

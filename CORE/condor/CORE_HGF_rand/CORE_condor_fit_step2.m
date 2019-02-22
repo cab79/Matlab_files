@@ -24,6 +24,13 @@ nrand = importdata('nrand.txt');
 it = importdata('it.txt');
 ngrp = length(nsub);
 
+% nuisance covariate
+datfile = fullfile(pth, 'Data', 'Participant_data.xlsx'); % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+pdata = readtable(datfile);
+Cov = {
+   pdata.Age(find(pdata.Include));
+    };
+
 for nr = 1:nrand
     D_fit=struct;
     GS=struct;
@@ -53,66 +60,102 @@ for nr = 1:nrand
         % get group prior stats
         ii = rstart + gstart; % index of first file in each group/rand
         load(['input' num2str(ii) '.mat'],'S');
-        priors_group = S.priors_group;
-        p_group = S.p_group;
-        ind = S.ind;
-        iV_phi = VBA_inv(priors_group.SigmaPhi);
-        temp=priors_group.SigmaTheta;
+        priors_group(g) = S.priors_group;
+        p_group(g) = S.p_group;
+        ind{g} = S.ind;
+        iV_phi{g} = VBA_inv(priors_group(g).SigmaPhi);
+        temp=priors_group(g).SigmaTheta;
         temp(isnan(temp)) = 0;
-        iV_theta = VBA_inv(temp); % uses temp because doesn't like nans
+        iV_theta{g} = VBA_inv(temp); % uses temp because doesn't like nans
 
         % store sufficient statistics
-        r.c_prc = eval([S.prc_config '(S,0)']); % runs the prc config function
-        r.c_obs = eval([S.obs_config '(r,S)']); % runs the obs config function
-        optim_prc_ind = 1:length(ind.theta_in);
-        optim_obs_ind = length(ind.theta_in)+1:length(ind.theta_in)+length(ind.phi_in);
+        r(g).c_prc = eval([S.prc_config '(S,0)']); % runs the prc config function
+        r(g).c_obs = eval([S.obs_config '(r(g),S)']); % runs the obs config function
+        optim_prc_ind{g} = 1:length(ind{g}.theta_in);
+        optim_obs_ind{g} = length(ind{g}.theta_in)+1:length(ind{g}.theta_in)+length(ind{g}.phi_in);
         for d = 1:nsub(g)
             ns = gstart+d;
-            mphi(:,d) = D_fit(ns).HGF.fit.p_obs.p;
-            Vphi{d} = nan(length(mphi(:,d))); 
-            Vphi{d}(ind.phi_in,ind.phi_in) = D_fit(ns).HGF.fit.optim.Sigma(optim_obs_ind,optim_obs_ind);
+            mphi{g}(:,d) = D_fit(ns).HGF.fit.p_obs.p;
+            Vphi{g}{d} = nan(length(mphi{g}(:,d))); 
+            Vphi{g}{d}(ind{g}.phi_in,ind{g}.phi_in) = D_fit(ns).HGF.fit.optim.Sigma(optim_obs_ind{g},optim_obs_ind{g});
             % for mtheta, need to log values outputted from HGF
-            [pvec, ~] = GBM_transp_log(r,D_fit(ns).HGF.fit.p_prc.p);
-            mtheta(:,d) = pvec;
+            [pvec, ~] = GBM_transp_log(r(g),D_fit(ns).HGF.fit.p_prc.p);
+            mtheta{g}(:,d) = pvec;
             % others are already ok as variances
-            Vtheta{d} = nan(length(mtheta(:,d))); 
-            Vtheta{d}(ind.theta_in,ind.theta_in) = D_fit(ns).HGF.fit.optim.Sigma(optim_prc_ind,optim_prc_ind);
+            Vtheta{g}{d} = nan(length(mtheta{g}(:,d))); 
+            Vtheta{g}{d}(ind{g}.theta_in,ind{g}.theta_in) = D_fit(ns).HGF.fit.optim.Sigma(optim_prc_ind{g},optim_prc_ind{g});
         end
+        if g==1
+            GS=S;
+        else
+            GS(g)=S;
+        end
+    end
+        
+    % correct for Cov
+    % NEED TO ENSURE COV IS IN SAME ORDER AS SUBJECTS
+    mphi_all = cat(2,mphi{:});
+    mtheta_all = cat(2,mtheta{:});
+    if ~isempty(Cov)
+        covX=[ones(size(mphi_all,2),1) cell2mat(Cov)];
+        for i = 1:size(mphi_all,1)
+            if std(mphi_all(i,:))>0 && all(~isnan(mphi_all(i,:)))
+                meanval = mean(mphi_all(i,:));
+                [~,~,resid,~,~] = regress(mphi_all(i,:)',covX);
+                mphi_all(i,:) = meanval + resid;
+            end
+        end
+        for i = 1:size(mtheta_all,1)
+            if std(mtheta_all(i,:))>0 && all(~isnan(mtheta_all(i,:)))
+                meanval = mean(mtheta_all(i,:));
+                [~,~,resid,~,~] = regress(mtheta_all(i,:)',covX);
+                mtheta_all(i,:) = meanval + resid;
+            end
+        end
+    end
 
+    for g = 1:ngrp
+%         S=GS(g);
+        gstart = (g-1)*nsub(max(g,2)-1); % starting index of group
+        gend = gstart + nsub(g)-1; % ending index of group
+        
+        mphi{g}=mphi_all(:,gstart+1:gend+1);
+        mtheta{g}=mtheta_all(:,gstart+1:gend+1);
+        
         % update moments of the parent population distribution
-        [p_group.muPhi,p_group.SigmaPhi,p_group.a_vPhi,p_group.b_vPhi] = ...
+        [p_group(g).muPhi,p_group(g).SigmaPhi,p_group(g).a_vPhi,p_group(g).b_vPhi] = ...
                 MFX_VBupdate(...
-                priors_group.muPhi,...
-                iV_phi,...
-                mphi,...
-                Vphi,...
-                p_group.a_vPhi,...
-                p_group.b_vPhi,...
-                priors_group.a_vPhi,...
-                priors_group.b_vPhi,...
-                ind.phi_ffx,...
-                ind.phi_in);
-        [p_group.muTheta,p_group.SigmaTheta,p_group.a_vTheta,p_group.b_vTheta] = ...
+                priors_group(g).muPhi,...
+                iV_phi{g},...
+                mphi{g},...
+                Vphi{g},...
+                p_group(g).a_vPhi,...
+                p_group(g).b_vPhi,...
+                priors_group(g).a_vPhi,...
+                priors_group(g).b_vPhi,...
+                ind{g}.phi_ffx,...
+                ind{g}.phi_in);
+        [p_group(g).muTheta,p_group(g).SigmaTheta,p_group(g).a_vTheta,p_group(g).b_vTheta] = ...
                 MFX_VBupdate(...
-                priors_group.muTheta,...
-                iV_theta,...
-                mtheta,...
-                Vtheta,...
-                p_group.a_vTheta,...
-                p_group.b_vTheta,...
-                priors_group.a_vTheta,...
-                priors_group.b_vTheta,...
-                ind.theta_ffx,...
-                ind.theta_in);
+                priors_group(g).muTheta,...
+                iV_theta{g},...
+                mtheta{g},...
+                Vtheta{g},...
+                p_group(g).a_vTheta,...
+                p_group(g).b_vTheta,...
+                priors_group(g).a_vTheta,...
+                priors_group(g).b_vTheta,...
+                ind{g}.theta_ffx,...
+                ind{g}.theta_in);
 
         % calculate free energy
-        F = MFX_F(D_fit(gstart+1:gend+1),p_group,priors_group,ind)
+        F = MFX_F(D_fit(gstart+1:gend+1),p_group(g),priors_group(g),ind{g})
 
         %figures
         %     o_group.F = F;
         %     o_group.it = it;
-        %     o_group.ind = ind;
-        %     [o_group.options] = VBA_displayMFX(p_sub,o_sub,p_group,o_group);
+        %     o_group.ind{g} = ind{g};
+        %     [o_group.options] = VBA_displayMFX(p_sub,o_sub,p_group(g),o_group);
 
         %figures
         %     figure(fig)
@@ -123,7 +166,7 @@ for nr = 1:nrand
         %     drawnow
 
         % save
-        %     save(fullfile(S.path.hgf,['CORE_fittedparameters_percmodel' num2str(S.perc_model) '_respmodel' num2str(S.resp_model) '_fractrain' num2str(S.frac_train) '_' S.sname '_it' num2str(it) '.mat']),'D_fit','S','mphi','Vphi','mtheta','Vtheta','p_group','F');
+        %     save(fullfile(S.path.hgf,['CORE_fittedparameters_percmodel' num2str(S.perc_model) '_respmodel' num2str(S.resp_model) '_fractrain' num2str(S.frac_train) '_' S.sname '_it' num2str(it) '.mat']),'D_fit','S','mphi{g}','Vphi{g}','mtheta{g}','Vtheta{g}','p_group(g)','F');
 
 
         % stop rule
@@ -141,43 +184,43 @@ for nr = 1:nrand
         %     it = it +1;
 
         % update priors in S
-        r.c_obs.priormus=p_group.muPhi';
-        r.c_obs.priorsas = transpose(p_group.b_vPhi./p_group.a_vPhi);
-        S.c_obs = r.c_obs;
-        r.c_prc.priormus=p_group.muTheta';
-        r.c_prc.priorsas = transpose(p_group.b_vTheta./p_group.a_vTheta);
-        S.c_prc = r.c_prc; 
-        S.p_group = p_group;
-        if ~isfield(S,'F')
-            S.F=[];
+        r(g).c_obs.priormus=p_group(g).muPhi';
+        r(g).c_obs.priorsas = transpose(p_group(g).b_vPhi./p_group(g).a_vPhi);
+        GS(g).c_obs = r(g).c_obs;
+        r(g).c_prc.priormus=p_group(g).muTheta';
+        r(g).c_prc.priorsas = transpose(p_group(g).b_vTheta./p_group(g).a_vTheta);
+        GS(g).c_prc = r(g).c_prc; 
+        GS(g).p_group = p_group(g);
+        if ~isfield(GS(g),'F')
+            GS(g).F=[];
         end
-        S.F = [S.F F];
+        GS(g).F = [GS(g).F F];
 
         % Update input files for next iteration
         in_dir = fullfile(pwd,'Data/input_files');
         for d = 1:nsub(g)
             ns = gstart+d;
 
-            % input file index
+            % input file ind{g}ex
             ii = rstart + (ns-1);
 
             % write variable
             in_fname = fullfile(in_dir,['input' num2str(ii) '.mat']);
             m = matfile(in_fname,'Writable',true);
-            m.S = S;
+            m.S = GS(g);
         end
         
-        if g==1
-            GS=S;
-        else
-            GS(g)=S;
-        end
+        %if g==1
+        %    GS=S;
+        %else
+%             GS(g)=S;
+        %end
 
         % cleanup
         for d = 1:nsub(g)
             ns = gstart+d;
 
-            % input file index
+            % input file ind{g}ex
             ii = rstart + (ns-1);
 
             % delete
@@ -318,7 +361,7 @@ while fin==0
         err_ind = find(fsize>0);
         for n = 1:length(err_ind)
             dat=importdata(out(err_ind(n)).name);
-            dat.textdata(~cellfun(@isempty,dat.textdata))
+            dat(~cellfun(@isempty,dat))
         end
     end
 end

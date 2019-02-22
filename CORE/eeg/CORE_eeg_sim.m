@@ -9,6 +9,7 @@ xticks = -200:sample_res:900-sample_res;
 topo_range = [min(xticks) max(xticks)];
 eeglab_plot=0;
 save_sim=1;
+separate_pred=1;
 
 %% unpaired contrasts (cond numbers or subject indices to average over)
 con.grp.i = {1:22, 23:44};
@@ -19,8 +20,9 @@ con.dc.i = {1:4:19, 2:4:20}; %oddballs only
 %% SET PATHS
 %S.file.hgf = 'D_fit_r1_it7_pm3_rm4.mat';
 %S.file.get_dt = 'CORE_fittedparameters_percmodel2_respmodel4_fractrain0_20190211T074650.mat';
-% S.file.stats = 'stats_BRR_all_chan_cond_notrans_20190214T220713';
-S.file.stats = 'stats_BRR_all_chan_HGF_notrans_20190214T220715';
+% S.file.stats = 'stats_BRR_all_chan_cond_notrans_20190214T220713'; 
+S.file.stats = 'stats_BRR_all_chan_condHGF_notrans_20190221T154622'; % epsi with variances
+% S.file.stats = 'stats_BRR_all_chan_condHGF_notrans_20190216T072519'; % cond, dau/da, epsi
 
 % ERP
 S.path.main = 'C:\Data\CORE\eeg\ana';
@@ -45,14 +47,34 @@ l = load(fullfile(S.path.stats,S.file.stats));
 stats = l.stats;
 for d = 1:length(stats.BRR.alldata.b)
     b{d,1} = stats.BRR.alldata.b{d,1};
+    eegstd = reshape(stats.BRR.alldata.ystd{d,1},size(b{d},1)*size(b{d},2),[]);
+    predstd = stats.BRR.alldata.xstd{d,1}(1:size(stats.BRR.alldata.xstd{d,1},3));
     br{d,1} = reshape(b{d},size(b{d},1)*size(b{d},2),[]);
-    X{d,1} = stats.BRR.alldata.pred{d,1};
-    temp = br{d}*X{d}';
-    Y{d,1} = reshape(temp,size(b{d},1),size(b{d},2),[]);
     
-    % restore to original trial order
+    % unstandardised
+    br{d,1} = br{d,1} .* (eegstd*(1./predstd));
+    X{d,1} = stats.BRR.alldata.pred{d,1};
+    % standardised
+%     X{d,1} = zscore(stats.BRR.alldata.pred{d,1});
+    
     [~,reverse_ind] = sort(stats.trialinfo{1}.idx{d});
-    Y{d,1} = Y{d,1}(:,:,reverse_ind);
+    if separate_pred
+        for p = 1:size(X{d},2)
+            
+            temp = br{d}(:,p)*X{d}(:,p)';
+            
+            Y{d,p} = reshape(temp,size(b{d},1),size(b{d},2),[]);
+
+            % restore to original trial order
+            Y{d,p} = Y{d,p}(:,:,reverse_ind);
+        end
+    else
+        temp = br{d}*X{d}';
+        Y{d,1} = reshape(temp,size(b{d},1),size(b{d},2),[]);
+
+        % restore to original trial order
+        Y{d,1} = Y{d,1}(:,:,reverse_ind);
+    end
 end
 
 % load actual EEGlab data
@@ -102,112 +124,122 @@ for d = 1:length(S.select.subjects)
         if ~exist(sdir,'dir')
             mkdir(sdir)
         end
-        EEG.data = Y{d,1};
-        sname = strrep(filename,'.set',['_' S.file.stats '.set']);
-        pop_saveset(EEG,'filename',sname,'filepath',sdir); 
+        if separate_pred
+            for p = 1:size(Y,2)
+                EEG.data = Y{d,p};
+                sname = strrep(filename,'.set',['_' S.file.stats '_pred' num2str(p) '.set']);
+                pop_saveset(EEG,'filename',sname,'filepath',sdir); 
+            end
+        else
+            EEG.data = Y{d,1};
+            sname = strrep(filename,'.set',['_' S.file.stats '.set']);
+            pop_saveset(EEG,'filename',sname,'filepath',sdir); 
+        end
     end
 end
 
-%% GROUP contrast
-for g = 1:2
-    grpdat{g}=cat(3,con.odd.dat{con.grp.i{g},1}); % oddballs
-    sizdat = size(grpdat{g});
-    grpdat{g}=reshape(grpdat{g},size(grpdat{g},1)*size(grpdat{g},2),[])';
-end
-for s=1:size(grpdat{1},2)
-    [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
-    t(s)=stt.tstat;
-end
-% remove NaNs
-t(isnan(t))=0;
-h(isnan(h))=0;
-p(isnan(p))=Inf;
-% FDR correction
-[~,fdr_mask] = fdr(p,0.05);
-fdr_p=p.*double(fdr_mask);
-fdr_t=t.*double(fdr_mask);
-% reshape
-h=reshape(h,sizdat(1),sizdat(2));
-p=reshape(p,sizdat(1),sizdat(2));
-t=reshape(t,sizdat(1),sizdat(2));
-fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
-fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
-CORE_eeg_plot_stats('group effect',xticks,topo_range,t,fdr_t,chanlocs)
+if 0
+    %% GROUP contrast
+    for g = 1:2
+        grpdat{g}=cat(3,con.odd.dat{con.grp.i{g},1}); % oddballs
+        sizdat = size(grpdat{g});
+        grpdat{g}=reshape(grpdat{g},size(grpdat{g},1)*size(grpdat{g},2),[])';
+    end
+    for s=1:size(grpdat{1},2)
+        [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
+        t(s)=stt.tstat;
+    end
+    % remove NaNs
+    t(isnan(t))=0;
+    h(isnan(h))=0;
+    p(isnan(p))=Inf;
+    % FDR correction
+    [~,fdr_mask] = fdr(p,0.05);
+    fdr_p=p.*double(fdr_mask);
+    fdr_t=t.*double(fdr_mask);
+    % reshape
+    h=reshape(h,sizdat(1),sizdat(2));
+    p=reshape(p,sizdat(1),sizdat(2));
+    t=reshape(t,sizdat(1),sizdat(2));
+    fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
+    fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
+    CORE_eeg_plot_stats('group effect',xticks,topo_range,t,fdr_t,chanlocs)
 
-%% ODDBALL contrast
-for g = 1:2
-    grpdat{g}=cat(3,con.odd.dat{:,g});
-    sizdat = size(grpdat{g});
-    grpdat{g}=reshape(grpdat{g},size(grpdat{g},1)*size(grpdat{g},2),[])';
-end
-for s=1:size(grpdat{1},2)
-    [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
-    t(s)=stt.tstat;
-end
-% remove NaNs
-t(isnan(t))=0;
-h(isnan(h))=0;
-p(isnan(p))=Inf;
-% FDR correction
-[~,fdr_mask] = fdr(p,0.05);
-fdr_p=p.*double(fdr_mask);
-fdr_t=t.*double(fdr_mask);
-% reshape
-h=reshape(h,sizdat(1),sizdat(2));
-p=reshape(p,sizdat(1),sizdat(2));
-t=reshape(t,sizdat(1),sizdat(2));
-fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
-fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
-CORE_eeg_plot_stats('oddball effect',xticks,topo_range,t,fdr_t,chanlocs)
+    %% ODDBALL contrast
+    for g = 1:2
+        grpdat{g}=cat(3,con.odd.dat{:,g});
+        sizdat = size(grpdat{g});
+        grpdat{g}=reshape(grpdat{g},size(grpdat{g},1)*size(grpdat{g},2),[])';
+    end
+    for s=1:size(grpdat{1},2)
+        [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
+        t(s)=stt.tstat;
+    end
+    % remove NaNs
+    t(isnan(t))=0;
+    h(isnan(h))=0;
+    p(isnan(p))=Inf;
+    % FDR correction
+    [~,fdr_mask] = fdr(p,0.05);
+    fdr_p=p.*double(fdr_mask);
+    fdr_t=t.*double(fdr_mask);
+    % reshape
+    h=reshape(h,sizdat(1),sizdat(2));
+    p=reshape(p,sizdat(1),sizdat(2));
+    t=reshape(t,sizdat(1),sizdat(2));
+    fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
+    fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
+    CORE_eeg_plot_stats('oddball effect',xticks,topo_range,t,fdr_t,chanlocs)
 
-%% CP contrast
-for g = 1:2
-    grpdat{g}=cat(3,con.cp.dat{:,g});
-    sizdat = size(grpdat{g});
-    grpdat{g}=reshape(grpdat{g},size(grpdat{g},1)*size(grpdat{g},2),[])';
-end
-for s=1:size(grpdat{1},2)
-    [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
-    t(s)=stt.tstat;
-end
-% remove NaNs
-t(isnan(t))=0;
-h(isnan(h))=0;
-p(isnan(p))=Inf;
-% FDR correction
-[~,fdr_mask] = fdr(p,0.05);
-fdr_p=p.*double(fdr_mask);
-fdr_t=t.*double(fdr_mask);
-% reshape
-h=reshape(h,sizdat(1),sizdat(2));
-p=reshape(p,sizdat(1),sizdat(2));
-t=reshape(t,sizdat(1),sizdat(2));
-fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
-fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
-CORE_eeg_plot_stats('CP effect',xticks,topo_range,t,fdr_t,chanlocs)
+    %% CP contrast
+    for g = 1:2
+        grpdat{g}=cat(3,con.cp.dat{:,g});
+        sizdat = size(grpdat{g});
+        grpdat{g}=reshape(grpdat{g},size(grpdat{g},1)*size(grpdat{g},2),[])';
+    end
+    for s=1:size(grpdat{1},2)
+        [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
+        t(s)=stt.tstat;
+    end
+    % remove NaNs
+    t(isnan(t))=0;
+    h(isnan(h))=0;
+    p(isnan(p))=Inf;
+    % FDR correction
+    [~,fdr_mask] = fdr(p,0.05);
+    fdr_p=p.*double(fdr_mask);
+    fdr_t=t.*double(fdr_mask);
+    % reshape
+    h=reshape(h,sizdat(1),sizdat(2));
+    p=reshape(p,sizdat(1),sizdat(2));
+    t=reshape(t,sizdat(1),sizdat(2));
+    fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
+    fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
+    CORE_eeg_plot_stats('CP effect',xticks,topo_range,t,fdr_t,chanlocs)
 
-%% DC contrast
-for g = 1:2
-    grpdat{g}=cat(3,con.dc.dat{:,g});
-    sizdat = size(grpdat{g});
-    grpdat{g}=reshape(grpdat{g},size(grpdat{g},1)*size(grpdat{g},2),[])';
+    %% DC contrast
+    for g = 1:2
+        grpdat{g}=cat(3,con.dc.dat{:,g});
+        sizdat = size(grpdat{g});
+        grpdat{g}=reshape(grpdat{g},size(grpdat{g},1)*size(grpdat{g},2),[])';
+    end
+    for s=1:size(grpdat{1},2)
+        [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
+        t(s)=stt.tstat;
+    end
+    % remove NaNs
+    t(isnan(t))=0;
+    h(isnan(h))=0;
+    p(isnan(p))=Inf;
+    % FDR correction
+    [~,fdr_mask] = fdr(p,0.05);
+    fdr_p=p.*double(fdr_mask);
+    fdr_t=t.*double(fdr_mask);
+    % reshape
+    h=reshape(h,sizdat(1),sizdat(2));
+    p=reshape(p,sizdat(1),sizdat(2));
+    t=reshape(t,sizdat(1),sizdat(2));
+    fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
+    fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
+    CORE_eeg_plot_stats('DC effect',xticks,topo_range,t,fdr_t,chanlocs)
 end
-for s=1:size(grpdat{1},2)
-    [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
-    t(s)=stt.tstat;
-end
-% remove NaNs
-t(isnan(t))=0;
-h(isnan(h))=0;
-p(isnan(p))=Inf;
-% FDR correction
-[~,fdr_mask] = fdr(p,0.05);
-fdr_p=p.*double(fdr_mask);
-fdr_t=t.*double(fdr_mask);
-% reshape
-h=reshape(h,sizdat(1),sizdat(2));
-p=reshape(p,sizdat(1),sizdat(2));
-t=reshape(t,sizdat(1),sizdat(2));
-fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
-fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
-CORE_eeg_plot_stats('DC effect',xticks,topo_range,t,fdr_t,chanlocs)

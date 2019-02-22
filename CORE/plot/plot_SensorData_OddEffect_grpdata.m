@@ -1,7 +1,5 @@
 clear all
 close all
-dbstop if error
-restoredefaultpath
 run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 addpath('C:\Data\Matlab\export_fig')
 addpath('C:\Data\CORE\eeg')
@@ -13,36 +11,37 @@ save_figs=1;
 %savefigspath = 'C:\Data\CORE\EEG\ana\spm\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm\Grp_clusters';
 
 %% prepare SPM EEG data
+%S.spm_path = 'C:\Data\CORE\EEG\ana\spm\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm';
 
-S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_spm';
-col = cbrewer('seq', 'Greys', 100, 'pchip'); 
-St.eeglab_path = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2';
+% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_spm';
+% col = cbrewer('seq', 'Greys', 100, 'pchip'); 
+% St.eeglab_path = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2';
 
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred1_spm';
+% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred1_spm';
 % col = cbrewer('seq', 'YlOrBr', 100, 'pchip'); %orange
 % St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
 
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred2_spm';
+% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred2_spm';
 % col = cbrewer('seq', 'Purples', 100, 'pchip'); 
 % St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
 
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred3_spm';
+% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred3_spm';
 % col = cbrewer('seq', 'Blues', 100, 'pchip'); 
 % St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
 
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4_spm';
-% col = cbrewer('seq', 'Greens', 100, 'pchip'); 
-% St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
+S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4_spm';
+col = cbrewer('seq', 'Greens', 100, 'pchip'); 
+St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
 
 S.plotclus = {'c1_spm','c2_spm','c3_spm','c4_spm','c5_spm','c6_spm','c7_spm','c8_spm','c9_spm','c10_spm','c11_spm','c12_spm','c13_spm','c14_spm','c15_spm'}; % latency order
 col = col([90 50],:);
 
 %cluster directory name, which also specifies the constrast that will be
 %plotted (i.e. the characters before the underscore)
-S.clusdir='OddDC_clusters';
+S.clusdir='Odd_clusters';
 %factor(s) to plot - if more than one, first factor levels will be on separate plots
 %must be the same characters as used to name the factors in design_batch
-S.facplot={'DC'};
+S.facplot={'Odd'};
 %S.facplot={'Exp'};
 % clusters to plot
 S.plotclus_sep = 1; % separate plots for each cluster
@@ -52,21 +51,21 @@ S.wfname = 'cluster_data.mat'; %generic cluster waveform file name
 S.batch = 'matlabbatch.mat'; %name of batch .mat file saved from design_batch.m and within same folder
 S.subfactname = 'Subject'; %name of 'subject' factor in the SPM design
 S.fact_names = {
-%     'Oddball effect';
-%     'Change Probability';
-    %'Group';
-    'Digit Change';
+    %'Change Probability';
+%     'Group';
+    'Oddball effect';
+    %'Digit Change';
     %'Side';
     };
 S.cval={ %condition labels, i.e. levels of each condition, in the same order as in the SPM design matrix. One row per factor. second column is plotting order
-%     {'Oddball','Standard'},[1 2];
-%     {'10%','30%','50%'},[1 2 3];
-    %{'CRPS','HC'},[1 2];
-    {'DC1','DC3'},[1 2];
-    %{'Affected','Unaffected'},[1 2];
+    %{'10%','30%','50%'};
+%     {'CRPS','HC'},[1 2];
+    {'Oddball','Standard'},[1 2];
+    %{'DC1','DC3'};
+    %{'Affected','Unaffected'}
     };
 S.xlimits = [-200 800];% time in ms
-D = gplotprepare_spmeegsensorcluster(S);
+D = gplotprepare_spmeegsensorcluster(S)
 
 %% prepare weights data for gplot
 %Sw.path = 'C:\Data\Catastrophising study\SPMstats\pronto\Group\Main effect\t-3000_-2_b-3000_-2500_m_-2500_-1000_Grp_Exp_Subject_orig_cleaned_SPNall_prt_GrpAvCond_gpc_ROI_noperm';
@@ -81,24 +80,20 @@ D = gplotprepare_spmeegsensorcluster(S);
 
 %% Prepare EEGLAB data for topos
 savefigspath = fullfile(S.spm_path,S.clusdir);
-St.eventtypes = [1:12];%{'c1','c3','c5','c7','c2a','c4a','c6a','c8a','c2b','c4b','c6b','c8b'};
+St.eventtypes = [1:8];%{'c1','c3','c5','c7','c2a','c4a','c6a','c8a','c2b','c4b','c6b','c8b'};
 St.mark = {
-    [1 5]; % CP10, Odd, DC1
-    [2 6]; % CP10, Odd, DC3
-    [3 7]; % CP10, Stan, DC1
-    [4 8]; % CP10, Stan, DC3
-    [9 13]; % CP30, Odd, DC1
-    [10 14]; % CP30, Odd, DC3
-    [11 15]; % CP30, Stan, DC1
-    [12 16]; % CP30, Stan, DC3
-    [17 21]; % CP50, Odd, DC1
-    [18 22]; % CP50, Odd, DC3
-    [19 23]; % CP50, Stan, DC1
-    [20 24]; % CP50, Stan, DC3
+    [1 9 17]; % left, Odd, DC1
+    [2 10 18]; % left, Odd, DC3
+    [3 11 19]; % left, stan, DC1
+    [4 12 20]; % left, stan, DC3
+    [5 13 21]; % right, Odd
+    [6 14 22]; % right, Odd
+    [7 15 23]; % right, stan
+    [8 16 24]; % right, Stan
 };
-St.st_string='mspm12_flip_Sideavg_';
+St.st_string='mspm12_flip_CPavg_';
 St.en_string='\scond';
-St.ERPsavename = ['ERP_DAT_Sideavg_' S.spm_path(end-15:end-4) '_.mat'];
+St.ERPsavename = ['ERP_DAT_CPavg_' S.spm_path(end-15:end-4) '_.mat'];
 St.plot_diff_wave = 1;
 St.use_flipped=1;
 St.flipcond = [5:8 13:16 21:24]; % EEGLAB markers
@@ -122,13 +117,13 @@ for p = 1:length(D)
     P(p).y = D(p).y;
     P(p).cond = D(p).cond;
     P(p).condsize = []; % line/marker size
-    P(p).xlinesolid = [];
+    P(p).xlinesolid = [];%D(p).P_val;
     P(p).poly = D(p).E_val;% polygon times
     P(p).ptitle = [];%D(p).ptitle;
     P(p).fact_names = D(p).fact_names;
-    %P(p).colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red 
-    P(p).colours = col; % red, black; [1 0.5 0; 0.5 0 0.5]; % purple, orange, green 
+    P(p).colours = col; % red, black; [1 0.2 0.2; 0.2 0.5 1]; % blue, red 
     P(p).color_order = -1; % order of plotting: -1 or 1
+    %P(p).colours = [0.5 0 0.5; 1 0.5 0; 0 0.5 0]; % purple, orange, green 
     P(p).xlinedashed = [0];% vertical dashed lines to indicate events, time in ms
     P(p).timezero = 0;% change zero latency to this time
     P(p).xaxisname = {'peri-stimulus time (ms)'};
@@ -152,7 +147,6 @@ for p = 1:length(P)
     end
     g = gplot_timeseries(g,P(p));
 end
-
 n_fig = ceil(length(g)/S.subplot_max);
 G=g;
 for nf = 1:n_fig
@@ -180,7 +174,7 @@ Pt.fontsize=fontsize;
 Pt.cval = 0;
 Pt.sub_order = P(p).color_order;
 for d = 1:length(D)
-    E.E_val = D(d).E_val
+    E.E_val = D(d).E_val;
     plot_topo(Pt,E)
     set(gcf,'color','w');
     set(gca,'fontsize', fontsize);

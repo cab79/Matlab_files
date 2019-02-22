@@ -16,7 +16,8 @@ datfile = ['C:\Data\CORE\participants\Participant_data.xlsx']; % .xlsx file to g
 % the folder
 fpref = '';
 fmid = '';
-fsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190215T132235_pred1.set';
+fsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred';
+pred = 4;
 % fsuff = '_4_merged_cleaned.set';
 % fsuff = '_2_cleaned_tm.set';
 
@@ -94,85 +95,87 @@ CRPSsides = pdata(2:end,side_col);
 sidenan = cell2mat(cellfun(@(x) any(x), cellfun(@(x) isnan(x), CRPSsides, 'UniformOutput', 0), 'UniformOutput', 0));
 sidepool = CRPSsides(~sidenan);
 sn_idx=find(sidenan);
+rng('default'); rng(1); % seed random number generator
 for s=1:length(sn_idx)
     CRPSsides(sn_idx(s)) = sidepool(randi([1 numel(sidepool)]));
 end
 
-
 %% LOAD AND CONVERT
-fname=[fpref '*' fmid  '*' fsuff];
-fname=strrep(fname,'**','*');
-files = dir(fullfile(filepath,fname));
-allfiles = {files(:).name};
-cd(outpath)
+for p = 1:length(pred)
+    fname=[fpref '*' fmid  '*' [fsuff num2str(pred(p)) '.set']];
+    fname=strrep(fname,'**','*');
+    files = dir(fullfile(filepath,fname));
+    allfiles = {files(:).name};
+    cd(outpath)
 
-%for f = sort(1:length(files),'descend')
-for f=1:length(files)
-    S=struct; % must clear this every time!
-    disp(['file ' num2str(f) '/' num2str(length(files))]);
-    S.dataset = fullfile(filepath,files(f).name);
-    [pth nme ext] = fileparts(files(f).name);
-    S.outfile = fullfile(outpath,[outprefix nme]);
-    S.mode = dattype;
-    S.timewin = timewin;
-    S.inputformat = 'eeglab_set';
-    
-    
-    % index of this EEG file within participant_data file
-    subind=[];
-    for i = 1:length(subjects)
-        if ~isempty(strfind(allfiles{f},subjects{i}))
-            subind=i;
-        end
-    end
-    
-    
-    if ~exist([S.outfile '.mat'],'file') || overwrite
-        % load data
-        EEG = pop_loadset(files(f).name,filepath);
+    %for f = sort(1:length(files),'descend')
+    for f=1:length(files)
+        S=struct; % must clear this every time!
+        disp(['pred ' num2str(p) '/' num2str(length(pred)) ', file ' num2str(f) '/' num2str(length(files))]);
+        S.dataset = fullfile(filepath,files(f).name);
+        [pth nme ext] = fileparts(files(f).name);
+        S.outfile = fullfile(outpath,[outprefix nme]);
+        S.mode = dattype;
+        S.timewin = timewin;
+        S.inputformat = 'eeglab_set';
 
 
-        % for data recorded with EGI system and STIM/DIN markers
-        [conds, tnums, fnums, bnums] = get_markers(EEG);
-        
-        % flip channels right to left
-        if ~isempty(cond2flip)
-            load(path.chanlocs);
-            flipidx = find(ismember(conds,cond2flip));
-            EEG.data(:,:,flipidx) = flipchan(EEG.data(:,:,flipidx),chanlocs);
-            new_file = strrep(files(f).name,'.set','_flip.set');
-            pop_saveset(EEG,new_file,filepath)
-            S.dataset = fullfile(filepath,new_file);
-        else
-            S.dataset = fullfile(filepath,files(f).name);
-        end
-        
-        % swap sides
-        if strcmp(CRPSsides{subind},'R')
-            new_conds = nan(1,length(conds));
-            for nf = 1:length(fcond{1})
-                new_conds(conds==fcond{1}(nf)) = fcond{2}(nf);
-                new_conds(conds==fcond{2}(nf)) = fcond{1}(nf);
-            end
-            conds = new_conds;
-        end
-        
-        cmark = nan(1,length(conds));
-        for m = 1:length(mark)
-            idx = ismember(conds,mark{m});
-            cmark(idx) = m;
-        end
-        
-        %spm_eeg_convert(S);
-        S.conditionlabels = cellfun(@num2str, num2cell(cmark), 'UniformOutput', false);
-        spm_eeg_convert_eeglab_epoched(S,1);  % faster version of spm_eeg_convert, only works with EEGLAB epoched data
-%         spm_eeg_convert(S);  % SLOW
-        
-        try
-            if exist(fullfile(filepath,new_file),'file')
-                delete(fullfile(filepath,new_file));
+        % index of this EEG file within participant_data file
+        subind=[];
+        for i = 1:length(subjects)
+            if ~isempty(strfind(allfiles{f},subjects{i}))
+                subind=i;
             end
         end
+
+
+        if ~exist([S.outfile '.mat'],'file') || overwrite
+            % load data
+            EEG = pop_loadset(files(f).name,filepath);
+
+
+            % for data recorded with EGI system and STIM/DIN markers
+            [conds, tnums, fnums, bnums] = get_markers(EEG);
+
+            % flip channels right to left
+            if ~isempty(cond2flip)
+                load(path.chanlocs);
+                flipidx = find(ismember(conds,cond2flip));
+                EEG.data(:,:,flipidx) = flipchan(EEG.data(:,:,flipidx),chanlocs);
+                new_file = strrep(files(f).name,'.set','_flip.set');
+                pop_saveset(EEG,new_file,filepath)
+                S.dataset = fullfile(filepath,new_file);
+            else
+                S.dataset = fullfile(filepath,files(f).name);
+            end
+
+            % swap sides
+            if strcmp(CRPSsides{subind},'R')
+                new_conds = nan(1,length(conds));
+                for nf = 1:length(fcond{1})
+                    new_conds(conds==fcond{1}(nf)) = fcond{2}(nf);
+                    new_conds(conds==fcond{2}(nf)) = fcond{1}(nf);
+                end
+                conds = new_conds;
+            end
+
+            cmark = nan(1,length(conds));
+            for m = 1:length(mark)
+                idx = ismember(conds,mark{m});
+                cmark(idx) = m;
+            end
+
+            %spm_eeg_convert(S);
+            S.conditionlabels = cellfun(@num2str, num2cell(cmark), 'UniformOutput', false);
+            spm_eeg_convert_eeglab_epoched(S,1);  % faster version of spm_eeg_convert, only works with EEGLAB epoched data
+    %         spm_eeg_convert(S);  % SLOW
+
+            try
+                if exist(fullfile(filepath,new_file),'file')
+                    delete(fullfile(filepath,new_file));
+                end
+            end
+        end
+        clear EEG;
     end
-    clear EEG;
 end

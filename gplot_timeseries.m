@@ -31,14 +31,14 @@ g(P.xy(1),P.xy(2)).set_title(P.ptitle);
 if ~P.legend
     g(P.xy(1),P.xy(2)).no_legend();
 end
-if any(P.xlinedashed)
+if ~isempty(P.xlinedashed)
     g(P.xy(1),P.xy(2)).geom_vline('xintercept',P.xlinedashed,'style','k--','extent',4);
 end
-if any(P.xlinesolid)
+if ~isempty(P.xlinesolid)
     g(P.xy(1),P.xy(2)).geom_vline('xintercept',P.xlinesolid,'style','k');
 end
 if P.poly
-    g(P.xy(1),P.xy(2)).geom_polygon('x',{[min(P.poly) max(P.poly)]},'color',[0.5 0.5 0.5]);
+    g(P.xy(1),P.xy(2)).geom_polygon('x',{[min(P.poly) max(P.poly)]},'color',[0.6 0.6 0.6]);
 end
 %range(cl,:) = [min(P.E_valz) max(P.E_valz)];
 

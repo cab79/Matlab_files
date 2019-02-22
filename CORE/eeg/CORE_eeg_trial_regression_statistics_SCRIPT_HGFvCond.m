@@ -204,10 +204,10 @@ elseif isfield(S.select,'freq')
 else
     % other EEG data operations
     S.flipchan = [3 4]; % rows of S.cond_idx containing trial types to flip channels right to left 
-    S.total_samples = -200:799;
-    S.select_samples = 0:799;
+    S.total_samples = -200:899;
+    S.select_samples = -200:899;
     S.smooth_samples = 10;
-    S.dsample = 20;
+    S.dsample = 4;
     S.zscore = 1;
     S.ndec=8; % trim data to a number of decimal places
     
@@ -227,12 +227,12 @@ S.balance_conds =1; % random training trials balanced across conditions
 S.num_runs = 1; % run analysis this many times, each time with a different random choice of training/test data
 
 % Predictor variables
-S.pred_type = {'HGF'}; % null, cond, RT or HGF
-S.pred_type_traintest = {'train'}; % 'train' or 'test' for each pred_type. 'train' also performs testing if set by S.traintest.
+S.pred_type = {'cond','HGF'}; % null, cond, RT or HGF
+S.pred_type_traintest = {'train','train'}; % 'train' or 'test' for each pred_type. 'train' also performs testing if set by S.traintest.
 
 % if S.pred_type='cond':
-% S.cond = {[2 4],[1 3]};
-S.cond = {[1 3]};
+S.cond = {[2 4],[1 3]};
+% S.cond = {[1 3]};
 
 % if S.pred_type = 'HGF': HGF trajectories, grouped
 %S.traj{1} = {

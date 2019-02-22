@@ -45,24 +45,41 @@ fnames = {
 
 % 'CORE_fittedparameters_percmodel2_respmodel4_fractrain0_20190211T074650.mat'
 % 'D_fit_r1_it7_pm3_rm4.mat'
-'D_fit_r1_it7_pm2_rm5.mat'
+% 'D_fit_r1_it7_pm2_rm5.mat'
+% 'D_fit_r1_it8_pm3_rm4_n31.mat'
+'D_fit_r1_it8_pm3_rm4_age'
 
 };
 
 get_dt = 'CORE_fittedparameters_percmodel2_respmodel4_fractrain0_20190211T074650.mat';
+% datfile = 'C:\Data\CORE\participants\Participant_data_age_balanced.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+datfile = 'C:\Data\CORE\participants\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+pdata = readtable(datfile);
+subs = pdata.Subject(find(pdata.Include));
+Cov = {
+   pdata.Age(find(pdata.Include));
+    };
+Cov_correct=1;
+reduce_to_include = 0;
 
 ranksum_all_p = struct;
 ranksum_all_z = struct;
 medians_all = struct;
 mva_all = struct;
 for f=1:length(fnames)
+S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
 
     load(fullfile(S.path.hgf,'fitted',fnames{f}));
     if exist('GS','var')
         if ~isfield(D_fit,'dt')
             dtfile = load(fullfile(S.path.hgf,'fitted',get_dt));
-            [D_fit(:).dt]=deal(dtfile.D_fit(:).dt);
-            [D_fit(:).subname]=deal(dtfile.D_fit(:).subname);
+            subind = ismember({dtfile.D_fit(:).subname},subs);
+            if reduce_to_include
+                D_fit = D_fit(subind);
+                GS(1).designmat = GS(1).designmat([1,1+find(subind)],:);
+            end
+            [D_fit(:).subname]=deal(dtfile.D_fit(subind).subname);
+            [D_fit(:).dt]=deal(dtfile.D_fit(subind).dt);
         end
         S=GS(1);
     end
@@ -126,9 +143,10 @@ for f=1:length(fnames)
 %     S.cond.CP30_Odd_DC3 = [10 14];
 %     S.cond.CP50_Odd_DC1 = [17 21];
 %     S.cond.CP50_Odd_DC3 = [18 22];
-%     S.colour_code = [1 2 1 2 1 2];
+%     S.colour_code = [1:6];
 %     S.x_pos = [1.2 1.8 3.2 3.8 5.2 5.8]; % x position of each violin
 %     S.abs = 0;
+%     S.arcsinh = 0;
 
 %% each cell of design: for outputting to excel for SPSS, or for plotting
 %       S.cond.CP10_SideA_Odd_DC1 = 1;
@@ -204,11 +222,25 @@ for f=1:length(fnames)
     end
     [out.T,out.traj,out.param,out.rt] = CORE_extract_HGF_results(D_fit,S);
     
-    %% save table
+    % save table
     if 0
         sname = strrep(fullfile(S.path.hgf,'fitted',fnames{f}),'.mat','_table.xlsx');
         writetable(out.T,sname)
     end
+    
+    % correct for Cov
+    if ~isempty(Cov) && Cov_correct
+        vs=out.T.Properties.VariableNames;
+        for c = 1:length(Cov)
+             predX=[ones(size(Cov{c},1),1) Cov{c}];
+        end
+         for v=1:length(vs)
+             if isnumeric(out.T.(vs{v})) && std(out.T.(vs{v}))~=0
+                 [~,~,out.T.(vs{v}),~,~] = regress(out.T.(vs{v}),predX);
+             end
+         end
+    end
+
     
     if length(D_fit)>1
         S.lda = {'traj_conds'};%{'para','traj_trials','traj_conds'};
@@ -290,7 +322,8 @@ for f=1:length(fnames)
                     X{g}=out.T.(vs{v})(grpind==g);
                 end
             end
-            [cb] = cbrewer('qual', 'Set1', g, 'pchip');
+            %[cb] = cbrewer('qual', 'Set1', g, 'pchip');
+            [cb] = [0.75 0 0; 0.25 0 0];
             h = n_rainclouds(X,cb);
             if exist('titles','var')
                 title(titles{v})
@@ -301,6 +334,35 @@ for f=1:length(fnames)
             box off
         end
         legend(grps)
+        
+        % scatterplot against Age
+        if ~isempty(Cov)
+            sp1 = 3; % rows
+            sp2 = 6; % columns
+            vn=0;figure
+            for v=1:length(vs)
+                vn=vn+1;
+                subplot(sp1,sp2,vn)
+    %             for g = 1:length(grps)
+    %                 % average over cell elements of vs
+    %                 if iscell(vs{v})
+    %                     for vii = 1:length(vs{v})
+    %                         X{g}(:,vii)=out.T.(vs{v}{vii})(grpind==g);
+    %                     end
+    %                     X{g} = mean(X{g},2);
+    %                 else
+    %                     X{g}=out.T.(vs{v})(grpind==g);
+    %                 end
+    %             end
+                [rho,p]=corr(Cov{1},out.T.(vs{v}),'type','Spearman');
+                scatter(Cov{1},out.T.(vs{v}),50,(1-abs(rho))*ones(1,3),'filled');
+                title(['r=' num2str(rho) ', p=' num2str(p)])
+                ylabel(titles{v})
+                xlabel('age')
+                set(gca,'fontsize',10)
+                box off
+            end
+        end
     end
     
     %% HGF trajectories
@@ -319,7 +381,7 @@ for f=1:length(fnames)
                 'Name', ['HGF trajectories, ' grps{g}]);
 
             vs=S.condmean(1,:);
-            [cb] = cbrewer('qual', 'Set1', length(vs), 'pchip');
+            [cb] = [0.5 0.25 0.75; 0 0.25 0.75; 0 0.75 0.25];
 
             leg={''};
             for v=1:length(vs)
@@ -402,8 +464,10 @@ for f=1:length(fnames)
     %% condition means of HGF trajectories
     if 0
         vs=S.condmean;
-        ucol = unique(S.colour_code);
-        [cb] = cbrewer('qual', 'Set1', length(ucol), 'pchip');
+        %ucol = unique(S.colour_code);
+        %[cb] = cbrewer('qual', 'Set1', length(ucol), 'pchip');
+        cb([1 3 5],:) = [0.5 0.5 0.5; 0.25 0.25 0.25; 0 0 0]; % greys
+        cb([2 4 6],:) = [0.75 0 0; 0.5 0 0; 0.25 0 0]; % reds
         for v=1:length(vs)
 
             % get column indices
@@ -418,11 +482,14 @@ for f=1:length(fnames)
             else
                 plotdat = dat{:,:};
             end
+            if S.arcsinh
+                plotdat = log(plotdat+sqrt(plotdat.^2+1));
+            end
 
             % plot
             figure('Name','All groups')
             %bar(xlab,dat{1,:})
-            violinplot(plotdat,xlab,S.x_pos,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+            violinplot(plotdat,xlab,S.x_pos,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
             title(vs{v})
             
             % separate plots by group indices
@@ -440,7 +507,7 @@ for f=1:length(fnames)
                 % plot
                 figure('Name',grps{g})
                 %bar(xlab,dat{1,:})
-                violinplot(plotdat,xlab,S.x_pos,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[0 0 0])
+                violinplot(plotdat,xlab,S.x_pos,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
                 title(vs{v})
             end
         end
@@ -454,4 +521,5 @@ fd=fieldnames(ranksum_all_p);
 ii = length(ranksum_all_p)+1;
 for fn = 1:length(fd)
     ranksum_all_p(ii).(fd{fn}) = sum([ranksum_all_p(1:ii-1).(fd{fn})]<0.05)>length(ranksum_all_p)/10;
+    ranksum_all_z(ii).(fd{fn}) = sum([ranksum_all_p(1:ii-1).(fd{fn})]<0.05)>length(ranksum_all_p)/10;
 end

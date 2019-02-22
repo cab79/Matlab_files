@@ -61,4 +61,8 @@ for s = 1:size(Y,2)
     out(s).r2 = nanmean(r2);
     out(s).neglike = nanmean([predstt(:).neglike]);
     out(s).r2test = nanmean([predstt(:).r2]);
+    out(s).xmean = X_mean;
+    out(s).xstd = X_stand_de;
+    out(s).ymean = y_mean;
+    out(s).ystd = Y_stand_de;
 end

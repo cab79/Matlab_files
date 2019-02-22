@@ -40,7 +40,7 @@ D.anapref = 't-200_899_b-200_0'; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_flip_Sideavg_'; % generic prefix for the SPM file type
-D.subdirsuff = '_2_merged_cleaned_stats_BRR_all_chan_HGF_notrans_20190214T220715'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
 D.identifier=''; % optional identifer to add to end of outputted SPM folder name
@@ -67,10 +67,10 @@ D.imglist = {
 %             'scondition_2.nii'
 %             'scondition_3.nii'
 %             'scondition_4.nii'
-%             'scondition_5_flip.nii'
-%             'scondition_6_flip.nii'
-%             'scondition_7_flip.nii'
-%             'scondition_8_flip.nii'
+%             'scondition_5.nii'
+%             'scondition_6.nii'
+%             'scondition_7.nii'
+%             'scondition_8.nii'
 %             };
         
         

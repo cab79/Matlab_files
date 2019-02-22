@@ -11,13 +11,13 @@ batchpath = 'C:\Data\Matlab\Matlab_files\CORE\EEG\spm\Sensor';
 % prefix, middle part, or suffix of files to load (or leave empty) to select a subset of files in
 % the folder
 % fpref = 'spm12_flip_DCavg';conds=1:12; % PART 2
-fpref = 'spm12_flip_CPavg';conds=1:8; % PART 2
-%fpref = 'spm12_DCavg';conds=1:12; % PART 2
+% fpref = 'spm12_flip_CPavg';conds=1:8; % PART 2
+fpref = 'spm12_flip_Sideavg';conds=1:12; % PART 2
 %fpref = 'spm12';conds=1:24; % PART 4
 %fpref = 'spm12_blockmismatch';conds=1:12; 
 fmid = '';
 %fsuff = '4_cleaned_tm.mat';
-fsuff = '_2_merged_cleaned_stats_BRR_all_chan_HGF_notrans_20190214T220715.mat';
+fsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4.mat';
 
 
 %% SPECIFY OPTIONS
@@ -60,7 +60,10 @@ files = dir(fullfile(filepath,fname));
 % files_ana=1:11;
 % files_ana=12:22;
 % files_ana=23:33;
-files_ana=34:44;
+% files_ana=1:44;
+
+% files_ana=1:22;
+files_ana=23:44;
 
 for f = files_ana
     fname = files(f).name;

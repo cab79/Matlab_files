@@ -61,9 +61,9 @@ opt = VBA_check_struct(opt, ...
     ) ;
 
 % 1 - Model initialisation using pre-defined priors (ideally, Bayes optimal priors with wide variances)
-S.prc_config = 'GBM_config_CORE_percmodel2_BOpriors'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
-S.perc_models=[2]; % 1 3 9 10 11 12
-S.resp_models = [5]; % 2 12 21
+S.prc_config = 'GBM_config_CORE_percmodel3_BOpriors'; S.obs_config = 'response_model_config'; S.nstim=[];S.bayes_opt=0;
+S.perc_models=[3]; % 1 3 9 10 11 12
+S.resp_models = [4]; % 2 12 21
 S.perc_model = S.perc_models(1); 
 S.resp_model = S.resp_models(1); 
 S=CORE_perceptual_models(S);

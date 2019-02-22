@@ -63,7 +63,11 @@ for cl = 1:length(clnames)
     cllabel = C{1};
     
     % select cluster data
-    wf = W.wf.(clnames{cl});
+    try
+        wf = W.wf.(clnames{cl});
+    catch
+        continue
+    end
     % select wf if struct (e.g. source data)
     if isstruct(wf)
         itimes = wf.time*1000;

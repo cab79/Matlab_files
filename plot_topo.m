@@ -102,7 +102,7 @@ function plottopotype(dat,chanlocs,plotchans,topotype,minmax)
 
 switch topotype
     case 'eeglab'
-        topoplot(dat, chanlocs,'maplimits',minmax,'plotchans',plotchans,'electrodes','off','style','map','intrad',0.55,'colormap',colormap('parula'));%,'emarker2',{markchans,'o','w',7,1}); 
+        topoplot(dat, chanlocs,'maplimits',minmax,'plotchans',plotchans,'electrodes','off','style','map','intrad',0.55,'colormap',colormap('gray'));%,'emarker2',{markchans,'o','w',7,1}); 
     case 'pcolor' % UNFINISHED
         topo = nanmean(R(f2).Vdv(:,:,tw),3);
         figure

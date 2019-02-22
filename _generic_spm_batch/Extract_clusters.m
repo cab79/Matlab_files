@@ -179,6 +179,7 @@ for sp = 1:length(S.spm_paths)
             xY.Ic=0;           %- contrast used to adjust data (0 - no adjustment)
             xY.def = 'cluster';%- VOI definition
             spm_regions_saveoptions(xSPM,SPM,hReg,xY,0); % modified version of spm_regions that can prevent saving xY
+            pause(1)
             movefile(fullfile(S.spm_path,['VOI_' cname '.mat']),S.clus_path{cont});
 
             % unmask stats for the next cluster

@@ -132,7 +132,11 @@ sfiles = {
 
 % updated models; odd only
 % 'stats_BRR_all_chan_HGF_notrans_20190213T111930.mat' % all PE, ridge, t
-'stats_BRR_all_chan_HGF_notrans_20190213T135853.mat' % epsis, ridge, t
+% 'stats_BRR_all_chan_HGF_notrans_20190213T135853.mat' % epsis, ridge, t
+
+% contain pred
+'stats_BRR_all_chan_condHGF_notrans_20190216T072318' % epsi, ridge
+% 'stats_BRR_all_chan_condHGF_notrans_20190216T072519' % epsi, hs+
     };
 
 subtract = [];
@@ -145,8 +149,8 @@ recon = []; % multiple beta by predictors specified here
 %statfield = {'beta','b','s','rho','weights','transweights','kurt','skew'}; % for t-test stats
 %statfield = {'s','r2'};
 % xticks = 0:20:600;
-xticks = 0:20:780;
-% xticks = 0:4:796;
+% xticks = 0:20:780;
+xticks = 0:4:796;
 % xticks = 0:8:792;
 % xticks = 0:4:600;
 topo_range = [min(xticks) max(xticks)];
@@ -159,8 +163,14 @@ no_plot_ele = [];
 % param_legend = {'Cond','Dau','Da1','Da2','Ep1','Ep2','Ep3','Mu1','Mu2','Mu3','Sa1','Sa2','Sa3'};
 % param={[1],[2],[3],[4]}; % multiple param's betas are summed within each cell
 % param_legend = {};%'cond','Ep1','Ep2','Ep3'};
-param={[1],[2],[3]}; % multiple param's betas are summed within each cell
-param_legend = {'Ep1','Ep2','Ep3'};
+param={[4],[3],[2],[1]}; % multiple param's betas are summed within each cell
+param_legend = {'epsi3','epsi2','epsi1','oddball'};
+colormaps = {
+    cbrewer('seq', 'Greens', 100, 'pchip')
+    cbrewer('seq', 'Blues', 100, 'pchip')
+    cbrewer('seq', 'Purples', 100, 'pchip')
+    cbrewer('seq', 'YlOrBr', 100, 'pchip')
+    };
 load('C:\Data\CORE\eeg\ana\prep\chanlocs.mat')
 cmap=colormap('parula'); close all;
 chan_summary = 'std'; % mean or std
@@ -173,12 +183,11 @@ options.DisplayWin = 0;
 F_smooth = 0; % variance of Gaussian filter
 save_stats = 0;
 grp_effect = 0;
-pos_neg = 1; % -1, 1, or 0 for both
 
 % get data
 allstat={};
 i=0; % index for fig handles
-if length(sfiles)>1
+if length(sfiles)>1 
     for tm=1:length(test_models)
         h0m(tm)=figure('Name','overlap');
     end
@@ -232,6 +241,7 @@ for f = 1:length(sfiles)
                     % for each parameter
                     if length(param)>1
                         h0=figure('Name','overlap');
+                        h0f=figure('Name','overlap');
                     end
                     for np = 1:length(param)
                         h1=figure;  
@@ -244,7 +254,7 @@ for f = 1:length(sfiles)
                         % number of rows (e.g. subjects)
                         nr = size(allstat{f}.(an{a}).(da{d}).(statfield{sf}),1);
 
-                        clear alldat h p ci t
+                        clear alldat h p ci
                         for r=1:nr
                             dat=allstat{f}.(an{a}).(da{d}).(statfield{sf}){r,c};
                             if strcmp(statfield{sf},'waic')
@@ -273,29 +283,29 @@ for f = 1:length(sfiles)
                         for s=1:size(alldat,2)
                             try
                                 [h(s),p(s),~,stt] = ttest(double(alldat(:,s)));
-                                t(s)=stt.tstat;
+                                t{np}(s)=stt.tstat;
                             catch
                                 h(s)=NaN;
                                 p(s)=NaN;
-                                t(s)=NaN;
+                                t{np}(s)=NaN;
                             end
                         end
 
                         % remove NaNs
-                        t(isnan(t))=0;
+                        t{np}(isnan(t{np}))=0;
                         h(isnan(h))=0;
                         p(isnan(p))=Inf;
 
                         % FDR correction
                         [~,fdr_mask] = fdr(p,0.05);
                         fdr_p=p.*double(fdr_mask);
-                        fdr_t=t.*double(fdr_mask);
+                        fdr_t{np}=t{np}.*double(fdr_mask);
                         % reshape
                         if ~any(sizdat==1) 
                             h=reshape(h,sizdat(1),sizdat(2));
                             p=reshape(p,sizdat(1),sizdat(2));
-                            t=reshape(t,sizdat(1),sizdat(2));
-                            fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
+                            t{np}=reshape(t{np},sizdat(1),sizdat(2));
+                            fdr_t{np}=reshape(fdr_t{np},sizdat(1),sizdat(2));
                             fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
                             grpmeandat{f}=reshape(grpmeandat{f},sizdat(1),sizdat(2));
                         end
@@ -303,8 +313,8 @@ for f = 1:length(sfiles)
                         allstat{f}.(an{a}).(da{d}).([statfield{sf} '_mean'])=reshape(mean(alldat,1)',sizdat(1),sizdat(2));
                         allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).h=h;
                         allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).p=p;
-                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).t=t;
-                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).fdr_t=fdr_t;
+                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).t=t{np};
+                        allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).fdr_t=fdr_t{np};
                         allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest']).fdr_p=fdr_p;
 
                         trange = dsearchn(xticks',[topo_range(1);topo_range(2)]);
@@ -336,18 +346,18 @@ for f = 1:length(sfiles)
 
                         %% plot t stats
                         figure(h2)
-                        clim=[min(t(:)) max(t(:))];
+                        clim=[min(t{np}(:)) max(t{np}(:))];
                         if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
                         npeaks = 5;
                         subplot(length(da)*3,10,[1:5])
-                        imagesc(xticks,[],t,clim); 
-                       % meanabs = mean(abs(t(:,trange(1):trange(2))),1);
+                        imagesc(xticks,[],t{np},clim); 
+                       % meanabs = mean(abs(t{np}(:,trange(1):trange(2))),1);
                        if strcmp(chan_summary,'std')
-                            tval_summ(np,:) = std(t(:,trange(1):trange(2)),[],1);
+                            tval_summ(np,:) = std(t{np}(:,trange(1):trange(2)),[],1);
                        elseif strcmp(chan_summary,'mean')
-                            tval_summ(np,:) = mean(t(:,trange(1):trange(2)),1);
+                            tval_summ(np,:) = mean(t{np}(:,trange(1):trange(2)),1);
                        elseif strcmp(chan_summary,'absmean')
-                            tval_summ(np,:) = mean(abs(t(:,trange(1):trange(2))),1);
+                            tval_summ(np,:) = mean(abs(t{np}(:,trange(1):trange(2))),1);
                        end
                         tval_summ(np,:) = smooth(tval_summ(np,:),plotsmooth,'moving');
                         [ma,mi]=findpeaks(tval_summ(np,:),'MinPeakWidth',2);
@@ -380,26 +390,26 @@ for f = 1:length(sfiles)
                             for mii = 1:npeaks
                                 subplot(length(da)*3,10,20+mii)
                                 try
-                                    topoplot(t(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
+                                    topoplot(t{np}(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
                                     title([num2str(xticks(peaks(mii))) ' ms'])
                                 end
                             end
                         end
 
-                        clim=[min(fdr_t(:)) max(fdr_t(:))];
+                        clim=[min(fdr_t{np}(:)) max(fdr_t{np}(:))];
                         if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
                         if ~any(clim)
                             clim=[-5 5];
                         end
 
                         subplot(length(da)*3,10,[6:10])
-                        imagesc(xticks,[],fdr_t,clim); 
+                        imagesc(xticks,[],fdr_t{np},clim); 
                        if strcmp(chan_summary,'std')
-                            fdr_tval_summ(np,:) = std(fdr_t(:,trange(1):trange(2)),[],1);
+                            fdr_tval_summ(np,:) = std(fdr_t{np}(:,trange(1):trange(2)),[],1);
                        elseif strcmp(chan_summary,'mean')
-                            fdr_tval_summ(np,:) = mean(fdr_t(:,trange(1):trange(2)),1);
+                            fdr_tval_summ(np,:) = mean(fdr_t{np}(:,trange(1):trange(2)),1);
                        elseif strcmp(chan_summary,'absmean')
-                            fdr_tval_summ(np,:) = mean(abs(fdr_t(:,trange(1):trange(2))),1);
+                            fdr_tval_summ(np,:) = mean(abs(fdr_t{np}(:,trange(1):trange(2))),1);
                        end
                         fdr_tval_summ(np,:) = smooth(fdr_tval_summ(np,:),plotsmooth,'moving');
                         [ma,mi]=findpeaks(fdr_tval_summ(np,:),'MinPeakWidth',2);
@@ -431,7 +441,7 @@ for f = 1:length(sfiles)
                             for mii = 1:npeaks
                                 subplot(length(da)*3,10,25+mii)
                                 try
-                                    topoplot(fdr_t(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
+                                    topoplot(fdr_t{np}(:,peaks(mii)),chanlocs,'maplimits',clim,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);
                                     title([num2str(xticks(peaks(mii))) ' ms'])
                                 end
                             end
@@ -445,43 +455,43 @@ for f = 1:length(sfiles)
                             end
                             for s=1:size(alldat,2)
                                 [h(s),p(s),~,stt] = ttest2(double(grpdat{1}(:,s)),double(grpdat{2}(:,s)));
-                                t(s)=stt.tstat;
+                                t{np}(s)=stt.tstat;
                             end
 
                             % remove NaNs
-                            t(isnan(t))=0;
+                            t{np}(isnan(t{np}))=0;
                             h(isnan(h))=0;
                             p(isnan(p))=Inf;
 
                             % FDR correction
                             [~,fdr_mask] = fdr(p,0.05);
                             fdr_p=p.*double(fdr_mask);
-                            fdr_t=t.*double(fdr_mask);
+                            fdr_t{np}=t{np}.*double(fdr_mask);
                             % reshape
                             if ~any(sizdat==1) 
                                 h=reshape(h,sizdat(1),sizdat(2));
                                 p=reshape(p,sizdat(1),sizdat(2));
-                                t=reshape(t,sizdat(1),sizdat(2));
-                                fdr_t=reshape(fdr_t,sizdat(1),sizdat(2));
+                                t{np}=reshape(t{np},sizdat(1),sizdat(2));
+                                fdr_t{np}=reshape(fdr_t{np},sizdat(1),sizdat(2));
                                 fdr_p=reshape(fdr_p,sizdat(1),sizdat(2));
                             end
                             % output
                             allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).h=h;
                             allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).p=p;
-                            allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).t=t;
-                            allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).fdr_t=fdr_t;
+                            allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).t=t{np};
+                            allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).fdr_t=fdr_t{np};
                             allstat{f}.(an{a}).(da{d}).([statfield{sf} '_grpttest2']).fdr_p=fdr_p;
 
                             trange = dsearchn(xticks',[topo_range(1);topo_range(2)]);
 
-                            clim=[min(t(:)) max(t(:))];
+                            clim=[min(t{np}(:)) max(t{np}(:))];
 
                             figure(h3)
                             hold on
                             pl3=pl3+1;
                             subplot(length(da)*2,2,pl3)
-                            imagesc(xticks,[],t,clim); 
-                            [~,mi]=max(mean(abs(t(:,trange(1):trange(2))),1));
+                            imagesc(xticks,[],t{np},clim); 
+                            [~,mi]=max(mean(abs(t{np}(:,trange(1):trange(2))),1));
                             mi=mi+trange(1)-1;
                             line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
                             title([statfield{sf} ', t values for two-sample t-test']);
@@ -490,10 +500,10 @@ for f = 1:length(sfiles)
                             pl3=pl3+1;
                             if ~any(sizdat==1) 
                                 subplot(length(da)*2,2,pl3)
-                                topoplot(t(:,mi),chanlocs,'maplimits',clim);
+                                topoplot(t{np}(:,mi),chanlocs,'maplimits',clim);
                             end
 
-                            clim=[min(fdr_t(:)) max(fdr_t(:))];
+                            clim=[min(fdr_t{np}(:)) max(fdr_t{np}(:))];
                             if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
                             if ~any(clim)
                                 clim=[-5 5];
@@ -502,7 +512,7 @@ for f = 1:length(sfiles)
                             pl3=pl3+1;
                             subplot(length(da)*2,2,pl3)
                             imagesc(xticks,[],fdr_t,clim); 
-                            [~,mi]=max(mean(abs(fdr_t(:,trange(1):trange(2))),1));
+                            [~,mi]=max(mean(abs(fdr_t{np}(:,trange(1):trange(2))),1));
                             mi=mi+trange(1)-1;
                             line(xticks(mi*[1 1]),[1 92],'color','k','linewidth',2)
                             title([statfield{sf} ', fdr thresholded t values']);
@@ -511,7 +521,7 @@ for f = 1:length(sfiles)
                             pl3=pl3+1;
                             if ~any(sizdat==1) 
                                 subplot(length(da)*2,2,pl3)
-                                topoplot(fdr_t(:,mi),chanlocs,'maplimits',clim);
+                                topoplot(fdr_t{np}(:,mi),chanlocs,'maplimits',clim);
                             end
 % 
 
@@ -572,24 +582,78 @@ for f = 1:length(sfiles)
                     % overlapping summary stats over channels for each
                     % param
                     if exist('h0','var')
-                        figure(h0)
-                        subplot(2,1,1)
                         nparam=size(tval_summ,1);
-                        [cb] = cbrewer('qual', 'Set2', nparam, 'pchip');
+                        
+                        % no FDR
+                        fig=figure(h0)
+                        set(fig, 'Units', 'normalized', 'Position', [0,0,0.2,0.5]);
                         for np = 1:nparam
-                            hold on
-                            plot(xticks,tval_summ(np,:),'color',cb(np,:),'Linewidth',2); 
+                            ax(np)=subplot(nparam+1,1,np)
+                            clim=[min(t{np}(:)) max(t{np}(:))];
+                            if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
+                            if ~any(clim)
+                                clim=[-5 5];
+                            end
+                            imagesc(xticks,[],t{np},clim); 
+                            ylabel(param_legend{np},'Rotation',0,'VerticalAlignment','middle', 'HorizontalAlignment','right');
+                            set(ax(np),'YColor',colormaps{np}(90,:),'XTick',[]);
+                            cl(:,np) = caxis;
+                            colorbar
                         end
-                        title([statfield{sf} ', std over channels of t values']);
-                        ylabel('standard deviation')
-                        xlabel('post-stimulus time (ms)')
-                        subplot(2,1,2)
+                        set(ax, 'CLim', [mean(cl(1,:)), mean(cl(2,(cl(2,:)>1)))]);
+                        pause(1)
+                        pos=get(ax,'Position'); 
+                        pos=cat(1,pos{:}); 
+                        pos(:,1) = pos(:,1)*1.2;
+                        ax(np+1)=subplot(nparam+1,1,np+1);
                         for np = 1:nparam
+                            set(ax(np),'Position',pos(np,:))
                             hold on
-                            plot(xticks,fdr_tval_summ(np,:),'color',cb(np,:),'Linewidth',2); 
+                            plot(xticks,tval_summ(np,:),'color',colormaps{np}(70,:),'Linewidth',2); 
                         end
-                        title([statfield{sf} ', std over channels of fdr-thresholded t values']);
-                        ylabel('standard deviation')
+                        ylabel({'standard';'deviation';'over';'channels'},'Rotation',0,'VerticalAlignment','middle', 'HorizontalAlignment','right');
+                        xlabel('post-stimulus time (ms)')  
+                        try
+                            [~, hobj, ~, ~] = legend(param_legend);
+                        catch
+                            [~, hobj, ~, ~] = legend(cellfun(@num2str,param,'UniformOutput',0));
+                        end
+                        lh = findobj(hobj,'type','line');
+                        set(lh,'LineWidth',2);
+                        pos1 = get(ax(1),'Position');
+                        pos2 = get(ax(np+1),'Position');
+                        pos2([1 3]) = pos1([1 3]);
+                        set(ax(np+1),'Position',pos2)
+
+                        % FDR
+                        fig=figure(h0f)
+                        set(fig, 'Units', 'normalized', 'Position', [0,0,0.2,0.5]);
+                        clear ax
+                        for np = 1:nparam
+                            ax(np)=subplot(nparam+1,1,np)
+                            clim=[min(fdr_t{np}(:)) max(fdr_t{np}(:))];
+                            if ~any(clim)
+                                clim=[-5 5];
+                            end
+                            if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
+                            imagesc(xticks,[],fdr_t{np},clim); 
+                            ylabel(param_legend{np},'Rotation',0,'VerticalAlignment','middle', 'HorizontalAlignment','right');
+                            set(ax(np),'YColor',colormaps{np}(90,:),'XTick',[]);
+                            cl(:,np) = caxis;
+                            colorbar
+                        end
+                        set(ax, 'CLim', [mean(cl(1,:)), mean(cl(2,(cl(2,:)>1)))]);
+                        pause(1)
+                        pos=get(ax,'Position'); 
+                        pos=cat(1,pos{:}); 
+                        pos(:,1) = pos(:,1)*1.2;
+                        ax(np+1)=subplot(nparam+1,1,np+1)
+                        for np = 1:nparam
+                            set(ax(np),'Position',pos(np,:))
+                            hold on
+                            plot(xticks,fdr_tval_summ(np,:),'color',colormaps{np}(70,:),'Linewidth',2); 
+                        end
+                        ylabel({'standard';'deviation';'over';'channels'},'Rotation',0,'VerticalAlignment','middle', 'HorizontalAlignment','right');
                         xlabel('post-stimulus time (ms)')
                         try
                             [~, hobj, ~, ~] = legend(param_legend);
@@ -598,6 +662,10 @@ for f = 1:length(sfiles)
                         end
                         lh = findobj(hobj,'type','line');
                         set(lh,'LineWidth',2);
+                        pos1 = get(ax(1),'Position');
+                        pos2 = get(ax(np+1),'Position');
+                        pos2([1 3]) = pos1([1 3]);
+                        set(ax(np+1),'Position',pos2)
                     end
                     
                     
@@ -665,7 +733,11 @@ if exist('h0m','var')
     null = mean(cat(3,grpmeandat{null_model}),3);
     test = grpmeandat(test_models);
     for tm = 1:length(test)
-        grpmeandat_tm = test{tm} - null;
+        if ~isempty(null)
+            grpmeandat_tm = test{tm} - null;
+        else
+            grpmeandat_tm = test{tm};
+        end
         clim=[min(grpmeandat_tm(:)) max(grpmeandat_tm(:))];
         if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
         figure(h0m(tm))

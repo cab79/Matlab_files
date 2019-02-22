@@ -884,7 +884,7 @@ for d = 1:length(S.select.subjects)
                                 end
                                 
                                 % std
-                                sd(s) = std(alldata(s,S.trainidx{con}));
+                                %sd(s) = std(alldata(s,S.trainidx{con}));
                             end
                         else
                             % chunk the data for Condor - ideal run time is
@@ -932,7 +932,10 @@ for d = 1:length(S.select.subjects)
                         stats.BRR.alldata(con).skew{d,c}=reshape(skew,size(conData{con},1),size(conData{con},2),[]);
                         stats.BRR.alldata(con).kurt{d,c}=reshape(kurt,size(conData{con},1),size(conData{con},2),[]);
                         stats.BRR.alldata(con).hnorm{d,c}=reshape(hnorm,size(conData{con},1),size(conData{con},2),[]);
-                        stats.BRR.alldata(con).sd{d,c}=reshape(sd,size(conData{con},1),size(conData{con},2),[]);
+                        stats.BRR.alldata(con).xmean{d,c}=reshape([out(:).xmean],size(conData{con},1),size(conData{con},2),[]);
+                        stats.BRR.alldata(con).ymean{d,c}=reshape([out(:).ymean],size(conData{con},1),size(conData{con},2),[]);
+                        stats.BRR.alldata(con).xstd{d,c}=reshape([out(:).xstd],size(conData{con},1),size(conData{con},2),[]);
+                        stats.BRR.alldata(con).ystd{d,c}=reshape([out(:).ystd],size(conData{con},1),size(conData{con},2),[]);
                         stats.BRR.alldata(con).pred{d,c}=S.pred_train{con}(S.trainidx{con},:);
                         if S.save_residuals
                             timecourse = reshape(resids,size(conData{con},1),size(conData{con},2),[]);
