@@ -93,7 +93,7 @@ S.prep.startfile = 1;
 S=eeglab_preprocess(S,'epoch')
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 %% STEP 2: COMBINE FILES
-S.prep.combinefiles = 1;
+S.prep.combinefiles.on = 1;
 S.prep.load.suffix = {'epoched'}; % suffix to add to input file name, if needed. Can use * as wildcard
 S.prep.save.suffix = {'combined'}; % suffix to add to output file name, if needed. 
 S.prep.startfile = 1; 
@@ -105,7 +105,8 @@ S.prep.save.suffix = {'manrej'}; % suffix to add to output file name, if needed.
 S.prep.clean.flatchan.varthresh = 1; % std threshold - less variance than this per trial will be rejected
 S.prep.clean.flatchan.trial_weight = 1;
 S.prep.clean.flatchan.chan_weights = [0.01 0.02 0.05 0.1 0.2 0.5 1 2 5 20 50 100];
-S.prep.clean.FTrej = {[]}; % high freq to identify noise, low freq to identify eye movement
+S.prep.clean.FTrej.freq = {[]};
+S.prep.clean.FTrej.chan = {[],[3 31:33 41]}; % include (first cell) or exclude (second cell) channels, or leave empty (default all chans)
 S.prep.startfile = 1; 
 S=eeglab_preprocess(S,'rej')
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable

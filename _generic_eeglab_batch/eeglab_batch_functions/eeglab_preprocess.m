@@ -256,7 +256,7 @@ switch part
 
 %% NOISY TRIAL AND CHANNEL REJECTION USING FIELDTRIP
     case 'rej'
-    if ~isempty(S.prep.clean.FTrej) && iscell(S.prep.clean.FTrej)
+    %if ~isempty(S.prep.clean.FTrej) && iscell(S.prep.clean.FTrej)
 
         % GET FILE LIST
         S.path.file = fullfile(S.path.prep,S.prep.load.suffix{:});
@@ -284,10 +284,13 @@ switch part
 
             % strategy - only remove a very small number of very bad trials / chans
             % before ICA - do further cleaning after ICA
-            for i = 1:length(S.prep.clean.FTrej)
-                %try
-                    EEG = FTrejman(EEG,S.prep.clean.FTrej{i}); 
-                %end
+            if ~isempty(S.(S.func).clean.FTrej.freq) && iscell(S.(S.func).clean.FTrej.freq)
+                % select channels
+                S.(S.func).select.chans = S.(S.func).clean.FTrej.chan;
+                S=select_chans(S);
+                for i = 1:length(S.(S.func).clean.FTrej.freq)
+                    EEG = FTrejman(EEG,S.(S.func).clean.FTrej.freq{i},S.(S.func).inclchan); 
+                end
             end
 
             % SAVE
@@ -301,7 +304,7 @@ switch part
         end
     %elseif exist(fullfile(S.path.prep,S.prep.save.suffix{:}),'dir')
     %    S.prep.save.suffix{:} = 'manrej';
-    end
+    %end
     
 %% separate prior to ICA
     case 'sep'

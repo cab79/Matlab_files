@@ -1,4 +1,4 @@
-function plot_topo(P,D)
+function plot_topo(P,D,cmap)
 % requires:
     % D.DAT (output from plotprepare_)
     % P.WFrows
@@ -93,16 +93,16 @@ plotchans=1:length(D.chanlocs);
 plotchans(P.no_plot_ele)=[];
 for pln = 1:length(dat) 
     axes(ax(pln))
-    plottopotype(dat(pln).peakdata,D.chanlocs,plotchans,P.topotype,[plotmin plotmax]) 
+    plottopotype(dat(pln).peakdata,D.chanlocs,plotchans,P.topotype,[plotmin plotmax],cmap) 
 end
 linkaxes(ax,'xy')
 end
 
-function plottopotype(dat,chanlocs,plotchans,topotype,minmax)
+function plottopotype(dat,chanlocs,plotchans,topotype,minmax,cmap)
 
 switch topotype
     case 'eeglab'
-        topoplot(dat, chanlocs,'maplimits',minmax,'plotchans',plotchans,'electrodes','off','style','map','intrad',0.55,'colormap',colormap('gray'));%,'emarker2',{markchans,'o','w',7,1}); 
+        topoplot(dat, chanlocs,'maplimits',minmax,'plotchans',plotchans,'electrodes','off','style','map','intrad',0.55,'colormap',cmap);%,'emarker2',{markchans,'o','w',7,1}); 
     case 'pcolor' % UNFINISHED
         topo = nanmean(R(f2).Vdv(:,:,tw),3);
         figure

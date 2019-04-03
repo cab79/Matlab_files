@@ -10,7 +10,12 @@ run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 addpath('C:\Data\Matlab\raincloud_plots');
 addpath('C:\Data\Matlab\Violinplot-Matlab-master');
 addpath('C:\Data\Matlab\cbrewer'); % (https://uk.mathworks.com/matlabcentral/fileexchange/34087-cbrewer---colorbrewer-schemes-for-matlab)
-
+colormaps = {
+    cbrewer('seq', 'Greens', 100, 'pchip')
+    cbrewer('seq', 'Blues', 100, 'pchip')
+    cbrewer('seq', 'Purples', 100, 'pchip')
+    cbrewer('seq', 'YlOrBr', 100, 'pchip')
+    };
 % file info
 S.path.hgf = 'C:\Data\CORE\behaviour\hgf'; 
 
@@ -44,10 +49,36 @@ fnames = {
 % 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it18.mat'
 
 % 'CORE_fittedparameters_percmodel2_respmodel4_fractrain0_20190211T074650.mat'
-% 'D_fit_r1_it7_pm3_rm4.mat'
+% 'D_fit_r1_it8_pm3_rm4.mat'
 % 'D_fit_r1_it7_pm2_rm5.mat'
+% 'D_fit_r1_it1_pm3_rm4_n31.mat'
+% 'D_fit_r1_it2_pm3_rm4_n31.mat'
+% 'D_fit_r1_it3_pm3_rm4_n31.mat'
+% 'D_fit_r1_it4_pm3_rm4_n31.mat'
+% 'D_fit_r1_it5_pm3_rm4_n31.mat'
+% 'D_fit_r1_it6_pm3_rm4_n31.mat'
+% 'D_fit_r1_it7_pm3_rm4_n31.mat'
 % 'D_fit_r1_it8_pm3_rm4_n31.mat'
+% 'D_fit_r1_it9_pm3_rm4_n31.mat'
+% 'D_fit_r1_it10_pm3_rm4_n31.mat'
+% 'D_fit_r1_it11_pm3_rm4_n31.mat'
 'D_fit_r1_it8_pm3_rm4_age'
+
+% 'D_fit_r1_it1_n30.mat'
+% 'D_fit_r1_it2_n30.mat'
+% 'D_fit_r1_it3_n30.mat'
+% 'D_fit_r1_it4_n30.mat'
+% 'D_fit_r1_it5_n30.mat'
+% 'D_fit_r1_it6_n30.mat'
+% 'D_fit_r1_it7_n30.mat'
+% 'D_fit_r1_it8_n30.mat'
+% 'D_fit_r1_it9_n30.mat'
+% 'D_fit_r1_it10_n30.mat'
+% 'D_fit_r1_it11_n30.mat'
+% 'D_fit_r1_it12_n30.mat'
+% 'D_fit_r1_it13_n30.mat'
+% 'D_fit_r1_it14_n30.mat'
+% 'D_fit_r1_it15_n30.mat'
 
 };
 
@@ -232,7 +263,7 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
     if ~isempty(Cov) && Cov_correct
         vs=out.T.Properties.VariableNames;
         for c = 1:length(Cov)
-             predX=[ones(size(Cov{c},1),1) Cov{c}];
+             predX=[ones(size(Cov{c},1),1) zscore(Cov{c})];
         end
          for v=1:length(vs)
              if isnumeric(out.T.(vs{v})) && std(out.T.(vs{v}))~=0
@@ -245,7 +276,7 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
     if length(D_fit)>1
         S.lda = {'traj_conds'};%{'para','traj_trials','traj_conds'};
         S.nperm=0;
-        %[out.stats] = CORE_HGF_groupstatistics(out.T,{out.traj},S);
+%         [out.stats] = CORE_HGF_groupstatistics(out.T,{out.traj},S);
         [out.stats] = CORE_HGF_groupstatistics(out.T,{out.traj,S.condmean},S);
         %[out.stats] = CORE_HGF_groupstatistics(out.T,{},S);
     end
@@ -276,18 +307,22 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
     [grps,~,grpind] = unique(out.T.groups);
     hdr = out.T.Properties.VariableNames;
     out.median = table;
+    out.IQR = table;
     for i = 1:size(out.T,2)
         if isnumeric(out.T.(hdr{i})(1))
             for g = 1:length(grps)
                 out.median.(hdr{i})(g) = median(out.T.(hdr{i})(grpind==g));
+                out.IQR.(hdr{i})(g) = iqr(out.T.(hdr{i})(grpind==g));
             end
         end
     end
     %% combined table
     if isempty(fieldnames(medians_all))
         medians_all = table2struct(out.median);
+        iqr_all = table2struct(out.IQR);
     else
         medians_all = [medians_all,table2struct(out.median)];
+        iqr_all = [iqr_all,table2struct(out.IQR)];
     end
 
     %% save
@@ -303,14 +338,14 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
         %vs={'PL_dau_odd','PL_dau_stan','PL_dau_odd_stan','PL_dau_odd_CP','PL_dau_stan_CP','PL_dau_odd_stan_CP','PL_epsi_1_odd','PL_epsi_2_odd','PL_epsi_3_odd','PL_epsi_1_stan','PL_epsi_2_stan','PL_epsi_3_stan','PL_psi_1_condmean','PL_psi_2_condmean','PL_psi_3_condmean','PL_psi_1_odd','PL_psi_2_odd','PL_psi_3_odd','PL_psi_1_stan','PL_psi_2_stan','PL_psi_3_stan','PL_epsi_1_odd_CP','PL_epsi_1_stan_CP','PL_epsi_1_odd_stan_CP','PL_dau_odd_DC','PL_dau_stan_DC','PL_dau_odd_stan_DC','PL_da_1_odd','PL_da_1_odd_CP','PL_da_1_odd_DC','PL_epsi_2_odd_CP','PL_epsi_2_stan_CP','PL_epsi_2_odd_stan_CP','PL_da_2_odd','PL_da_2_odd_CP','PL_da_2_odd_DC','PL_epsi_3_odd_CP','PL_epsi_3_stan_CP','PL_epsi_3_odd_stan_CP'};
         %vs={'like_al0_1','like_al0_2','like_al0_3','like_al0_4','PL_om_2','PL_om_3','PL_dau_mean','PL_da_1_mean','PL_da_2_mean','PL_epsi_1_mean','PL_epsi_2_mean','PL_epsi_3_mean','PL_psi_1_mean','PL_psi_2_mean','PL_psi_3_mean','PL_dau_odd','PL_dau_stan','PL_dau_odd_stan','PL_dau_odd_CP','PL_dau_stan_CP','PL_dau_odd_stan_CP','PL_dau_odd_DC','PL_dau_stan_DC','PL_dau_odd_stan_DC','PL_da_1_odd','PL_da_1_odd_CP','PL_da_1_odd_DC','PL_da_2_odd','PL_da_2_odd_CP','PL_da_2_odd_DC'};
         %vs={'like_al0','PL_om_2','PL_om_3','PL_sa_2_mean','PL_ud_1_mean','PL_ud_2_mean','PL_dau_mean','PL_epsi_2_mean','PL_epsi_3_mean'};
-        vs={'like_al0_1','like_al0_2','like_al0_3','PL_om_2','PL_om_3','PL_dau_condmean','PL_da_1_condmean','PL_da_2_condmean','PL_epsi_1_condmean','PL_epsi_2_condmean','PL_epsi_3_condmean','PL_mu_1_condmean','PL_mu_2_condmean','PL_mu_3_condmean','PL_sa_1_condmean','PL_sa_2_condmean','PL_sa_3_condmean'};
-        titles = {'alpha','alphaSide','alphaDC','omega','theta','dau','da 1','da 2','epsi 1','epsi 2','epsi 3','mu 1','mu 2','mu 3','sa 1','sa 2','sa 3'};
-        sp1 = 6; % rows
+        vs={'like_al0_1','like_al0_2','like_al0_3','PL_om_2','PL_om_3','PL_dau_condmean','PL_da_1_condmean','PL_da_2_condmean','PL_psi_1_condmean','PL_psi_2_condmean','PL_psi_3_condmean','PL_psi_1_condmean','PL_epsi_2_condmean','PL_epsi_3_condmean','PL_mu_1_condmean','PL_mu_2_condmean','PL_mu_3_condmean','PL_sa_1_condmean','PL_sa_2_condmean','PL_sa_3_condmean'};
+        titles = {'\alpha_{0}','\lambda_{1}','\lambda_{2}','\omega','\theta','da 1','da 2','da 3','psi 1','psi 2','psi 3','epsi 1','epsi 2','epsi 3','mu 1','mu 2','mu 3','sa 1','sa 2','sa 3'};
+        sp1 = 7; % rows
         sp2 = 3; % columns
-        vn=0;figure
+        vn=1;figure
         for v=1:length(vs)
             vn=vn+1;
-            subplot(sp1,sp2,vn)
+            figure;%subplot(sp1,sp2,vn)
             for g = 1:length(grps)
                 % average over cell elements of vs
                 if iscell(vs{v})
@@ -323,22 +358,22 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
                 end
             end
             %[cb] = cbrewer('qual', 'Set1', g, 'pchip');
-            [cb] = [0.75 0 0; 0.25 0 0];
+            [cb] = [1 0 0; 0.25 0.25 1];
             h = n_rainclouds(X,cb);
             if exist('titles','var')
                 title(titles{v})
             else
                 title([vs{v} ', p = ' num2str(out.stats.ranksum.p.(vs{v}))])
             end
-            set(gca,'YTick',[],'fontsize',10,'ycolor',[1 1 1])
+            set(gca,'YTick',[],'fontsize',30,'ycolor',[1 1 1])
             box off
         end
-        legend(grps)
+%         legend(grps)
         
         % scatterplot against Age
         if ~isempty(Cov)
             sp1 = 3; % rows
-            sp2 = 6; % columns
+            sp2 = 7; % columns
             vn=0;figure
             for v=1:length(vs)
                 vn=vn+1;
@@ -375,19 +410,23 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
         for g = 1:length(grps)
             % Set up display
             scrsz = get(0,'screenSize');
-            outerpos = [0.2*scrsz(3),0.2*scrsz(4),0.8*scrsz(3),0.8*scrsz(4)];
+            outerpos = [0.1*scrsz(3),0.1*scrsz(4),0.6*scrsz(3),0.8*scrsz(4)];
             figure(...
                 'OuterPosition', outerpos,...
                 'Name', ['HGF trajectories, ' grps{g}]);
 
             vs=S.condmean(1,:);
-            [cb] = [0.5 0.25 0.75; 0 0.25 0.75; 0 0.75 0.25];
+            [cb] = [colormaps{3}(75,:); colormaps{2}(75,:); colormaps{1}(75,:)];
 
             leg={''};
             for v=1:length(vs)
 
                 if subplot_on
-                    ax(g,v)=subplot(length(vs),1,length(vs)-v+1);
+                    %ax(g,v)=subplot(length(vs),1,length(vs)-v+1);
+                    subplotgap=0.04;
+                    xaxisgap = 0.1;
+                    yaxisgap=0.1;
+                    ax(g,v) = subplot('Position', [yaxisgap, xaxisgap+(v-1)*((1-xaxisgap)/length(vs)), 1-yaxisgap, (1-xaxisgap)/length(vs)-subplotgap]);
                 else
                     hold on
                 end
@@ -422,23 +461,23 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
 
                 % plot spread
                 fill([ts, fliplr(ts)], [(upper), fliplr((lower))], ...
-                cb(v,:), 'EdgeAlpha', 0, 'FaceAlpha', 0.15);
+                cb(v,:), 'EdgeAlpha', 0, 'FaceAlpha', 0.30);
                 hold on
 
                 % plot mean
-                ln(v) = plot(ts,mn,'Color',cb(v,:));
+                ln(v) = plot(ts,mn,'Color',cb(v,:),'LineWidth',2);
                 axval = axis;
                 lim(g,v,:)=[axval(1:2) min(lower) max(upper)];
                 if subplot_on
-                    ylabel(vs{v})
+                    %ylabel(vs{v})
                     if v==1
                         xlabel('Trial number')
                     else
-                        set(gca, 'XTickLabel', [])
+                        set(gca, 'XTickLabel', [],'XColor',[1 1 1])
                     end
                 end
                 hold off
-                set(gca,'FontSize',18)
+                set(gca,'FontSize',30)
                 %tightfig
             end
             % plot inputs/design
@@ -455,6 +494,7 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
         for g = 1:length(grps)
             for v=1:length(vs)
                 axis(ax(g,v),maxlim(v,:));
+                set(ax(g,v), 'YColor',cb(v,:),'box','off');
             end
         end
     end
@@ -466,8 +506,8 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
         vs=S.condmean;
         %ucol = unique(S.colour_code);
         %[cb] = cbrewer('qual', 'Set1', length(ucol), 'pchip');
-        cb([1 3 5],:) = [0.5 0.5 0.5; 0.25 0.25 0.25; 0 0 0]; % greys
-        cb([2 4 6],:) = [0.75 0 0; 0.5 0 0; 0.25 0 0]; % reds
+        cb([1 3 5],:) = [0.25 0.25 1; 0 0 0.75; 0 0 0.5]; % violets
+        cb([2 4 6],:) = [1 0.25 0.25; 0.75 0 0; 0.5 0 0]; % reds
         for v=1:length(vs)
 
             % get column indices
@@ -523,3 +563,6 @@ for fn = 1:length(fd)
     ranksum_all_p(ii).(fd{fn}) = sum([ranksum_all_p(1:ii-1).(fd{fn})]<0.05)>length(ranksum_all_p)/10;
     ranksum_all_z(ii).(fd{fn}) = sum([ranksum_all_p(1:ii-1).(fd{fn})]<0.05)>length(ranksum_all_p)/10;
 end
+
+writetable(struct2table(ranksum_all_p),fullfile('C:\Data\CORE\behaviour\hgf','out_p.xlsx'));
+writetable(struct2table(ranksum_all_z),fullfile('C:\Data\CORE\behaviour\hgf','out_z.xlsx'));

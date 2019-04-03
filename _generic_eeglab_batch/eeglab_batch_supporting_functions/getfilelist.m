@@ -231,7 +231,7 @@ for g = 1:length(grps)
                         grpdir = '';
                     end
                     
-                    if isfield(S.(S.func),'subjdir')
+                    if isfield(S.(S.func),'subjdir') && S.(S.func).subjdir
                         subdir = subjlists{g,1}{s,1};
                     else
                         subdir = '';

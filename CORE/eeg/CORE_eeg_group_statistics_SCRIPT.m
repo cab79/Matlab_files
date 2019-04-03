@@ -164,7 +164,7 @@ no_plot_ele = [];
 % param={[1],[2],[3],[4]}; % multiple param's betas are summed within each cell
 % param_legend = {};%'cond','Ep1','Ep2','Ep3'};
 param={[4],[3],[2],[1]}; % multiple param's betas are summed within each cell
-param_legend = {'epsi3','epsi2','epsi1','oddball'};
+param_legend = {'\epsilon_{3}','\epsilon_{2}','\epsilon_{1}','u'};
 colormaps = {
     cbrewer('seq', 'Greens', 100, 'pchip')
     cbrewer('seq', 'Blues', 100, 'pchip')
@@ -172,7 +172,7 @@ colormaps = {
     cbrewer('seq', 'YlOrBr', 100, 'pchip')
     };
 load('C:\Data\CORE\eeg\ana\prep\chanlocs.mat')
-cmap=colormap('parula'); close all;
+cmap=colormap('summer'); close all;
 chan_summary = 'std'; % mean or std
 test_models = [];%2:length(sfiles); % for comparing waic
 null_model = [];%1; % if more than one model (file), a null is created from the mean of them
@@ -595,10 +595,12 @@ for f = 1:length(sfiles)
                                 clim=[-5 5];
                             end
                             imagesc(xticks,[],t{np},clim); 
-                            ylabel(param_legend{np},'Rotation',0,'VerticalAlignment','middle', 'HorizontalAlignment','right');
-                            set(ax(np),'YColor',colormaps{np}(90,:),'XTick',[]);
+                            ylabel('EEG channel');
+                            title(param_legend{np},'color',colormaps{np}(90,:));
+                            set(ax(np),'XTick',[]);
                             cl(:,np) = caxis;
-                            colorbar
+                            colormap(ax(np),flipud(colormaps{np}))
+                            colorbar('Box','off')
                         end
                         set(ax, 'CLim', [mean(cl(1,:)), mean(cl(2,(cl(2,:)>1)))]);
                         pause(1)
@@ -611,7 +613,7 @@ for f = 1:length(sfiles)
                             hold on
                             plot(xticks,tval_summ(np,:),'color',colormaps{np}(70,:),'Linewidth',2); 
                         end
-                        ylabel({'standard';'deviation';'over';'channels'},'Rotation',0,'VerticalAlignment','middle', 'HorizontalAlignment','right');
+                        title('standard deviation over channels');
                         xlabel('post-stimulus time (ms)')  
                         try
                             [~, hobj, ~, ~] = legend(param_legend);
@@ -637,10 +639,12 @@ for f = 1:length(sfiles)
                             end
                             if diff(clim)==0; clim(2) = clim(2)+abs(clim(2)*1.01); end
                             imagesc(xticks,[],fdr_t{np},clim); 
-                            ylabel(param_legend{np},'Rotation',0,'VerticalAlignment','middle', 'HorizontalAlignment','right');
-                            set(ax(np),'YColor',colormaps{np}(90,:),'XTick',[]);
+                            ylabel('EEG channel');
+                            title(param_legend{np},'color',colormaps{np}(90,:));
+                            set(ax(np),'XTick',[]);
                             cl(:,np) = caxis;
-                            colorbar
+                            colormap(ax(np),flipud(colormaps{np}))
+                            colorbar('Box','off')
                         end
                         set(ax, 'CLim', [mean(cl(1,:)), mean(cl(2,(cl(2,:)>1)))]);
                         pause(1)
@@ -653,7 +657,7 @@ for f = 1:length(sfiles)
                             hold on
                             plot(xticks,fdr_tval_summ(np,:),'color',colormaps{np}(70,:),'Linewidth',2); 
                         end
-                        ylabel({'standard';'deviation';'over';'channels'},'Rotation',0,'VerticalAlignment','middle', 'HorizontalAlignment','right');
+                        title('standard deviation over channels');
                         xlabel('post-stimulus time (ms)')
                         try
                             [~, hobj, ~, ~] = legend(param_legend);

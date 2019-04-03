@@ -14,28 +14,28 @@ save_figs=1;
 
 %% prepare SPM EEG data
 
-S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_spm';
-col = cbrewer('seq', 'Greys', 100, 'pchip'); 
-St.eeglab_path = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2';
+% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_spm';
+% col = cbrewer('seq', 'Greys', 100, 'pchip'); 
+% St.eeglab_path = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2';
 
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred1_spm';
+% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred1_spm';
 % col = cbrewer('seq', 'YlOrBr', 100, 'pchip'); %orange
 % St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
-
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred2_spm';
+% 
+% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred2_spm';
 % col = cbrewer('seq', 'Purples', 100, 'pchip'); 
 % St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
 
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred3_spm';
+% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred3_spm';
 % col = cbrewer('seq', 'Blues', 100, 'pchip'); 
 % St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
 
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4_spm';
-% col = cbrewer('seq', 'Greens', 100, 'pchip'); 
-% St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
+S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_CP_Odd_DC_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4_spm';
+col = cbrewer('seq', 'Greens', 100, 'pchip'); 
+St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
 
 S.plotclus = {'c1_spm','c2_spm','c3_spm','c4_spm','c5_spm','c6_spm','c7_spm','c8_spm','c9_spm','c10_spm','c11_spm','c12_spm','c13_spm','c14_spm','c15_spm'}; % latency order
-col = col([90 50],:);
+col_erp = col([50 90],:);
 
 %cluster directory name, which also specifies the constrast that will be
 %plotted (i.e. the characters before the underscore)
@@ -55,14 +55,14 @@ S.fact_names = {
 %     'Oddball effect';
 %     'Change Probability';
     %'Group';
-    'Digit Change';
+    'Change Distance    ';
     %'Side';
     };
 S.cval={ %condition labels, i.e. levels of each condition, in the same order as in the SPM design matrix. One row per factor. second column is plotting order
 %     {'Oddball','Standard'},[1 2];
 %     {'10%','30%','50%'},[1 2 3];
     %{'CRPS','HC'},[1 2];
-    {'DC1','DC3'},[1 2];
+    {'CD1','CD3'},[1 2];
     %{'Affected','Unaffected'},[1 2];
     };
 S.xlimits = [-200 800];% time in ms
@@ -127,8 +127,8 @@ for p = 1:length(D)
     P(p).ptitle = [];%D(p).ptitle;
     P(p).fact_names = D(p).fact_names;
     %P(p).colours = [0.2 0.5 1; 1 0.2 0.2]; % blue, red 
-    P(p).colours = col; % red, black; [1 0.5 0; 0.5 0 0.5]; % purple, orange, green 
-    P(p).color_order = -1; % order of plotting: -1 or 1
+    P(p).colours = col_erp; % red, black; [1 0.5 0; 0.5 0 0.5]; % purple, orange, green 
+    P(p).color_order = 1; % order of plotting: -1 or 1
     P(p).xlinedashed = [0];% vertical dashed lines to indicate events, time in ms
     P(p).timezero = 0;% change zero latency to this time
     P(p).xaxisname = {'peri-stimulus time (ms)'};
@@ -168,7 +168,7 @@ for nf = 1:n_fig
     g.draw();
     drawnow
     g=align_gplots(g,gap); % custom function
-    figname = 'EEG_plot';
+    figname = [S.plotclus{ind(1)} '_ERP_plot_' num2str(D(ind(1)).E_val(1)) '-' num2str(D(ind(1)).E_val(end))];
     if save_figs; export_fig(fullfile(savefigspath,[figname '.png']), '-r1200'); end
 end
 
@@ -181,7 +181,7 @@ Pt.cval = 0;
 Pt.sub_order = P(p).color_order;
 for d = 1:length(D)
     E.E_val = D(d).E_val
-    plot_topo(Pt,E)
+    plot_topo(Pt,E,flipud(col))
     set(gcf,'color','w');
     set(gca,'fontsize', fontsize);
     set(gcf, 'Units', 'normalized', 'Position', [0.5,0.5,0.15,0.25]);

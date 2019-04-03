@@ -68,7 +68,11 @@ for m = 1:size(metric,2)
     ylabel(['bad chans = ' num2str(ordered_results(1,2))]);
 end
 
-answer = str2double(inputdlg('Choose plot number'))
+if length(chan_weight)>1
+    answer = str2double(inputdlg('Choose plot number','',1,{'9'}));
+else
+    answer = 1;
+end
 [~,order] = sort(metric(:,answer),'descend');
 ordered_results = results(order,:);
 ordered_idx=idx(order);

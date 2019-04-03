@@ -30,6 +30,9 @@ cfg.alim = 1e-5;
 if ~exist('chan','var')
     chan = 1:length(orig_chans);
 end
+if any(chan>length(orig_chans))
+    chan = 1:length(orig_chans);
+end
 cfg.channel = orig_chans(chan);
 cfg.keepchannel='no';
 cfg.keeptrial='yes';

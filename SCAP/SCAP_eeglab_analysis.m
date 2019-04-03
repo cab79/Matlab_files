@@ -22,7 +22,7 @@ addpath(genpath(support_path));
 %% SET DATA PATHS
 clear S
 S.path=struct;% clears the field
-S.path.main = 'C:\Data\SCAP\EEG'
+S.path.main = 'E:\Data\SCAP\EEG';
 S.path.raw = [S.path.main '\Raw']; % unprocessed data in original format
 S.path.prep = [S.path.main '\Preprocessed']; % folder to save processed .set data
 S.path.freq = [S.path.main '\Frequency']; % folder to save frequency analyses
@@ -80,21 +80,41 @@ S.prep.filter.notch = {[45 55]};
 S.prep.filter.incl = [0 95];%[0.1 100]; % FILTER - INCLUSIVE
 S.prep.epoch.markers = {'S  2' 'S  4' 'S  6' 'S  8' 'S 10' 'S 12' 'S 14' 'S 16'};
 S.prep.epoch.addmarker = 0; % set to 1 to add markers if the above are not present: will use the first marker value
-S.prep.epoch.timewin = [-4 2.0]; % peri-marker time window
+S.prep.epoch.timewin = [-4.5 1.0]; % peri-marker time window
 S.prep.epoch.detrend = 1;
 S.prep.epoch.rmbase = 1;
-S.prep.epoch.basewin = [-3.5 -3]; % baseline window
+S.prep.epoch.basewin = [-4.5 -4]; % baseline window
 S.prep.epoch.separate = {[]}; % index of markers to separate into files
 S.prep.epoch.separate_suffix = {}; % suffixes to new file names: one per cell of S.epoch.separate
-S.prep.clean.flatchan.varthresh = 1; % std threshold - less variance than this per trial will be rejected
-S.prep.clean.flatchan.trial_weight = 1;
-S.prep.clean.flatchan.chan_weights = [0.01 0.02 0.05 0.1 0.2 0.5 1 2 5 20 50 100];
-S.prep.clean.FTrej = {[]}; % high freq to identify noise, low freq to identify eye movement
-S.prep.clean.ICA = 1;
-S.prep.combinefiles = 1;
 S.prep.startfile = 1; 
 % RUN
-S=eeglab_preprocess(S)
+S.prep.save.suffix = {'epoched'}; % suffix to add to output file name, if needed. 
+S=eeglab_preprocess(S,'epoch')
+save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+%% STEP 2: COMBINE FILES
+S.prep.combinefiles.on = 1;
+S.prep.load.suffix = {'epoched'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.prep.save.suffix = {'combined'}; % suffix to add to output file name, if needed. 
+S.prep.startfile = 1; 
+S=eeglab_preprocess(S,'combine')
+save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+%% STEP 3: channel and trial rejection
+S.prep.load.suffix = {'combined'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.prep.save.suffix = {'manrej'}; % suffix to add to output file name, if needed. 
+S.prep.clean.flatchan.varthresh = 1; % std threshold - less variance than this per trial will be rejected
+S.prep.clean.flatchan.trial_weight = 1;
+S.prep.clean.flatchan.chan_weights = 5;%[0.01 0.02 0.05 0.1 0.2 0.5 1 2 5 20 50 100];
+S.prep.clean.FTrej.freq = {[]}; % high freq to identify noise, low freq to identify eye movement
+S.prep.clean.FTrej.chan = {[],[3 31:33 41]}; % include (first cell) or exclude (second cell) channels, or leave empty (default all chans)
+S.prep.startfile = 1; 
+S=eeglab_preprocess(S,'rej')
+save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+%% STEP 4: ICA
+S.prep.load.suffix = {'manrej'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.prep.save.suffix = {'ICA'}; % suffix to add to output file name, if needed. 
+S.prep.clean.ICA = 1;
+S.prep.startfile = 1; 
+S=eeglab_preprocess(S,'ICA')
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
 %% PREPROCESSING AFTER ICA
@@ -106,7 +126,7 @@ S.prep2.fname.parts = {'study','subject','suffix','ext'}; % parts of the input f
 S.prep2.fname.ext = {'set'};
 S.prep2.study = {'SCAP'};
 S.prep2.load.prefix = {''}; % prefix to add to input file name, if needed. Can use * as wildcard
-S.prep2.load.suffix = {'combined_manrej_ICA'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.prep2.load.suffix = {'ICA'}; % suffix to add to input file name, if needed. Can use * as wildcard
 S.prep2.select.groups = {}; % either single/multiple groups, or use * to process all groups in the datfile
 S.prep2.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
 S.prep2.select.sessions = {};
@@ -115,9 +135,9 @@ S.prep2.select.conds = {}; % conditions to load (each a separate file) - empty m
 S.prep2.epoch.ICAremove = 1; % remove ICA components (0 if already removed from data, 1 if selected but not removed)
 S.prep2.epoch.detrend = 1;
 S.prep2.epoch.rmbase = 1;
-S.prep2.epoch.basewin = [-3.5 -3]; % baseline window
-S.prep2.clean.FTrej.freq = {[]};
-S.prep2.clean.FTrej.chan = {[],[3 31:33 41]}; % include (first cell) or exclude (second cell) channels, or leave empty (default all chans)
+S.prep2.epoch.basewin = [-4.5 -4]; % baseline window
+S.prep2.clean.FTrej.freq = {[]};%{[]};
+S.prep2.clean.FTrej.chan = {[],[3 31:33 41]};%{[],[3 31:33 41]}; % include (first cell) or exclude (second cell) channels, or leave empty (default all chans)
 S.prep2.epoch.reref = 1;
 S.prep2.separatefiles.on = 1;
 S.prep2.separatefiles.markerindex = {}; % index of markers to separate into files
@@ -130,7 +150,7 @@ save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time
 %% ERP ANALYSIS 
 load(fullfile(S.path.main,'S'))
 S.tf=struct;% clears the field
-S.path.prep = 'C:\Data\SCAP\EEG\Preprocessed\separated'; % folder to load data from
+S.path.prep = 'E:\Data\SCAP\EEG\Preprocessed\separated'; % folder to load data from
 S.tf.fname.parts = {'subject','block','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
 S.tf.study = {};
 S.tf.load.suffix = {'epoched_cleaned'}; % suffix to add to input file name, if needed. Can use * as wildcard
@@ -141,10 +161,12 @@ S.tf.select.blocks = {'a','b'}; % blocks to load (each a separate file) - empty 
 S.tf.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
 S.tf.select.datatype = 'ERP'; %'Freq','TF','Coh','ERP'
 % general settings
-S.tf.epoch.basewin = [-3.5 -3]; % baseline window
+S.tf.epoch.basewin = [-4.5 -4]; % baseline window
 S.tf.epoch.rmbase = 1; % remove baseline prior to frequency/ERP
 S.tf.epoch.markers = {'S  2' 'S  4' 'S  6' 'S  8' 'S 10' 'S 12' 'S 14' 'S 16'}; % marker types to analyse
 S.tf.epoch.combinemarkers = 0; %include all events in a single condition.
+S.tf.epoch.downsample = 0;
+S.tf.epoch.detrend = [-4.5 1];
 % ERP settings
 S.tf.CSD.apply=0; % Apply CSD (leave as 0 unless you know what you are doing!)
 S.tf.CSD.montage = 'C:\Data\NTIP\CSDmontage_64.mat';
@@ -174,14 +196,17 @@ S.ga.grand_avg.outliers = 1; % calculate multivariate outliers (SLOW)
 % RUN
 S=eeg_grand_average(S);
 save(fullfile(S.path.main,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
+% PLOT
+close all
+S=plot_ERPs(S,'grandavg');
 
 %% PLOT ERPs
 close all
 load(fullfile(S.path.main,'S'))
 S.ploterp=struct;% clears the field
-S.ploterp.fname.parts = {'subject','block','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
+S.ploterp.fname.parts = {'suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'prefix','study','group','subject','session','block','cond','suffix','ext'};
 S.ploterp.study = {};
-S.ploterp.load.suffix = {'epoched_cleaned_ERP'}; % suffix to add to input file name, if needed. Can use * as wildcard
+S.ploterp.load.suffix = {''}; % suffix to add to input file name, if needed. Can use * as wildcard
 S.ploterp.fname.ext = {'mat'};% generic file suffix
 S.ploterp.select.groups = {}; % group index, or leave blank to process all 
 S.ploterp.select.subjects = {}; % either a single subject, or leave blank to process all subjects in folder
@@ -189,7 +214,7 @@ S.ploterp.select.sessions = {};
 S.ploterp.select.blocks = {'a','b'}; % blocks to load (each a separate file) - empty means all of them, or not defined
 S.ploterp.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
 S.ploterp.select.events = 1:8;
-S.ploterp.select.chans = {[],[]};
+S.ploterp.select.chans = {[],[3 31:33 41]};
 S.ploterp.select.datatype = 'ERP'; % Options: 'TF','ERP','Freq'. NOT YET TESTED ON Freq or TF DATA - WILL PROBABLY FAIL
 S.ploterp.select.freqs = 0; % select which freq to actally process
 S.ploterp.layout = 'acticap-64ch-standard2.mat'; % layout file in Fieldtrip layouts folder

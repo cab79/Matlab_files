@@ -95,7 +95,7 @@ CRPSsides = pdata(2:end,side_col);
 sidenan = cell2mat(cellfun(@(x) any(x), cellfun(@(x) isnan(x), CRPSsides, 'UniformOutput', 0), 'UniformOutput', 0));
 sidepool = CRPSsides(~sidenan);
 sn_idx=find(sidenan);
-rng('default'); rng(1); % seed random number generator
+rng('default'); % seed random number generator
 for s=1:length(sn_idx)
     CRPSsides(sn_idx(s)) = sidepool(randi([1 numel(sidepool)]));
 end

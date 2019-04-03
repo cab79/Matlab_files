@@ -1,5 +1,6 @@
 function varargout=HGF_group_model_comparison(S,varargin)
 % OUTPUT: varargout is {posterior,out,gposterior,gout}
+addpath('C:\Data\Matlab\cbrewer'); % (https://uk.mathworks.com/matlabcentral/fileexchange/34087-cbrewer---colorbrewer-schemes-for-matlab)
 
 if nargin>1 && ~isempty(varargin{1})
     LME = varargin{1};
@@ -117,40 +118,44 @@ varargout={LMEgrp,rc_out};
 
 % plot mean LME; separate by groups
 if (rm>1 || pm>1) && om==1 
-    pLME = reshape(sum(cat(2,LMEgrp{:}),2),rm,pm);
+    
+    % pm on x axis
+%     pLME = reshape(sum(cat(2,LMEgrp{:}),2),rm,pm);
+%     clims = [min(pLME(:)), max(pLME(:))];
+%     figure
+%     ax1=subplot('Position',[0.1 0.2 0.3 0.6])
+%     imagesc(pLME,clims)
+%     ax1.XAxisLocation = 'top';
+%     xlabel('perceptual models')
+%     ylabel('response models')
+%     title(['Log-model evidence'])
+%     ax2=subplot('Position',[0.42 0.2 0.1 0.6])
+%     imagesc(mean(pLME,2),clims)
+%     set(gca,'XTick',1,'XTickLabel','mean')
+%     set(gca,'YTick',[])
+% %     ax2.YAxisLocation = 'right';
+%     ax2.XAxisLocation = 'top';
+%     ax3=subplot('Position',[0.1 0.08 0.3 0.1])
+%     imagesc(mean(pLME,1),clims)
+%     set(gca,'YTick',1,'YTickLabel','mean')
+%     set(gca,'XTick',[])
+%     colorbar('Position',[0.54 0.08 0.03 0.72])
+    
+    pLME = reshape(sum(cat(2,LMEgrp{:}),2),rm,pm)';
     clims = [min(pLME(:)), max(pLME(:))];
-    figure
-    ax1=subplot('Position',[0.1 0.2 0.3 0.6])
-    imagesc(pLME,clims)
-    ax1.XAxisLocation = 'top';
-    xlabel('perceptual models')
-    ylabel('response models')
-    title(['Log-model evidence'])
-    ax2=subplot('Position',[0.42 0.2 0.1 0.6])
-    imagesc(mean(pLME,2),clims)
-    set(gca,'XTick',1,'XTickLabel','mean')
-    set(gca,'YTick',[])
-%     ax2.YAxisLocation = 'right';
-    ax2.XAxisLocation = 'top';
-    ax3=subplot('Position',[0.1 0.08 0.3 0.1])
-    imagesc(mean(pLME,1),clims)
-    set(gca,'YTick',1,'YTickLabel','mean')
-    set(gca,'XTick',[])
-    colorbar('Position',[0.54 0.08 0.03 0.72])
-%     set(gca, 'XTick', 1:pm)
-%     set(gca, 'YTick', 1:rm)
+    image_plot(pLME,S,clims,'Log-model evidence','mean',{})
     
     % plot mean LME; separate by groups
-    for g = 1:length(grpuni)
-        % mean over subjects
-        pLME = reshape(sum(LMEgrp{1,g},2),rm,pm);
-        figure
-        imagesc(pLME)
-        colorbar
-        xlabel('perc models')
-        ylabel('resp models')
-        title(['sum LME, group ' num2str(g)])
-    end
+%     for g = 1:length(grpuni)
+%         % mean over subjects
+%         pLME = reshape(sum(LMEgrp{1,g},2),rm,pm);
+%         figure
+%         imagesc(pLME)
+%         colorbar
+%         xlabel('perc models')
+%         ylabel('resp models')
+%         title(['sum LME, group ' num2str(g)])
+%     end
 end
 
 % compare models
@@ -195,76 +200,79 @@ end
 ef = pm_out{1}.Ef';
 ef_pm = pm_out{1}.families.Ef';
 ef_rm = rm_out{1}.families.Ef';
-ef = reshape(ef,rm,pm);
+ef = reshape(ef,rm,pm)';
 clims = [min(ef(:)), max(ef(:))];
-figure
-ax1=subplot('Position',[0.1 0.2 0.3 0.6])
-imagesc(ef,clims)
-ax1.XAxisLocation = 'top';
-xlabel('perceptual models')
-ylabel('response models')
-title(['Estimated model frequencies'])
-ax2=subplot('Position',[0.42 0.2 0.1 0.6])
-imagesc(ef_rm',clims)
-set(gca,'XTick',1,'XTickLabel','family')
-set(gca,'YTick',[])
-%     ax2.YAxisLocation = 'right';
-ax2.XAxisLocation = 'top';
-ax3=subplot('Position',[0.1 0.08 0.3 0.1])
-imagesc(ef_pm,clims)
-set(gca,'YTick',1,'YTickLabel','family')
-set(gca,'XTick',[])
-colorbar('Position',[0.54 0.08 0.03 0.72])
+image_plot(ef,S,clims,'Estimated model frequencies','family',{ef_pm,ef_rm})
+% figure
+% ax1=subplot('Position',[0.1 0.2 0.3 0.6])
+% imagesc(ef,clims)
+% ax1.XAxisLocation = 'top';
+% xlabel('perceptual models')
+% ylabel('response models')
+% title(['Estimated model frequencies'])
+% ax2=subplot('Position',[0.42 0.2 0.1 0.6])
+% imagesc(ef_rm',clims)
+% set(gca,'XTick',1,'XTickLabel','family')
+% set(gca,'YTick',[])
+% %     ax2.YAxisLocation = 'right';
+% ax2.XAxisLocation = 'top';
+% ax3=subplot('Position',[0.1 0.08 0.3 0.1])
+% imagesc(ef_pm,clims)
+% set(gca,'YTick',1,'YTickLabel','family')
+% set(gca,'XTick',[])
+% colorbar('Position',[0.54 0.08 0.03 0.72])
 
 % plot EPs
 ep = pm_out{1}.ep;
 ep_pm = pm_out{1}.families.ep;
 ep_rm = rm_out{1}.families.ep;
-ep = reshape(ep,rm,pm);
+ep = reshape(ep,rm,pm)';
 clims = [0 1];
-figure
-ax1=subplot('Position',[0.1 0.2 0.3 0.6])
-imagesc(ep,clims)
-ax1.XAxisLocation = 'top';
-xlabel('perceptual models')
-ylabel('response models')
-title(['Exceedence probability (EP)'])
-ax2=subplot('Position',[0.42 0.2 0.1 0.6])
-imagesc(ep_rm',clims)
-set(gca,'XTick',1,'XTickLabel','family')
-set(gca,'YTick',[])
-%     ax2.YAxisLocation = 'right';
-ax2.XAxisLocation = 'top';
-ax3=subplot('Position',[0.1 0.08 0.3 0.1])
-imagesc(ep_pm,clims)
-set(gca,'YTick',1,'YTickLabel','family')
-set(gca,'XTick',[])
-colorbar('Position',[0.54 0.08 0.03 0.72])
+image_plot(ep,S,clims,'Exceedence probability (EP)','family',{ep_pm,ep_rm})
+% figure
+% ax1=subplot('Position',[0.1 0.2 0.3 0.6])
+% imagesc(ep,clims)
+% ax1.XAxisLocation = 'top';
+% xlabel('perceptual models')
+% ylabel('response models')
+% title(['Exceedence probability (EP)'])
+% ax2=subplot('Position',[0.42 0.2 0.1 0.6])
+% imagesc(ep_rm',clims)
+% set(gca,'XTick',1,'XTickLabel','family')
+% set(gca,'YTick',[])
+% %     ax2.YAxisLocation = 'right';
+% ax2.XAxisLocation = 'top';
+% ax3=subplot('Position',[0.1 0.08 0.3 0.1])
+% imagesc(ep_pm,clims)
+% set(gca,'YTick',1,'YTickLabel','family')
+% set(gca,'XTick',[])
+% colorbar('Position',[0.54 0.08 0.03 0.72])
 
 % plot PEPs
 pep = pm_out{1}.pep;
 pep_pm = pm_out{1}.families.pep;
 pep_rm = rm_out{1}.families.pep;
-pep = reshape(pep,rm,pm);
+pep = reshape(pep,rm,pm)';
 clims = [0 1];
-figure
-ax1=subplot('Position',[0.1 0.2 0.3 0.6])
-imagesc(pep,clims)
-ax1.XAxisLocation = 'top';
-xlabel('perceptual models')
-ylabel('response models')
-title(['Protected exceedence probability (PEP)'])
-ax2=subplot('Position',[0.42 0.2 0.1 0.6])
-imagesc(pep_rm',clims)
-set(gca,'XTick',1,'XTickLabel','family')
-set(gca,'YTick',[])
-%     ax2.YAxisLocation = 'right';
-ax2.XAxisLocation = 'top';
-ax3=subplot('Position',[0.1 0.08 0.3 0.1])
-imagesc(pep_pm,clims)
-set(gca,'YTick',1,'YTickLabel','family')
-set(gca,'XTick',[])
-colorbar('Position',[0.54 0.08 0.03 0.72])
+image_plot(pep,S,clims,'Protected exceedence probability (PEP)','family',{pep_pm,pep_rm})
+% figure
+% ax1=subplot('Position',[0.1 0.2 0.3 0.6])
+% imagesc(pep,clims)
+% ax1.XAxisLocation = 'top';
+% xlabel('perceptual models')
+% ylabel('response models')
+% title(['Protected exceedence probability (PEP)'])
+% ax2=subplot('Position',[0.42 0.2 0.1 0.6])
+% imagesc(pep_rm',clims)
+% set(gca,'XTick',1,'XTickLabel','family')
+% set(gca,'YTick',[])
+% %     ax2.YAxisLocation = 'right';
+% ax2.XAxisLocation = 'top';
+% ax3=subplot('Position',[0.1 0.08 0.3 0.1])
+% imagesc(pep_pm,clims)
+% set(gca,'YTick',1,'YTickLabel','family')
+% set(gca,'XTick',[])
+% colorbar('Position',[0.54 0.08 0.03 0.72])
 
 % plot num of unique priors
 % figure
@@ -274,3 +282,29 @@ colorbar('Position',[0.54 0.08 0.03 0.72])
 %         [~,~,ui]=length(unique(priors(mi,:,pi)));
 %     end
 % end
+function image_plot(data,S,clims,title_text,XYlabel,family)
+if isempty(family)
+    family{1} = mean(data,2)';
+    family{2} = mean(data,1);
+end
+figure
+ax1=subplot('Position',[0.1 0.2 0.5 0.3]);
+imagesc(data,clims)
+set(gca,'XTick',S.resp_models,'YTick',S.perc_models,'FontSize',12)
+ax1.XAxisLocation = 'top';
+ylabel('perceptual models')
+xlabel('response models')
+title(title_text)
+ax2=subplot('Position',[0.62 0.2 0.5/6 0.3])
+imagesc(family{1}',clims)
+set(gca,'XTick',1,'XTickLabel',XYlabel,'FontSize',12)
+set(gca,'YTick',[])
+%     ax2.YAxisLocation = 'right';
+ax2.XAxisLocation = 'top';
+ax3=subplot('Position',[0.1 0.08 0.5 0.1])
+imagesc(family{2},clims)
+set(gca,'YTick',1,'YTickLabel',XYlabel,'FontSize',12)
+set(gca,'XTick',[])
+colorbar('Position',[0.74 0.08 0.03 0.42])
+
+colormap(flipud(cbrewer('seq', 'Reds', 100, 'pchip')))

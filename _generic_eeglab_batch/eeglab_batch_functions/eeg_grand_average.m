@@ -64,12 +64,12 @@ for ga = 1:length(uni_ind)
     
     % remove empty cells
     noemp = ~cellfun(@isempty,data_all{ga});
-    data_all{ga} = reshape(data_all{ga}(noemp),[],nev);
-    S.(S.func).fileidx = reshape(fileidx(noemp),[],nev);
+    %data_all{ga} = reshape(data_all{ga}(noemp),[],nev);
+    S.(S.func).fileidx = fileidx(noemp);
     
     % multivariate outliers (applies to all events jointly, not separately)
     if S.ga.grand_avg.outliers==1
-        S=MultiOutliers(S,data_all{ga}(:));
+        S=MultiOutliers(S,data_all{ga}(noemp));
         outdata = S.(S.func).multout;
         outlist = S.(S.func).multoutlist;
         save(fullfile(S.path.file,'Outliers.mat'),'outdata','outlist');
@@ -88,6 +88,8 @@ for ga = 1:length(uni_ind)
         [unisubs,~,subsidx] = unique(subs,'stable');
         data_all_rej{ga} = data_all{ga}(ismember(subs,rejsub),:);
         data_all_acc{ga} = data_all{ga}(~ismember(subs,rejsub),:);
+        noemp_noout = noemp(ismember(subs,rejsub),:);
+        noemp_out = noemp(~ismember(subs,rejsub),:);
     end
     
     % for each event
@@ -101,11 +103,14 @@ for ga = 1:length(uni_ind)
                 cfg.normalizevar   = 'N-1';
                 cfg.method         = method;
                 cfg.parameter      = 'avg';
-                S.(S.func).gadata{ga}.events{n} = ft_timelockgrandaverage_cab(cfg, data_all{ga}(:,n));
-                S.(S.func).gadata{ga}.gavg = ft_timelockgrandaverage_cab(cfg, data_all{ga}{:});
+                S.(S.func).gadata{ga}.events{n} = ft_timelockgrandaverage_cab(cfg, data_all{ga}(noemp(:,n),n));
+                if n==1
+                    S.(S.func).gadata{ga}.gavg = ft_timelockgrandaverage_cab(cfg, data_all{ga}{noemp});
+                    S.(S.func).gadata{ga}.avg = S.(S.func).gadata{ga}.gavg.avg;
+                end
                 if S.ga.grand_avg.outliers 
-                    S.(S.func).gadata{ga}.events_rej{n} = ft_timelockgrandaverage_cab(cfg, data_all_rej{ga}(:,n));
-                    S.(S.func).gadata{ga}.events_acc{n} = ft_timelockgrandaverage_cab(cfg, data_all_acc{ga}(:,n));
+                    S.(S.func).gadata{ga}.events_rej{n} = ft_timelockgrandaverage_cab(cfg, data_all_rej{ga}(noemp_noout(:,n),n));
+                    S.(S.func).gadata{ga}.events_acc{n} = ft_timelockgrandaverage_cab(cfg, data_all_acc{ga}(noemp_out(:,n),n));
                 end
             case {'Freq','TF'}
                 cfg.keepindividual = 'no';
@@ -114,10 +119,13 @@ for ga = 1:length(uni_ind)
                 cfg.channel        = data_all{ga}{1,1}.label(S.(S.func).inclchan);
                 cfg.parameter      = 'powspctrm';
                 S.(S.func).gadata{ga}.events{n} = ft_freqgrandaverage_cab(cfg, data_all{ga}(:,n));
-                S.(S.func).gadata{ga}.gavg = ft_freqgrandaverage_cab(cfg, data_all{ga}{:});
+                if n==1
+                    S.(S.func).gadata{ga}.gavg = ft_freqgrandaverage_cab(cfg, data_all{ga}{noemp});
+                    S.(S.func).gadata{ga}.avg = S.(S.func).gadata{ga}.gavg.avg;
+                end
                 if S.ga.grand_avg.outliers 
-                    S.(S.func).gadata{ga}.events_rej{n} = ft_freqgrandaverage_cab(cfg, data_all_rej{ga}(:,n));
-                    S.(S.func).gadata{ga}.events_acc{n} = ft_freqgrandaverage_cab(cfg, data_all_acc{ga}(:,n));
+                    S.(S.func).gadata{ga}.events_rej{n} = ft_freqgrandaverage_cab(cfg, data_all_rej{ga}(noemp_noout(:,n),n));
+                    S.(S.func).gadata{ga}.events_acc{n} = ft_freqgrandaverage_cab(cfg, data_all_acc{ga}(noemp_out(:,n),n));
                 end
         end
     end

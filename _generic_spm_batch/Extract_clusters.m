@@ -134,7 +134,7 @@ for sp = 1:length(S.spm_paths)
             cname=['c' num2str(c)];
             xyz=TabDatR{c,12};
             spm_results_ui('SetCoords',xyz);
-            TabDat = spm_list('ListCluster',xSPM,hReg);
+            TabDat = spm_list('ListCluster',xSPM,hReg,100,1);
             clustable(Nhead+c,Nrhead)={cname};
             
             if isempty(TabDat.dat)

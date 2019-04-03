@@ -59,6 +59,7 @@ for fa = 1:length(factor_matrix)
 end
 acc_all=header;
 rt_all=header;
+rt_all_std=header;
 dp_all=header;
 cri_all=header;
 hit_all=header;
@@ -299,12 +300,14 @@ for d = 1:length(D)
                     hit(c) = length(intersect(find(uyr(1,:)==1),find(uyr(2,:)==1)))/length(find(uyr(1,:)==1)); % hit rate for SDT
                     fa(c) = length(intersect(find(uyr(1,:)==0),find(uyr(2,:)==1)))/length(find(uyr(1,:)==0)); % false alarm rate for SDT
                     rt_corr(c) = mean(uyr(3,intersect(find(uyr(1,:)==1), find(uyr(2,:)==1))));
+                    rt_corr_std(c) = std(uyr(3,intersect(find(uyr(1,:)==1), find(uyr(2,:)==1))));
                     %hit(c+1) = length(intersect(find(u(:,1)==1),find(y==1)))/length(find(u(:,1)==1)); % hit rate for SDT
                     %fa(c+1) = length(intersect(find(u(:,1)==0),find(y==1)))/length(find(u(:,1)==0)); % false alarm rate for SDT
                 end
                 [dp,cri] = signal_detection(hit,fa);
                 D(d).Processed(op).pc_corr = pc_corr;
                 D(d).Processed(op).rt_corr = rt_corr;
+                D(d).Processed(op).rt_corr_std = rt_corr_std;
                 D(d).Processed(op).hit = hit;
                 D(d).Processed(op).fa = fa;
                 D(d).Processed(op).dp = dp;
@@ -314,6 +317,7 @@ for d = 1:length(D)
             if S.save.tables
                 acc_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
                 rt_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
+                rt_all_std(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
                 dp_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
                 cri_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
                 hit_all(1+d,1)= pdata(1+S.subj_pdat_idx(d),sub_col);
@@ -321,6 +325,7 @@ for d = 1:length(D)
 
                 acc_all(d+1,2:size(pc_corr,1)+1)=num2cell(pc_corr');
                 rt_all(d+1,2:size(rt_corr,1)+1)=num2cell(rt_corr');
+                rt_all_std(d+1,2:size(rt_corr,1)+1)=num2cell(rt_corr_std');
                 dp_all(d+1,2:size(dp,2)+1)=num2cell(dp');
                 cri_all(d+1,2:size(cri,2)+1)=num2cell(cri');
                 hit_all(d+1,2:size(dp,2)+1)=num2cell(hit');
@@ -413,6 +418,7 @@ if S.save.tables
     sname = datestr(now,30);
     xlswrite(['accuracy' opt_name '_' sname '.xlsx'],acc_all);
     xlswrite(['reactiontime' opt_name '_' sname '.xlsx'],rt_all);
+    xlswrite(['reactiontime_std' opt_name '_' sname '.xlsx'],rt_all_std);
     xlswrite(['dprime' opt_name '_' sname '.xlsx'],dp_all);
     xlswrite(['criterion' opt_name '_' sname '.xlsx'],cri_all);
     xlswrite(['hitrate' opt_name '_' sname '.xlsx'],hit_all);

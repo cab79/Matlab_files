@@ -184,7 +184,7 @@ for d = 1:length(D)
             % log response times
             D(d).Processed(op).logrt=nan(1,size(D(d).Sequence.signal,2));
             RT=D.Output.RT;
-            RT(RT<S.RT.min)=nan; % don't consider RTs less than 500ms
+            RT(RT<S.RT.min)=nan; % don't consider RTs less than e.g. 500ms
             D(d).Processed(op).logrt(D.Output.presstrial) = log(RT);
             
             % moving average RT over time

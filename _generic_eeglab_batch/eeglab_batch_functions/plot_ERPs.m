@@ -38,20 +38,25 @@ switch type
         file = S.(S.func).filelist{i};
         load(file)
         
-        % select events
-        if iscell(S.ploterp.select.events)
-            for ev = 1:length(S.ploterp.select.events)
-                newdata{ev} = tldata{1};
-                selectdata = tldata(S.ploterp.select.events{ev});
-                datstruct = cell2mat(selectdata(~cellfun(@isempty,selectdata)));
-                datmat = cat(1,datstruct(:).trial);
-                newdata{ev}.trial = datmat;
-                newdata{ev}.avg = squeeze(mean(newdata{ev}.trial,1));
-            end
-            tldata=newdata;
+        if exist('gadata','var')
+            tldata{1}=gadata;
         else
-            tldata = tldata(S.ploterp.select.events);
+            % select events
+            if iscell(S.ploterp.select.events)
+                for ev = 1:length(S.ploterp.select.events)
+                    newdata{ev} = tldata{1};
+                    selectdata = tldata(S.ploterp.select.events{ev});
+                    datstruct = cell2mat(selectdata(~cellfun(@isempty,selectdata)));
+                    datmat = cat(1,datstruct(:).trial);
+                    newdata{ev}.trial = datmat;
+                    newdata{ev}.avg = squeeze(mean(newdata{ev}.trial,1));
+                end
+                tldata=newdata;
+            else
+                tldata = tldata(S.ploterp.select.events);
+            end
         end
+        
         
         noemp = find(~cellfun(@isempty,tldata));
         tldata = tldata(noemp);
@@ -96,8 +101,13 @@ switch type
         for ga = 1:length(S.ga.ganame)
             
             load(fullfile(S.path.file,S.ga.ganame{ga}));
-            avgdata = gadata.gavg;
-            tldata = gadata.events;
+            if S.ga.grand_avg.outliers 
+                avgdata = gadata.gavg;
+                tldata = gadata.events_acc;
+            else
+                avgdata = gadata.gavg;
+                tldata = gadata.events;
+            end
             datstruct = cell2mat(tldata);
             datmat = cat(3,datstruct(:).avg);
 

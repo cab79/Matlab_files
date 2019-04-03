@@ -22,44 +22,44 @@ yaxisgap=0.15;
 
 
 i=1;
-S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4_spm';
+S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4_spm_n30';
 S.con(i).clusdir=clusdir;
 S.con(i).plotclus = plotclus;
 S.con(i).colormap = cbrewer('seq', 'Greens', 100, 'pchip');
 S.con(i).dsample=1;
-S.con(i).ylabel='epsi 3';
+S.con(i).ylabel='\epsilon_{3}';
 
 i=2;
-S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred3_spm';
+S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred3_spm_n30';
 S.con(i).clusdir=clusdir;
 S.con(i).plotclus = plotclus;
 S.con(i).colormap = cbrewer('seq', 'Blues', 100, 'pchip');
 S.con(i).dsample=1;
-S.con(i).ylabel='epsi 2';
+S.con(i).ylabel='\epsilon_{2}';
 
 i=3;
-S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred2_spm';
+S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred2_spm_n30';
 S.con(i).clusdir=clusdir;
 S.con(i).plotclus = plotclus;
 S.con(i).colormap = cbrewer('seq', 'Purples', 100, 'pchip');
 S.con(i).dsample=1;
-S.con(i).ylabel='epsi 1';
+S.con(i).ylabel='\epsilon_{1}';
 
 i=4;
-S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred1_spm';
+S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred1_spm_n30';
 S.con(i).clusdir=clusdir;
 S.con(i).plotclus = plotclus;
 S.con(i).colormap = cbrewer('seq', 'YlOrBr', 100, 'pchip');
-S.con(i).dsample=4;
-S.con(i).ylabel='digit change';
+S.con(i).dsample=1;
+S.con(i).ylabel='oddball';
 
 i=5;
-S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_Age_2_merged_cleaned_spm';
+S.con(i).spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_spm_n30';
 S.con(i).clusdir=clusdir;
 S.con(i).plotclus = plotclus;
 S.con(i).colormap = cbrewer('seq', 'Greys', 100, 'pchip');
 S.con(i).dsample=4;
-S.con(i).ylabel='original';
+S.con(i).ylabel='whole EEG';
 
 
 figure
@@ -82,12 +82,18 @@ for i = 1:length(S.con)
                 
             case 'extent_time'
                 Cmat=sum(Cmat>0);
+            case 'inten_time'
+                Cmat=nanmean(Cmat);
         end
-        tindex = 1:S.con(i).dsample:Cdim(3)-S.con(i).dsample;
+        tindex = 1:S.con(i).dsample:Cdim(3);
+        tindex = tindex(1:length(xticks));
         imagesc(xticks,[],Cmat(:,tindex),'AlphaData',Cmat(:,tindex)>0); 
     end
     colormap(ax(i),S.con(i).colormap);
-    colorbar('Box','off')
+    cbr=colorbar('Box','off','FontSize',6);
+    if ~any(Cmat(:)>0)
+        set(cbr,'YTick',[])
+    end
     ylabel(S.con(i).ylabel,'Rotation',0,'VerticalAlignment','middle', 'HorizontalAlignment','right');
     cl(:,i) = caxis;
     if i~=length(S.con)
@@ -96,5 +102,5 @@ for i = 1:length(S.con)
     set(ax(i),'YColor',S.con(i).colormap(90,:));
     hold off
 end
-set(ax, 'CLim', [mean(cl(1,:)), mean(cl(2,(cl(2,:)>1)))]);
+% set(ax, 'CLim', [mean(cl(1,:)), mean(cl(2,(cl(2,:)>1)))]);
 set(ax, 'YTick', [],'Xlim',[min(xticks) max(xticks)],'Ylim',[0.48 1.52]);

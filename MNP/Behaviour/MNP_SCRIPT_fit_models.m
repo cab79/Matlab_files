@@ -59,7 +59,7 @@ for pm=1:length(S.perc_models)
     S.RT.on = 1;
     S.RT.min = 0.5; % min RT to consider
     S.save.tables = 0;
-    [S,D_prep]=SCIn_data_process(S,D);  % specific function for CORE (bypasses SCIn_data_process)
+    [S,D_prep]=SCIn_data_process(S,D);  
     
     % create HGF structure
     [D_prep,S] = MNP_prep4HGF(D_prep,S,1); % prepare response data for HGF

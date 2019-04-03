@@ -15,7 +15,7 @@ run('C:\Data\Matlab\Matlab_files\CORE\CORE_addpaths')
 %% generic directories for all analyses for this study
 %-------------------------------------------------------------
 % name and location of the current design-batch file
-D.batch_path = 'C:\Data\Matlab\Matlab_files\CORE\EEG\spm\Sensor\Design_batch_Grp_Side_Odd_part2.m';
+D.batch_path = 'C:\Data\Matlab\Matlab_files\CORE\EEG\spm\Sensor\Design_batch_Grp_CP_DC_part2.m';
 % template flexible factorial matlabbatch
 D.ffbatch = 'C:\Data\CORE\EEG\ana\spm\SPMstats\matlabbatch_flexiblefactorial_template';
 %  template SnPM matlabbatch
@@ -39,8 +39,9 @@ D.spmstats_path = 'C:\Data\CORE\EEG\ana\spm\SPMstats';
 D.anapref = 't-200_899_b-200_0'; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
-D.subdirpref = '_mspm12_flip_CPavg_'; % generic prefix for the SPM file type
-D.subdirsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred1'; % generic suffix for the EEGLAB analysis file
+D.subdirpref = '_mspm12_flip_Sideavg_'; % generic prefix for the SPM file type
+% D.subdirsuff = '_2_merged_cleaned'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
 D.identifier=''; % optional identifer to add to end of outputted SPM folder name
@@ -48,20 +49,6 @@ D.identifier=''; % optional identifer to add to end of outputted SPM folder name
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
 % list of image names within each subject folder
-% D.imglist = {
-%             'scondition_1.nii'
-%             'scondition_2.nii'
-%             'scondition_3_flip.nii'
-%             'scondition_4_flip.nii'
-%             'scondition_5.nii'
-%             'scondition_6.nii'
-%             'scondition_7_flip.nii'
-%             'scondition_8_flip.nii'
-%             'scondition_9.nii'
-%             'scondition_10.nii'
-%             'scondition_11_flip.nii'
-%             'scondition_12_flip.nii'
-%             };
 D.imglist = {
             'scondition_1.nii'
             'scondition_2.nii'
@@ -71,7 +58,21 @@ D.imglist = {
             'scondition_6.nii'
             'scondition_7.nii'
             'scondition_8.nii'
+            'scondition_9.nii'
+            'scondition_10.nii'
+            'scondition_11.nii'
+            'scondition_12.nii'
             };
+% D.imglist = {
+%             'scondition_1.nii'
+%             'scondition_2.nii'
+%             'scondition_3.nii'
+%             'scondition_4.nii'
+%             'scondition_5_flip.nii'
+%             'scondition_6_flip.nii'
+%             'scondition_7_flip.nii'
+%             'scondition_8_flip.nii'
+%             };
         
         
 %% analysis design and parameters
@@ -84,34 +85,34 @@ D.para = 1;
 D.time_ana = [0 800]; % applies a mask to the data
 % cond_list: each WITHIN SUBJECT factor (i.e. NOT including subject or group) is a column, each row is an
 % image from imglist. Columns must be in same order as for 'factors' of type 'w' 
+D.cond_list = [
+              1 1
+              1 2
+              1 1
+              1 2
+              2 1
+              2 2
+              2 1
+              2 2
+              3 1
+              3 2
+              3 1
+              3 2
+              ];
+
 % D.cond_list = [
 %               1 1
 %               1 2
+%               2 1
+%               2 2
 %               1 1
 %               1 2
 %               2 1
 %               2 2
-%               2 1
-%               2 2
-%               3 1
-%               3 2
-%               3 1
-%               3 2
 %               ];
-
-D.cond_list = [
-              1 1
-              1 1
-              1 2
-              1 2
-              2 1
-              2 1
-              2 2
-              2 2
-              ];
           
 % factors and statistical model
-D.factors = {'Side', 'Grp', 'Odd', 'Subject'}; % must include a subject factor at the end
+D.factors = {'CP', 'Grp', 'DC', 'Subject'}; % must include a subject factor at the end
 D.factortype = {'w','g','w','s'}; % w = within, s = subject, g = subject group
 
 % Main effects and interactions: 
@@ -138,20 +139,16 @@ D.ancova = [0 0 0 0]; %covariate
 % after model estimation, constrasts to display (SPM, not SnPM)
 
 D.fcontrasts = {
-    [1 1 1 1 -1 -1 -1 -1], 'Side'
-    [1 1 -1 -1 1 1 -1 -1], 'Grp'
-    [1 -1 1 -1 1 -1 1 -1], 'Odd'
-    [1 1 -1 -1 -1 -1 1 1], 'Side*Grp'
-    [1 -1 -1 1 1 -1 -1 1], 'Grp*Odd'
-    [1 -1 1 -1 -1 1 -1 1], 'Side*Odd'
-    [1 -1 -1 1 -1 1 1 -1], 'Side*Grp*Odd'
-    [1 0 1 0 -1 0 -1 0], 'OddSide'
-    [1 0 -1 0 1 0 -1 0], 'OddGrp'
-    [1 0 -1 0 -1 0 1 0], 'OddSide*Grp'
-
+    [1 -1 -1 1 -1 1 1 -1 0 0 0 0; 0 0 0 0 1 -1 -1 1 -1 1 1 -1], 'CP * Grp * DC'
+    [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Grp'
+    [1 -1 1 -1 -1 1 -1 1 0 0 0 0; 0 0 0 0 1 -1 1 -1 -1 1 -1 1], 'CP * DC'
+    [1 -1 -1 1 1 -1 -1 1 1 -1 -1 1], 'Grp * DC'
+    [1 1 -1 -1 -1 -1 1 1 0 0 0 0; 0 0 0 0 1 1 -1 -1 -1 -1 1 1], 'CP * Grp'
+    [1 1 1 1 -1 -1 -1 -1 0 0 0 0; 0 0 0 0 1 1 1 1 -1 -1 -1 -1], 'CP'
+    [1 1 -1 -1 1 1 -1 -1 1 1 -1 -1], 'Grp'
+    [1 -1 1 -1 1 -1 1 -1 1 -1 1 -1], 'DC'
     };
 D.tcontrasts = {
-
     };
 
 % D.fcontrasts = {

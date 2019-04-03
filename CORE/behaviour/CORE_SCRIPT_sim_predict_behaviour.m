@@ -16,15 +16,16 @@ get_dt = 'CORE_fittedparameters_percmodel2_respmodel4_fractrain0_20190211T074650
 % S.fname_pref= 'CORE_fittedparameters';
 % S.fname_ext= ['_fractrain' S.sname];
 S.sname=''; 
+% S.fname_pref= 'D_fit'; test_frac=0;
 S.fname_pref= 'D_fit_05'; test_frac=1;
 S.fname_ext= '';
-
+fontsize=14; % use 14 for singel plots, 10 for multiplots
 
 % which models?
 S.it=[0];
 %S.perc_model_fnames=[1205 1210 1215 1220 1225 1225 1230 1235 1240 1245 1250];
-S.perc_models=[1:3];
-S.resp_models = [1:6];
+S.perc_models=[3];
+S.resp_models = [4];
 % S.perc_models=[1 3 9 10 11 12];
 % S.resp_models = [2];
 % S.perc_models=[3];
@@ -196,7 +197,7 @@ switch S.resp_modelspec.responses{:}
         violinplot(cc,1:tm,testmodels,'DotSize',36,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
         ylabel('Spearman''s Rho'); xlabel('model')
         title('correlation between simulated and actual log(RT)')
-        set(gca,'fontsize',18)
+        set(gca,'fontsize',fontsize)
         
         % plot WAIC: violin plot
         figure
@@ -222,7 +223,7 @@ switch S.resp_modelspec.responses{:}
         S.x_pos = [1:6];
 %         h1=figure('Name','condition effects')
         h2=figure('Name','condition effects')
-        plot_order = reshape(reshape(1:length(testmodels),length(S.resp_models),length(S.perc_models))',[],1);
+        plot_order = testmodels;%reshape(reshape(1:length(testmodels),length(S.resp_models),length(S.perc_models))',[],1);
         
         % paired colours
 %         S.colour_code = [9 10 7 8 3 4];
@@ -233,8 +234,8 @@ switch S.resp_modelspec.responses{:}
         % scale colours
         S.colour_code = [1 2 3 4 5 6];
         ucol = unique(S.colour_code);
-        cb([1 3 5],:) = [0.5 0.5 0.5; 0.3 0.3 0.3; 0.1 0.1 0.1]; % greys
-        cb([2 4 6],:) = [0.75 0 0; 0.5 0 0; 0.25 0 0]; % reds
+        cb([1 3 5],:) = [0.25 0.25 1; 0 0 0.75; 0 0 0.5]; % violets
+        cb([2 4 6],:) = [1 0.25 0.25; 0.75 0 0; 0.5 0 0]; % reds
         
         for tm=1:length(testmodels)
             
@@ -259,35 +260,44 @@ switch S.resp_modelspec.responses{:}
                 violinplot(plotdat,xlab,S.x_pos,'DotSize',10,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
                 title(['model ' num2str(tm)])
             else
-                xlab = {'CP10, DC1','CP10, DC3','CP30, DC1','CP30, DC3','CP50, DC1','CP50, DC3'};
+                xlab = {'CP10, CD1','CP10, CD3','CP30, CD1','CP30, CD3','CP50, CD1','CP50, CD3'};
                 violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
                 title(['model ' num2str(tm)])
-                set(gca,'fontsize',12)
+                set(gca,'fontsize',fontsize)
                 xtickangle(45)
                 ylabel('log(RT)')
-                title('response times')
+                %title('response times')
             end
             
         end
         
         % PREDICT ACTUAL BEHAVIOUR
-        [numRT,txtRT,rawRT]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\logreactiontime_aff_20180702T065408.xlsx')
+        [numRT,txtRT,rawRT]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\logreactiontime_aff_20180702T065408_n30.xlsx')
         actRT = numRT(:,4:end);
         subind=ismember(txtRT(2:end,1),{D_test.subname});
-        [numACC,txtACC,rawACC]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\accuracy_aff_20180702T065408.xlsx')
+        [numACC,txtACC,rawACC]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\accuracy_aff_20180702T065408_n30.xlsx')
         actACC = numACC(:,4:end);
-        [numDIT,txtDIT,rawDIT]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\DIT_RT.xlsx')
+        [numDIT,txtDIT,rawDIT]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\DIT_RT_n30.xlsx')
         actDITRT = numDIT(:,2:3);
         
         % violins of actual RT
         plotdat = mean(cat(3,actRT(:,[1 2 5 6 9 10]),actRT(:,[3 4 7 8 11 12])),3);
-        xlab = {'CP10, DC1','CP10, DC3','CP30, DC1','CP30, DC3','CP50, DC1','CP50, DC3'};
+        xlab = {'CP10, CD1','CP10, CD3','CP30, CD1','CP30, CD3','CP50, CD1','CP50, CD3'};
         h3=figure('Name',['condition effects: RT']);
         violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
-        set(gca,'fontsize',12)
+        set(gca,'fontsize',fontsize)
         xtickangle(45)
         ylabel('log(RT)')
-        title('response times')
+        %title('response times')
+        
+        % violins of actual Acc
+        plotdat = mean(cat(3,actACC(:,[1 2 5 6 9 10]),actACC(:,[3 4 7 8 11 12])),3);
+        h4=figure('Name',['condition effects: Acc']);
+        violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        set(gca,'fontsize',fontsize)
+        xtickangle(45)
+        ylabel('% accuracy')
+        %title('accuracy')
         
         % grp effect on actual RT
         grps = rawRT(2:end,strcmp(rawRT(1,:),'Group'));
@@ -298,9 +308,10 @@ switch S.resp_modelspec.responses{:}
         xlab = grps;
         h3b=figure('Name',['group effects: RT']);
         violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
-        set(gca,'fontsize',12)
+        set(gca,'fontsize',fontsize)
+%         xtickangle(45)
         ylabel('log(RT)')
-        title('response times')
+        %title('response times')
         clear plotdat
         
         % grp * hand effect on actual RT
@@ -309,22 +320,15 @@ switch S.resp_modelspec.responses{:}
         plotdat.([ugrps{1} 'unaff']) = mean(actRT(ismember(grps,ugrps(1)),[3 4 7 8 11 12]),2);
         plotdat.([ugrps{2} 'aff']) = mean(actRT(ismember(grps,ugrps(2)),[1 2 5 6 9 10]),2);
         plotdat.([ugrps{2} 'unaff']) = mean(actRT(ismember(grps,ugrps(2)),[3 4 7 8 11 12]),2);
-        xlab = {'CPRS aff','CRPS unaff','HC aff','HC unaff'};
+        xlab = {'CPRS-A','CRPS-U','HC-A','HC-U'};
         h3c=figure('Name',['group effects: RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 4 5 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
-        set(gca,'fontsize',12)
+        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 2 5 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        set(gca,'fontsize',fontsize)
         ylabel('log(RT)')
-        title('response times')
+%         xtickangle(45)
+        %title('response times')
         clear plotdat
         
-        % violins of actual Acc
-        plotdat = mean(cat(3,actACC(:,[1 2 5 6 9 10]),actACC(:,[3 4 7 8 11 12])),3);
-        h4=figure('Name',['condition effects: Acc']);
-        violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
-        set(gca,'fontsize',12)
-        xtickangle(45)
-        ylabel('% accuracy')
-        title('accuracy')
         
         % grp * hand effect on DIT RT
         plotdat=struct;
@@ -332,12 +336,13 @@ switch S.resp_modelspec.responses{:}
         plotdat.([ugrps{1} 'unaff']) = actDITRT(ismember(grps,ugrps(1)),[2]);
         plotdat.([ugrps{2} 'aff']) = actDITRT(ismember(grps,ugrps(2)),[1]);
         plotdat.([ugrps{2} 'unaff']) = actDITRT(ismember(grps,ugrps(2)),[2]);
-        xlab = {'CPRS aff','CRPS unaff','HC aff','HC unaff'};
+        xlab = {'CPRS-A','CRPS-U','HC-A','HC-U'};
         h3c=figure('Name',['group effects: DIT RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 4 5 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
-        set(gca,'fontsize',12)
-        ylabel('DIT completion time (s)')
-        title('completion time')
+        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 2 5 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        set(gca,'fontsize',fontsize)
+%         xtickangle(45)
+        ylabel('completion time (s)')
+        %title('completion time')
         clear plotdat
         % grp * hand effect on DIT Acc
         plotdat=struct;
@@ -345,16 +350,17 @@ switch S.resp_modelspec.responses{:}
         plotdat.([ugrps{1} 'unaff']) = actDITRT(ismember(grps,ugrps(1)),[2]);
         plotdat.([ugrps{2} 'aff']) = actDITRT(ismember(grps,ugrps(2)),[1]);
         plotdat.([ugrps{2} 'unaff']) = actDITRT(ismember(grps,ugrps(2)),[2]);
-        xlab = {'CPRS aff','CRPS unaff','HC aff','HC unaff'};
+        xlab = {'CPRS-A','CRPS-U','HC-A','HC-U'};
         h3c=figure('Name',['group effects: DIT RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 4 5 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
-        set(gca,'fontsize',12)
-        ylabel('DIT completion time (s)')
-        title('completion time')
+        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 2 5 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        set(gca,'fontsize',fontsize)
+        ylabel('completion time (s)')
+%         xtickangle(45)
+        %title('completion time')
         clear plotdat
         
-        h5=figure('Name','DC effect')
-        % predict magnitude of DC effects across subjects
+        h5=figure('Name','CD effect')
+        % predict magnitude of CD effects across subjects
         actRTdiff=nanmean(actRT(subind,[1 3 5 7 9 11])-actRT(subind,[2 4 6 8 10 12]),2);
         for tm=1:length(testmodels)
             figure(h5)
@@ -364,7 +370,12 @@ switch S.resp_modelspec.responses{:}
             rho=corr(simRTdiff,actRTdiff,'type','Spearman');
             scatter(simRTdiff,actRTdiff,50,(1-rho)*ones(1,3),'filled');
             rho=num2str(rho);rho=rho(1:4);
-            title(['model ' num2str(tm) ', rho = ' rho])
+            if length(testmodels)==1
+                set(gca,'fontsize',fontsize*2)
+            else
+                set(gca,'fontsize',fontsize)
+                title(['model ' num2str(tm) ', rho = ' rho])
+            end
         end
         
         h6=figure('Name','CP effect')
@@ -378,7 +389,12 @@ switch S.resp_modelspec.responses{:}
             rho=corr(simRTdiff,actRTdiff,'type','Spearman');
             scatter(simRTdiff,actRTdiff,50,(1-abs(rho))*ones(1,3),'filled');
             rho=num2str(rho);rho=rho(1:4);
-            title(['model ' num2str(tm) ', rho = ' rho])
+            if length(testmodels)==1
+                set(gca,'fontsize',fontsize*2)
+            else
+                set(gca,'fontsize',fontsize)
+                title(['model ' num2str(tm) ', rho = ' rho])
+            end
         end
         
         % predict CP effects (30 vs. 50) across subjects
@@ -393,10 +409,10 @@ switch S.resp_modelspec.responses{:}
 %             title(['rho = ' num2str(rho)]);
 %         end
         
-        % predict actual DC effects from model parameters
+        % predict actual CD effects from model parameters
 %         actRTdiff=nanmean(actRT(subind,[1 3 5 7 9 11])-actRT(subind,[2 4 6 8 10 12]),2);
 %         for pi = 1:size(params(1).val,2)
-%             figure('Name',['DC effect: param ' params(1).name{1,pi}]);
+%             figure('Name',['CD effect: param ' params(1).name{1,pi}]);
 %             for tm=1:length(testmodels)
 %                 prm = params(tm).val(subind,pi);
 %                 [rho(1,tm),pval(1,tm)]=corr(prm,actRTdiff,'type','Spearman');
@@ -405,10 +421,10 @@ switch S.resp_modelspec.responses{:}
 %             title(['rho = ' num2str(rho) ', pval = ' num2str(pval)]);
 %         end
         
-        % predict predicted DC effects from model parameters
+        % predict predicted CD effects from model parameters
 %         simRTdiff=nanmean(m(:,[1 3 5 7 9 11])-m(:,[2 4 6 8 10 12]),2);
 %         for pi = 1:size(params(1).val,2)
-%             figure('Name',['DC effect, sim: param ' params(1).name{1,pi}]);
+%             figure('Name',['CD effect, sim: param ' params(1).name{1,pi}]);
 %             for tm=1:length(testmodels)
 %                 prm = params(tm).val(subind,pi);
 %                 [rho(1,tm),pval(1,tm)]=corr(prm,simRTdiff,'type','Spearman');
@@ -429,10 +445,10 @@ switch S.resp_modelspec.responses{:}
 %             title(['rho = ' num2str(rho) ', pval = ' num2str(pval)]);
 %         end
         
-        % predict actual DC effects on ACCURACY from model parameters
+        % predict actual CD effects on ACCURACY from model parameters
 %         actACCdiff=nanmean(actACC(subind,[1 3 5 7 9 11])-actACC(subind,[2 4 6 8 10 12]),2);
 %         for pi = 1:size(params(1).val,2)
-%             figure('Name',['DC effect on Acc: param ' params(1).name{1,pi}]);
+%             figure('Name',['CD effect on Acc: param ' params(1).name{1,pi}]);
 %             for tm=1:length(testmodels)
 %                 prm = params(tm).val(subind,pi);
 %                 [rho(1,tm),pval(1,tm)]=corr(prm,actACCdiff,'type','Spearman');

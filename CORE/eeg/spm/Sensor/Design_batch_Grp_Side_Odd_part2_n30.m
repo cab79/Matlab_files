@@ -25,7 +25,7 @@ D.data_path = 'C:\Data\CORE\EEG\ana\spm\SPMdata\sensorimages';
 % directory in which image masks are saved
 D.mask_path = 'C:\Data\CORE\EEG\ana\spm\SPMdata\masks';
 % load .xlsx file containing 'Participant_ID', 'Group', and covariates
-D.pdatfile = 'C:\Data\CORE\Participants\Participant_data.xlsx';
+D.pdatfile = 'C:\Data\CORE\Participants\Participant_data_age_balanced.xlsx';
 % names of headers in the above xls file:
     D.subhead = 'Subject';
     D.grphead = 'Group';
@@ -40,10 +40,11 @@ D.anapref = 't-200_899_b-200_0'; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_flip_CPavg_'; % generic prefix for the SPM file type
-D.subdirsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred1'; % generic suffix for the EEGLAB analysis file
+% D.subdirsuff = '_2_merged_cleaned'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier=''; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_n30'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -127,7 +128,8 @@ D.maineffects = [0 0 0 0]; % one column per factor
 
 % names of nuisance covariates
 %cov_names = {'Age','Gender'};
-D.cov_names = {'Age'};
+% D.cov_names = {'Age'};
+D.cov_names = {};
 
 D.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
 D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA

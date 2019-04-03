@@ -74,7 +74,7 @@ for f = 1:length(S.(S.func).filelist)
     
     % LINEAR DETREND
     if S.(S.func).epoch.detrend
-        tim = dsearchn(EEG.times',S.(S.func).detrend'); 
+        tim = dsearchn(EEG.times',S.(S.func).epoch.detrend'); 
         for i = 1:EEG.trials, EEG.data(:,tim(1):tim(2),i) = detrend(EEG.data(:,tim(1):tim(2),i)')'; end
     end
     % remove baseline

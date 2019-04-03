@@ -15,11 +15,11 @@ S.path.design = ['C:\Data\CORE\design']; %
 S.fname.parts = {'prefix','subject','suffix','ext'}; % parts of the input filename separated by underscores, e.g.: {'study','subject','session','block','cond'};
 S.fname.ext = {'mat'}; 
 S.select.groups = {};
-S.select.subjects = {'CORE002'}; % either a single subject, or leave blank to process all subjects in folder
+S.select.subjects = {'CORE003'}; % either a single subject, or leave blank to process all subjects in folder
 S.select.sessions = {};
 S.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
 S.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
-S.path.datfile = ['C:\Data\CORE\participants\Participant_data.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+S.path.datfile = ['C:\Data\CORE\participants\Participant_data_age_balanced.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 %save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
 % add toolbox paths
@@ -54,19 +54,19 @@ S.HGF.plottraj = 1; % turn off if doing multiple simulations!
 % which parameters?
 %S.sim=[]; % specify here? or use generic parameters: S=CORE_sim_parameters(S)
 %S=CORE_sim_parameters(S);
-S.fitted_hgf = 'CORE_fittedparameters_percmodel3_respmodel4_fractrain1_20190114T061324_it7.mat'; 
+S.fitted_hgf = 'D_fit_r1_it13_n30.mat'; 
 %S.fitted_hgf = 'CORE_fittedparameters_percmodel12_bayesopt_20181019T083824.mat';
 condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3','PL_psi_1','PL_psi_2','PL_psi_3','PL_sa_1','PL_sa_2','PL_sa_3','PL_sahat_1','PL_sahat_2','PL_sahat_3','PL_mu_1','PL_mu_2','PL_mu_3','PL_muhat_1','PL_muhat_2','PL_muhat_3'};
 conds = [1:24];
 D_in.dt = D_prep.dt; 
 
-S_in1=CORE_get_median_params_from_fitted(S,[1:22]); %group 1
+S_in1=CORE_get_median_params_from_fitted(S,[1:15]); %group 1
 D_sim(1)=HGF_run(D_prep,S_in1,1);
 S_in1.condmean = condmean; S_in1.cond.condmean = conds;
 D_in.HGF.fit = D_sim(1).HGF.sim;
 [out.T(1,:),~,~,~] = CORE_extract_HGF_results(D_in,S_in1);
 
-S_in2=CORE_get_median_params_from_fitted(S,[23:44]); %group 2
+S_in2=CORE_get_median_params_from_fitted(S,[16:30]); %group 2
 D_sim(2)=HGF_run(D_prep,S_in2,1);
 S_in2.condmean = condmean; S_in2.cond.condmean = conds;
 D_in.HGF.fit = D_sim(2).HGF.sim;
@@ -99,16 +99,17 @@ D_in.HGF.fit = D_sim(5).HGF.sim;
 y = [out.T.PL_epsi_1_condmean';
     out.T.PL_epsi_2_condmean';
     out.T.PL_epsi_3_condmean'];
-x = categorical({'epsi 1','epsi 2','epsi 3'});
+x = categorical({'\epsilon_{1}','\epsilon_{2}','\epsilon_{3}'});
 
 figure
-cb = cbrewer('qual', 'Set3', 10, 'pchip');
-col = [4 5 6 7 10];
+cb = [1 0.25 0.25; 0.25 0.25 1; 255/255 204/255 0; 255/255 102/255 0; 0.75 0 0];
+col = [1:5];
 colormap(cb)
 b=bar(x,y,'EdgeColor',[1 1 1]);
+xtickangle(0)
 for k = 1:size(y,2)
     set(b(k),'FaceColor',cb(col(k),:))
 end
-legend({'CRPS','HC','HC w/ CRPS Om2','HC w/ CRPS Om3','HC w/ CRPS Om2 & Om3'})
+legend({'CRPS','HC','HC w/ CRPS \omega','HC w/ CRPS \theta','HC w/ CRPS \omega & \theta'})
 box off
 set(gca,'FontSize',18)
