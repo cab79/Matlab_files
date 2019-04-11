@@ -5,7 +5,7 @@
 % Fc=F
 clear all
 cd('C:\Data\CORE\behaviour\hgf\fitted')
-load('D_fit_r1_it15_n30.mat')
+load('D_fit_r1_it10_n30r.mat')
 Fh=GS(2).F;
 Fc=GS(1).F;
     

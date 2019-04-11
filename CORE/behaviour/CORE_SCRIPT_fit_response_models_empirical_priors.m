@@ -25,7 +25,7 @@ S.select.subjects = {}; % either a single subject, or leave blank to process all
 S.select.sessions = {};
 S.select.blocks = {}; % blocks to load (each a separate file) - empty means all of them, or not defined
 S.select.conds = {}; % conditions to load (each a separate file) - empty means all of them, or not defined
-S.path.datfile = ['C:\Data\CORE\participants\Participant_data.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+S.path.datfile = ['C:\Data\CORE\participants\Participant_data_age_balanced.xlsx']; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 %save(fullfile(S.path.prep,'S'),'S'); % saves 'S' - will be overwritten each time the script is run, so is just a temporary variable
 
 % nuisance covariate

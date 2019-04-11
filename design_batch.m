@@ -781,7 +781,7 @@ if isfactorial
 end
 
 % specify mask
-if ~isempty(D.time_ana)
+if ~isempty(D.time_ana) && isempty(D.maskfile)
     maskname = [num2str(D.time_ana(1)) '_' num2str(D.time_ana(2)) '.img'];
     maskfile = fullfile(D.mask_path,maskname);
     %if ~exist(maskfile,'file')

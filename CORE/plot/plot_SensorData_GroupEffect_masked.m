@@ -13,25 +13,9 @@ save_figs=1;
 %% prepare SPM EEG data
 %S.spm_path = 'C:\Data\CORE\EEG\ana\spm\SPMstats\t-200_899_b-200_0_m_0_600_Grp_Odd_DC_Subject_2_merged_cleaned_spm';
 
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_spm_n30';
-% col = cbrewer('seq', 'Greys', 100, 'pchip'); 
-% St.eeglab_path = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2';
-
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred1_spm_n30';
-% col = cbrewer('seq', 'YlOrBr', 100, 'pchip'); %orange
-% St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
-
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred2_spm_n30';
-% col = cbrewer('seq', 'Purples', 100, 'pchip'); 
-% St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
-
-S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred3_spm_n30';
-col = cbrewer('seq', 'Blues', 100, 'pchip'); 
-St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
-
-% S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4_spm_n30';
-% col = cbrewer('seq', 'Greens', 100, 'pchip'); 
-% St.eeglab_path = 'C:\Data\CORE\EEG\ana\sim';
+S.spm_path = 'C:\Data\CORE\eeg\ana\spm\SPMstats\t-200_899_b-200_0_m_0_800_Side_Grp_Subject_2_merged_cleaned_spm_n30_grpeffectmask_stan';
+col = cbrewer('seq', 'Greys', 100, 'pchip'); 
+St.eeglab_path = 'C:\Data\CORE\EEG\ana\prep\cleaned\part2';
 
 S.plotclus = {'c1_spm','c2_spm','c3_spm','c4_spm','c5_spm','c6_spm','c7_spm','c8_spm','c9_spm','c10_spm','c11_spm','c12_spm','c13_spm','c14_spm','c15_spm'}; % latency order
 col_erp = col([90 50],:);

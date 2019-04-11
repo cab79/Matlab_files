@@ -54,7 +54,7 @@ S.HGF.plottraj = 1; % turn off if doing multiple simulations!
 % which parameters?
 %S.sim=[]; % specify here? or use generic parameters: S=CORE_sim_parameters(S)
 %S=CORE_sim_parameters(S);
-S.fitted_hgf = 'D_fit_r1_it13_n30.mat'; 
+S.fitted_hgf = 'D_fit_r1_it9_n30r.mat'; 
 %S.fitted_hgf = 'CORE_fittedparameters_percmodel12_bayesopt_20181019T083824.mat';
 condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3','PL_psi_1','PL_psi_2','PL_psi_3','PL_sa_1','PL_sa_2','PL_sa_3','PL_sahat_1','PL_sahat_2','PL_sahat_3','PL_mu_1','PL_mu_2','PL_mu_3','PL_muhat_1','PL_muhat_2','PL_muhat_3'};
 conds = [1:24];
@@ -112,4 +112,4 @@ for k = 1:size(y,2)
 end
 legend({'CRPS','HC','HC w/ CRPS \omega','HC w/ CRPS \theta','HC w/ CRPS \omega & \theta'})
 box off
-set(gca,'FontSize',18)
+set(gca,'FontSize',16)

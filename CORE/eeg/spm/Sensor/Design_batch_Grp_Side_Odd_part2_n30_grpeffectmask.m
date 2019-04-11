@@ -41,11 +41,11 @@ D.anapref = 't-200_899_b-200_0'; %directory prefix for this specific analysis
 %D.anapref = 't-3000_0_b-3000_-2500'; %directory prefix for this specific analysis
 %D.anapref = 't-500_1500_b-500_0'; %directory prefix for this specific analysis
 D.subdirpref = '_mspm12_flip_CPavg_'; % generic prefix for the SPM file type
-% D.subdirsuff = '_2_merged_cleaned'; % generic suffix for the EEGLAB analysis file
-D.subdirsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4'; % generic suffix for the EEGLAB analysis file
+D.subdirsuff = '_2_merged_cleaned'; % generic suffix for the EEGLAB analysis file
+% D.subdirsuff = '_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4'; % generic suffix for the EEGLAB analysis file
 %D.subdirsuff = '_orig_cleaned_trialNmatch'; % generic suffix for the EEGLAB analysis file
 D.folder =1; % Is the data in a subject-specific folder?
-D.identifier='_n30'; % optional identifer to add to end of outputted SPM folder name
+D.identifier='_n30_grpeffectmask_stan'; % optional identifer to add to end of outputted SPM folder name
 
 % which codes to analyse in 'Include' columns in participant data file?
 D.include_codes = [1];
@@ -65,12 +65,12 @@ D.include_codes = [1];
 %             'scondition_12_flip.nii'
 %             };
 D.imglist = {
-            'scondition_1.nii'
-            'scondition_2.nii'
+%             'scondition_1.nii'
+%             'scondition_2.nii'
             'scondition_3.nii'
             'scondition_4.nii'
-            'scondition_5.nii'
-            'scondition_6.nii'
+%             'scondition_5.nii'
+%             'scondition_6.nii'
             'scondition_7.nii'
             'scondition_8.nii'
             };
@@ -102,27 +102,23 @@ D.time_ana = [0 800]; % applies a mask to the data
 %               ];
 
 D.cond_list = [
-              1 1
-              1 1
-              1 2
-              1 2
-              2 1
-              2 1
-              2 2
-              2 2
+              1
+              1
+              2
+              2
               ];
           
 % factors and statistical model
-D.factors = {'Side', 'Grp', 'Odd', 'Subject'}; % must include a subject factor at the end
-D.factortype = {'w','g','w','s'}; % w = within, s = subject, g = subject group
+D.factors = {'Side', 'Grp', 'Subject'}; % must include a subject factor at the end
+D.factortype = {'w','g','s'}; % w = within, s = subject, g = subject group
 
 % Main effects and interactions: 
 %   - for spm, can specify the highest-level interaction to produc results
 %   for all sub-interactions. Only main effects beyond those captured by
 %   any interactions need to be listed, e.g. for Subject (only listed
 %   Subject if there is no Group factor). E.g.
-D.interactions = [1 1 1 0]; % one column per factor; one row per interaction
-D.maineffects = [0 0 0 0]; % one column per factor 
+D.interactions = [1 1 0]; % one column per factor; one row per interaction
+D.maineffects = [0 0 0]; % one column per factor 
 %   - for snpm, only a single main effect or 2-way interaction can be performed each time, e.g.
 %D.interactions = [0 0 0 0]; % one column per factor
 %D.maineffects = [0 0 1 0]; % one column per factor 
@@ -136,21 +132,20 @@ D.grandmean = 0; % grand mean scaling value ('0' to turn off scaling)
 D.globalnorm = 1; % Global normlisation: 1=off, 2 = proportional, 3 = ANCOVA
 
 % SPM only:
-D.GMsca = [0 0 0 0]; %grand mean scaling
-D.ancova = [0 0 0 0]; %covariate
+D.GMsca = [0 0 0]; %grand mean scaling
+D.ancova = [0 0 0]; %covariate
 % after model estimation, constrasts to display (SPM, not SnPM)
 
 D.fcontrasts = {
-    [1 1 1 1 -1 -1 -1 -1], 'Side'
-    [1 1 -1 -1 1 1 -1 -1], 'Grp'
-    [1 -1 1 -1 1 -1 1 -1], 'Odd'
-    [1 1 -1 -1 -1 -1 1 1], 'Side*Grp'
-    [1 -1 -1 1 1 -1 -1 1], 'Grp*Odd'
-    [1 -1 1 -1 -1 1 -1 1], 'Side*Odd'
-    [1 -1 -1 1 -1 1 1 -1], 'Side*Grp*Odd'
-    [1 0 1 0 -1 0 -1 0], 'OddSide'
-    [1 0 -1 0 1 0 -1 0], 'OddGrp'
-    [1 0 -1 0 -1 0 1 0], 'OddSide*Grp'
+%     [1 1 1 1 -1 -1 -1 -1], 'Side'
+    [1 -1 1 -1], 'Grp'
+%     [1 -1 1 -1 1 -1 1 -1], 'Odd'
+%     [1 1 -1 -1 -1 -1 1 1], 'Side*Grp'
+%     [1 -1 -1 1 1 -1 -1 1], 'Grp*Odd'
+%     [1 -1 1 -1 -1 1 -1 1], 'Side*Odd'
+%     [1 -1 -1 1 -1 1 1 -1], 'Side*Grp*Odd'
+%     [1 0 1 0 -1 0 -1 0], 'OddSide'
+%     [1 0 -1 0 -1 0 1 0], 'OddSide*Grp'
 
     };
 D.tcontrasts = {
@@ -181,6 +176,9 @@ D.ST_U = 0.05; % cluster forming threshold
 
 % Write residuals? For normality tests
 D.resid = 0;
+
+% mask
+D.maskfile = 'C:\Data\CORE\eeg\ana\spm\SPMstats\sensor\t-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_spm_n30\Grp_clusters\c3_spm.nii';
 
 %% run design_batch function
 D=design_batch(D);

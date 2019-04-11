@@ -14,8 +14,8 @@ S.data_path = 'C:\Data\CORE\EEG\ana\spm\SPMdata\sensorimages';
 S.spmstats_path = 'C:\Data\CORE\EEG\ana\spm\SPMstats';
 % specific folder containing the SPM stats for this analysis
 % S.spm_dir = 't-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_stats_BRR_all_chan_condHGF_notrans_20190221T154622_pred4_spm_n30';
-% S.spm_dir = 't-200_899_b-200_0_m_0_800_Side_Grp_Subject_2_merged_cleaned_spm_n30_grpeffectmask_odd'; % set S.clusformthresh to 1 to use this
-S.spm_dir = 't-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_spm_n30'; 
+S.spm_dir = 't-200_899_b-200_0_m_0_800_Side_Grp_Subject_2_merged_cleaned_spm_n30_grpeffectmask_stan'; % set S.clusformthresh to 1 to use this
+% S.spm_dir = 't-200_899_b-200_0_m_0_800_Side_Grp_Odd_Subject_2_merged_cleaned_spm_n30'; 
 %name of batch .mat file saved from design_batch.m and within same folder
 %as SPM.mat
 S.batch = 'matlabbatch.mat';
@@ -45,18 +45,18 @@ S.clustab{2} = {'cluster','cluster','cluster','peak','peak','peak','','','','';
 S.factlev = {
         {'Side'},{'Side'},{'Aff','Unaff'};
         {'Grp'},{'Group'},{'CRPS','HC'};
-        {'Odd'},{'Odd'},{'Odd','Stan'};
+%         {'Odd'},{'Odd'},{'Odd','Stan'};
 %         {'DC'},{'DC'},{'DC1','DC3'};
         {'Subject'},{'Subject'},{}; % can leave Subject levels empty as these will be populated by sub_info file.
     };
-S.subrow = 4; % row of above factlev containing the subject factor
+S.subrow = 3; % row of above factlev containing the subject factor
 
 % specific mask image (with fill path and extension) or leave empty
 S.imgmask = '';
 % cluster forming threshold
 S.thresDesc = 'none'; % 'FWE' or 'none'
-S.clusformthresh = 0.001; % set to 1 to extract masked ROI data
-S.clusterextent =1; % 1 = only significant if above cluster extent threshold
+S.clusformthresh = 1; % set to 1 to extract masked ROI data
+S.clusterextent =0; % 1 = only significant if above cluster extent threshold
 
 %% run functions (sit back and relax)
 Extract_clusters(S);

@@ -62,18 +62,18 @@ fnames = {
 % 'D_fit_r1_it9_pm3_rm4_n31.mat'
 % 'D_fit_r1_it10_pm3_rm4_n31.mat'
 % 'D_fit_r1_it11_pm3_rm4_n31.mat'
-'D_fit_r1_it8_pm3_rm4_age'
+% 'D_fit_r1_it8_pm3_rm4_age'
 
-% 'D_fit_r1_it1_n30.mat'
-% 'D_fit_r1_it2_n30.mat'
-% 'D_fit_r1_it3_n30.mat'
-% 'D_fit_r1_it4_n30.mat'
-% 'D_fit_r1_it5_n30.mat'
-% 'D_fit_r1_it6_n30.mat'
-% 'D_fit_r1_it7_n30.mat'
-% 'D_fit_r1_it8_n30.mat'
-% 'D_fit_r1_it9_n30.mat'
-% 'D_fit_r1_it10_n30.mat'
+% 'D_fit_r1_it1_n30r.mat'
+% 'D_fit_r1_it2_n30r.mat'
+% 'D_fit_r1_it3_n30r.mat'
+% 'D_fit_r1_it4_n30r.mat'
+% 'D_fit_r1_it5_n30r.mat'
+% 'D_fit_r1_it6_n30r.mat'
+% 'D_fit_r1_it7_n30r.mat'
+% 'D_fit_r1_it8_n30r.mat'
+'D_fit_r1_it9_n30r.mat'
+% 'D_fit_r1_it10_n30r.mat'
 % 'D_fit_r1_it11_n30.mat'
 % 'D_fit_r1_it12_n30.mat'
 % 'D_fit_r1_it13_n30.mat'
@@ -83,8 +83,8 @@ fnames = {
 };
 
 get_dt = 'CORE_fittedparameters_percmodel2_respmodel4_fractrain0_20190211T074650.mat';
-% datfile = 'C:\Data\CORE\participants\Participant_data_age_balanced.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
-datfile = 'C:\Data\CORE\participants\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+datfile = 'C:\Data\CORE\participants\Participant_data_age_balanced.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
+% datfile = 'C:\Data\CORE\participants\Participant_data.xlsx'; % .xlsx file to group participants; contains columns named 'Subject', 'Group', and any covariates of interest
 pdata = readtable(datfile);
 subs = pdata.Subject(find(pdata.Include));
 Cov = {
@@ -122,15 +122,15 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
     % which traj to outputs to mean over conditions? First averages for
     % each condition, before creating further averages between conditions
     %S.condmean = {'PL_muhat_1','PL_dau','PL_sahat_1','PL_muhat_2','PL_sahat_2','PL_muhat_3','PL_sahat_3'};
-    S.condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3','PL_psi_1','PL_psi_2','PL_psi_3','PL_sa_1','PL_sa_2','PL_sa_3','PL_sahat_1','PL_sahat_2','PL_sahat_3','PL_mu_1','PL_mu_2','PL_mu_3','PL_muhat_1','PL_muhat_2','PL_muhat_3'};
+%     S.condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3','PL_psi_1','PL_psi_2','PL_psi_3','PL_sa_1','PL_sa_2','PL_sa_3','PL_sahat_1','PL_sahat_2','PL_sahat_3','PL_mu_1','PL_mu_2','PL_mu_3','PL_muhat_1','PL_muhat_2','PL_muhat_3'};
     %S.condmean = {'PL_dau','PL_da_1','PL_da_2','PL_epsi_1','PL_epsi_2','PL_epsi_3'};
     %S.condmean = {'PL_dau','PL_da_1','PL_da_2'};
     
 %% for trajectory plots (means and variances on separate rows of S.condmean) 
 %     S.condmean = {'PL_dau','PL_da_1','PL_da_2'; % for plotting traj: means
 %             'PL_psi_1','PL_psi_2','PL_psi_3'}; var_pi = 'pi'; % precision (pi) or variance (var)?
-%     S.condmean = {'PL_mu_1','PL_mu_2','PL_mu_3';
-%         'PL_sa_1','PL_sa_2','PL_sa_3'}; var_pi = 'var'; % precision (pi) or variance (var)?
+    S.condmean = {'PL_mu_1','PL_mu_2','PL_mu_3';
+        'PL_sa_1','PL_sa_2','PL_sa_3'}; var_pi = 'var'; % precision (pi) or variance (var)?
 
 %%
     %S.condmean = {};
@@ -333,7 +333,7 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
     end
 
     %% plot group differences for selected variables
-    if 1
+    if 0
         close all
         %vs={'PL_dau_odd','PL_dau_stan','PL_dau_odd_stan','PL_dau_odd_CP','PL_dau_stan_CP','PL_dau_odd_stan_CP','PL_epsi_1_odd','PL_epsi_2_odd','PL_epsi_3_odd','PL_epsi_1_stan','PL_epsi_2_stan','PL_epsi_3_stan','PL_psi_1_condmean','PL_psi_2_condmean','PL_psi_3_condmean','PL_psi_1_odd','PL_psi_2_odd','PL_psi_3_odd','PL_psi_1_stan','PL_psi_2_stan','PL_psi_3_stan','PL_epsi_1_odd_CP','PL_epsi_1_stan_CP','PL_epsi_1_odd_stan_CP','PL_dau_odd_DC','PL_dau_stan_DC','PL_dau_odd_stan_DC','PL_da_1_odd','PL_da_1_odd_CP','PL_da_1_odd_DC','PL_epsi_2_odd_CP','PL_epsi_2_stan_CP','PL_epsi_2_odd_stan_CP','PL_da_2_odd','PL_da_2_odd_CP','PL_da_2_odd_DC','PL_epsi_3_odd_CP','PL_epsi_3_stan_CP','PL_epsi_3_odd_stan_CP'};
         %vs={'like_al0_1','like_al0_2','like_al0_3','like_al0_4','PL_om_2','PL_om_3','PL_dau_mean','PL_da_1_mean','PL_da_2_mean','PL_epsi_1_mean','PL_epsi_2_mean','PL_epsi_3_mean','PL_psi_1_mean','PL_psi_2_mean','PL_psi_3_mean','PL_dau_odd','PL_dau_stan','PL_dau_odd_stan','PL_dau_odd_CP','PL_dau_stan_CP','PL_dau_odd_stan_CP','PL_dau_odd_DC','PL_dau_stan_DC','PL_dau_odd_stan_DC','PL_da_1_odd','PL_da_1_odd_CP','PL_da_1_odd_DC','PL_da_2_odd','PL_da_2_odd_CP','PL_da_2_odd_DC'};
@@ -401,7 +401,7 @@ S.path.hgf = 'C:\Data\CORE\behaviour\hgf'
     end
     
     %% HGF trajectories
-    if 0
+    if 1
         close all
         subplot_on = 1;
         plot_variance_type = 'mean_of_traj'; %{'mean_of_traj','var_over_subs'};
@@ -566,3 +566,5 @@ end
 
 writetable(struct2table(ranksum_all_p),fullfile('C:\Data\CORE\behaviour\hgf','out_p.xlsx'));
 writetable(struct2table(ranksum_all_z),fullfile('C:\Data\CORE\behaviour\hgf','out_z.xlsx'));
+writetable(struct2table(medians_all),fullfile('C:\Data\CORE\behaviour\hgf','medians.xlsx'));
+writetable(struct2table(iqr_all),fullfile('C:\Data\CORE\behaviour\hgf','iqr.xlsx'));

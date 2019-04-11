@@ -257,34 +257,68 @@ switch S.resp_modelspec.responses{:}
             plotdat = squeeze(marg_cond_rt(tm,:,:));
             if length(testmodels)>1
                 xlab = [];
-                violinplot(plotdat,xlab,S.x_pos,'DotSize',10,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+                violins = violinplot(plotdat,xlab,S.x_pos,'DotSize',10,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.5 0.5 0.5],'MedianColor',[1 1 1])
                 title(['model ' num2str(tm)])
             else
                 xlab = {'CP10, CD1','CP10, CD3','CP30, CD1','CP30, CD3','CP50, CD1','CP50, CD3'};
-                violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+                violins = violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.5 0.5 0.5],'MedianColor',[1 1 1])
+              
                 title(['model ' num2str(tm)])
                 set(gca,'fontsize',fontsize)
                 xtickangle(45)
                 ylabel('log(RT)')
                 %title('response times')
             end
+            lineplot = {[1 2],[3 4],[5 6]};
+            for lp = 1:length(lineplot)
+                XData=[];YData=[];
+                for x=1:length(lineplot{lp})
+                    plotind=lineplot{lp}(x);
+                    ii=1:size(plotdat,1);
+                    ni=find(isnan(plotdat(:,plotind)));
+                    ii(ni)=[];
+                    XData(x,ii)=violins(plotind).ScatterPlot.XData;
+                    YData(x,ii)=violins(plotind).ScatterPlot.YData;
+                    XData(x,ni)=mean(violins(plotind).ScatterPlot.XData);
+                    YData(x,ni)=mean(violins(plotind).ScatterPlot.YData);
+                end
+                hold on; hb=plot(XData,YData,'Color',[0.8 0.8 0.8]); 
+                uistack(hb,'bottom')
+            end
             
         end
         
         % PREDICT ACTUAL BEHAVIOUR
-        [numRT,txtRT,rawRT]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\logreactiontime_aff_20180702T065408_n30.xlsx')
+        [numRT,txtRT,rawRT]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\logreactiontime_aff_20180702T065408.xlsx')
         actRT = numRT(:,4:end);
         subind=ismember(txtRT(2:end,1),{D_test.subname});
-        [numACC,txtACC,rawACC]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\accuracy_aff_20180702T065408_n30.xlsx')
+        [numACC,txtACC,rawACC]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\accuracy_aff_20180702T065408.xlsx')
         actACC = numACC(:,4:end);
-        [numDIT,txtDIT,rawDIT]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\DIT_RT_n30.xlsx')
+        [numDIT,txtDIT,rawDIT]=xlsread('C:\Data\CORE\behaviour\processed\condition effects\DIT_RT.xlsx')
         actDITRT = numDIT(:,2:3);
         
         % violins of actual RT
         plotdat = mean(cat(3,actRT(:,[1 2 5 6 9 10]),actRT(:,[3 4 7 8 11 12])),3);
         xlab = {'CP10, CD1','CP10, CD3','CP30, CD1','CP30, CD3','CP50, CD1','CP50, CD3'};
         h3=figure('Name',['condition effects: RT']);
-        violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        %plot(plotdat','Color',[0.8 0.8 0.8]); hold on
+        violins = violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.5 0.5 0.5],'MedianColor',[1 1 1])
+        lineplot = {[1 2],[3 4],[5 6]};
+        for lp = 1:length(lineplot)
+            XData=[];YData=[];
+            for x=1:length(lineplot{lp})
+                plotind=lineplot{lp}(x);
+                ii=1:size(plotdat,1);
+                ni=find(isnan(plotdat(:,plotind)));
+                ii(ni)=[];
+                XData(x,ii)=violins(plotind).ScatterPlot.XData;
+                YData(x,ii)=violins(plotind).ScatterPlot.YData;
+                XData(x,ni)=mean(violins(plotind).ScatterPlot.XData);
+                YData(x,ni)=mean(violins(plotind).ScatterPlot.YData);
+            end
+            hold on; hb=plot(XData,YData,'Color',[0.8 0.8 0.8]); 
+            uistack(hb,'bottom')
+        end
         set(gca,'fontsize',fontsize)
         xtickangle(45)
         ylabel('log(RT)')
@@ -293,7 +327,23 @@ switch S.resp_modelspec.responses{:}
         % violins of actual Acc
         plotdat = mean(cat(3,actACC(:,[1 2 5 6 9 10]),actACC(:,[3 4 7 8 11 12])),3);
         h4=figure('Name',['condition effects: Acc']);
-        violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        violins = violinplot(plotdat,xlab,S.x_pos,'DotSize',72,'ViolinColor',cb(S.colour_code,:),'ViolinAlpha',0.6,'EdgeColor',[0.5 0.5 0.5],'MedianColor',[1 1 1])
+        lineplot = {[1 2],[3 4],[5 6]};
+        for lp = 1:length(lineplot)
+            XData=[];YData=[];
+            for x=1:length(lineplot{lp})
+                plotind=lineplot{lp}(x);
+                ii=1:size(plotdat,1);
+                ni=find(isnan(plotdat(:,plotind)));
+                ii(ni)=[];
+                XData(x,ii)=violins(plotind).ScatterPlot.XData;
+                YData(x,ii)=violins(plotind).ScatterPlot.YData;
+                XData(x,ni)=mean(violins(plotind).ScatterPlot.XData);
+                YData(x,ni)=mean(violins(plotind).ScatterPlot.YData);
+            end
+            hold on; hb=plot(XData,YData,'Color',[0.8 0.8 0.8]); 
+            uistack(hb,'bottom') 
+        end
         set(gca,'fontsize',fontsize)
         xtickangle(45)
         ylabel('% accuracy')
@@ -307,7 +357,7 @@ switch S.resp_modelspec.responses{:}
         plotdat.(ugrps{2}) = mean(actRT(ismember(grps,ugrps(2)),1:12),2);
         xlab = grps;
         h3b=figure('Name',['group effects: RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        violins = violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 3],:),'ViolinAlpha',0.6,'EdgeColor',[0.5 0.5 0.5],'MedianColor',[1 1 1])
         set(gca,'fontsize',fontsize)
 %         xtickangle(45)
         ylabel('log(RT)')
@@ -322,7 +372,24 @@ switch S.resp_modelspec.responses{:}
         plotdat.([ugrps{2} 'unaff']) = mean(actRT(ismember(grps,ugrps(2)),[3 4 7 8 11 12]),2);
         xlab = {'CPRS-A','CRPS-U','HC-A','HC-U'};
         h3c=figure('Name',['group effects: RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 2 5 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        violins = violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 2 5 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.5 0.5 0.5],'MedianColor',[1 1 1])
+        fn = fieldnames(plotdat);
+        lineplot = {[1 2],[3 4]};
+        for lp = 1:length(lineplot)
+            XData=[];YData=[];
+            for x=1:length(lineplot{lp})
+                plotind=lineplot{lp}(x);
+                ii=1:size(plotdat.(fn{plotind}),1);
+                ni=find(isnan(plotdat.(fn{plotind})));
+                ii(ni)=[];
+                XData(x,ii)=violins(plotind).ScatterPlot.XData;
+                YData(x,ii)=violins(plotind).ScatterPlot.YData;
+                XData(x,ni)=mean(violins(plotind).ScatterPlot.XData);
+                YData(x,ni)=mean(violins(plotind).ScatterPlot.YData);
+            end
+            hold on; hb=plot(XData,YData,'Color',[0.8 0.8 0.8]); 
+            uistack(hb,'bottom')
+        end
         set(gca,'fontsize',fontsize)
         ylabel('log(RT)')
 %         xtickangle(45)
@@ -338,7 +405,24 @@ switch S.resp_modelspec.responses{:}
         plotdat.([ugrps{2} 'unaff']) = actDITRT(ismember(grps,ugrps(2)),[2]);
         xlab = {'CPRS-A','CRPS-U','HC-A','HC-U'};
         h3c=figure('Name',['group effects: DIT RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 2 5 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        violins = violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 2 5 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.5 0.5 0.5],'MedianColor',[1 1 1])
+        fn = fieldnames(plotdat);
+        lineplot = {[1 2],[3 4]};
+        for lp = 1:length(lineplot)
+            XData=[];YData=[];
+            for x=1:length(lineplot{lp})
+                plotind=lineplot{lp}(x);
+                ii=1:size(plotdat.(fn{plotind}),1);
+                ni=find(isnan(plotdat.(fn{plotind})));
+                ii(ni)=[];
+                XData(x,ii)=violins(plotind).ScatterPlot.XData;
+                YData(x,ii)=violins(plotind).ScatterPlot.YData;
+                XData(x,ni)=mean(violins(plotind).ScatterPlot.XData);
+                YData(x,ni)=mean(violins(plotind).ScatterPlot.YData);
+            end
+            hold on; hb=plot(XData,YData,'Color',[0.8 0.8 0.8]); 
+            uistack(hb,'bottom')
+        end
         set(gca,'fontsize',fontsize)
 %         xtickangle(45)
         ylabel('completion time (s)')
@@ -352,7 +436,24 @@ switch S.resp_modelspec.responses{:}
         plotdat.([ugrps{2} 'unaff']) = actDITRT(ismember(grps,ugrps(2)),[2]);
         xlab = {'CPRS-A','CRPS-U','HC-A','HC-U'};
         h3c=figure('Name',['group effects: DIT RT']);
-        violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 2 5 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.8 0.8 0.8],'MedianColor',[1 1 1])
+        violins = violinplot(plotdat,xlab,[1 2],'DotSize',72,'ViolinColor',cb([6 2 5 1],:),'ViolinAlpha',0.6,'EdgeColor',[0.5 0.5 0.5],'MedianColor',[1 1 1])
+        fn = fieldnames(plotdat);
+        lineplot = {[1 2],[3 4]};
+        for lp = 1:length(lineplot)
+            XData=[];YData=[];
+            for x=1:length(lineplot{lp})
+                plotind=lineplot{lp}(x);
+                ii=1:size(plotdat.(fn{plotind}),1);
+                ni=find(isnan(plotdat.(fn{plotind})));
+                ii(ni)=[];
+                XData(x,ii)=violins(plotind).ScatterPlot.XData;
+                YData(x,ii)=violins(plotind).ScatterPlot.YData;
+                XData(x,ni)=mean(violins(plotind).ScatterPlot.XData);
+                YData(x,ni)=mean(violins(plotind).ScatterPlot.YData);
+            end
+            hold on; hb=plot(XData,YData,'Color',[0.8 0.8 0.8]); 
+            uistack(hb,'bottom')
+        end
         set(gca,'fontsize',fontsize)
         ylabel('completion time (s)')
 %         xtickangle(45)
